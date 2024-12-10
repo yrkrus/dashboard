@@ -26,9 +26,9 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
    menu_settings_global                       : Boolean;
    menu_active_session                        : Boolean;
 
-  constructor Create(InGroupRole:TRole);      overload;
+  constructor Create(InGroupRole:enumRole);      overload;
   private
-  procedure LoadAccess(var p_InRole: TRole);
+  procedure LoadAccess(var p_InRole: enumRole);
   end;
  // class TUserAccess END
 
@@ -41,7 +41,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
       name                                  : string;   // имя
       familiya                              : string;   // фамилия
       id                                    : Integer;  // id в БД
-      group_role                            : TRole;   //  права
+      group_role                            : enumRole;   //  права
       login                                 : string;
       re_password                           : Boolean;  // необходимо сменить пароль
       acive_session_id                      : Integer;  // id активной сессии
@@ -70,11 +70,11 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
       function GetRePassword                 :Boolean;    // получить текущий re_password
       function GetIsOperator                 :Boolean;    // текущий пользователь в роли оператора?
 
-      function GetAccess(Menu:TAccessList):TAccessStatus; // получение данных о том какие параметры могут быть открыты на доступе у пользователя
+      function GetAccess(Menu:enumAccessList):enumAccessStatus; // получение данных о том какие параметры могут быть открыты на доступе у пользователя
 
 
 
-      function GetRole                        :TRole;
+      function GetRole                        :enumRole;
       constructor Create;                     overload;
 
       private
@@ -83,7 +83,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
 
       isOperator                              : Boolean;
 
-      function GetRoleIsOperator(InRole:TRole):Boolean;    // проверка роль пользователя это операторская роль
+      function GetRoleIsOperator(InRole:enumRole):Boolean;    // проверка роль пользователя это операторская роль
 
       end;
  // class TUser END
@@ -99,7 +99,7 @@ uses
 //  FunctionUnit;
 
 // class TUserAccess START
- constructor TUserAccess.Create(InGroupRole:TRole);
+ constructor TUserAccess.Create(InGroupRole:enumRole);
  begin
    //inherited;
    menu_settings_users                      :=  False;
@@ -112,7 +112,7 @@ uses
  end;
 
 
- procedure TUserAccess.LoadAccess(var p_InRole: TRole);
+ procedure TUserAccess.LoadAccess(var p_InRole: enumRole);
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -168,7 +168,7 @@ end;
 
 
  // проверка роль пользователя это операторская роль
-function TUser.GetRoleIsOperator(InRole:TRole):Boolean;
+function TUser.GetRoleIsOperator(InRole:enumRole):Boolean;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -249,7 +249,7 @@ end;
   Result:=Self.Params.pc;
  end;
 
- function TUser.GetRole:TRole;
+ function TUser.GetRole:enumRole;
  begin
   Result:=Self.Params.group_role;
  end;
@@ -266,7 +266,7 @@ end;
  end;
 
 
- function TUser.GetAccess(Menu:TAccessList):TAccessStatus;
+ function TUser.GetAccess(Menu:enumAccessList):enumAccessStatus;
  begin
    Result:=access_DISABLED;
 

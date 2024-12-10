@@ -45,6 +45,7 @@ var
   function GetUserAccessLocalChat(InUserID:Integer):Boolean;   stdcall;     external 'core.dll';       // есть ли доступ у пользователя к локальному чату
   function GetCurrentDateTimeDec(DecMinutes:Integer):PChar; overload;  stdcall; external 'core.dll';       // текущее начала дня минус -DecMinutes
   function GetCurrentStartDateTime:PChar; overload;  stdcall; external 'core.dll';       // текущее начала дня с минутами 00:00:00
+  function GetCurrentTime:PChar; stdcall; external 'core.dll';       // текущее время
 
 
 

@@ -15,6 +15,7 @@ object FormWait: TFormWait
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
+  OnClose = FormClose
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 16
@@ -35,26 +36,10 @@ object FormWait: TFormWait
     ParentFont = False
     Layout = tlCenter
   end
-  object MP: TMediaPlayer
-    Left = 642
-    Top = 24
-    Width = 29
-    Height = 30
-    ColoredButtons = [btPlay]
-    EnabledButtons = [btPlay]
-    VisibleButtons = [btPlay]
-    DoubleBuffered = True
-    Display = MP
-    ParentDoubleBuffered = False
-    TabOrder = 1
-    OnNotify = MPNotify
-  end
-  object PanelPlay: TPanel
-    Left = 0
-    Top = 0
-    Width = 52
-    Height = 52
-    BevelOuter = bvNone
-    TabOrder = 0
+  object indicator: TActivityIndicator
+    Left = 17
+    Top = 9
+    FrameDelay = 20
+    IndicatorType = aitSectorRing
   end
 end

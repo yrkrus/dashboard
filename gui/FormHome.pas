@@ -338,7 +338,7 @@ end;
 
 procedure THomeForm.btnStatus_availableClick(Sender: TObject);
 var
- curr_queue:TQueueCurrent;
+ curr_queue:enumQueueCurrent;
 begin
 
    if PanelStatusIN.Height=cPanelStatusHeight_showqueue then begin

@@ -12,8 +12,8 @@ interface
 
 
 procedure KillProcess;                                                               // принудительное завершение работы
-function GetStatistics_queue(InQueueNumber:TQueueCurrent;InQueueType:TQueueType):string;    // отображение инфо по очередеям
-function GetStatistics_day(inStatDay:TStatistiscDay):string;                         // отображение инфо за день
+function GetStatistics_queue(InQueueNumber:enumQueueCurrent;InQueueType:enumQueueType):string;    // отображение инфо по очередеям
+function GetStatistics_day(inStatDay:enumStatistiscDay):string;                         // отображение инфо за день
 procedure clearAllLists;                                                             // очистка всех list's
 procedure clearList_IVR;                                                             // отображение листа с текущими звонками
 procedure clearList_QUEUE;                                                           // очистка listbox_QUEUE
@@ -25,8 +25,8 @@ function getVersion(GUID:string):string;                                        
 procedure showVersionAbout;                                                          // отображение истории вресий дашбоарда
 function Ping(InIp:string):Boolean;                                                  // проверка ping
 procedure createCheckServersInfoclinika;                                             // создание списка с серверами
-function StrToTRole(InRole:string):TRole;                                            // string -> TRole
-function TRoleToStr(InRole:TRole):string;                                            // TRole -> string
+function StrToTRole(InRole:string):enumRole;                                            // string -> TRole
+function TRoleToStr(InRole:enumRole):string;                                            // TRole -> string
 function GetRoleID(InRole:string):Integer;                                           // получение ID TRole
 function getUserGroupSTR(InGroup:Integer):string;                                    // отображение роли пользвоателя
 function getHashPwd(inPwd: String):Integer;                                          // хэширование пароля
@@ -34,7 +34,7 @@ function getUserGroupID(InGroup:string):Integer;                                
 function getUserID(InLogin:string):Integer; overload;                                // отображение ID пользвоателя
 function getUserID(InUserName,InUserFamiliya:string):Integer; overload;              // полчуение userID из ФИО
 function getUserID(InSIPNumber:integer):Integer; overload;                           // полчуение userID из SIP номера
-procedure loadPanel_Users(InUserRole:TRole; InShowDisableUsers:Boolean = False);     // прогрузка спика пользвоателей
+procedure loadPanel_Users(InUserRole:enumRole; InShowDisableUsers:Boolean = False);     // прогрузка спика пользвоателей
 procedure loadPanel_Operators;                                                       // прогрузка спика пользвоателей (операторы)
 function getCheckLogin(inLogin:string):Boolean;                                      // существует ли login пользвоателчя
 function disableUser(InUserID:Integer):string;                                       // отключение пользователя
@@ -43,12 +43,12 @@ procedure LoadUsersAuthForm;                                                    
 function getUserPwd(InUserID:Integer):Integer;                                       // полчуение userPwd из userID
 function getUserLogin(InUserID:Integer):string;                                      // полчуение userLogin из userID
 function getUserRoleSTR(InUserID:Integer):string;                                    // отображение роли пользвоателя
-function getIVRTimeQueue(InQueue:TQueueCurrent):Integer;                             // время которое необходимо отнимать от текущего звонка в очереди
-function correctTimeQueue(InQueue:TQueueCurrent;InTime:string):string;               // правильноt отображение времени в очереди
-function StrToTQueue(InQueueSTR:string):TQueueCurrent;                               // конвертер из string в TQueue
+function getIVRTimeQueue(InQueue:enumQueueCurrent):Integer;                             // время которое необходимо отнимать от текущего звонка в очереди
+function correctTimeQueue(InQueue:enumQueueCurrent;InTime:string):string;               // правильноt отображение времени в очереди
+function StrToTQueue(InQueueSTR:string):enumQueueCurrent;                               // конвертер из string в TQueue
 function getUserRePassword(InUserID:Integer):Boolean;                                // необходимо ли поменять пароль при входе
 function updateUserPassword(InUserID,InUserNewPassword:Integer):string;              // обновление пароля пользователя
-function TQueueToStr(InQueueSTR:TQueueCurrent):string;                               // конвертер из TQueue в string
+function TQueueToStr(InQueueSTR:enumQueueCurrent):string;                               // конвертер из TQueue в string
 function getLocalIP: string;                                                         // функция получения локального IP
 procedure createCurrentActiveSession(InUserID:Integer);                              // заведение активной сессии
 function isExistCurrentActiveSession(InUserID:Integer):Boolean;                      // сущуствует ли акивная сессия
@@ -64,9 +64,9 @@ function getCurrentDateTimeWithTime:string;                                     
 function getForceActiveSessionClosed(InUserID:Integer):Boolean;                      // проверка нужно ли закрыть активную сессию
 //function createServerConnect:TADOConnection;                                         // создвание подключения к серверу
 function getSelectResponse(InStroka:string):Integer;                                 // запрос по статичтике данных
-procedure Logging(InLoggingID:TLogging);                                             // логирование действий
-function TLoggingToInt(InTLogging:TLogging):Integer;                                 // проеобразование из TLogging в Integer
-function IntToTLogging(InLogging:Integer):TLogging;                                  // проеобразование из Integer в TLogging
+procedure Logging(InLoggingID:enumLogging);                                             // логирование действий
+function TLoggingToInt(InTLogging:enumLogging):Integer;                                 // проеобразование из TLogging в Integer
+function IntToTLogging(InLogging:Integer):enumLogging;                                  // проеобразование из Integer в TLogging
 procedure showUserNameAuthForm;                                                      // отображение ранее входивщего пользователя в выборе вариантов пользователей
 function getUserFamiliyaName_LastSuccessEnter(InUser_login_pc,
                                               InUser_pc:string):string;              // нахождение userID после успешного входа на пк
@@ -76,20 +76,20 @@ function getCountAnsweredCallAll:Integer;                                       
 function createListAnsweredCall(InSipOperator:string):TStringList;                   // создвание списка со всем отвеченными звонками  sip оператора
 function getTimeAnsweredToSeconds(InTimeAnswered:string):Integer;                    // перевод времени разговора оператора типа 00:00:00 в секунды
 function getTimeAnsweredSecondsToString(InSecondAnswered:Integer):string;            // перевод времени разговора оператора типа из секунд в 00:00:00
-procedure remoteCommand_addQueue(command:TLogging);                                  // удаленная команда (добавление в очередь)
-procedure showWait(Status:TShow_wait);                                               // отображение\сркытие окна запроса на сервер
+procedure remoteCommand_addQueue(command:enumLogging);                                  // удаленная команда (добавление в очередь)
+procedure showWait(Status:enumShow_wait);                                               // отображение\сркытие окна запроса на сервер
 function remoteCommand_Responce(InStroka:string):string;                             // отправка запроса на добавление удаленной команды
 function getUserSIP(InIDUser:integer):string;                                        // отображение SIP пользвоателя
-function isExistRemoteCommand(command:TLogging):Boolean;                             // проверка есть ли уже такая удаленная команда на сервера
+function isExistRemoteCommand(command:enumLogging):Boolean;                             // проверка есть ли уже такая удаленная команда на сервера
 function getStatus(InStatus:Integer):string;                                         // полчуение имени status оператора
-function getCurrentQueueOperator(InSipNumber:string):TQueueCurrent;                  // в какой очереди сейчас находится оператор
+function getCurrentQueueOperator(InSipNumber:string):enumQueueCurrent;                  // в какой очереди сейчас находится оператор
 procedure clearOperatorStatus;                                                       // очитска текущего статуса оператора
 procedure checkCurrentStatusOperator(InOperatorStatus:Integer);                      // проверка и отображение кнопок статусов оператора
 procedure showStatusOperator(InShow:Boolean = True);                                 // отобрадение панели статусы операторов
 function getLastStatusTime(InUserid,InOperatorStatus:Integer):string;                // подсчет времени в текущем статусе оператора
-function getStatusOperatorToTLogging(InOperatorStatus:Integer):TLogging;             // преобразование текущего статуса оператора из int в TLogging
+function getStatusOperatorToTLogging(InOperatorStatus:Integer):enumLogging;             // преобразование текущего статуса оператора из int в TLogging
 function isOperatorGoHome(inUserID:Integer):Boolean;                                 // проверка оператор ушел домой или нет
-function getIsExitOperatorCurrentQueue(InCurrentRole:TRole;InUserID:Integer):Boolean;// проверка вдруг оператор забыл выйти из линии
+function getIsExitOperatorCurrentQueue(InCurrentRole:enumRole;InUserID:Integer):Boolean;// проверка вдруг оператор забыл выйти из линии
 function getLastStatusTimeOnHold(InStartTimeonHold:string):string;                   // подсчет времени в статусе OnHold
 function getListOperatorsGoHome(var p_ActiveSipOperators:TActiveSIP):TStringList;    // список операторов которые ушли домой
 function getTranslate(Stroka: string):string;                                        // Транслитерация из рус - > транлирт
@@ -102,28 +102,28 @@ function getDateTimeToDateBD(InDateTime:string):string;                         
 function enableUser(InUserID:Integer):string;                                        // включение пользователя
 function getOperatorAccessDashboard(InSip:string):Boolean;                           // нахождение статуса доступен ли дашбор орератору или нет
 function isExistSettingUsers(InUserID:Integer):Boolean;                              // проверка существу.т ли индивидуальные настрокий пользователч true - существуют настроки
-procedure saveIndividualSettingUser(InUserID:Integer; settings:TSettingUsers;
-                                    status:TSettingUsersStatus);                     // сохранение индивидульных настроек пользователя
-function SettingUsersStatusToInt(status:TSettingUsersStatus):Integer;                // конвертация из TSettingUsersStatus --> Int
+procedure saveIndividualSettingUser(InUserID:Integer; settings:enumSettingUsers;
+                                    status:enumSettingUsersStatus);                     // сохранение индивидульных настроек пользователя
+function SettingUsersStatusToInt(status:enumSettingUsersStatus):Integer;                // конвертация из TSettingUsersStatus --> Int
 function getStatusIndividualSettingsUser(InUserID:Integer;
-                                        settings:TSettingUsers):TSettingUsersStatus; // получение данных об индивидуальных настройках пользователя
+                                        settings:enumSettingUsers):enumSettingUsersStatus; // получение данных об индивидуальных настройках пользователя
 procedure LoadIndividualSettingUser(InUserId:Integer);                               // прогрузка индивидуальных настроек пользователя
-function getIsExitOperatorCurrentGoHome(InCurrentRole:TRole;InUserID:Integer):Boolean; // проверка вдруг оператор не правильно выходит, нужно выходить через команду "домой"
-function getLastStatusOperator(InUserId:Integer):TLogging;                           // текущий стаус оператора из таблицы logging
+function getIsExitOperatorCurrentGoHome(InCurrentRole:enumRole;InUserID:Integer):Boolean; // проверка вдруг оператор не правильно выходит, нужно выходить через команду "домой"
+function getLastStatusOperator(InUserId:Integer):enumLogging;                           // текущий стаус оператора из таблицы logging
 procedure CheckCurrentVersion;                                                       // проверка на актуальную версию
 function getCheckIP(InIPAdtress:string):Boolean;                                     // проверка корректности IP адреса
 procedure createFormActiveSession;                                                   // создание окна активных сессий
 function getCheckAlias(InAlias:string):Boolean;                                      // проверка на существаование такого алиаса уже, он может быть только один!
-function GetFirbirdAuth(FBType:TFirebirdAuth):string;                                // получение авторизационных данных при подключени к БД firebird
-function GetStatusMonitoring(status:Integer):TMonitoringTrunk;                       // мониторится ли транк
+function GetFirbirdAuth(FBType:enumFirebirdAuth):string;                                // получение авторизационных данных при подключени к БД firebird
+function GetStatusMonitoring(status:Integer):enumMonitoringTrunk;                       // мониторится ли транк
 function GetCountServersIK:Integer;                                                  // получение кол-ва серверов ИК
-procedure SetAccessMenu(InNameMenu:TAccessList; InStatus: TAccessStatus);            // установка разрешение\запрет на доступ к меню
-function TAccessListToStr(AccessList:TAccessList):string;                            // TAccessListToStr -> string
-function TAccessStatusToBool(Status: TAccessStatus): Boolean;                        // TAccessStatus --> Bool
+procedure SetAccessMenu(InNameMenu:enumAccessList; InStatus: enumAccessStatus);            // установка разрешение\запрет на доступ к меню
+function TAccessListToStr(AccessList:enumAccessList):string;                            // TAccessListToStr -> string
+function TAccessStatusToBool(Status: enumAccessStatus): Boolean;                        // TAccessStatus --> Bool
 function GetOnlyOperatorsRoleID:TStringList;                                         // получение только операторские ID роли
 procedure ShowOperatorsStatus;                                                       // отображение оотдельного окна со статусами оператора
 procedure ResizeCentrePanelStatusOperators(WidthMainWindow:Integer);                 // изменение позиции панели статусы операторов в зависимости от размера главного окна
-procedure VisibleIconOperatorsGoHome(InStatus:THideShowGoHomeOperators;
+procedure VisibleIconOperatorsGoHome(InStatus:enumHideShowGoHomeOperators;
                                      InClick:Boolean = False);                       // показывать\скрывать операторов ушедших домой
 procedure HappyNewYear;                                                              // пасхалка с новым годом
 function GetExistAccessToLocalChat(InUserId:Integer):Boolean;                        //есть ли доступ к локальному чату
@@ -187,7 +187,7 @@ end; }
 
 
 // проеобразование из TLogging в Integer
-function TLoggingToInt(InTLogging:TLogging):Integer;
+function TLoggingToInt(InTLogging:enumLogging):Integer;
 begin
   case InTLogging of
     TLog_unknown:             Result:=-1;       // неизвестный статус
@@ -215,7 +215,7 @@ begin
 end;
 
 // преобразование из Integer в TLogging
-function IntToTLogging(InLogging:Integer):TLogging;
+function IntToTLogging(InLogging:Integer):enumLogging;
 begin
   case InLogging of
    -1:    Result:=TLog_unknown;             // неизвестный статус
@@ -244,7 +244,7 @@ end;
 
 
 // преобразование текущего статуса оператора из int в TLogging
-function getStatusOperatorToTLogging(InOperatorStatus:Integer):TLogging;
+function getStatusOperatorToTLogging(InOperatorStatus:Integer):enumLogging;
 begin
   case InOperatorStatus of
      1: Result:=TLog_available;
@@ -261,7 +261,7 @@ begin
 end;
 
  // логирование действий
-procedure Logging(InLoggingID:TLogging);
+procedure Logging(InLoggingID:enumLogging);
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -351,7 +351,7 @@ begin
 end;
 
 // string -> TRole
-function StrToTRole(InRole:string):TRole;
+function StrToTRole(InRole:string):enumRole;
 begin
   if InRole='Администратор'             then Result:=role_administrator;
   if InRole='Ведущий оператор'          then Result:=role_lead_operator;
@@ -363,7 +363,7 @@ end;
 
 
 // TRole -> string
-function TRoleToStr(InRole:TRole):string;
+function TRoleToStr(InRole:enumRole):string;
 begin
   case InRole of
    role_administrator       :Result:='Администратор';
@@ -624,7 +624,7 @@ end;
 
 
 // отображение инфо по очередеям
-function GetStatistics_queue(InQueueNumber:TQueueCurrent;InQueueType:TQueueType):string;
+function GetStatistics_queue(InQueueNumber:enumQueueCurrent;InQueueType:enumQueueType):string;
 var
  select_response:string;
  s:TStringList;
@@ -668,7 +668,7 @@ end;
 
 
 // отображение инфо за день
-function GetStatistics_day(inStatDay:TStatistiscDay):string;
+function GetStatistics_day(inStatDay:enumStatistiscDay):string;
 var
 resultat:string;
 select_response:string;
@@ -935,7 +935,7 @@ end;
 
 
 // конвертер из string в TQueue
-function StrToTQueue(InQueueSTR:string):TQueueCurrent;
+function StrToTQueue(InQueueSTR:string):enumQueueCurrent;
 begin
   if InQueueSTR = '5000' then Result:=queue_5000;
   if InQueueSTR = '5050' then Result:=queue_5050;
@@ -943,7 +943,7 @@ end;
 
 
 // конвертер из TQueue в string
-function TQueueToStr(InQueueSTR:TQueueCurrent):string;
+function TQueueToStr(InQueueSTR:enumQueueCurrent):string;
 begin
   case InQueueSTR of
     queue_5000: Result:='5000';
@@ -952,7 +952,7 @@ begin
 end;
 
 // правильное отображение времени в очереди
-function correctTimeQueue(InQueue:TQueueCurrent;InTime:string):string;
+function correctTimeQueue(InQueue:enumQueueCurrent;InTime:string):string;
 var
  correctTime,delta_time:Integer;
 begin
@@ -1907,7 +1907,7 @@ end;
 
 
 // прогрузка спика пользвоателей
-procedure loadPanel_Users(InUserRole:TRole; InShowDisableUsers:Boolean = False);
+procedure loadPanel_Users(InUserRole:enumRole; InShowDisableUsers:Boolean = False);
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -2497,7 +2497,7 @@ end;
 
 
 // время которое необходимо отнимать от текущего звонка в очереди
-function getIVRTimeQueue(InQueue:TQueueCurrent):Integer;
+function getIVRTimeQueue(InQueue:enumQueueCurrent):Integer;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -2933,7 +2933,7 @@ begin
 end;
 
 // TAccessListToStr -> string
-function TAccessListToStr(AccessList:TAccessList):string;
+function TAccessListToStr(AccessList:enumAccessList):string;
 begin
   case AccessList of
     menu_settings_users:                      Result:='menu_Users';
@@ -2971,7 +2971,7 @@ end;
 
 
 // преобразование TAccessStatus --> Bool
-function TAccessStatusToBool(Status: TAccessStatus): Boolean;
+function TAccessStatusToBool(Status: enumAccessStatus): Boolean;
 begin
   if Status = access_ENABLED then Result:=True;
   if Status = access_DISABLED then Result:=False;
@@ -2990,7 +2990,7 @@ begin
 end;
 
 // установка разрешение\запрет на доступ к меню
-procedure SetAccessMenu(InNameMenu:TAccessList; InStatus: TAccessStatus);
+procedure SetAccessMenu(InNameMenu:enumAccessList; InStatus: enumAccessStatus);
 var
   MenuItem: TMenuItem;
 begin
@@ -3006,7 +3006,7 @@ end;
 procedure accessRights(var p_TUser: TUser);
  var
   i:Integer;
-  Access:TAccessList;
+  Access:enumAccessList;
 begin
   with HomeForm do begin
 
@@ -3038,9 +3038,9 @@ begin
 
       // menu
       begin
-        for i:=Ord(Low(TAccessList)) to Ord(High(TAccessList)) do
+        for i:=Ord(Low(enumAccessList)) to Ord(High(enumAccessList)) do
         begin
-          Access:=TAccessList(i);
+          Access:=enumAccessList(i);
           SetAccessMenu(Access,p_TUser.GetAccess(Access));
         end;
       end;
@@ -3152,7 +3152,7 @@ begin
 end;
 
 // отображение\сркытие окна запроса на сервер
-procedure showWait(Status:TShow_wait);
+procedure showWait(Status:enumShow_wait);
 begin
   case (Status) of
    open: begin
@@ -3208,7 +3208,7 @@ end;
 
 
 // проверка есть ли уже такая удаленная команда на сервера
-function isExistRemoteCommand(command:TLogging):Boolean;
+function isExistRemoteCommand(command:enumLogging):Boolean;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -3241,7 +3241,7 @@ end;
 
 
 // удаленная команда (добавление в очередь)
-procedure remoteCommand_addQueue(command:TLogging);
+procedure remoteCommand_addQueue(command:enumLogging);
 var
  resultat:string;
  response:string;
@@ -3290,7 +3290,7 @@ end;
 
 
 // в какой очереди сейчас находится оператор
-function getCurrentQueueOperator(InSipNumber:string):TQueueCurrent;
+function getCurrentQueueOperator(InSipNumber:string):enumQueueCurrent;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -3880,7 +3880,7 @@ begin
 end;
 
 // проверка вдруг оператор забыл выйти из линии
-function getIsExitOperatorCurrentQueue(InCurrentRole:TRole;InUserID:Integer):Boolean;
+function getIsExitOperatorCurrentQueue(InCurrentRole:enumRole;InUserID:Integer):Boolean;
 begin
  case InCurrentRole of
    role_lead_operator,role_senior_operator,role_operator:begin
@@ -3896,7 +3896,7 @@ begin
 end;
 
 // проверка вдруг оператор не правильно выходит, нужно выходить через команду "домой"
-function getIsExitOperatorCurrentGoHome(InCurrentRole:TRole;InUserID:Integer):Boolean;
+function getIsExitOperatorCurrentGoHome(InCurrentRole:enumRole;InUserID:Integer):Boolean;
 begin
  case InCurrentRole of
    role_lead_operator,role_senior_operator,role_operator:begin
@@ -4051,7 +4051,7 @@ end;
 
 
 // конвертация из TSettingUsersStatus --> Int
-function SettingUsersStatusToInt(status:TSettingUsersStatus):Integer;
+function SettingUsersStatusToInt(status:enumSettingUsersStatus):Integer;
 begin
   case status of
     settingUsersStatus_ENABLED:   Result:= 1;
@@ -4061,7 +4061,7 @@ end;
 
 
 // сохранение индивидульных настроек пользователя
-procedure saveIndividualSettingUser(InUserID:Integer; settings:TSettingUsers; status:TSettingUsersStatus);
+procedure saveIndividualSettingUser(InUserID:Integer; settings:enumSettingUsers; status:enumSettingUsersStatus);
 var
  response:string;
 begin
@@ -4100,7 +4100,7 @@ begin
 end;
 
 // получение данных об индивидуальных настройках пользователя
-function getStatusIndividualSettingsUser(InUserID:Integer; settings:TSettingUsers):TSettingUsersStatus;
+function getStatusIndividualSettingsUser(InUserID:Integer; settings:enumSettingUsers):enumSettingUsersStatus;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -4160,7 +4160,7 @@ end;
 
 
 // текущий стаус оператора из таблицы logging
-function getLastStatusOperator(InUserId:Integer):TLogging;
+function getLastStatusOperator(InUserId:Integer):enumLogging;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -4252,7 +4252,7 @@ end;
 
 
 // получение авторизационных данных при подключени к БД firebird
-function GetFirbirdAuth(FBType:TFirebirdAuth):string;
+function GetFirbirdAuth(FBType:enumFirebirdAuth):string;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -4290,7 +4290,7 @@ end;
 
 
 // мониторится ли транк
-function GetStatusMonitoring(status:Integer):TMonitoringTrunk;
+function GetStatusMonitoring(status:Integer):enumMonitoringTrunk;
 begin
   case status of
     0:Result:=monitoring_DISABLE;
@@ -4404,7 +4404,7 @@ end;
 
 
 // показывать\скрывать операторов ушедших домой
-procedure VisibleIconOperatorsGoHome(InStatus:THideShowGoHomeOperators; InClick:Boolean = False);
+procedure VisibleIconOperatorsGoHome(InStatus:enumHideShowGoHomeOperators; InClick:Boolean = False);
 begin
   with HomeForm do begin
     case InStatus of

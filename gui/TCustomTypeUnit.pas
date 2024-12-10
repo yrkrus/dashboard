@@ -11,18 +11,18 @@ unit TCustomTypeUnit;
 interface
 
   type    // тип проверки мониториться ли транк или нет
-  TMonitoringTrunk = ( monitoring_DISABLE,
+  enumMonitoringTrunk = ( monitoring_DISABLE,
                        monitoring_ENABLE
                      );
 
 
  type      // тип запроса к firebird
-  TFirebirdAuth = (firebird_login,   // логин
+  enumFirebirdAuth = (firebird_login,   // логин
                    firebird_pwd      // пароль
                   );
 
  type   // тип запрошенных данных из очереди
-   TQueueCurrent =  (queue_5000,            // 5000 очередь
+ enumQueueCurrent =  (queue_5000,            // 5000 очередь
                      queue_5050,            // 5050 очередь
                      queue_5000_5050,       // 5000 и 5050 очередь
                      queue_null             // нет очереди
@@ -30,7 +30,7 @@ interface
 
 
  type   // типы прав доступа
-  TRole = ( role_administrator,         // администратор
+  enumRole = ( role_administrator,         // администратор
             role_lead_operator,         // ведущий оператор
             role_senior_operator,       // старший оператор
             role_operator,              // оператор
@@ -40,12 +40,12 @@ interface
 
 
   type  // тип сохранения индивидуальных настроек пользователя
-    TSettingUsers = (settingUsers_gohome,         // не показывать ушедших домой
+    enumSettingUsers = (settingUsers_gohome,         // не показывать ушедших домой
                      settingUsers_noConfirmExit   // не показывать окно "точно хотите выйти из дашборда?"
     );
 
   type  // тип включение\отключение индивидуальных пользовательских настроек
-    TSettingUsersStatus = (settingUsersStatus_ENABLED = 1,  // включить
+    enumSettingUsersStatus = (settingUsersStatus_ENABLED = 1,  // включить
                            settingUsersStatus_DISABLED = 0  // выключить
                           );
 
@@ -58,11 +58,11 @@ interface
    }
 
   type   // отображение \ сркытие окна запроса на сервер
-  TShow_wait = (  open,
+  enumShow_wait = (  open,
                   close );
 
   type
-   TLogging = ( TLog_unknown              = -1,        // не известный статус
+   enumLogging = ( TLog_unknown              = -1,        // не известный статус
                 TLog_enter                = 0,         // Вход
                 TLog_exit                 = 1,         // Выход
                 TLog_auth_error           = 2,         // не успешная авторизация
@@ -88,7 +88,7 @@ interface
 
 
   type   // тип запрошенных данных из очереди
-   TQueueType = (answered,            //  кол-во отвеченных
+   enumQueueType = (answered,            //  кол-во отвеченных
                 no_answered,          //  кол-во  не отвеченных
                 no_answered_return,   //  кол-во не отвеченных + вернувшиеся которые решили перезвонить
                 procent_answered,
@@ -98,7 +98,7 @@ interface
 
 
  type   // тип запрошенных данных из очереди
-   TStatistiscDay = (stat_answered,            //  кол-во отвеченных
+   enumStatistiscDay = (stat_answered,            //  кол-во отвеченных
                      stat_no_answered,         //  кол-во  не отвеченных
                      stat_no_answered_return,  //  кол-во  не отвеченных + вернувшиеся решили перезвонить
                      stat_procent_no_answered, // процент
@@ -107,7 +107,7 @@ interface
                      );
 
   type    // типы доступов
-   TAccessList = (menu_settings_users,                       // Меню-Пользователи
+   enumAccessList = (menu_settings_users,                       // Меню-Пользователи
                   menu_settings_serversik,                   // Меню-СервераИК
                   menu_settings_siptrunk,                    // Меню-Sip_транки
                   menu_settings_global,                      // Меню-Глобальные_настройки
@@ -116,12 +116,12 @@ interface
 
 
   type   // тип разрешение\запрет на доступ к меню
-   TAccessStatus = ( access_DISABLED  = 0,
+   enumAccessStatus = ( access_DISABLED  = 0,
                      access_ENABLED   =1
                    );
 
   type   // тип показывать\скрывать ушедших домой операторов
-   THideShowGoHomeOperators = (  goHome_Hide,   // скрывать
+   enumHideShowGoHomeOperators = (  goHome_Hide,   // скрывать
                                  goHome_Show    // показывать
                                );
 

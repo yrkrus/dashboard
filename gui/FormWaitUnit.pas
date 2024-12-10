@@ -4,15 +4,16 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.MPlayer, Vcl.ExtCtrls;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.MPlayer, Vcl.ExtCtrls,
+  Vcl.WinXCtrls;
 
 type
   TFormWait = class(TForm)
     Label1: TLabel;
-    MP: TMediaPlayer;
-    PanelPlay: TPanel;
+    indicator: TActivityIndicator;
     procedure FormShow(Sender: TObject);
-    procedure MPNotify(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+
   private
     { Private declarations }
   public
@@ -26,31 +27,15 @@ implementation
 
 {$R *.dfm}
 
+procedure TFormWait.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  indicator.Animate:=False;
+end;
+
 procedure TFormWait.FormShow(Sender: TObject);
-const
- FilePlay:string = 'time.mpg';
 begin
-    if FileExists(FilePlay) then begin
-      with MP do begin
-       { FileName:=FilePlay;
-        Display:=PanelPlay;
-        Open;
-        AutoRewind:=true;
-        DisplayRect:=PanelPlay.ClientRect;
-        Play;
-        Notify:=true;}
-      end;
-    end;
+  if not indicator.Animate then indicator.Animate:=True;
+  Application.ProcessMessages;
 end;
-
-procedure TFormWait.MPNotify(Sender: TObject);
-begin
-   if MP.NotifyValue=nvSuccessful then begin
-    MP.Play;
-    MP.Notify := True;
-  end;
-end;
-
-
 
 end.

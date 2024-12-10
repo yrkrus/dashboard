@@ -32,70 +32,12 @@ end;
 
 
 procedure ThreadMessageMain.Show(var p_Message:TOnlineChat);
-var
- Document:OleVariant;
- test:string;
-
- HTMLContent: string;
-  HTMLCode:string;
-  ms: TMemoryStream;
-
-  Document2: IHTMLDocument2;
-   v: OleVariant;
-
-   Doc: Variant;
 begin
-Sleep(3000);
   with FormHome do begin
-    // HTMLCode:='test';
-
-    // Doc := ChatMain.Document;
-   // Doc.Clear;
-   // Doc.Write(HTMLCode);
-   // Doc.Close;
-
-     { Document := chat_main.Document as IHtmlDocument2;
-      v := VarArrayCreate([0, 0], varVariant);
-       v[0] := WideString(p_Message.m_message.Text);
-      Document.Write(PSafeArray(TVarData(v).VArray));
-      Document.Close;
-                        }
-
-     { begin
-
-        try
-          ms := TMemoryStream.Create;
-        try
-          p_Message.m_message.Text := HTMLCode;
-          p_Message.m_message.SaveToStream(ms);
-          ms.Seek(0, 0);
-        (WebBrowser1.Document as IPersistStreamInit).Load(TStreamAdapter.Create(ms));
-        finally
-         ms.Free;
-        end;
-        finally
-        // sl.Free;
-        end;
-      end;   }
 
 
-    // chat_main.Refresh2;
-    try
 
-     Document:=WebBrowser1.Document;
 
-     HTMLContent:=WideString('<html><head><title>Test</title></head><body>'+p_Message.m_message.Text+'</body></html>');
-
-     Document.Write(HTMLContent);
-
-    finally
-       Document.Close;
-    end;
-
-  // Doc:= chat_main.Document;
- //  Doc.Clear;
-  // Doc.Write(p_Message.m_message.Text);
-  // Body:=doc.Body;
 
   end;
 end;
@@ -118,12 +60,14 @@ begin
    Sleep(100);
 
    MessageMain:=TOnlineChat.Create('main');
-    filehtml:=ExtractFilePath(ParamStr(0))+'test.html';
+  //  filehtml:=ExtractFilePath(ParamStr(0))+'test.html';
 
     // загружаем пустую страницу
      with FormHome do begin
        try
-        WebBrowser1.Navigate('about:blank');
+      //  WebBrowser1.Navigate(filehtml);
+
+          WebBrowser1.Navigate('about:blank');
 
         // WVBrowser1.CreateBrowser(WVWindowParent1.Handle);
 

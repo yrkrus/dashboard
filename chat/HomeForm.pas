@@ -7,7 +7,8 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.ExtCtrls, Vcl.StdCtrls,
   Vcl.ButtonGroup, Vcl.Menus, Vcl.PlatformDefaultStyleActnCtrls, Vcl.ActnPopup,
   Vcl.OleCtrls, SHDocVw, uWVBrowserBase, uWVBrowser, uWVWinControl,
-  uWVWindowParent, uWVFMXBrowser;
+  uWVWindowParent, uWVFMXBrowser,
+  ActiveX, MSHTML, ComObj, Vcl.WinXCtrls;
 
 type
   TFormHome = class(TForm)
@@ -30,11 +31,14 @@ type
     WVWindowParent1: TWVWindowParent;
     WVBrowser1: TWVBrowser;
     WebBrowser1: TWebBrowser;
+    Button1: TButton;
+    actIndMessageMain: TActivityIndicator;
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure ProcessCommandLineParams(DEBUG:Boolean = False);
     procedure ListBoxOnlineUsersClick(Sender: TObject);
     procedure btnSendClick(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -60,7 +64,7 @@ var
 implementation
 
 uses
-  GlobalVariables, Functions, Thread_MessageMain;
+  GlobalVariables, Functions, Thread_MessageMain, TOnlineUsersUint, TSendMessageUnit, TOnlineChatUnit;
 
 {$R *.dfm}
 
@@ -103,6 +107,7 @@ var
  channel:string;
  recipient:Integer;
  msg:string;
+ call:string;
 begin
   if reMessage.Text = '' then Exit;
 
@@ -116,14 +121,51 @@ begin
 
   msg:=reMessage.Text;
 
+  // TODO тут написать когда тэгаем пользователя
+     // tag
+     call:='44';
+
   if not SendMessage(channel,
                      USER_STARTED_CHAT_ID,
                      recipient,
+                     call,
                      msg ) then begin
     MessageBox(Handle,PChar('Ошибка отправки сообщения:'+#13#13+SENDING_MESSAGE_ERROR),PChar('Ошибка отправки'),MB_OK+MB_ICONERROR);
   end;
 
   reMessage.Clear;
+  //Button1.Click;
+end;
+
+procedure TFormHome.Button1Click(Sender: TObject);
+var
+ filehtml:string;
+ Doc: IHTMLDocument2;
+ Window: IHTMLWindow2;
+ MessageMain:TOnlineChat; // текущие собощение в общем чате
+begin
+ if not GetCreateFileLocalChat('main',GetCurrentTime+'.html') then ShowMessage('err');
+
+  filehtml:=ExtractFilePath(ParamStr(0))+'test.html';
+
+  MessageMain:=TOnlineChat.Create('main');
+  MessageMain.CreateFile(filehtml);
+
+  WebBrowser1.Navigate(filehtml);
+ // while WebBrowser1.ReadyState<>READYSTATE_COMPLETE do Sleep(100);
+
+  //HTMLContent:=WideString('<html><head><title>Test</title></head><body>'+'teststt'+'</body></html>');
+
+  if Supports(WebBrowser1.Document, IHTMLDocument2, Window) then
+  begin
+    // Прокрутите страницу вниз с помощью JavaScript
+     Window.scroll(0, 100);
+  end
+  else
+  begin
+    ShowMessage('Документ не поддерживает IHTMLDocument2');
+  end;
+
 end;
 
 procedure TFormHome.FormCreate(Sender: TObject);

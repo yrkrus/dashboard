@@ -324,7 +324,7 @@ begin
 end;
 
 // отображение групп доступа
-procedure showGroup(InUserRole:TRole; allUsers:Boolean = True);
+procedure showGroup(InUserRole:enumRole; allUsers:Boolean = True);
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -560,7 +560,7 @@ end;
 
 
 
-procedure show_form(InUserRole:TRole; isEditUser:Boolean = False);
+procedure show_form(InUserRole:enumRole; isEditUser:Boolean = False);
 var
  id_role:Integer;
  role:string;

@@ -23,7 +23,7 @@ type
     btnEdit: TBitBtn;
     chkboxMonitoring: TCheckBox;
     procedure btnAddClick(Sender: TObject);
-    function getResponseBD(InTypePanel_Server:TypeResponse_Server; InAlias,InLogin:string; InStatus:TMonitoringTrunk):string;
+    function getResponseBD(InTypePanel_Server:TypeResponse_Server; InAlias,InLogin:string; InStatus:enumMonitoringTrunk):string;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormShow(Sender: TObject);
     procedure btnEditClick(Sender: TObject);
@@ -32,7 +32,7 @@ type
   public
     isEditForm:Boolean; // редактируется ли сейчас
     p_editAlias,p_editLogin, p_editID:string;
-    p_edtMonitoring:TMonitoringTrunk;
+    p_edtMonitoring:enumMonitoringTrunk;
     { Public declarations }
   end;
 
@@ -70,7 +70,7 @@ procedure TFormTrunkEdit.btnEditClick(Sender: TObject);
 var
  resultat:string;
  alias,login:string;
- monitoring:TMonitoringTrunk;
+ monitoring:enumMonitoringTrunk;
 begin
    resultat:=getCheckFileds;
    if AnsiPos('ОШИБКА!',resultat)<>0 then begin
@@ -140,7 +140,7 @@ begin
 
 end;
 
-function TFormTrunkEdit.getResponseBD(InTypePanel_Server:TypeResponse_Server;InAlias,InLogin:string; InStatus:TMonitoringTrunk):string;
+function TFormTrunkEdit.getResponseBD(InTypePanel_Server:TypeResponse_Server;InAlias,InLogin:string; InStatus:enumMonitoringTrunk):string;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -258,7 +258,7 @@ var
  resultat:string;
  alias:string;
  login:string;
- monitoring:TMonitoringTrunk;
+ monitoring:enumMonitoringTrunk;
 begin
    resultat:=getCheckFileds;
    if AnsiPos('ОШИБКА!',resultat)<>0 then begin

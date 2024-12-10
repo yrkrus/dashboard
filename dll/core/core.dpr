@@ -148,13 +148,32 @@ begin
 end;
 
 
+// только текущая дата
+function getCurrentNowTime:string;
+begin
+  Result:= FormatDateTime('yyyymmdd', Now);
+end;
+
+function GetCurrentTime:PChar; stdcall; export;
+begin
+  Result:=PChar(getCurrentNowTime);
+end;
+
+ // создание локального файла с чатом
+function GetCreateFileLocalChat(InFileName:string):Boolean;
+begin
+
+end;
+
+
 exports
   createServerConnect,
   GetCopyright,
   GetUserNameFIO,
   GetUserAccessLocalChat,
   GetCurrentStartDateTime,
-  GetCurrentDateTimeDec;
+  GetCurrentDateTimeDec,
+  GetCurrentTime;
 
 begin
 end.

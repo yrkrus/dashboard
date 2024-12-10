@@ -33,7 +33,7 @@ type
   panel_Trunks_ID         :string;
   panel_Trunks_Alias      :string;
   panel_Trunks_Login      :string;
-  panel_Trunks_Monitoring :TMonitoringTrunk;
+  panel_Trunks_Monitoring :enumMonitoringTrunk;
     { Public declarations }
   end;
 

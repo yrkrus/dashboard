@@ -5,7 +5,8 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ComCtrls,
-  Vcl.ExtCtrls, Vcl.Grids,Data.Win.ADODB, Data.DB, IdException, Vcl.Imaging.jpeg,TUserUnit;
+  Vcl.ExtCtrls, Vcl.Grids,Data.Win.ADODB, Data.DB, IdException, Vcl.Imaging.jpeg,TUserUnit,
+  Vcl.WinXCtrls;
 
 type
   TFormAuth = class(TForm)
@@ -81,7 +82,7 @@ begin
       end;
     end;
 
-  Screen.Cursor:=crHourGlass;
+   Screen.Cursor:=crHourGlass;
 
    // найдем пользака
   user_name:=current_user;
@@ -120,7 +121,7 @@ begin
 
     // логирование (авторизация)
     Logging(TLog_enter);
-
+    Screen.Cursor:=crDefault;
    Close;
   end
   else begin
@@ -203,6 +204,8 @@ begin
 
   // версия
   lblVersion.Caption:=getVersion(GUID_VESRION);
+
+
 end;
 
 procedure TFormAuth.img_eay_closeClick(Sender: TObject);

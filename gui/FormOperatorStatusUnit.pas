@@ -168,7 +168,7 @@ end;
 
 procedure TFormOperatorStatus.btnStatus_availableClick(Sender: TObject);
 var
- curr_queue:TQueueCurrent;
+ curr_queue:enumQueueCurrent;
 begin
    if Height=GetCalculateHeightRegister then begin
     Height:=GetCalculateHeightStart;

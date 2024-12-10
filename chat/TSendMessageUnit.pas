@@ -30,6 +30,7 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
 
       function Send(InChannel:string;
                     InSender,InRecipient:Integer;
+                    InCall:string;
                     InMessage:string):Boolean;
 
       end;
@@ -56,10 +57,12 @@ end;
 
 function TSendMessage.Send(InChannel: string;
                            InSender, InRecipient: Integer;
+                           InCall:string;
                            InMessage: string):Boolean;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
+ call:Integer;
 begin
   Result:=False;
 
@@ -67,14 +70,22 @@ begin
   serverConnect:=createServerConnect;
   if not Assigned(serverConnect) then  Exit;
 
+  // TODO написать парсинг когда тэгаем пользака
+  call:=StrToInt(InCall);
+  {if call<>'' then begin
+    // TODO написать парсинг когда тэгаем пользака
+
+  end; }
+
 
    with ado do begin
     ado.Connection:=serverConnect;
     SQL.Clear;
 
-    SQL.Add('insert into chat (channel,sender,recipient,message) values ('+#39+InChannel+#39+','
+    SQL.Add('insert into chat (channel,sender,recipient,call_id,message) values ('+#39+InChannel+#39+','
                                                                           +#39+IntToStr(InSender)+#39+','
                                                                           +#39+IntToStr(InRecipient)+#39+','
+                                                                          +#39+IntToStr(call)+#39+','
                                                                           +#39+InMessage+#39+')');
 
     try

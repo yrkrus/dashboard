@@ -62,7 +62,7 @@ object FormHome: TFormHome
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
-      TabOrder = 2
+      TabOrder = 3
       OnClick = btnSendClick
     end
     object PanelSendMessage: TPanel
@@ -71,7 +71,7 @@ object FormHome: TFormHome
       Width = 693
       Height = 82
       BevelInner = bvLowered
-      TabOrder = 1
+      TabOrder = 2
       object reMessage: TRichEdit
         Left = 5
         Top = 11
@@ -105,7 +105,7 @@ object FormHome: TFormHome
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
-      TabOrder = 0
+      TabOrder = 1
     end
     object CheckBox1: TCheckBox
       Left = 739
@@ -114,7 +114,16 @@ object FormHome: TFormHome
       Height = 17
       Caption = #1086#1090#1087#1088#1072#1074#1082#1072' '#1095#1077#1088#1077#1079' Enter'
       Enabled = False
-      TabOrder = 3
+      TabOrder = 4
+    end
+    object Button1: TButton
+      Left = 696
+      Top = 8
+      Width = 75
+      Height = 25
+      Caption = 'Button1'
+      TabOrder = 0
+      OnClick = Button1Click
     end
   end
   object PanelMessage: TPanel
@@ -166,6 +175,11 @@ object FormHome: TFormHome
             2B2E126208000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
             00000000000000000100000000000000000000000000000000000000}
+        end
+        object actIndMessageMain: TActivityIndicator
+          Left = 325
+          Top = 189
+          Animate = True
         end
       end
       object TabSheet1: TTabSheet
