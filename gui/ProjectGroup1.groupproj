@@ -1,0 +1,60 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{D82C6F6D-AA0B-45B1-812D-61D00F666C6F}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="dashboard.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\dll\подключение к серверу\connect_to_server.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\services\update.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="dashboard">
+        <MSBuild Projects="dashboard.dproj"/>
+    </Target>
+    <Target Name="dashboard:Clean">
+        <MSBuild Projects="dashboard.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="dashboard:Make">
+        <MSBuild Projects="dashboard.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="connect_to_server">
+        <MSBuild Projects="..\dll\подключение к серверу\connect_to_server.dproj"/>
+    </Target>
+    <Target Name="connect_to_server:Clean">
+        <MSBuild Projects="..\dll\подключение к серверу\connect_to_server.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="connect_to_server:Make">
+        <MSBuild Projects="..\dll\подключение к серверу\connect_to_server.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="update">
+        <MSBuild Projects="..\services\update.dproj"/>
+    </Target>
+    <Target Name="update:Clean">
+        <MSBuild Projects="..\services\update.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="update:Make">
+        <MSBuild Projects="..\services\update.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="dashboard;connect_to_server;update"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="dashboard:Clean;connect_to_server:Clean;update:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="dashboard:Make;connect_to_server:Make;update:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

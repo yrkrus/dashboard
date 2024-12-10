@@ -1,0 +1,225 @@
+unit FormAuthUnit;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ComCtrls,
+  Vcl.ExtCtrls, Vcl.Grids,Data.Win.ADODB, Data.DB, IdException, Vcl.Imaging.jpeg,TUserUnit;
+
+type
+  TFormAuth = class(TForm)
+    Panel1: TPanel;
+    Пользователь: TLabel;
+    Label1: TLabel;
+    Image1: TImage;
+    lblVersion: TLabel;
+    edtPassword: TEdit;
+    comboxUser: TComboBox;
+    Button1: TButton;
+    btnAuth: TBitBtn;
+    btnClose: TBitBtn;
+    img_eay_open: TImage;
+    img_eay_close: TImage;
+    procedure btnCloseClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure btnAuthClick(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
+    procedure edtPasswordKeyPress(Sender: TObject; var Key: Char);
+    procedure img_eay_openClick(Sender: TObject);
+    procedure img_eay_closeClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+
+
+
+var
+  FormAuth: TFormAuth;
+
+
+implementation
+
+uses
+  FunctionUnit, DMUnit, FormHome, FormWaitUnit, TTranslirtUnit, TCustomTypeUnit, GlobalVariables;
+
+{$R *.dfm}
+
+
+
+procedure TFormAuth.btnAuthClick(Sender: TObject);
+var
+ i:Integer;
+ current_user:string;
+ current_pwd:string;
+ pwd:Integer;
+ successEnter:Boolean;
+ user_name,user_familiya:string;
+ user_pwd:Integer;
+ currentUser:TUserList;
+begin
+
+  successEnter:=False;
+
+    begin
+      if comboxUser.ItemIndex = -1 then begin
+        MessageBox(Handle,PChar('Не выбран пользователь'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+        Exit;
+      end;
+      current_user:=comboxUser.Items[comboxUser.ItemIndex];
+
+
+      current_pwd:=edtPassword.Text;
+      if current_pwd = '' then begin
+        MessageBox(Handle,PChar('Пустой пароль'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+        Exit;
+      end;
+    end;
+
+  Screen.Cursor:=crHourGlass;
+
+   // найдем пользака
+  user_name:=current_user;
+  System.Delete(user_name,1,AnsiPos(' ',user_name));
+  user_familiya:=current_user;
+  System.Delete(user_familiya, AnsiPos(' ',user_familiya),Length(user_familiya));
+
+  pwd:=getHashPwd(current_pwd);
+  user_pwd:=getUserPwd(getUserID(user_name,user_familiya));
+
+  if user_pwd = pwd then successEnter:=True
+  else successEnter:=False;
+
+  // глобальные паарметры пользака
+   begin
+     currentUser:=TUserList.Create;
+     with currentUser do begin
+      name          := user_name;
+      familiya      := user_familiya;
+      id            := getUserID(user_name,user_familiya);
+      login         := getUserLogin(id);
+      group_role    := StrToTRole(getUserRoleSTR(id));
+      re_password   := getUserRePassword(id);
+      ip            := getLocalIP;
+      pc            := getComputerPCName;
+      user_login_pc := getCurrentUserNamePC;
+     end;
+
+     SharedCurrentUserLogon.UpdateParams(currentUser);
+
+     currentUser.Free;
+   end;
+
+
+  if successEnter then begin
+
+    // логирование (авторизация)
+    Logging(TLog_enter);
+
+   Close;
+  end
+  else begin
+
+    // логирование (не успешная авторизация)
+   Logging(TLog_auth_error);
+   Screen.Cursor:=crDefault;
+
+   MessageBox(Handle,PChar('Ошибка авторизации, не верный пароль'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+   Exit;
+  end;
+
+end;
+
+procedure TFormAuth.btnCloseClick(Sender: TObject);
+begin
+   KillProcess;
+end;
+
+
+
+procedure TFormAuth.Button1Click(Sender: TObject);
+begin
+  //Close;
+ // FormWait.Show;
+
+  // getTranslate('Тестовое сообщение');
+end;
+
+procedure TFormAuth.edtPasswordKeyPress(Sender: TObject; var Key: Char);
+begin
+  if Key = #13 then
+  begin
+    btnAuth.Click;
+  end;
+
+  if Key = #27 then
+  begin
+    KillProcess;
+  end;
+end;
+
+
+procedure createIconPassword;
+begin
+  with FormAuth do begin
+    // показать пароль (иконка с перечеркнутым глазиком)
+     img_eay_open.Parent:=edtPassword;
+     img_eay_open.Transparent := False;
+     img_eay_open.Visible:=True;
+     img_eay_open.Left := 270;
+     img_eay_open.Top := -2;
+
+     // показать пароль (иконка с глазиком)
+     img_eay_close.Parent:=edtPassword;
+     img_eay_close.Transparent := False;
+     img_eay_close.Visible:=False;
+     img_eay_close.Left := 270;
+     img_eay_close.Top := -2;
+  end;
+end;
+
+procedure TFormAuth.FormCreate(Sender: TObject);
+begin
+   SetWindowLong(Handle, GWL_EXSTYLE, GetWindowLong(Handle, GWL_EXSTYLE) or WS_EX_APPWINDOW);
+end;
+
+procedure TFormAuth.FormShow(Sender: TObject);
+var
+ i:Integer;
+begin
+   createIconPassword;
+
+  // прогружаем пользователей
+  LoadUsersAuthForm;
+
+  // отображение ранее входивщего пользователя в выборе вариантов пользователей
+  showUserNameAuthForm;
+
+
+  // версия
+  lblVersion.Caption:=getVersion(GUID_VESRION);
+end;
+
+procedure TFormAuth.img_eay_closeClick(Sender: TObject);
+begin
+  edtPassword.PasswordChar:='*';
+  img_eay_open.Visible:=True;
+
+  img_eay_close.Visible:=False;
+end;
+
+procedure TFormAuth.img_eay_openClick(Sender: TObject);
+begin
+  edtPassword.PasswordChar:=#0;
+  img_eay_open.Visible:=False;
+
+  img_eay_close.Visible:=True;
+
+end;
+
+end.

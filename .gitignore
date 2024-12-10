@@ -1,0 +1,13 @@
+Win64/
+Win32/
+ico/
+!to_MIR/
+*.local
+*.stat
+*.identcache
+__history/
+__recovery/
+*.lnk
+*.msi
+*.exe
+*.dll
