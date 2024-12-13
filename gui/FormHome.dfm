@@ -2,7 +2,7 @@ object HomeForm: THomeForm
   Left = 0
   Top = 0
   Caption = #1044#1072#1096#1073#1086#1088#1076' '#1050#1086#1083#1083#1062#1077#1085#1090#1088#1072
-  ClientHeight = 741
+  ClientHeight = 804
   ClientWidth = 1384
   Color = clWindow
   DefaultMonitor = dmDesktop
@@ -20,7 +20,7 @@ object HomeForm: THomeForm
   OnShow = FormShow
   DesignSize = (
     1384
-    741)
+    804)
   PixelsPerInch = 96
   TextHeight = 15
   object Label5: TLabel
@@ -455,7 +455,7 @@ object HomeForm: THomeForm
   end
   object ImageLogo: TImage
     Left = 1207
-    Top = 669
+    Top = 727
     Width = 157
     Height = 37
     Anchors = [akRight]
@@ -785,7 +785,7 @@ object HomeForm: THomeForm
   end
   object ImgNewYear: TImage
     Left = 1319
-    Top = 656
+    Top = 714
     Width = 55
     Height = 55
     Anchors = [akRight]
@@ -5996,7 +5996,7 @@ object HomeForm: THomeForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 720
+    Top = 783
     Width = 1384
     Height = 21
     Panels = <
@@ -6022,6 +6022,7 @@ object HomeForm: THomeForm
         Text = 'developer by     '
         Width = 150
       end>
+    ExplicitTop = 720
   end
   object Button1: TButton
     Left = 300
@@ -6046,17 +6047,18 @@ object HomeForm: THomeForm
     Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     ParentFont = False
-    TabOrder = 10
+    TabOrder = 9
     Transparent = False
   end
   object PanelShadowRight: TPanel
     Left = 1217
-    Top = 11
+    Top = 13
     Width = 153
     Height = 16
     Anchors = [akRight]
     BevelOuter = bvNone
     TabOrder = 3
+    ExplicitTop = 11
     object imgRight: TImage
       Left = 136
       Top = 0

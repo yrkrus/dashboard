@@ -15,6 +15,9 @@ uses
 
 begin
   Application.Initialize;
+  Application.HintHidePause:=60000;
+  Application.HintPause:=100;
+
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TFormHome, FormHome);
   Application.Run;

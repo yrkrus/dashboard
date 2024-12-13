@@ -25,8 +25,9 @@ var
   // сообщение об ошибке при отправке сообщения
   SENDING_MESSAGE_ERROR :string;
 
-  // глобальная папка с чатами
-  CHAT_FOLDER           :string = 'chat_history';
+  // максимальное кол-во знаков в сообщений
+  // после которого остаток сообщения будет перекинут на следующую строчкц
+  MAX_LENGHT_LINES_ONE_FILEDS : Word = 100;
 
   // текущие онлайн пользователи
   SharedOnlineUsers:  TOnlineUsers;
@@ -45,7 +46,8 @@ var
   function GetCurrentDateTimeDec(DecMinutes:Integer):PChar; overload;  stdcall; external 'core.dll';       // текущее начала дня минус -DecMinutes
   function GetCurrentStartDateTime:PChar; overload;  stdcall; external 'core.dll';       // текущее начала дня с минутами 00:00:00
   function GetCurrentTime:PChar; stdcall; external 'core.dll';       // текущее время
-
+  function GetLocalChatNameFolder:PChar; stdcall; external 'core.dll';       // // папка с локальным чатом
+  function GetExtensionLog:PChar; stdcall; external 'core.dll';       // // папка с локальным чатом
 
 implementation
 

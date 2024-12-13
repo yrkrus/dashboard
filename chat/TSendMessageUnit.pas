@@ -83,10 +83,10 @@ begin
     SQL.Clear;
 
     SQL.Add('insert into chat (channel,sender,recipient,call_id,message) values ('+#39+InChannel+#39+','
-                                                                          +#39+IntToStr(InSender)+#39+','
-                                                                          +#39+IntToStr(InRecipient)+#39+','
-                                                                          +#39+IntToStr(call)+#39+','
-                                                                          +#39+InMessage+#39+')');
+                                                                                  +#39+IntToStr(InSender)+#39+','
+                                                                                  +#39+IntToStr(InRecipient)+#39+','
+                                                                                  +#39+IntToStr(call)+#39+','
+                                                                                  +#39+InMessage+#39+')');
 
     try
         ExecSQL;

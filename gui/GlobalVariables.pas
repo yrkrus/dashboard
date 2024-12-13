@@ -46,8 +46,8 @@ var
   function GetCurrentDateTimeDec(DecMinutes:Integer):PChar; overload;  stdcall; external 'core.dll';       // текущее начала дня минус -DecMinutes
   function GetCurrentStartDateTime:PChar; overload;  stdcall; external 'core.dll';       // текущее начала дня с минутами 00:00:00
   function GetCurrentTime:PChar; stdcall; external 'core.dll';       // текущее время
-
-
+  function GetLocalChatNameFolder:PChar; stdcall; external 'core.dll';       // // папка с локальным чатом
+  function GetExtensionLog:PChar; stdcall; external 'core.dll';       // // папка с локальным чатом
 
 
   // --- connect_to_server.dll ---

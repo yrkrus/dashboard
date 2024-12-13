@@ -159,11 +159,18 @@ begin
   Result:=PChar(getCurrentNowTime);
 end;
 
- // создание локального файла с чатом
-function GetCreateFileLocalChat(InFileName:string):Boolean;
+// папка с локальным чатом
+function GetLocalChatNameFolder:PChar; stdcall; export;
 begin
-
+ Result:= PChar('chat_history');
 end;
+
+// расширение логов
+function GetExtensionLog:PChar; stdcall; export;
+begin
+ Result:= PChar('.html');
+end;
+
 
 
 exports
@@ -173,7 +180,9 @@ exports
   GetUserAccessLocalChat,
   GetCurrentStartDateTime,
   GetCurrentDateTimeDec,
-  GetCurrentTime;
+  GetCurrentTime,
+  GetLocalChatNameFolder,
+  GetExtensionLog;
 
 begin
 end.

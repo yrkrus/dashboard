@@ -4,8 +4,8 @@ object FormAbout: TFormAbout
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = #1054' '#1087#1088#1086#1075#1088#1072#1084#1084#1077
-  ClientHeight = 521
-  ClientWidth = 753
+  ClientHeight = 455
+  ClientWidth = 684
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,17 +17,13 @@ object FormAbout: TFormAbout
   OnClose = FormClose
   OnCreate = FormCreate
   OnShow = FormShow
-  DesignSize = (
-    753
-    521)
   PixelsPerInch = 96
   TextHeight = 19
   object imgAbout: TImage
-    Left = 23
-    Top = 233
+    Left = 12
+    Top = 155
     Width = 87
     Height = 246
-    Anchors = []
     Picture.Data = {
       0A544A504547496D616765964D0000FFD8FFE000104A46494600010101007800
       780000FFE100464578696600004D4D002A000000080004011200030000000100
@@ -654,41 +650,9 @@ object FormAbout: TFormAbout
     Proportional = True
     OnClick = imgAboutClick
   end
-  object Label1: TLabel
-    Left = 127
-    Top = 8
-    Width = 599
-    Height = 56
-    Alignment = taCenter
-    AutoSize = False
-    Caption = #1044#1072#1096#1073#1086#1088#1076' '#1076#1083#1103' '#1082#1086#1083#1083#1094#1077#1085#1090#1088#1072
-    Font.Charset = RUSSIAN_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -16
-    Font.Name = 'Times New Roman'
-    Font.Style = [fsBold]
-    ParentFont = False
-    Layout = tlCenter
-  end
-  object lblVersion: TLabel
-    Left = 130
-    Top = 25
-    Width = 589
-    Height = 56
-    Alignment = taCenter
-    AutoSize = False
-    Caption = #1074#1077#1088#1089#1080#1103
-    Font.Charset = RUSSIAN_CHARSET
-    Font.Color = clNavy
-    Font.Height = -16
-    Font.Name = 'Times New Roman'
-    Font.Style = [fsBold]
-    ParentFont = False
-    Layout = tlCenter
-  end
   object lblDevelop: TLabel
-    Left = 572
-    Top = 488
+    Left = 538
+    Top = 430
     Width = 126
     Height = 16
     Alignment = taRightJustify
@@ -701,27 +665,11 @@ object FormAbout: TFormAbout
     ParentFont = False
     Layout = tlCenter
   end
-  object label3: TLabel
-    Left = 130
-    Top = 102
-    Width = 555
-    Height = 19
-    AutoSize = False
-    Caption = #1048#1089#1090#1086#1088#1080#1103' '#1074#1077#1088#1089#1080#1081
-    Font.Charset = RUSSIAN_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-    Layout = tlCenter
-  end
   object ImgNewYear: TImage
-    Left = 30
-    Top = 207
+    Left = 20
+    Top = 130
     Width = 66
     Height = 63
-    Anchors = [akRight]
     ParentShowHint = False
     Picture.Data = {
       0954506E67496D61676589504E470D0A1A0A0000000D49484452000002BC0000
@@ -5752,26 +5700,134 @@ object FormAbout: TFormAbout
     Stretch = True
     Visible = False
   end
-  object REHistory: TRichEdit
-    Left = 129
-    Top = 123
-    Width = 591
-    Height = 356
-    Font.Charset = RUSSIAN_CHARSET
+  object PageInfo: TPageControl
+    Left = 113
+    Top = 8
+    Width = 555
+    Height = 415
+    ActivePage = sheetGUI
+    Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
     Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
-    ReadOnly = True
-    ScrollBars = ssVertical
+    Style = tsFlatButtons
     TabOrder = 0
-    Zoom = 100
+    object sheetGUI: TTabSheet
+      Caption = #1044#1072#1096#1073#1086#1088#1076' '#1076#1083#1103' '#1082#1086#1083#1083#1094#1077#1085#1090#1088#1072
+      ExplicitLeft = 0
+      ExplicitWidth = 479
+      ExplicitHeight = 359
+      object Panel1: TPanel
+        Left = 0
+        Top = 18
+        Width = 547
+        Height = 363
+        Align = alBottom
+        BevelOuter = bvNone
+        TabOrder = 1
+        object REHistory_GUI: TRichEdit
+          Left = 0
+          Top = 0
+          Width = 547
+          Height = 363
+          Align = alClient
+          BevelInner = bvNone
+          BevelOuter = bvNone
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+          ReadOnly = True
+          ScrollBars = ssVertical
+          TabOrder = 0
+          Zoom = 100
+          ExplicitLeft = -44
+          ExplicitTop = -21
+          ExplicitWidth = 591
+          ExplicitHeight = 356
+        end
+      end
+      object STInfoVersionGUI: TStaticText
+        Left = 0
+        Top = 0
+        Width = 547
+        Height = 16
+        Align = alTop
+        Alignment = taCenter
+        AutoSize = False
+        Caption = 'STInfoVersionGUI'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clNavy
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 0
+        Transparent = False
+      end
+    end
+    object sheetCHAT: TTabSheet
+      Caption = #1051#1086#1082#1072#1083#1100#1085#1099#1081' '#1095#1072#1090
+      ImageIndex = 1
+      ExplicitWidth = 479
+      ExplicitHeight = 359
+      object Panel2: TPanel
+        Left = 0
+        Top = 18
+        Width = 547
+        Height = 363
+        Align = alBottom
+        BevelOuter = bvNone
+        TabOrder = 1
+        object REHistory_CHAT: TRichEdit
+          Left = 0
+          Top = 0
+          Width = 547
+          Height = 363
+          Align = alClient
+          BevelInner = bvNone
+          BevelOuter = bvNone
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+          ReadOnly = True
+          ScrollBars = ssVertical
+          TabOrder = 0
+          Zoom = 100
+        end
+      end
+      object STInfoVersionCHAT: TStaticText
+        Left = 0
+        Top = 0
+        Width = 547
+        Height = 16
+        Align = alTop
+        Alignment = taCenter
+        AutoSize = False
+        Caption = 'STInfoVersionCHAT'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clNavy
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 0
+        Transparent = False
+        ExplicitTop = 8
+      end
+    end
   end
   object TimerStartPashalka1: TTimer
     Enabled = False
     OnTimer = TimerStartPashalka1Timer
-    Left = 40
-    Top = 40
+    Left = 34
+    Top = 24
   end
 end

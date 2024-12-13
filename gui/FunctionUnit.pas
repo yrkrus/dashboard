@@ -21,12 +21,13 @@ procedure clearList_SIP(InWidth:Integer);                                       
 procedure clearList_Propushennie;                                                    // создание интерфейса пропущенные
 procedure updatePropushennie;                                                        // обновление пропущенных звонков форма
 procedure createThreadDashboard;                                                     // создание потоков
-function getVersion(GUID:string):string;                                             // отображение текущей версии дашборда
-procedure showVersionAbout;                                                          // отображение истории вресий дашбоарда
+function getVersion(GUID:string; programm:enumProrgamm):string;                      // отображение текущей версии
+procedure showVersionAbout(programm:enumProrgamm);                                   // отображение истории вресий
 function Ping(InIp:string):Boolean;                                                  // проверка ping
 procedure createCheckServersInfoclinika;                                             // создание списка с серверами
-function StrToTRole(InRole:string):enumRole;                                            // string -> TRole
-function TRoleToStr(InRole:enumRole):string;                                            // TRole -> string
+function StrToTRole(InRole:string):enumRole;                                         // string -> TRole
+function TRoleToStr(InRole:enumRole):string;                                         // TRole -> string
+function EnumProgrammToStr(InEnumProgram:enumProrgamm):string;                       // enumProgramm -> string
 function GetRoleID(InRole:string):Integer;                                           // получение ID TRole
 function getUserGroupSTR(InGroup:Integer):string;                                    // отображение роли пользвоателя
 function getHashPwd(inPwd: String):Integer;                                          // хэширование пароля
@@ -190,27 +191,27 @@ end; }
 function TLoggingToInt(InTLogging:enumLogging):Integer;
 begin
   case InTLogging of
-    TLog_unknown:             Result:=-1;       // неизвестный статус
-    TLog_enter:               Result:=0;        // вход
-    TLog_exit:                Result:=1;        // выход
-    TLog_auth_error:          Result:=2;        // не успешная авторизация
-    TLog_exit_force:          Result:=3;        // выход (через команду force_closed)
-    TLog_add_queue_5000:      Result:=4;        // добавление в очередь 5000
-    TLog_add_queue_5050:      Result:=5;        // добавление в очередь 5050
-    TLog_add_queue_5000_5050: Result:=6;        // добавление в очередь 5000 и 5050
-    TLog_del_queue_5000:      Result:=7;        // удаление из очереди 5000
-    TLog_del_queue_5050:      Result:=8;        // удаление из очереди 5050
-    TLog_del_queue_5000_5050: Result:=9;        // удаление из очереди 5000 и 5050
-    TLog_available:           Result:=10;       // доступен
-    TLog_home:                Result:=11;       // домой
-    TLog_exodus:              Result:=12;       // исход
-    TLog_break:               Result:=13;       // перерыв
-    TLog_dinner:              Result:=14;       // обед
-    TLog_postvyzov:           Result:=15;       // поствызов
-    TLog_studies:             Result:=16;       // учеба
-    TLog_IT:                  Result:=17;       // ИТ
-    TLog_transfer:            Result:=18;       // переносы
-    TLog_reserve:             Result:=19;       // резерв
+    eLog_unknown:             Result:=-1;       // неизвестный статус
+    eLog_enter:               Result:=0;        // вход
+    eLog_exit:                Result:=1;        // выход
+    eLog_auth_error:          Result:=2;        // не успешная авторизация
+    eLog_exit_force:          Result:=3;        // выход (через команду force_closed)
+    eLog_add_queue_5000:      Result:=4;        // добавление в очередь 5000
+    eLog_add_queue_5050:      Result:=5;        // добавление в очередь 5050
+    eLog_add_queue_5000_5050: Result:=6;        // добавление в очередь 5000 и 5050
+    eLog_del_queue_5000:      Result:=7;        // удаление из очереди 5000
+    eLog_del_queue_5050:      Result:=8;        // удаление из очереди 5050
+    eLog_del_queue_5000_5050: Result:=9;        // удаление из очереди 5000 и 5050
+    eLog_available:           Result:=10;       // доступен
+    eLog_home:                Result:=11;       // домой
+    eLog_exodus:              Result:=12;       // исход
+    eLog_break:               Result:=13;       // перерыв
+    eLog_dinner:              Result:=14;       // обед
+    eLog_postvyzov:           Result:=15;       // поствызов
+    eLog_studies:             Result:=16;       // учеба
+    eLog_IT:                  Result:=17;       // ИТ
+    eLog_transfer:            Result:=18;       // переносы
+    eLog_reserve:             Result:=19;       // резерв
   end;
 end;
 
@@ -218,27 +219,27 @@ end;
 function IntToTLogging(InLogging:Integer):enumLogging;
 begin
   case InLogging of
-   -1:    Result:=TLog_unknown;             // неизвестный статус
-    0:    Result:=TLog_enter;               // вход
-    1:    Result:=TLog_exit;                // выход
-    2:    Result:=TLog_auth_error;          // не успешная авторизация
-    3:    Result:=TLog_exit_force;          // выход (через команду force_closed)
-    4:    Result:=TLog_add_queue_5000;      // добавление в очередь 5000
-    5:    Result:=TLog_add_queue_5050;      // добавление в очередь 5050
-    6:    Result:=TLog_add_queue_5000_5050; // добавление в очередь 5000 и 5050
-    7:    Result:=TLog_del_queue_5000;      // удаление из очереди 5000
-    8:    Result:=TLog_del_queue_5050;      // удаление из очереди 5050
-    9:    Result:=TLog_del_queue_5000_5050; // удаление из очереди 5000 и 5050
-    10:   Result:=TLog_available;           // доступен
-    11:   Result:=TLog_home;                // домой
-    12:   Result:=TLog_exodus;              // исход
-    13:   Result:=TLog_break;               // перерыв
-    14:   Result:=TLog_dinner;              // обед
-    15:   Result:=TLog_postvyzov;           // поствызов
-    16:   Result:=TLog_studies;             // учеба
-    17:   Result:=TLog_IT;                  // ИТ
-    18:   Result:=TLog_transfer;            // переносы
-    19:   Result:=TLog_reserve;             // резерв
+   -1:    Result:=eLog_unknown;             // неизвестный статус
+    0:    Result:=eLog_enter;               // вход
+    1:    Result:=eLog_exit;                // выход
+    2:    Result:=eLog_auth_error;          // не успешная авторизация
+    3:    Result:=eLog_exit_force;          // выход (через команду force_closed)
+    4:    Result:=eLog_add_queue_5000;      // добавление в очередь 5000
+    5:    Result:=eLog_add_queue_5050;      // добавление в очередь 5050
+    6:    Result:=eLog_add_queue_5000_5050; // добавление в очередь 5000 и 5050
+    7:    Result:=eLog_del_queue_5000;      // удаление из очереди 5000
+    8:    Result:=eLog_del_queue_5050;      // удаление из очереди 5050
+    9:    Result:=eLog_del_queue_5000_5050; // удаление из очереди 5000 и 5050
+    10:   Result:=eLog_available;           // доступен
+    11:   Result:=eLog_home;                // домой
+    12:   Result:=eLog_exodus;              // исход
+    13:   Result:=eLog_break;               // перерыв
+    14:   Result:=eLog_dinner;              // обед
+    15:   Result:=eLog_postvyzov;           // поствызов
+    16:   Result:=eLog_studies;             // учеба
+    17:   Result:=eLog_IT;                  // ИТ
+    18:   Result:=eLog_transfer;            // переносы
+    19:   Result:=eLog_reserve;             // резерв
   end;
 end;
 
@@ -247,16 +248,16 @@ end;
 function getStatusOperatorToTLogging(InOperatorStatus:Integer):enumLogging;
 begin
   case InOperatorStatus of
-     1: Result:=TLog_available;
-     2: Result:=TLog_home;
-     3: Result:=TLog_exodus;
-     4: Result:=TLog_break;
-     5: Result:=TLog_dinner;
-     6: Result:=TLog_postvyzov;
-     7: Result:=TLog_studies;
-     8: Result:=TLog_IT;
-     9: Result:=TLog_transfer;
-    10: Result:=TLog_reserve;
+     1: Result:=eLog_available;
+     2: Result:=eLog_home;
+     3: Result:=eLog_exodus;
+     4: Result:=eLog_break;
+     5: Result:=eLog_dinner;
+     6: Result:=eLog_postvyzov;
+     7: Result:=eLog_studies;
+     8: Result:=eLog_IT;
+     9: Result:=eLog_transfer;
+    10: Result:=eLog_reserve;
   end;
 end;
 
@@ -372,6 +373,16 @@ begin
    role_operator            :Result:='Оператор';
    role_operator_no_dash    :Result:='Оператор (без дашборда)';
    role_supervisor_cov      :Result:='Руководитель ЦОВ';
+  end;
+end;
+
+
+ // enumProgramm -> string
+function EnumProgrammToStr(InEnumProgram:enumProrgamm):string;
+begin
+  case InEnumProgram of
+   eGUI     :Result:='gui';
+   eCHAT    :Result:='chat';
   end;
 end;
 
@@ -533,11 +544,11 @@ begin
      if CONNECT_BD_ERROR=False then begin
 
        // логирование (выход)  , через команду или руками
-       if getForceActiveSessionClosed(SharedCurrentUserLogon.GetID) then Logging(TLog_exit_force)
+       if getForceActiveSessionClosed(SharedCurrentUserLogon.GetID) then Logging(eLog_exit_force)
        else
        begin
         // проверка на вдруг нажали просто отмена
-        if SharedCurrentUserLogon.GetID<>0 then Logging(TLog_exit);
+        if SharedCurrentUserLogon.GetID<>0 then Logging(eLog_exit);
        end;
 
        // очичтка текущего статуса оператора
@@ -1165,13 +1176,11 @@ begin
         end;
      end;
    end;
-
-
 end;
 
 
-// отображение текущей версии дашборда
-function getVersion(GUID:string):string;
+// отображение текущей версии
+function getVersion(GUID:string; programm:enumProrgamm):string;
 var
  ado:TADOQuery;
  serverConnect: TADOConnection;
@@ -1185,7 +1194,7 @@ begin
     ado.Connection:=serverConnect;
 
     SQL.Clear;
-    SQL.Add('select version,bild from version_update where guid = '+#39+GUID+#39+' order by id DESC limit 1');
+    SQL.Add('select version,bild from version_update where guid = '+#39+GUID+#39+' and programm = '+#39+EnumProgrammToStr(programm)+#39+' order by id DESC limit 1');
     Active:=True;
 
     Result:='v.'+Fields[0].Value+' bild '+Fields[1].Value;
@@ -1199,7 +1208,7 @@ end;
 
 
 // отображение истории вресий дашбоарда
-procedure showVersionAbout;
+procedure showVersionAbout(programm:enumProrgamm);
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -1214,29 +1223,54 @@ begin
     ado.Connection:=serverConnect;
 
     SQL.Clear;
-    SQL.Add('select count(id) from version_update');
+    SQL.Add('select count(id) from version_update where programm = '+#39+EnumProgrammToStr(programm)+#39);
     Active:=True;
 
     countVersion:=Fields[0].Value;
 
     SQL.Clear;
-    SQL.Add('select date_update,version,update_text from version_update order by date_update DESC');
+    SQL.Add('select date_update,version,update_text from version_update where programm = '+#39+EnumProgrammToStr(programm)+#39+' order by date_update DESC');
     Active:=True;
 
-    FormAbout.REHistory.Clear;
+    with FormAbout do begin
+       case programm of
+          eGUI: begin
+            REHistory_GUI.Clear;
 
-    for i:=0 to countVersion-1 do begin
-         with FormAbout.REHistory do begin
-          Lines.Add('версия '+VarToStr(Fields[1].Value) + ' ('+VarToStr(Fields[0].Value)+')');
-          Lines.Add(Fields[2].Value);
-          Lines.Add('');
-          Lines.Add('');
-          Lines.Add('');
-         end;
-       Next;
+            for i:=0 to countVersion-1 do begin
+                 with REHistory_GUI do begin
+                  Lines.Add('версия '+VarToStr(Fields[1].Value) + ' ('+VarToStr(Fields[0].Value)+')');
+                  Lines.Add(Fields[2].Value);
+                  Lines.Add('');
+                  Lines.Add('');
+                  Lines.Add('');
+                 end;
+               Next;
+            end;
+
+            REHistory_GUI.SelStart:=0;
+            STInfoVersionGUI.Caption:=getVersion(GUID_VESRION,programm);
+          end;
+          eCHAT: begin
+
+            REHistory_CHAT.Clear;
+
+            for i:=0 to countVersion-1 do begin
+                 with REHistory_CHAT do begin
+                  Lines.Add('версия '+VarToStr(Fields[1].Value) + ' ('+VarToStr(Fields[0].Value)+')');
+                  Lines.Add(Fields[2].Value);
+                  Lines.Add('');
+                  Lines.Add('');
+                  Lines.Add('');
+                 end;
+               Next;
+            end;
+
+            REHistory_CHAT.SelStart:=0;
+            STInfoVersionCHAT.Caption:=getVersion(GUID_VESRION,programm);
+          end;
+       end;
     end;
-
-    FormAbout.REHistory.SelStart:=0;
   end;
 
 
@@ -2448,14 +2482,14 @@ begin
   with ado do begin
     ado.Connection:=serverConnect;
     SQL.Clear;
-    SQL.Add('select familiya,name from users where id = (select user_id  from logging where user_login_pc='+#39+InUser_login_pc+#39+' and pc='+#39+InUser_pc+#39+' and action='+#39+IntToStr(TLoggingToInt(TLog_enter))+#39+' order by date_time DESC limit 1) and disabled =''0'' ');
+    SQL.Add('select familiya,name from users where id = (select user_id  from logging where user_login_pc='+#39+InUser_login_pc+#39+' and pc='+#39+InUser_pc+#39+' and action='+#39+IntToStr(TLoggingToInt(eLog_enter))+#39+' order by date_time DESC limit 1) and disabled =''0'' ');
 
     Active:=True;
 
     // если нет в основной, то смотрим в таблице history_logging
     if Fields[0].Value = null then begin
       SQL.Clear;
-      SQL.Add('select familiya,name from users where id = (select user_id  from history_logging where user_login_pc='+#39+InUser_login_pc+#39+' and pc='+#39+InUser_pc+#39+' and action='+#39+IntToStr(TLoggingToInt(TLog_enter))+#39+' order by date_time DESC limit 1) and disabled =''0'' ');
+      SQL.Add('select familiya,name from users where id = (select user_id  from history_logging where user_login_pc='+#39+InUser_login_pc+#39+' and pc='+#39+InUser_pc+#39+' and action='+#39+IntToStr(TLoggingToInt(eLog_enter))+#39+' order by date_time DESC limit 1) and disabled =''0'' ');
 
       Active:=True;
 
@@ -3902,7 +3936,7 @@ begin
    role_lead_operator,role_senior_operator,role_operator:begin
 
      // проверяемв друг не правильно вышел гаденыш
-     if getLastStatusOperator(InUserID) <> TLog_home then Result:=True
+     if getLastStatusOperator(InUserID) <> eLog_home then Result:=True
      else Result:=False;
 
    end
@@ -4165,7 +4199,7 @@ var
  ado:TADOQuery;
  serverConnect:TADOConnection;
 begin
-   Result:=TLog_unknown;
+   Result:=eLog_unknown;
 
    ado:=TADOQuery.Create(nil);
    serverConnect:=createServerConnect;

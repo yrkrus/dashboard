@@ -12,37 +12,37 @@ interface
 
   type    // тип проверки мониториться ли транк или нет
   enumMonitoringTrunk = ( monitoring_DISABLE,
-                       monitoring_ENABLE
-                     );
+                          monitoring_ENABLE
+                        );
 
 
  type      // тип запроса к firebird
   enumFirebirdAuth = (firebird_login,   // логин
-                   firebird_pwd      // пароль
-                  );
+                      firebird_pwd      // пароль
+                      );
 
  type   // тип запрошенных данных из очереди
  enumQueueCurrent =  (queue_5000,            // 5000 очередь
-                     queue_5050,            // 5050 очередь
-                     queue_5000_5050,       // 5000 и 5050 очередь
-                     queue_null             // нет очереди
-                     );
+                      queue_5050,            // 5050 очередь
+                      queue_5000_5050,       // 5000 и 5050 очередь
+                      queue_null             // нет очереди
+                      );
 
 
  type   // типы прав доступа
-  enumRole = ( role_administrator,         // администратор
-            role_lead_operator,         // ведущий оператор
-            role_senior_operator,       // старший оператор
-            role_operator,              // оператор
-            role_supervisor_cov,        // руководитель ЦОВ
-            role_operator_no_dash       // оператор (без дашборда)
-            );
+  enumRole = (  role_administrator,         // администратор
+                role_lead_operator,         // ведущий оператор
+                role_senior_operator,       // старший оператор
+                role_operator,              // оператор
+                role_supervisor_cov,        // руководитель ЦОВ
+                role_operator_no_dash       // оператор (без дашборда)
+                );
 
 
   type  // тип сохранения индивидуальных настроек пользователя
-    enumSettingUsers = (settingUsers_gohome,         // не показывать ушедших домой
-                     settingUsers_noConfirmExit   // не показывать окно "точно хотите выйти из дашборда?"
-    );
+    enumSettingUsers = (  settingUsers_gohome,         // не показывать ушедших домой
+                          settingUsers_noConfirmExit   // не показывать окно "точно хотите выйти из дашборда?"
+                        );
 
   type  // тип включение\отключение индивидуальных пользовательских настроек
     enumSettingUsersStatus = (settingUsersStatus_ENABLED = 1,  // включить
@@ -62,27 +62,27 @@ interface
                   close );
 
   type
-   enumLogging = ( TLog_unknown              = -1,        // не известный статус
-                TLog_enter                = 0,         // Вход
-                TLog_exit                 = 1,         // Выход
-                TLog_auth_error           = 2,         // не успешная авторизация
-                TLog_exit_force           = 3,         // Выход (через команду force_closed)
-                TLog_add_queue_5000       = 4,         // добавление в очередь 5000
-                TLog_add_queue_5050       = 5,         // добавление в очередь 5050
-                TLog_add_queue_5000_5050  = 6,         // добавление в очередь 5000 и 5050
-                TLog_del_queue_5000       = 7,         // удаление из очереди 5000
-                TLog_del_queue_5050       = 8,         // удаление из очереди 5050
-                TLog_del_queue_5000_5050  = 9,         // удаление из очереди 5000 и 5050
-                TLog_available            = 10,        // доступен
-                TLog_home                 = 11,        // домой
-                TLog_exodus               = 12,        // исход
-                TLog_break                = 13,        // перерыв
-                TLog_dinner               = 14,        // обед
-                TLog_postvyzov            = 15,        // поствызов
-                TLog_studies              = 16,        // учеба
-                TLog_IT                   = 17,        // ИТ
-                TLog_transfer             = 18,        // переносы
-                TLog_reserve              = 19         // резерв
+   enumLogging = ( eLog_unknown              = -1,        // не известный статус
+                eLog_enter                = 0,         // Вход
+                eLog_exit                 = 1,         // Выход
+                eLog_auth_error           = 2,         // не успешная авторизация
+                eLog_exit_force           = 3,         // Выход (через команду force_closed)
+                eLog_add_queue_5000       = 4,         // добавление в очередь 5000
+                eLog_add_queue_5050       = 5,         // добавление в очередь 5050
+                eLog_add_queue_5000_5050  = 6,         // добавление в очередь 5000 и 5050
+                eLog_del_queue_5000       = 7,         // удаление из очереди 5000
+                eLog_del_queue_5050       = 8,         // удаление из очереди 5050
+                eLog_del_queue_5000_5050  = 9,         // удаление из очереди 5000 и 5050
+                eLog_available            = 10,        // доступен
+                eLog_home                 = 11,        // домой
+                eLog_exodus               = 12,        // исход
+                eLog_break                = 13,        // перерыв
+                eLog_dinner               = 14,        // обед
+                eLog_postvyzov            = 15,        // поствызов
+                eLog_studies              = 16,        // учеба
+                eLog_IT                   = 17,        // ИТ
+                eLog_transfer             = 18,        // переносы
+                eLog_reserve              = 19         // резерв
               );
 
 
@@ -125,6 +125,11 @@ interface
                                  goHome_Show    // показывать
                                );
 
+
+  type  // тип программы
+  enumProrgamm = ( eGUI,
+                   eCHAT
+                   );
 implementation
 
 

@@ -11,3 +11,6 @@ __recovery/
 *.msi
 *.exe
 *.dll
+*.png
+*.jpg
+*.ico

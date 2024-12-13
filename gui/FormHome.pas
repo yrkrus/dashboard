@@ -312,7 +312,7 @@ end;
 procedure THomeForm.btnStatus_add_queue5000Click(Sender: TObject);
 begin
  // добавление в очередь 5000
- if not isExistRemoteCommand(TLog_add_queue_5000) then remoteCommand_addQueue(TLog_add_queue_5000)
+ if not isExistRemoteCommand(eLog_add_queue_5000) then remoteCommand_addQueue(eLog_add_queue_5000)
  else begin
     MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
  end;
@@ -321,7 +321,7 @@ end;
 procedure THomeForm.btnStatus_add_queue5000_5050Click(Sender: TObject);
 begin
  // добавление в очередь 5000 и 5050
- if not isExistRemoteCommand(TLog_add_queue_5000_5050) then remoteCommand_addQueue(TLog_add_queue_5000_5050)
+ if not isExistRemoteCommand(eLog_add_queue_5000_5050) then remoteCommand_addQueue(eLog_add_queue_5000_5050)
  else begin
     MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
  end;
@@ -330,7 +330,7 @@ end;
 procedure THomeForm.btnStatus_add_queue5050Click(Sender: TObject);
 begin
  // добавление в очередь 5050
- if not isExistRemoteCommand(TLog_add_queue_5050) then remoteCommand_addQueue(TLog_add_queue_5050)
+ if not isExistRemoteCommand(eLog_add_queue_5050) then remoteCommand_addQueue(eLog_add_queue_5050)
  else begin
     MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
  end;
@@ -386,7 +386,7 @@ end;
 procedure THomeForm.btnStatus_breakClick(Sender: TObject);
 begin
  // перерыв
- if not isExistRemoteCommand(TLog_break) then remoteCommand_addQueue(TLog_break)
+ if not isExistRemoteCommand(eLog_break) then remoteCommand_addQueue(eLog_break)
  else begin
     MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
  end;
@@ -395,7 +395,7 @@ end;
 procedure THomeForm.btnStatus_del_queue_allClick(Sender: TObject);
 begin
   // выход из всех очередей из 5000 и 5050
- if not isExistRemoteCommand(TLog_del_queue_5000_5050) then remoteCommand_addQueue(TLog_del_queue_5000_5050)
+ if not isExistRemoteCommand(eLog_del_queue_5000_5050) then remoteCommand_addQueue(eLog_del_queue_5000_5050)
  else begin
     MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
  end;
@@ -404,7 +404,7 @@ end;
 procedure THomeForm.btnStatus_dinnerClick(Sender: TObject);
 begin
    // обед
- if not isExistRemoteCommand(TLog_dinner) then remoteCommand_addQueue(TLog_dinner)
+ if not isExistRemoteCommand(eLog_dinner) then remoteCommand_addQueue(eLog_dinner)
  else begin
     MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
  end;
@@ -413,7 +413,7 @@ end;
 procedure THomeForm.btnStatus_exodusClick(Sender: TObject);
 begin
  // исход
- if not isExistRemoteCommand(TLog_exodus) then remoteCommand_addQueue(TLog_exodus)
+ if not isExistRemoteCommand(eLog_exodus) then remoteCommand_addQueue(eLog_exodus)
  else begin
     MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
  end;
@@ -422,7 +422,7 @@ end;
 procedure THomeForm.btnStatus_homeClick(Sender: TObject);
 begin
  // домой
- if not isExistRemoteCommand(TLog_home) then remoteCommand_addQueue(TLog_home)
+ if not isExistRemoteCommand(eLog_home) then remoteCommand_addQueue(eLog_home)
  else begin
     MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
  end;
@@ -431,7 +431,7 @@ end;
 procedure THomeForm.btnStatus_ITClick(Sender: TObject);
 begin
   // ИТ
- if not isExistRemoteCommand(TLog_IT) then remoteCommand_addQueue(TLog_IT)
+ if not isExistRemoteCommand(eLog_IT) then remoteCommand_addQueue(eLog_IT)
  else begin
     MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
  end;
@@ -440,7 +440,7 @@ end;
 procedure THomeForm.btnStatus_postvyzovClick(Sender: TObject);
 begin
  // поствызов
- if not isExistRemoteCommand(TLog_postvyzov) then remoteCommand_addQueue(TLog_postvyzov)
+ if not isExistRemoteCommand(eLog_postvyzov) then remoteCommand_addQueue(eLog_postvyzov)
  else begin
     MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
  end;
@@ -449,7 +449,7 @@ end;
 procedure THomeForm.btnStatus_reserveClick(Sender: TObject);
 begin
  // переносы
- if not isExistRemoteCommand(TLog_reserve) then remoteCommand_addQueue(TLog_reserve)
+ if not isExistRemoteCommand(eLog_reserve) then remoteCommand_addQueue(eLog_reserve)
  else begin
     MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
  end;
@@ -458,7 +458,7 @@ end;
 procedure THomeForm.btnStatus_studiesClick(Sender: TObject);
 begin
  // учеба
- if not isExistRemoteCommand(TLog_studies) then remoteCommand_addQueue(TLog_studies)
+ if not isExistRemoteCommand(eLog_studies) then remoteCommand_addQueue(eLog_studies)
  else begin
     MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
  end;
@@ -467,7 +467,7 @@ end;
 procedure THomeForm.btnStatus_transferClick(Sender: TObject);
 begin
 // переносы
- if not isExistRemoteCommand(TLog_transfer) then remoteCommand_addQueue(TLog_transfer)
+ if not isExistRemoteCommand(eLog_transfer) then remoteCommand_addQueue(eLog_transfer)
  else begin
     MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
  end;
@@ -598,7 +598,7 @@ begin
   Height:=861;
 
   // отображение текущей версии  ctrl+shift+G (GUID) - от этого ID зависит актуальность еще
-  Caption:=Caption+' '+getVersion(GUID_VESRION) + ' | '+'('+GUID_VESRION+')';
+  Caption:=Caption+' '+getVersion(GUID_VESRION,eGUI) + ' | '+'('+GUID_VESRION+')';
 
   // проверка на ткущую версию
   CheckCurrentVersion;

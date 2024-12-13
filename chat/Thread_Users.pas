@@ -28,7 +28,7 @@ uses
 
 procedure ThreadUsers.CriticalError;
 begin
-  // HomeForm.STError.Caption:=getCurrentDateTimeWithTime+' Thread_ACTIVESIP_updateTalk.'+messclass+'.'+mess;
+   FormHome.lblerr.Caption:=GetCurrentTime+' Thread_Users.'+messclass+'.'+mess;
 end;
 
 
@@ -36,12 +36,6 @@ end;
 procedure ThreadUsers.Show(var p_SharedOnlineUsers: TOnlineUsers);
 var
  i:Integer;
- ListItem: TListItem;
- existingItem: TListItem;
- idToFind:string;
-
-
-
 begin
   with FormHome do begin
     // TODO пока сюда зафигачим обновление времени
@@ -100,13 +94,12 @@ begin
       except
         on E:Exception do
         begin
-        // INTERNAL_ERROR:=true;
+         INTERNAL_ERROR:=true;
          messclass:=e.ClassName;
          mess:=e.Message;
-        // TimeLastError:=Now;
 
-        // if SharedCurrentUserLogon.GetRole = role_administrator then Synchronize(CriticalError);
-        // INTERNAL_ERROR:=False;
+         Synchronize(CriticalError);
+         INTERNAL_ERROR:=False;
         end;
       end;
     end;

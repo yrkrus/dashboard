@@ -13,6 +13,7 @@ type
    procedure Execute; override;
    procedure Show(var p_Message:TOnlineChat);
    procedure CriticalError;
+
   end;
 
 implementation
@@ -26,83 +27,68 @@ uses
 
 procedure ThreadMessageMain.CriticalError;
 begin
-  // HomeForm.STError.Caption:=getCurrentDateTimeWithTime+' Thread_ACTIVESIP_updateTalk.'+messclass+'.'+mess;
+   FormHome.lblerr.Caption:=GetCurrentTime+' ThreadMessageMain.'+messclass+'.'+mess;
 end;
 
 
 
 procedure ThreadMessageMain.Show(var p_Message:TOnlineChat);
+var
+  last_id:Integer;
+  Doc: IHTMLDocument2;
+  HTMLContent:string;
+
+    v: Variant;
+  HTMLDocument: IHTMLDocument2;
+
 begin
+  // проверяем есть ли но новые сообщения
+
+
+
+  last_id:=GetLastIDMessageFileLog(p_Message.GetChannel,p_Message.GetPathToLogName);
+
+
+  if not p_Message.isExistNewMessage(last_id) then Exit;
+
+  // подгрузим новые сообщения
+  p_Message.LoadingMessageMain(enumMessage.eMessage_update);
+  last_id:=GetLastIDMessageFileLog(p_Message.GetChannel,p_Message.GetPathToLogName);
+
+
+
   with FormHome do begin
-
-
-
-
-
-  end;
+// есть новые сообщения, надо их показать
+  p_Message.ShowChat;
+ end;
 end;
 
 
 procedure ThreadMessageMain.Execute;
 const
  SLEEP_TIME:Word = 1000;
+ CHANNEL:string = 'main';
  var
   StartTime, EndTime: Cardinal;
   Duration: Cardinal;
   MessageMain:TOnlineChat; // текущие собощение в общем чате
-  filehtml:string;
 
-  test:Boolean;
+  FolderPath:string;
 
 begin
    inherited;
    CoInitialize(Nil);
    Sleep(100);
+   FolderPath:= ExtractFilePath(ParamStr(0)) + GetLocalChatNameFolder;
 
-   MessageMain:=TOnlineChat.Create('main');
-  //  filehtml:=ExtractFilePath(ParamStr(0))+'test.html';
+   MessageMain:=TOnlineChat.Create(CHANNEL,FolderPath,GetCurrentTime,GetExtensionLog);
 
-    // загружаем пустую страницу
-     with FormHome do begin
-       try
-      //  WebBrowser1.Navigate(filehtml);
-
-          WebBrowser1.Navigate('about:blank');
-
-        // WVBrowser1.CreateBrowser(WVWindowParent1.Handle);
-
-
-       //  if test=False then FormHome.lblerr.Caption:=DateTimeToStr(Now)+' error';
-
-
-
-        // WVBrowser1.Navigate('ya.ru');
-       except
-         on E:Exception do
-        begin
-        // INTERNAL_ERROR:=true;
-         messclass:=e.ClassName;
-         mess:=e.Message;
-         FormHome.lblerr.Caption:=DateTimeToStr(Now)+' '+messclass+' '+mess;
-
-        // TimeLastError:=Now;
-
-        // if SharedCurrentUserLogon.GetRole = role_administrator then Synchronize(CriticalError);
-        // INTERNAL_ERROR:=False;
-        end;
-       end;
-
-
-
-      // WVWindowParent1.Browser.Navigate('https://ya.ru');
-
-
-
-      // WVBrowser1.CreateBrowser(ChatMain.Handle);
-      // WVBrowser1.DefaultURL:='ya.ru';
-      // WVBrowser1.OpenDefaultDownloadDialog;
-
-     end;
+  // подгрузим сообщения
+{  with FormHome do begin
+   // есть новые сообщения, надо их показать
+   message_main.Navigate(PChar(MessageMain.GetPathToNavigate+'#last_'+IntToStr(last_id)));
+   while message_main.ReadyState <> READYSTATE_COMPLETE do Sleep(100);
+  end;  }
 
 
   while not Terminated do
@@ -114,20 +100,27 @@ begin
 
         show(MessageMain);
 
+
+        // прогрузили сообщения, все ок
+
+         { if isChatStarted then begin
+            isChatStarted:=False;
+            //actIndMessageMain.Animate:=False;
+            //actIndMessageMain.Visible:=False;
+          end; }
+
+
         EndTime:= GetTickCount;
         Duration:= EndTime - StartTime;
       except
         on E:Exception do
         begin
-        // INTERNAL_ERROR:=true;
+         INTERNAL_ERROR:=true;
          messclass:=e.ClassName;
          mess:=e.Message;
-         FormHome.lblerr.Caption:=DateTimeToStr(Now)+' '+messclass+' '+mess;
-
         // TimeLastError:=Now;
-
-        // if SharedCurrentUserLogon.GetRole = role_administrator then Synchronize(CriticalError);
-        // INTERNAL_ERROR:=False;
+         Synchronize(CriticalError);
+         INTERNAL_ERROR:=False;
         end;
       end;
     end;

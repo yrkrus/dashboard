@@ -10,13 +10,18 @@ uses
 type
   TFormAbout = class(TForm)
     imgAbout: TImage;
-    Label1: TLabel;
-    lblVersion: TLabel;
     lblDevelop: TLabel;
-    label3: TLabel;
-    REHistory: TRichEdit;
     TimerStartPashalka1: TTimer;
     ImgNewYear: TImage;
+    PageInfo: TPageControl;
+    sheetGUI: TTabSheet;
+    sheetCHAT: TTabSheet;
+    Panel1: TPanel;
+    REHistory_GUI: TRichEdit;
+    STInfoVersionGUI: TStaticText;
+    Panel2: TPanel;
+    REHistory_CHAT: TRichEdit;
+    STInfoVersionCHAT: TStaticText;
     procedure FormShow(Sender: TObject);
     procedure imgAboutClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -37,7 +42,7 @@ var
 implementation
 
 uses
-  FunctionUnit, GlobalVariables;
+  FunctionUnit, GlobalVariables, TCustomTypeUnit;
 
 {$R *.dfm}
 
@@ -66,12 +71,11 @@ end;
 procedure TFormAbout.FormShow(Sender: TObject);
 begin
   Screen.Cursor:=crHourGlass;
-
-  lblVersion.Caption:=getVersion(GUID_VESRION);
   Pashalka:=0;
 
   // отображение истории версий
-  showVersionAbout;
+  showVersionAbout(eGUI);
+  showVersionAbout(eCHAT);
 
   lblDevelop.Caption:=GetCopyright;
 
