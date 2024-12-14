@@ -5,14 +5,22 @@ interface
 uses
   System.Classes, ActiveX, System.DateUtils,System.SysUtils,
   TOnlineUsersUint, Vcl.ComCtrls,TOnlineChatUnit, System.Variants,
-  Vcl.OleCtrls,SHDocVw,MSHTML;
+  Vcl.OleCtrls,SHDocVw,MSHTML,Vcl.Controls;
 
 type
   ThreadMessageMain = class(TThread)
     messclass,mess: string;
+
    procedure Execute; override;
-   procedure Show(var p_Message:TOnlineChat);
+   procedure Show;
    procedure CriticalError;
+
+   private
+   p_ChatMessage: TOnlineChat; // Храним ссылку на переданный объект
+
+
+   public
+    constructor Create(var AOnlineChat: TOnlineChat); // Конструктор для передачи объекта
 
   end;
 
@@ -25,6 +33,13 @@ uses
 { Thread_MessageMain }
 
 
+
+constructor ThreadMessageMain.Create(var AOnlineChat: TOnlineChat);
+begin
+  inherited Create(True); // Создаем поток в неактивном состоянии
+  p_ChatMessage:= AOnlineChat; // Сохраняем переданный объект
+end;
+
 procedure ThreadMessageMain.CriticalError;
 begin
    FormHome.lblerr.Caption:=GetCurrentTime+' ThreadMessageMain.'+messclass+'.'+mess;
@@ -32,7 +47,7 @@ end;
 
 
 
-procedure ThreadMessageMain.Show(var p_Message:TOnlineChat);
+procedure ThreadMessageMain.Show;
 var
   last_id:Integer;
   Doc: IHTMLDocument2;
@@ -42,24 +57,28 @@ var
   HTMLDocument: IHTMLDocument2;
 
 begin
+
+  p_ChatMessage.ShowChat;
+
+
   // проверяем есть ли но новые сообщения
 
 
+ // last_id:=GetLastIDMessageFileLog(p_Chat.GetChannel,p_Chat.GetPathToLogName);
 
-  last_id:=GetLastIDMessageFileLog(p_Message.GetChannel,p_Message.GetPathToLogName);
 
-
-  if not p_Message.isExistNewMessage(last_id) then Exit;
+ // if not p_Chat.isExistNewMessage(last_id) then Exit;
 
   // подгрузим новые сообщения
-  p_Message.LoadingMessageMain(enumMessage.eMessage_update);
-  last_id:=GetLastIDMessageFileLog(p_Message.GetChannel,p_Message.GetPathToLogName);
+//  p_Chat.LoadingMessageMain(enumMessage.eMessage_update);
+//  last_id:=GetLastIDMessageFileLog(p_Chat.GetChannel,p_Chat.GetPathToLogName);
 
+//  FormHome.lblerr.Caption:=DateTimeToStr(now);
 
 
   with FormHome do begin
 // есть новые сообщения, надо их показать
-  p_Message.ShowChat;
+ // p_Chat.ShowChat;
  end;
 end;
 
@@ -67,29 +86,15 @@ end;
 procedure ThreadMessageMain.Execute;
 const
  SLEEP_TIME:Word = 1000;
- CHANNEL:string = 'main';
  var
   StartTime, EndTime: Cardinal;
   Duration: Cardinal;
-  MessageMain:TOnlineChat; // текущие собощение в общем чате
-
-  FolderPath:string;
+  m_browser:TWebBrowser;
 
 begin
    inherited;
    CoInitialize(Nil);
-   Sleep(100);
-   FolderPath:= ExtractFilePath(ParamStr(0)) + GetLocalChatNameFolder;
-
-   MessageMain:=TOnlineChat.Create(CHANNEL,FolderPath,GetCurrentTime,GetExtensionLog);
-
-  // подгрузим сообщения
-{  with FormHome do begin
-   // есть новые сообщения, надо их показать
-   message_main.Navigate(PChar(MessageMain.GetPathToNavigate+'#last_'+IntToStr(last_id)));
-   while message_main.ReadyState <> READYSTATE_COMPLETE do Sleep(100);
-  end;  }
-
+   Sleep(1000);
 
   while not Terminated do
   begin
@@ -98,17 +103,7 @@ begin
       try
         StartTime:=GetTickCount;
 
-        show(MessageMain);
-
-
-        // прогрузили сообщения, все ок
-
-         { if isChatStarted then begin
-            isChatStarted:=False;
-            //actIndMessageMain.Animate:=False;
-            //actIndMessageMain.Visible:=False;
-          end; }
-
+        Queue(show);
 
         EndTime:= GetTickCount;
         Duration:= EndTime - StartTime;

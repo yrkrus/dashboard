@@ -8,14 +8,17 @@ uses
 type
   ThreadUsers = class(TThread)
    messclass,mess: string;
+
   protected
    procedure Execute; override;
-   procedure Show(var p_SharedOnlineUsers: TOnlineUsers);
+   procedure Show;
    procedure CriticalError;
 
   private
+    p_OnlineUsers: TOnlineUsers; // Храним ссылку на переданный объект
 
-
+  public
+    constructor Create(var AOnlineUsers: TOnlineUsers); // Конструктор для передачи объекта
   end;
 
 implementation
@@ -24,6 +27,11 @@ uses
   HomeForm, Functions, GlobalVariables;
 
 
+constructor ThreadUsers.Create(var AOnlineUsers: TOnlineUsers);
+begin
+  inherited Create(True); // Создаем поток в неактивном состоянии
+  p_OnlineUsers:= AOnlineUsers; // Сохраняем переданный объект
+end;
 
 
 procedure ThreadUsers.CriticalError;
@@ -33,7 +41,7 @@ end;
 
 
 
-procedure ThreadUsers.Show(var p_SharedOnlineUsers: TOnlineUsers);
+procedure ThreadUsers.Show;
 var
  i:Integer;
 begin
@@ -42,21 +50,21 @@ begin
     StatusBar.Panels[0].Text:=DateTimeToStr(Now);
 
 
-   if ListBoxOnlineUsers.Count <> p_SharedOnlineUsers.Count then begin
+   if ListBoxOnlineUsers.Count <> p_OnlineUsers.Count then begin
       if ListBoxOnlineUsers.Count = 0 then begin // первый запуск
-        for i:=0 to p_SharedOnlineUsers.Count-1 do begin
-          ListBoxOnlineUsers.Items.Add(p_SharedOnlineUsers.GetOnlineUsers_FIO(i));
+        for i:=0 to p_OnlineUsers.Count-1 do begin
+          ListBoxOnlineUsers.Items.Add(p_OnlineUsers.GetOnlineUsers_FIO(i));
         end;
       end
       else begin // обновление существующих записей
         ListBoxOnlineUsers.Clear;
 
-        for i:=0 to p_SharedOnlineUsers.Count-1 do begin
-          ListBoxOnlineUsers.Items.Add(p_SharedOnlineUsers.GetOnlineUsers_FIO(i));
+        for i:=0 to p_OnlineUsers.Count-1 do begin
+          ListBoxOnlineUsers.Items.Add(p_OnlineUsers.GetOnlineUsers_FIO(i));
         end;
       end;
 
-      if p_SharedOnlineUsers.Count > 0 then STUsersOnline.Caption:='Онлайн: '+IntToStr(p_SharedOnlineUsers.Count)
+      if p_OnlineUsers.Count > 0 then STUsersOnline.Caption:='Онлайн: '+IntToStr(p_OnlineUsers.Count)
       else STUsersOnline.Caption:='Онлайн';
    end;
 
@@ -75,8 +83,6 @@ begin
    inherited;
    CoInitialize(Nil);
 
-   //Sleep(1000);
-
   while not Terminated do
   begin
 
@@ -85,9 +91,9 @@ begin
         StartTime:=GetTickCount;
 
         // обновим кто у нас сейчас находится онлайн
-        SharedOnlineUsers.UpdateOnlineUsers;
+        p_OnlineUsers.UpdateOnlineUsers;
 
-        show(SharedOnlineUsers);
+        Queue(show);
 
         EndTime:= GetTickCount;
         Duration:= EndTime - StartTime;

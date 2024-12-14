@@ -13,7 +13,7 @@ unit TSendMessageUnit;
 interface
 
 uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
-      Variants, Graphics, System.SyncObjs, IdException;
+      Variants, Graphics, System.SyncObjs, IdException, CustomTypeUnit;
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -28,7 +28,7 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
 
       destructor Destroy;                   override;
 
-      function Send(InChannel:string;
+      function Send(InChannel:enumChannel;
                     InSender,InRecipient:Integer;
                     InCall:string;
                     InMessage:string):Boolean;
@@ -55,7 +55,7 @@ begin
 end;
 
 
-function TSendMessage.Send(InChannel: string;
+function TSendMessage.Send(InChannel: enumChannel;
                            InSender, InRecipient: Integer;
                            InCall:string;
                            InMessage: string):Boolean;
@@ -82,7 +82,7 @@ begin
     ado.Connection:=serverConnect;
     SQL.Clear;
 
-    SQL.Add('insert into chat (channel,sender,recipient,call_id,message) values ('+#39+InChannel+#39+','
+    SQL.Add('insert into chat (channel,sender,recipient,call_id,message) values ('+#39+EnumChannelToString(InChannel)+#39+','
                                                                                   +#39+IntToStr(InSender)+#39+','
                                                                                   +#39+IntToStr(InRecipient)+#39+','
                                                                                   +#39+IntToStr(call)+#39+','

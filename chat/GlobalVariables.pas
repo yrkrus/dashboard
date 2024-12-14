@@ -11,9 +11,14 @@ unit GlobalVariables;
 interface
 
 uses
-  SysUtils, Windows, TOnlineUsersUint;
+  SysUtils, Windows, TOnlineUsersUint,TOnlineChatUnit, CustomTypeUnit;
+
+
 
 var
+  // текуща€ директори€ откуда запускаем chat.exe
+  FOLDERPATH:string;
+
   // «алогиненый польщователь который открыл чат
   USER_STARTED_CHAT_ID    :Integer;
 
@@ -32,7 +37,8 @@ var
   // текущие онлайн пользователи
   SharedOnlineUsers:  TOnlineUsers;
 
-
+  // текущий общий чат
+  SharedLocalMainChat: TOnlineChat;
 
 
   // загрузка DLL
@@ -45,17 +51,28 @@ var
   function GetUserAccessLocalChat(InUserID:Integer):Boolean;   stdcall;     external 'core.dll';       // есть ли доступ у пользовател€ к локальному чату
   function GetCurrentDateTimeDec(DecMinutes:Integer):PChar; overload;  stdcall; external 'core.dll';       // текущее начала дн€ минус -DecMinutes
   function GetCurrentStartDateTime:PChar; overload;  stdcall; external 'core.dll';       // текущее начала дн€ с минутами 00:00:00
-  function GetCurrentTime:PChar; stdcall; external 'core.dll';       // текущее врем€
+  function GetCurrentTime:PChar; stdcall; external 'core.dll';       // текущее врем€  yyyymmdd
   function GetLocalChatNameFolder:PChar; stdcall; external 'core.dll';       // // папка с локальным чатом
   function GetExtensionLog:PChar; stdcall; external 'core.dll';       // // папка с локальным чатом
 
 implementation
 
 
+uses
+  HomeForm, Functions;
+
+
 
 
 initialization  // »нициализаци€
+ FOLDERPATH:=ExtractFilePath(ParamStr(0));
+
+ // кто в онлайн
  SharedOnlineUsers:=TOnlineUsers.Create;
+
+ // локальный общий чат
+ SharedLocalMainChat:=TOnlineChat.Create(eChatMain,ePublic);
+
 
 finalization
  SharedOnlineUsers.Free;

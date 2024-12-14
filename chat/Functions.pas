@@ -5,23 +5,20 @@ interface
   uses  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, TlHelp32, IdBaseComponent, IdComponent, ShellAPI, StdCtrls, ComCtrls,
   ExtCtrls,StrUtils,WinSvc,System.Win.ComObj, IdText, Data.Win.ADODB,
-  Data.DB, IdException, RegularExpressions;
+  Data.DB, IdException, RegularExpressions,SHDocVw,CustomTypeUnit;
 
   procedure KillProcess;                                                     // принудительное завершение работы
   procedure createCopyright;                                                 // создание Copyright
   procedure createThread;                                                    // создание потоков
-  function GetChannel:string;                                                // поиск текущего канала в какой отправляем сообщение
-  function SendMessage(InChannel: string;
+  function SendMessage(InChannel: enumChannel;
                      InSender, InRecipient: Integer;
                      InTag:string;
                      InMessage: string):Boolean;                             // отправка сообщения
 
 
-  function CreateFileLocalChat(InChannel,InFileName:string):Boolean;         // создание локального файла с чатом
-  function isExistFileLog(InChannel,InFileName:string):Boolean;              // есть ли уже файл истории на диске
   function GetLastIDMessageFileLog(InChannel,InFileName:string):Integer;     // нахождение последнего ID сообщения в логе
   procedure MessageSending(var MessageForms: TRichEdit;                          // отправка и первоночальный парсинг сообщения
-                           InChannel: string;
+                           InChannel: enumChannel;
                            InSender: Integer);
   function ReplaceMessageToHTMLFormat(SendingMEssage: TRichEdit):string;   // парсинг сообщения перед отправкой в HTML формат
 
@@ -29,6 +26,14 @@ interface
                                   InSelStart:Integer;
                                   InUserFIO:string); // добавление тэга в сообщение
 
+  procedure HideAllBrowser;                                                  // скрытие всех браузер из поля видимости
+  procedure HideAllTabSheetChat;                                             // скрываем все вкладки с личными чатами
+  function EnumActiveBrowserToString(InActiveBrowser:enumActiveBrowser):string;     // enumActiveBrowser -> string
+  function IntegerToEnumActiveBrowser(ID:Integer):enumActiveBrowser;           // enumActiveBrowser -> integer
+  function EnumChannelChatIDToString(InChatID:enumChatID):string;             // enumChatID -> string
+  function EnumChannelToString(InChannel:enumChannel):string;                 //enumChannel -> string
+  function GetActiveChannel:enumChannel;                                      // какой сейчас канал активен
+  function EnumActiveBrowserToInteger(InActiveBrowser:enumActiveBrowser):Integer;    // enumActiveBrowser -> integer
 
 implementation
 
@@ -49,7 +54,6 @@ procedure createCopyright;
 begin
   with FormHome.StatusBar do begin
     Panels[1].Text:=GetCopyright;
-
   end;
 end;
 
@@ -62,7 +66,7 @@ begin
     if Users_thread=nil then
     begin
      FreeAndNil(Users_thread);
-     Users_thread:=ThreadUsers.Create(True);
+     Users_thread:=ThreadUsers.Create(SharedOnlineUsers);
      Users_thread.Priority:=tpNormal;
      UpdateThreadUsers:=True;
     end
@@ -72,7 +76,7 @@ begin
     if MessageMain_thread=nil then
     begin
      FreeAndNil(MessageMain_thread);
-     MessageMain_thread:=ThreadMessageMain.Create(True);
+     MessageMain_thread:=ThreadMessageMain.Create(SharedLocalMainChat);
      MessageMain_thread.Priority:=tpNormal;
      UpdateThreadMessageMain:=True;
     end
@@ -89,7 +93,7 @@ end;
 
 
 // отправка сообщения
-function SendMessage(InChannel: string;
+function SendMessage(InChannel: enumChannel;
                      InSender, InRecipient: Integer;
                      InTag:string;
                      InMessage: string):Boolean;
@@ -106,62 +110,6 @@ begin
 end;
 
 
-// поиск текущего канала в какой отправляем сообщение
-function GetChannel:string;
-var
-  ActiveSheet: TTabSheet;
-begin
-  with FormHome do begin
-    ActiveSheet := PageChannel.ActivePage as TTabSheet;
-    if ActiveSheet.Name = 'sheet_main' then begin
-      Result:='main';
-      Exit;
-    end;
-  end;
-end;
-
- // создание локального файла с чатом
-function CreateFileLocalChat(InChannel,InFileName:string):Boolean;
-var
- FolderPath:string;
- EmptyFile:TfileStream;
-begin
-  Result:=False;
-
-  FolderPath:= ExtractFilePath(ParamStr(0)) + GetLocalChatNameFolder;
-  if not DirectoryExists(FolderPath) then CreateDir(Pchar(FolderPath));
-  if not DirectoryExists(FolderPath+'\'+InChannel) then CreateDir(Pchar(FolderPath+'\'+InChannel));
-
-  if not FileExists(FolderPath+'\'+InChannel+'\'+InFileName) then begin
-    try
-      EmptyFile:= TFileStream.Create(FolderPath+'\'+InChannel+'\'+InFileName,fmCreate);
-    except
-        on E:EIdException do begin
-           FormHome.lblerr.Caption:=e.Message;
-
-           Exit;
-        end;
-    end;
-  end;
-
-  EmptyFile.Free;
-  Result:=True;
-end;
-
-// есть ли уже файл истории на диске
-function isExistFileLog(InChannel,InFileName:string):Boolean;
-var
- FolderPath:string;
-begin
-   Result:=False;
-   FolderPath:= ExtractFilePath(ParamStr(0)) + GetLocalChatNameFolder;
-
-   if not DirectoryExists(FolderPath) then Exit;
-   if not DirectoryExists(FolderPath+'\'+InChannel) then Exit;
-   if not FileExists(FolderPath+'\'+InChannel+'\'+InFileName) then Exit;
-
-   Result:=True;
-end;
 
 // нахождение последнего ID сообщения в логе
 function GetLastIDMessageFileLog(InChannel,InFileName:string):Integer;
@@ -231,7 +179,7 @@ end;
 
 // отправка и первоночальный парсинг сообщения
 procedure MessageSending(var MessageForms: TRichEdit;
-                         InChannel: string;
+                         InChannel: enumChannel;
                          InSender: Integer);
 var
  msg:string;
@@ -245,7 +193,7 @@ begin
     Exit;
    end;
 
-  if InChannel='main' then recipient:=0
+  if InChannel=ePublic then recipient:=0
   else begin
    // TODO тут написать!
 
@@ -279,6 +227,128 @@ begin
 
 
 
+end;
+
+
+// скрытие всех браузеров из поля видимости
+procedure HideAllBrowser;
+var
+ i:Integer;
+ FoundComponent:TComponent;
+begin
+  with FormHome do begin
+    for i:=0 to ComponentCount-1 do
+    begin
+      FoundComponent:=Components[i];
+
+      // Проверяем, является ли компонент TWebBrowser
+      if (FoundComponent is TWebBrowser) and (Pos('chat_', FoundComponent.Name) > 0) then
+      begin
+        TControl(FoundComponent).Visible:=False;
+      end;
+    end;
+  end;
+end;
+
+
+// скрываем все вкладки с личными чатами
+procedure HideAllTabSheetChat;
+var
+ i,j:Integer;
+ SheetID:Integer;
+ FoundComponent:TComponent;
+begin
+  with FormHome do begin
+    for i:=0 to ComponentCount-1 do
+    begin
+      FoundComponent:=Components[i];
+
+      // Проверяем, является ли компонент TWebBrowser
+      if (FoundComponent is TTabSheet) and (Pos('sheet_', FoundComponent.Name) > 0) then
+      begin
+        if FoundComponent.Name <> 'sheet_main' then begin
+
+          // найдем ID вкладки
+           for j:=0 to PageChannel.PageCount-1 do begin
+              if SameText(PageChannel.Pages[j].Name, FoundComponent.Name) then begin
+               PageChannel.Pages[j].TabVisible:=False;
+
+               Break;
+              end;
+           end;
+
+        end;
+      end;
+    end;
+  end;
+end;
+
+
+// enumActiveBrowser -> string
+function EnumActiveBrowserToString(InActiveBrowser:enumActiveBrowser):string;
+begin
+  case InActiveBrowser of
+    eNone   :Result:='none';
+    eMaster :Result:='master';
+    eSlave  :Result:='slave';
+  end;
+end;
+
+// enumActiveBrowser -> integer
+function IntegerToEnumActiveBrowser(ID:Integer):enumActiveBrowser;
+begin
+  case ID of
+   -1: Result:=eNone;
+    0: Result:=eMaster;
+    1: Result:=eSlave;
+  end;
+end;
+
+
+// enumActiveBrowser -> integer
+function EnumActiveBrowserToInteger(InActiveBrowser:enumActiveBrowser):Integer;
+begin
+  case InActiveBrowser of
+    eNone:    Result:=  -1;
+    eMaster:  Result:=   0;
+    eSlave:   Result:=   1;
+  end;
+end;
+
+// enumChatID -> string
+function EnumChannelChatIDToString(InChatID:enumChatID):string;
+begin
+  case InChatID of
+    eChatMain:  Result:='main';
+    eChatID0:   Result:='0';
+    eChatID1:   Result:='1';
+    eChatID2:   Result:='2';
+    eChatID3:   Result:='3';
+    eChatID4:   Result:='4';
+    eChatID5:   Result:='5';
+    eChatID6:   Result:='6';
+    eChatID7:   Result:='7';
+    eChatID8:   Result:='8';
+    eChatID9:   Result:='9';
+  end;
+end;
+
+//enumChannel -> string
+function EnumChannelToString(InChannel:enumChannel):string;
+begin
+   case InChannel of
+     ePublic:   Result:='public';
+     ePrivate:  Result:='private';
+   end;
+end;
+
+// какой сейчас канал активен
+function GetActiveChannel:enumChannel;
+begin
+  with FormHome do begin
+    if PageChannel.ActivePage.Name = 'sheet_main' then Result:=ePublic
+    else Result:=ePrivate;
+  end;
 end;
 
 

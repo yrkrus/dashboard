@@ -15,6 +15,7 @@ object FormHome: TFormHome
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
+  OnClose = FormClose
   OnCreate = FormCreate
   OnShow = FormShow
   PixelsPerInch = 96
@@ -99,7 +100,6 @@ object FormHome: TFormHome
       Width = 24
       Height = 24
       Cursor = crHandPoint
-      Hint = #1050#1086#1083#1083#1077#1082#1094#1080#1103' '#1089#1084#1072#1081#1083#1080#1082#1086#1074
       Anchors = [akRight]
       ParentShowHint = False
       Picture.Data = {
@@ -145,7 +145,7 @@ object FormHome: TFormHome
         4CAB9BDE0CBEAECF351926D80E432EF65BE4BFD14B250617725FBF1F0DC7EBDA
         A5A59E49D55574B09F15FB93D9AFFFD9}
       Proportional = True
-      ShowHint = True
+      ShowHint = False
       OnClick = ImgSmileClick
     end
     object ImgSendMessage: TImage
@@ -260,7 +260,7 @@ object FormHome: TFormHome
       Width = 925
       Height = 115
       BevelOuter = bvNone
-      TabOrder = 1
+      TabOrder = 0
       object reMessage: TRichEdit
         Left = 4
         Top = 12
@@ -300,11 +300,9 @@ object FormHome: TFormHome
       object STMessageInfo2: TStaticText
         Left = 15
         Top = 33
-        Width = 481
+        Width = 260
         Height = 20
-        Caption = 
-          #1076#1083#1103' '#1091#1087#1086#1084#1080#1085#1072#1085#1080#1103' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1103' '#1085#1072#1073#1077#1088#1080#1090#1077' @ '#1080#1083#1080' '#1074#1099#1073#1077#1088#1080#1090#1077' '#1077#1075#1086' '#1080#1079' '#1089#1087#1080#1082#1072 +
-          ' "'#1054#1085#1072#1083#1081#1085'"'
+        Caption = #1076#1083#1103' '#1091#1087#1086#1084#1080#1085#1072#1085#1080#1103' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1103' '#1085#1072#1073#1077#1088#1080#1090#1077' @'
         Enabled = False
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -333,12 +331,13 @@ object FormHome: TFormHome
       end
     end
     object Button1: TButton
-      Left = 811
-      Top = -3
+      Left = 934
+      Top = 106
       Width = 75
       Height = 25
       Caption = 'Button1'
-      TabOrder = 0
+      TabOrder = 1
+      Visible = False
       OnClick = Button1Click
     end
   end
@@ -355,8 +354,404 @@ object FormHome: TFormHome
       Top = 0
       Width = 858
       Height = 487
+      ActivePage = sheet_main
       Align = alClient
       TabOrder = 0
+      object sheet_main: TTabSheet
+        Caption = '  '#1054#1073#1097#1080#1081' '#1095#1072#1090'  '
+        object chat_main_master: TWebBrowser
+          Left = 0
+          Top = 0
+          Width = 850
+          Height = 459
+          Align = alClient
+          TabOrder = 1
+          ExplicitLeft = 96
+          ExplicitTop = 11
+          ControlData = {
+            4C000000DA570000702F00000000000000000000000000000000000000000000
+            000000004C000000000000000000000001000000E0D057007335CF11AE690800
+            2B2E126208000000000000004C0000000114020000000000C000000000000046
+            8000000000000000000000000000000000000000000000000000000000000000
+            00000000000000000100000000000000000000000000000000000000}
+        end
+        object chat_main_slave: TWebBrowser
+          Left = 0
+          Top = 0
+          Width = 850
+          Height = 459
+          Align = alClient
+          TabOrder = 0
+          ExplicitLeft = 26
+          ExplicitTop = 98
+          ControlData = {
+            4C000000DA570000702F00000000000000000000000000000000000000000000
+            000000004C000000000000000000000001000000E0D057007335CF11AE690800
+            2B2E126208000000000000004C0000000114020000000000C000000000000046
+            8000000000000000000000000000000000000000000000000000000000000000
+            00000000000000000100000000000000000000000000000000000000}
+        end
+      end
+      object sheet_0: TTabSheet
+        Caption = 'sheet_0'
+        ImageIndex = 1
+        object chat_0_master: TWebBrowser
+          Left = 0
+          Top = 0
+          Width = 850
+          Height = 459
+          Align = alClient
+          TabOrder = 1
+          ExplicitLeft = 96
+          ExplicitTop = 11
+          ControlData = {
+            4C000000DA570000702F00000000000000000000000000000000000000000000
+            000000004C000000000000000000000001000000E0D057007335CF11AE690800
+            2B2E126208000000000000004C0000000114020000000000C000000000000046
+            8000000000000000000000000000000000000000000000000000000000000000
+            00000000000000000100000000000000000000000000000000000000}
+        end
+        object chat_0_slave: TWebBrowser
+          Left = 0
+          Top = 0
+          Width = 850
+          Height = 459
+          Align = alClient
+          TabOrder = 0
+          ExplicitLeft = 96
+          ExplicitTop = 11
+          ControlData = {
+            4C000000DA570000702F00000000000000000000000000000000000000000000
+            000000004C000000000000000000000001000000E0D057007335CF11AE690800
+            2B2E126208000000000000004C0000000114020000000000C000000000000046
+            8000000000000000000000000000000000000000000000000000000000000000
+            00000000000000000100000000000000000000000000000000000000}
+        end
+      end
+      object sheet_2: TTabSheet
+        Caption = 'sheet_2'
+        ImageIndex = 2
+        object chat_2_slave: TWebBrowser
+          Left = 0
+          Top = 0
+          Width = 850
+          Height = 459
+          Align = alClient
+          TabOrder = 1
+          ExplicitLeft = 96
+          ExplicitTop = 11
+          ControlData = {
+            4C000000DA570000702F00000000000000000000000000000000000000000000
+            000000004C000000000000000000000001000000E0D057007335CF11AE690800
+            2B2E126208000000000000004C0000000114020000000000C000000000000046
+            8000000000000000000000000000000000000000000000000000000000000000
+            00000000000000000100000000000000000000000000000000000000}
+        end
+        object chat_2_master: TWebBrowser
+          Left = 0
+          Top = 0
+          Width = 850
+          Height = 459
+          Align = alClient
+          TabOrder = 0
+          ExplicitLeft = 96
+          ExplicitTop = 11
+          ControlData = {
+            4C000000DA570000702F00000000000000000000000000000000000000000000
+            000000004C000000000000000000000001000000E0D057007335CF11AE690800
+            2B2E126208000000000000004C0000000114020000000000C000000000000046
+            8000000000000000000000000000000000000000000000000000000000000000
+            00000000000000000100000000000000000000000000000000000000}
+        end
+      end
+      object sheet_3: TTabSheet
+        Caption = 'sheet_3'
+        ImageIndex = 3
+        object chat_3_master: TWebBrowser
+          Left = 0
+          Top = 0
+          Width = 850
+          Height = 459
+          Align = alClient
+          TabOrder = 1
+          ExplicitLeft = 96
+          ExplicitTop = 11
+          ControlData = {
+            4C000000DA570000702F00000000000000000000000000000000000000000000
+            000000004C000000000000000000000001000000E0D057007335CF11AE690800
+            2B2E126208000000000000004C0000000114020000000000C000000000000046
+            8000000000000000000000000000000000000000000000000000000000000000
+            00000000000000000100000000000000000000000000000000000000}
+        end
+        object chat_3_slave: TWebBrowser
+          Left = 0
+          Top = 0
+          Width = 850
+          Height = 459
+          Align = alClient
+          TabOrder = 0
+          ExplicitLeft = 96
+          ExplicitTop = 11
+          ControlData = {
+            4C000000DA570000702F00000000000000000000000000000000000000000000
+            000000004C000000000000000000000001000000E0D057007335CF11AE690800
+            2B2E126208000000000000004C0000000114020000000000C000000000000046
+            8000000000000000000000000000000000000000000000000000000000000000
+            00000000000000000100000000000000000000000000000000000000}
+        end
+      end
+      object sheet_4: TTabSheet
+        Caption = 'sheet_4'
+        ImageIndex = 4
+        object chat_4_slave: TWebBrowser
+          Left = 0
+          Top = 0
+          Width = 850
+          Height = 459
+          Align = alClient
+          TabOrder = 1
+          ExplicitLeft = 96
+          ExplicitTop = 11
+          ControlData = {
+            4C000000DA570000702F00000000000000000000000000000000000000000000
+            000000004C000000000000000000000001000000E0D057007335CF11AE690800
+            2B2E126208000000000000004C0000000114020000000000C000000000000046
+            8000000000000000000000000000000000000000000000000000000000000000
+            00000000000000000100000000000000000000000000000000000000}
+        end
+        object chat_4_master: TWebBrowser
+          Left = 0
+          Top = 0
+          Width = 850
+          Height = 459
+          Align = alClient
+          TabOrder = 0
+          ExplicitLeft = 96
+          ExplicitTop = 11
+          ControlData = {
+            4C000000DA570000702F00000000000000000000000000000000000000000000
+            000000004C000000000000000000000001000000E0D057007335CF11AE690800
+            2B2E126208000000000000004C0000000114020000000000C000000000000046
+            8000000000000000000000000000000000000000000000000000000000000000
+            00000000000000000100000000000000000000000000000000000000}
+        end
+      end
+      object sheet_5: TTabSheet
+        Caption = 'sheet_5'
+        ImageIndex = 5
+        object chat_5_master: TWebBrowser
+          Left = 0
+          Top = 0
+          Width = 850
+          Height = 459
+          Align = alClient
+          TabOrder = 1
+          ExplicitLeft = 96
+          ExplicitTop = 11
+          ControlData = {
+            4C000000DA570000702F00000000000000000000000000000000000000000000
+            000000004C000000000000000000000001000000E0D057007335CF11AE690800
+            2B2E126208000000000000004C0000000114020000000000C000000000000046
+            8000000000000000000000000000000000000000000000000000000000000000
+            00000000000000000100000000000000000000000000000000000000}
+        end
+        object chat_5_slave: TWebBrowser
+          Left = 0
+          Top = 0
+          Width = 850
+          Height = 459
+          Align = alClient
+          TabOrder = 0
+          ExplicitLeft = 96
+          ExplicitTop = 11
+          ControlData = {
+            4C000000DA570000702F00000000000000000000000000000000000000000000
+            000000004C000000000000000000000001000000E0D057007335CF11AE690800
+            2B2E126208000000000000004C0000000114020000000000C000000000000046
+            8000000000000000000000000000000000000000000000000000000000000000
+            00000000000000000100000000000000000000000000000000000000}
+        end
+      end
+      object sheet_6: TTabSheet
+        Caption = 'sheet_6'
+        ImageIndex = 6
+        object chat_6_slave: TWebBrowser
+          Left = 0
+          Top = 0
+          Width = 850
+          Height = 459
+          Align = alClient
+          TabOrder = 1
+          ExplicitLeft = 96
+          ExplicitTop = 11
+          ControlData = {
+            4C000000DA570000702F00000000000000000000000000000000000000000000
+            000000004C000000000000000000000001000000E0D057007335CF11AE690800
+            2B2E126208000000000000004C0000000114020000000000C000000000000046
+            8000000000000000000000000000000000000000000000000000000000000000
+            00000000000000000100000000000000000000000000000000000000}
+        end
+        object chat_6_master: TWebBrowser
+          Left = 0
+          Top = 0
+          Width = 850
+          Height = 459
+          Align = alClient
+          TabOrder = 0
+          ExplicitLeft = 96
+          ExplicitTop = 11
+          ControlData = {
+            4C000000DA570000702F00000000000000000000000000000000000000000000
+            000000004C000000000000000000000001000000E0D057007335CF11AE690800
+            2B2E126208000000000000004C0000000114020000000000C000000000000046
+            8000000000000000000000000000000000000000000000000000000000000000
+            00000000000000000100000000000000000000000000000000000000}
+        end
+      end
+      object sheet_7: TTabSheet
+        Caption = 'sheet_7'
+        ImageIndex = 7
+        object chat_7_master: TWebBrowser
+          Left = 0
+          Top = 0
+          Width = 850
+          Height = 459
+          Align = alClient
+          TabOrder = 1
+          ExplicitLeft = 96
+          ExplicitTop = 11
+          ControlData = {
+            4C000000DA570000702F00000000000000000000000000000000000000000000
+            000000004C000000000000000000000001000000E0D057007335CF11AE690800
+            2B2E126208000000000000004C0000000114020000000000C000000000000046
+            8000000000000000000000000000000000000000000000000000000000000000
+            00000000000000000100000000000000000000000000000000000000}
+        end
+        object chat_7_slave: TWebBrowser
+          Left = 0
+          Top = 0
+          Width = 850
+          Height = 459
+          Align = alClient
+          TabOrder = 0
+          ExplicitLeft = 96
+          ExplicitTop = 11
+          ControlData = {
+            4C000000DA570000702F00000000000000000000000000000000000000000000
+            000000004C000000000000000000000001000000E0D057007335CF11AE690800
+            2B2E126208000000000000004C0000000114020000000000C000000000000046
+            8000000000000000000000000000000000000000000000000000000000000000
+            00000000000000000100000000000000000000000000000000000000}
+        end
+      end
+      object sheet_8: TTabSheet
+        Caption = 'sheet_8'
+        ImageIndex = 8
+        object chat_8_slave: TWebBrowser
+          Left = 0
+          Top = 0
+          Width = 850
+          Height = 459
+          Align = alClient
+          TabOrder = 1
+          ExplicitLeft = 96
+          ExplicitTop = 11
+          ControlData = {
+            4C000000DA570000702F00000000000000000000000000000000000000000000
+            000000004C000000000000000000000001000000E0D057007335CF11AE690800
+            2B2E126208000000000000004C0000000114020000000000C000000000000046
+            8000000000000000000000000000000000000000000000000000000000000000
+            00000000000000000100000000000000000000000000000000000000}
+        end
+        object chat_8_master: TWebBrowser
+          Left = 0
+          Top = 0
+          Width = 850
+          Height = 459
+          Align = alClient
+          TabOrder = 0
+          ExplicitLeft = 96
+          ExplicitTop = 11
+          ControlData = {
+            4C000000DA570000702F00000000000000000000000000000000000000000000
+            000000004C000000000000000000000001000000E0D057007335CF11AE690800
+            2B2E126208000000000000004C0000000114020000000000C000000000000046
+            8000000000000000000000000000000000000000000000000000000000000000
+            00000000000000000100000000000000000000000000000000000000}
+        end
+      end
+      object sheet_9: TTabSheet
+        Caption = 'sheet_9'
+        ImageIndex = 9
+        object chat_9_master: TWebBrowser
+          Left = 0
+          Top = 0
+          Width = 850
+          Height = 459
+          Align = alClient
+          TabOrder = 1
+          ExplicitLeft = 96
+          ExplicitTop = 11
+          ControlData = {
+            4C000000DA570000702F00000000000000000000000000000000000000000000
+            000000004C000000000000000000000001000000E0D057007335CF11AE690800
+            2B2E126208000000000000004C0000000114020000000000C000000000000046
+            8000000000000000000000000000000000000000000000000000000000000000
+            00000000000000000100000000000000000000000000000000000000}
+        end
+        object chat_9_slave: TWebBrowser
+          Left = 0
+          Top = 0
+          Width = 850
+          Height = 459
+          Align = alClient
+          TabOrder = 0
+          ExplicitLeft = 96
+          ExplicitTop = 11
+          ControlData = {
+            4C000000DA570000702F00000000000000000000000000000000000000000000
+            000000004C000000000000000000000001000000E0D057007335CF11AE690800
+            2B2E126208000000000000004C0000000114020000000000C000000000000046
+            8000000000000000000000000000000000000000000000000000000000000000
+            00000000000000000100000000000000000000000000000000000000}
+        end
+      end
+      object sheet_1: TTabSheet
+        Caption = 'sheet_1'
+        ImageIndex = 10
+        object chat_1_master: TWebBrowser
+          Left = 0
+          Top = 0
+          Width = 850
+          Height = 459
+          Align = alClient
+          TabOrder = 1
+          ExplicitLeft = 96
+          ExplicitTop = 11
+          ControlData = {
+            4C000000DA570000702F00000000000000000000000000000000000000000000
+            000000004C000000000000000000000001000000E0D057007335CF11AE690800
+            2B2E126208000000000000004C0000000114020000000000C000000000000046
+            8000000000000000000000000000000000000000000000000000000000000000
+            00000000000000000100000000000000000000000000000000000000}
+        end
+        object chat_1_slave: TWebBrowser
+          Left = 0
+          Top = 0
+          Width = 850
+          Height = 459
+          Align = alClient
+          TabOrder = 0
+          ExplicitLeft = 96
+          ExplicitTop = 11
+          ControlData = {
+            4C000000DA570000702F00000000000000000000000000000000000000000000
+            000000004C000000000000000000000001000000E0D057007335CF11AE690800
+            2B2E126208000000000000004C0000000114020000000000C000000000000046
+            8000000000000000000000000000000000000000000000000000000000000000
+            00000000000000000100000000000000000000000000000000000000}
+        end
+      end
     end
   end
   object PanelUsers: TPanel
@@ -378,7 +773,7 @@ object FormHome: TFormHome
         Left = 7
         Top = 15
         Width = 150
-        Height = 443
+        Height = 445
         Style = lbOwnerDrawVariable
         Align = alCustom
         BorderStyle = bsNone

@@ -38,6 +38,39 @@ type
     N1: TMenuItem;
     N11: TMenuItem;
     ImgFormatText: TImage;
+    sheet_main: TTabSheet;
+    sheet_0: TTabSheet;
+    sheet_2: TTabSheet;
+    sheet_3: TTabSheet;
+    sheet_4: TTabSheet;
+    sheet_5: TTabSheet;
+    sheet_6: TTabSheet;
+    sheet_7: TTabSheet;
+    sheet_8: TTabSheet;
+    sheet_9: TTabSheet;
+    sheet_1: TTabSheet;
+    chat_main_master: TWebBrowser;
+    chat_main_slave: TWebBrowser;
+    chat_0_master: TWebBrowser;
+    chat_0_slave: TWebBrowser;
+    chat_1_master: TWebBrowser;
+    chat_1_slave: TWebBrowser;
+    chat_2_slave: TWebBrowser;
+    chat_2_master: TWebBrowser;
+    chat_3_master: TWebBrowser;
+    chat_3_slave: TWebBrowser;
+    chat_4_slave: TWebBrowser;
+    chat_4_master: TWebBrowser;
+    chat_5_master: TWebBrowser;
+    chat_5_slave: TWebBrowser;
+    chat_6_slave: TWebBrowser;
+    chat_6_master: TWebBrowser;
+    chat_7_master: TWebBrowser;
+    chat_7_slave: TWebBrowser;
+    chat_8_slave: TWebBrowser;
+    chat_8_master: TWebBrowser;
+    chat_9_master: TWebBrowser;
+    chat_9_slave: TWebBrowser;
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure ProcessCommandLineParams(DEBUG:Boolean = False);
@@ -53,6 +86,7 @@ type
     procedure reMessageChange(Sender: TObject);
     procedure ListBoxOnlineUsersDblClick(Sender: TObject);
     procedure ListBoxOnlineUsersClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
 
   private
     { Private declarations }
@@ -80,7 +114,7 @@ var
 implementation
 
 uses
-  GlobalVariables, Functions, Thread_MessageMain, TOnlineUsersUint, TSendMessageUnit, TOnlineChatUnit;
+  GlobalVariables, Functions, Thread_MessageMain, TOnlineUsersUint, TSendMessageUnit, TOnlineChatUnit, CustomTypeUnit;
 
 {$R *.dfm}
 
@@ -126,7 +160,7 @@ begin
   end;
 
   MessageSending(reMessage,
-                GetChannel,
+                GetActiveChannel,
                 USER_STARTED_CHAT_ID);
 
   // отображаем инфо
@@ -234,47 +268,38 @@ var
 begin
   if reMessage.Text = '' then Exit;
   MessageSending(reMessage,
-                GetChannel,
+                GetActiveChannel,
                 USER_STARTED_CHAT_ID);
 end;
 
 procedure TFormHome.Button1Click(Sender: TObject);
 var
- filehtml:string;
- Doc: IHTMLDocument2;
- Window: IHTMLWindow2;
- MessageMain:TOnlineChat; // текущие собощение в общем чате
+  m_browser:TWebBrowser;
 begin
 
+  m_browser:=FindComponent('chatmainmaster') as TWebBrowser;
+   m_browser.Navigate('file:///C:/Users/home0/Desktop/DASHBOARD/develop/chat/Win64/Debug/chat_history/main/20241213.html');
+   // m_browser:=FormHome.PageChannel.FindComponent('chatmainmaster');
 
+    {
+    WebBrowser        := TWebBrowser.Create(PageChannel.Pages[0]);
+    TWinControl(WebBrowser).Name   := 'WebBrowser';
+    TWinControl(WebBrowser).Parent := PageChannel.Pages[0]; //set parent...can be panel, tabs etc
+    WebBrowser.Silent := true;  //don't show JS errors
+    WebBrowser.Visible:= true;  //visible...by default true
+    WebBrowser.Align:= alClient;  //visible...by default true
+    WebBrowser.Navigate('file:///C:/Users/home0/Desktop/DASHBOARD/develop/chat/Win64/Debug/chat_history/main/20241213.html');
+     }
 
- {if not GetCreateFileLocalChat('main',GetCurrentTime+'.html') then ShowMessage('err');
-
-  filehtml:=ExtractFilePath(ParamStr(0))+'test.html';
-
-  MessageMain:=TOnlineChat.Create('main');
-  MessageMain.CreateFile(filehtml);
-
-  WebBrowser1.Navigate(filehtml);
- // while WebBrowser1.ReadyState<>READYSTATE_COMPLETE do Sleep(100);
-
-  //HTMLContent:=WideString('<html><head><title>Test</title></head><body>'+'teststt'+'</body></html>');
-
-  if Supports(WebBrowser1.Document, IHTMLDocument2, Window) then
-  begin
-    // Прокрутите страницу вниз с помощью JavaScript
-     Window.scroll(0, 100);
-  end
-  else
-  begin
-    ShowMessage('Документ не поддерживает IHTMLDocument2');
-  end;  }
-
- // CreateFileLocalChat('main',GetCurrentTime+''+GetExtensionLog);
-
+   //  chat_main_slave.Show;
 end;
 
 
+
+procedure TFormHome.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  KillProcess;
+end;
 
 procedure TFormHome.FormCreate(Sender: TObject);
 const
@@ -282,10 +307,6 @@ const
 begin
   ProcessCommandLineParams(DEBUG);
 
-  // только тоьлко запустили и надо прогрузить общий локальный чат
-
-  actIndMessageMain.Animate:=True;
-    actIndMessageMain.Visible:=False;
 end;
 
 procedure TFormHome.FormShow(Sender: TObject);
@@ -295,6 +316,13 @@ begin
 
   // очистка UsersOnline
   ListBoxOnlineUsers.Clear;
+
+
+  // скриываем первоночально все браузеры из поля видимости
+  HideAllBrowser;
+
+  // скрываем все вкладки с личными чатами
+  HideAllTabSheetChat;
 
   // создадим потоки
   createThread;

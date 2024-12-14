@@ -39,7 +39,7 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       TOnlineUsers = class
       const
       cMAXUSERS       : Word = 100;
-      cOFFLINE_TIME   :Word = 10; // время в секундах при котором считаем что нет уже в онлайне пользователя
+      cOFFLINE_TIME   : Word = 10; // время в секундах при котором считаем что нет уже в онлайне пользователя
 
       public
 

@@ -9,11 +9,13 @@ uses
   TOnlineUsersUint in 'TOnlineUsersUint.pas',
   TOnlineChatUnit in 'TOnlineChatUnit.pas',
   TSendMessageUnit in 'TSendMessageUnit.pas',
-  Thread_MessageMain in 'Thread_MessageMain.pas';
+  Thread_MessageMain in 'Thread_MessageMain.pas',
+  CustomTypeUnit in 'CustomTypeUnit.pas';
 
 {$R *.res}
 
 begin
+
   Application.Initialize;
   Application.HintHidePause:=60000;
   Application.HintPause:=100;

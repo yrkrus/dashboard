@@ -13,37 +13,72 @@ unit TOnlineChatUnit;
 
 interface
 
+
 uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       Variants, Graphics, System.SyncObjs, IdException,
-       SHDocVw, ActiveX, MSHTML, ComObj, Vcl.Controls,
-       Vcl.Forms, Vcl.OleCtrls, Vcl.ComCtrls;
+      SHDocVw, ActiveX, MSHTML, ComObj, Vcl.Controls,
+      Vcl.Forms, Vcl.OleCtrls, Vcl.ComCtrls,
+      Winapi.Windows, Winapi.Messages,
+      Vcl.Dialogs,  Vcl.ExtCtrls, Vcl.StdCtrls,
+      Vcl.ButtonGroup, Vcl.Menus, Vcl.PlatformDefaultStyleActnCtrls, Vcl.ActnPopup,
+      Vcl.WinXCtrls,CustomTypeUnit;
 
 
-  type    // тип загрузки сообщений
-  enumMessage = (   eMessage_init,    // первоначальная загрузка
-                    eMessage_update   // обновление существующиъх сообщений
-                );
+    //  end;
 
-   type  // какой браузер сейчас активен основной или дополнительный
-   enumActiveBrowser = (  eMaster,
-                          eSlave
-                        );
+/////////////////////////////////////////////////////////////////////////////////////////
+      // class TStructFileInfo
+       type
+         TStructFileInfo = class
+        public
+         m_rootFolder                         : string;   // корневая директория
+         m_nodeFolder                         : string;   // папка с логами (chat_history)
+         m_fileName                           : string;   // общее название лога (без расширения и указании master\slave)
+         m_fileExtension                      : string;   // расширение
 
+        constructor Create; overload;
+    end;
+
+      // class TStructFileInfo END
+/////////////////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+      // class TStructNavigate
+       type
+         TStructNavigate = class
+        public
+
+        function GetPathToLogName(InActiveBrowser:enumActiveBrowser):string;  // абсолютный путь до файла
+        function GetPathToNavigate(InActiveBrowser:enumActiveBrowser):string; // полный путь для m_browser.Navigate
+
+        constructor Create( InChatID:enumChatID;
+                            InFileInfo:TStructFileInfo); overload;
+
+         private
+         m_pathToLogNameMaster                     : string;
+         m_pathToLogNameSlave                      : string;
+         m_pathToNavigateMaster                    : string;
+         m_pathToNavigateSlave                     : string;
+
+    end;
+
+      // class TStructNavigate END
 /////////////////////////////////////////////////////////////////////////////////////////
 
    // class TStructBrowser
   type
     TStructBrowser = class
     public
-    m_brouser         :TWebBrowser;         // сам браузер
-    m_typeBrouser     :enumActiveBrowser;   // тип браузера
+    m_browser         : TWebBrowser;          // сам браузер
+    m_actine          : enumActiveBrowser;
+    // инициализация браузеров, только после того как саму форму уже показали!! делаем это уже в потоке
+    procedure InitLinkingBrowser(InTypeBrouser:enumActiveBrowser;   // тип браузера (всего 2 типа Master и Slave)
+                                 InChatID:enumChatID);
 
+    constructor Create; overload;
+    destructor Destroy; override;
 
-    constructor Create(InTypeBrouser:enumActiveBrowser;   // тип браузера (всего 2 типа Master и Slave)
-                       var p_PageControl:TPageControl;
-                       InNameSheet : string;              // название листа к которому нужно прилипает webbrawser
-                       );                   overload;
-    procedure Clear;
 
     end;
     // class TStructBrowser END
@@ -55,7 +90,6 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       TStructMessage = class
       public
       m_idMessage                            : Integer;     // номер сообщения
-      m_channel                              : string;      // канал
       m_sender                               : Integer;     // отправитель
       m_recipient                            : Integer;     // получатель
       m_datetime                             : TDateTime;   // дата
@@ -63,7 +97,6 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       m_message                              : string;      // само сообщение
 
       constructor Create;                   overload;
-
 
       procedure Clear;
 
@@ -77,53 +110,50 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       TOnlineChat = class
       public
 
-      constructor Create(InChannel,         // название канала например 'main' // это название будет добавлено в БД chat.channel | varchar(50)
-                         InChannelName,     // название канала на PageControl (напрмер Общий чат)
-                         InPath,
-                         InFileName,
-                         InExtensions:string;
-                         var p_PageControl:TPageControl);        overload;
-
+      constructor Create( InChatID:enumChatID;       // ID номер чата который будет отображаться на форме
+                          InChannel:enumChannel      // тип канала public\private это название будет добавлено в БД chat.channel | varchar(50)
+                        );
 
       destructor Destroy;                   override;
 
       function Count:Integer;               // кол-во сообщений в памяти
 
-      procedure SaveToFileLog(InFileName:string);
+      procedure SaveToFileLog;
       procedure Clear;
-      procedure LoadingMessageMain(isStartedLocalChat:enumMessage);     // получим сообщения для канала общего чата
+      procedure LoadingMessage(isStartedLocalChat:enumMessage);     // получим сообщения
 
       function GetLastIDMessage:Integer;     // последнее прогруженное сообщение
-      function GetPathToLogName:string;      // где живет лог
-      function GetPathToNavigate:string;     // где живет лог (то же самое только для отображения на форме)
-      function GetChannel:string;            // текущий канал
+      function GetPathToLogName(InActiveBrowser:enumActiveBrowser):string;      // где живет лог
+      function GetPathToNavigate(InActiveBrowser:enumActiveBrowser):string;     // где живет лог (то же самое только для отображения на форме)
 
 
       function isExistNewMessage(InLastIDMessageHistory:Integer):Boolean;  // есть ли разница между тем что в итории и тем что по БД
 
       // отображаем на браузере то ради чего этот класс и нужен
-      procedure ShowChat(var p_WebBrouser_master: TWebBrowser;
-                         var p_WebBrouser_slave : TWebBrowser);
+      procedure ShowChat;
 
 
       private
       m_mutex                              : TMutex;
       m_listMessage                        : array of TStructMessage;  // текущие сообщения
-
+      m_listBrowser                        : array of TStructBrowser; // список браузеров
       m_activeBrowser                      : enumActiveBrowser; // каой тип браузер сейчас активен
+      m_channel                            : enumChannel;             // каой тип чата используется
+      isInitBrowser                        : Boolean;  // инициализированы ли браузеры
+      m_chatID                             : enumChatID;  // какой ID чата используется
 
-      m_listBrowser                        :array of TStructBrowser; // список браузеров
+      m_file                               : TStructFileInfo;
+      m_navigate                           : TStructNavigate;  // тут храниться все пути по файлам браузера
 
-      m_rootfolder                         : string;   // корневая директория
-      m_channel                            : string;   // канал + папка с логами
-      m_filename                           : string;   // название лога
-      m_pathToLogName                      : string;
-      m_pathToNavigate                     : string;
       m_lastIDMessage                      : Integer;   // последнее сообщение которое прогрузили
 
+      procedure InitBrowser;        // инициализация браузеров (master и slave)
       function GetLastStructMessageID:Integer;    // последний номер ID в TStructMessage
       function GetLastIDMessageBase:Integer;    // последнее сообщение котороое есть в базе
+      function isExistFileLog:Boolean; overload;     // есть ли файлы логов в диреткории
+      function isExistFileLog(InActiveBrowser:enumActiveBrowser):Boolean; overload;     // есть ли файлы логов в диреткории
 
+      procedure CreateFileLog;         // создание файла с чатом
 
       end;
    // class TOnlineChat END
@@ -138,38 +168,96 @@ const
       cMAX_MESSAGE_DAY  :Word = 2500;     // максимальное кол-во сообщений которое можем храить
       cMAX_BROWSER      :Word = 2;        // максимальное кол-во переключаемых браузеров в одном классе чата
 
-// enumActiveBrowser -> string
-function EnumActiveBrowserToString(InActiveBrowser:enumActiveBrowser):string;
+
+
+
+/////////////////////////TStructFileInfo/////////////////////////////////////
+
+constructor TStructFileInfo.Create;
+begin
+  inherited Create; // Вызов конструктора базового класса
+end;
+/////////////////////////TStructFileInfo END/////////////////////////////////////
+
+
+
+/////////////////////////TStructNavigate/////////////////////////////////////
+
+constructor TStructNavigate.Create(InChatID:enumChatID;
+                                   InFileInfo:TStructFileInfo);
+begin
+  inherited Create; // Вызов конструктора базового класса
+
+   m_pathToLogNameMaster:=InFileInfo.m_rootFolder+
+                          InFileInfo.m_nodeFolder+'\'+InFileInfo.m_fileName+'\'+
+                          EnumChannelChatIDToString(InChatID)+'\'+
+                          EnumActiveBrowserToString(eMaster)+InFileInfo.m_fileExtension;
+
+   m_pathToNavigateMaster:=m_pathToLogNameMaster;
+   m_pathToNavigateMaster:= 'file:///' + StringReplace(m_pathToNavigateMaster, '\', '/', [rfReplaceAll]);
+
+
+   m_pathToLogNameSlave:=InFileInfo.m_rootFolder+
+                          InFileInfo.m_nodeFolder+'\'+InFileInfo.m_fileName+'\'+
+                          EnumChannelChatIDToString(InChatID)+'\'+
+                          EnumActiveBrowserToString(eSlave)+InFileInfo.m_fileExtension;
+
+   m_pathToNavigateSlave:=m_pathToLogNameSlave;
+   m_pathToNavigateSlave:= 'file:///' + StringReplace(m_pathToNavigateSlave, '\', '/', [rfReplaceAll]);
+
+end;
+
+
+
+// абсолютный путь до файла
+function TStructNavigate.GetPathToLogName(InActiveBrowser:enumActiveBrowser):string;
 begin
   case InActiveBrowser of
-    eMaster :Result:='master';
-    eSlave  :Result:='slave';
+    eMaster:  Result:=m_pathToLogNameMaster;
+    eSlave:   Result:=m_pathToLogNameSlave;
   end;
 end;
+
+// полный путь для m_browser.Navigate
+function TStructNavigate.GetPathToNavigate(InActiveBrowser:enumActiveBrowser):string;
+begin
+ case InActiveBrowser of
+    eMaster:  Result:=m_pathToNavigateMaster;
+    eSlave:   Result:=m_pathToNavigateSlave;
+ end;
+end;
+/////////////////////////TStructNavigate END/////////////////////////////////////
+
 
 /////////////////////////TStructBrowser/////////////////////////////////////
 
-constructor TStructBrowser.Create(InTypeBrouser:enumActiveBrowser);
+constructor TStructBrowser.Create;
 begin
   inherited Create; // Вызов конструктора базового класса
-  Clear;
+  m_actine:=eNone;
+end;
 
-  Self.m_brouser:=TWebBrowser.Create(Self);
-  with Self.m_brouser do begin
-    Parent:=
-    Visible:=False;
-
-
-  end;
-
-  Self.m_typeBrouser:=InTypeBrouser;
-
+destructor TStructBrowser.Destroy;
+begin
+  m_browser.Free;   // Освобождаем ресурсы, если m_brouser был создан
+  inherited Destroy; // Вызов деструктора базового класса
 end;
 
 
-procedure TStructBrowser.Clear;
+// инициализация браузеров, только после того как саму форму уже показали!! делаем это уже в потоке
+procedure TStructBrowser.InitLinkingBrowser(InTypeBrouser:enumActiveBrowser;   // тип браузера (всего 2 типа Master и Slave)
+                                            InChatID:enumChatID);
+var
+ chatname:string;
 begin
+  chatname:='chat_'+EnumChannelChatIDToString(InChatID)+'_'+EnumActiveBrowserToString(InTypeBrouser);
 
+  // тут передаем в память twebbrowser чтобы потом через него взаимодействовать с чатом
+  Self.m_browser:=FormHome.FindComponent(chatname) as TWebBrowser;
+  Self.m_browser.Navigate('about:blank');
+  while m_browser.ReadyState <> READYSTATE_COMPLETE do Sleep(100);  // немного подождем
+
+ // Self.m_typeBrouser:=InTypeBrouser;
 end;
 
 /////////////////////////TStructBrowser END/////////////////////////////////////
@@ -187,7 +275,6 @@ end;
  procedure TStructMessage.Clear;
  begin
   Self.m_idMessage:=0;
-  Self.m_channel:='';
   Self.m_sender:=0;
   Self.m_recipient:=-1;
   Self.m_datetime:=0;
@@ -200,42 +287,63 @@ end;
 
 
  /////////////////////////TOnlineChat/////////////////////////////////////
-constructor TOnlineChat.Create(InChannel,InPath,InFileName,InExtensions:string);
+constructor TOnlineChat.Create(InChatID:enumChatID;
+                              InChannel:enumChannel);
  var
   i:Integer;
  begin
-
     m_mutex:=TMutex.Create(nil, False, 'Global\TOnlineChat');
 
     SetLength(m_listMessage,cMAX_MESSAGE_DAY);
     for i:=0 to cMAX_MESSAGE_DAY-1 do m_listMessage[i]:=TStructMessage.Create;
 
+    // создаем браузеры TODO тут они еще = nil т.к. они иниуиализируются уже после того как показали саму главную форму в потоке
     SetLength(m_listBrowser,cMAX_BROWSER);
     for i:=0 to cMAX_BROWSER-1 do m_listBrowser[i]:=TStructBrowser.Create;
 
+    // браузеры не инициализированы
+    isInitBrowser:=False;
+
+    // последнее актуальное сообщение
     m_lastIDMessage:=0;
+
+    // ID чата
+    m_chatID:=InChatID;
 
     // канал
     m_channel:=InChannel;
 
-    m_rootfolder:=InPath;
-    m_filename:=InFileName+InExtensions;
+    // создаем навигацию
+    begin
+       // путь где у нас запускается exe + общая инфа по файлам
+       m_file:=TStructFileInfo.Create;
+       with m_file do begin
+         m_rootFolder:=FOLDERPATH;
+         m_nodeFolder:=GetLocalChatNameFolder;
+         m_fileName:=GetCurrentTime;
+         m_fileExtension:=GetExtensionLog;
+       end;
 
-    // полный путь до файла лога
-    m_pathToLogName:=InPath+'\'+InChannel+'\'+InFileName+InExtensions;
-
-     // полный путь до файла лога для отображения на форме
-    m_pathToNavigate:=m_pathToLogName;
-    m_pathToNavigate:= 'file:///' + StringReplace(m_pathToNavigate, '\', '/', [rfReplaceAll]);
+      m_navigate:=TStructNavigate.Create(m_chatID,m_file);
+    end;
 
 
-   if not isExistFileLog(m_channel,m_filename) then begin
-     // создадим файл лога
-     CreateFileLocalChat(m_channel,m_filename);
+   // проверяем есть ли у нас уже истоия ранее сохраненных файлов
+   if isExistFileLog then begin   // история уже есть подгружаем
+      // TODO сделать реализацию
+
+
+   end
+   else begin  // не существует создаем
+      // создадим файл лога
+     CreateFileLog;
+
+     // по умолчанию прогружем все в мастер
+     m_activeBrowser:=eMaster;
    end;
 
-    // подгрузим сообщения для общего чата (первоначальная загрузка)
-    LoadingMessageMain(eMessage_init);
+    // подгрузим сообщения (первоначальная загрузка)
+    LoadingMessage(eMessage_init);
  end;
 
 
@@ -244,7 +352,11 @@ var
  i: Integer;
 begin
   for i:= Low(m_listMessage) to High(m_listMessage) do FreeAndNil(m_listMessage[i]);
+  for i:= Low(m_listBrowser) to High(m_listBrowser) do FreeAndNil(m_listBrowser[i]);
+
   m_mutex.Free;
+  m_file.Free;
+  m_navigate.Free;
 
   inherited;
 end;
@@ -269,38 +381,26 @@ begin
 end;
 
 // где живет лог (
-function TOnlineChat.GetPathToLogName:string;
+function TOnlineChat.GetPathToLogName(InActiveBrowser:enumActiveBrowser):string;
 begin
   if m_mutex.WaitFor(INFINITE)=wrSignaled then
   try
-    Result:=Self.m_pathToLogName;
+    Result:=Self.m_navigate.GetPathToLogName(InActiveBrowser);
   finally
     m_mutex.Release;
   end;
 end;
 
 // где живет лог (то же самое только для отображения на форме)
-function TOnlineChat.GetPathToNavigate:string;
+function TOnlineChat.GetPathToNavigate(InActiveBrowser:enumActiveBrowser):string;
 begin
   if m_mutex.WaitFor(INFINITE)=wrSignaled then
   try
-    Result:=Self.m_pathToNavigate;
+    Result:=Self.m_navigate.GetPathToNavigate(InActiveBrowser);
   finally
     m_mutex.Release;
   end;
 end;
-
-// текущий канал
-function TOnlineChat.GetChannel:string;
-begin
-  if m_mutex.WaitFor(INFINITE)=wrSignaled then
-  try
-    Result:=Self.m_channel;
-  finally
-    m_mutex.Release;
-  end;
-end;
-
 
 
 // кол-во сообщений в памяти
@@ -325,7 +425,7 @@ begin
 end;
 
 
-procedure TOnlineChat.SaveToFileLog(InFileName:string);
+procedure TOnlineChat.SaveToFileLog;
 const
   color_user:string = '#4682B4';
   color_time:string = '#A9A9A9';
@@ -369,11 +469,13 @@ begin
    end;
 
    try
-     SLTemp.SaveToFile(InFileName);
+     for i:=0 to cMAX_BROWSER-1 do begin
+       SLTemp.SaveToFile(m_navigate.GetPathToLogName(enumActiveBrowser(i)));
+     end;
    except
-        on E:EIdException do begin
-          FormHome.lblerr.Caption:=e.Message;
-        end;
+      on E:EIdException do begin
+        FormHome.lblerr.Caption:=e.Message;
+      end;
    end;
 
    if SLTemp<>nil then FreeAndNil(SLTemp);
@@ -384,7 +486,7 @@ end;
 
 
 // получим сообщения для канала общего чата
-procedure  TOnlineChat.LoadingMessageMain(isStartedLocalChat:enumMessage);
+procedure  TOnlineChat.LoadingMessage(isStartedLocalChat:enumMessage);
 var
  i,startCount:Integer;
  ado:TADOQuery;
@@ -399,7 +501,7 @@ begin
     ado.Connection:=serverConnect;
     SQL.Clear;
 
-    SQL.Add('select count(id) from chat where channel = '+#39+m_channel+#39+' and date_time > '+#39+GetCurrentStartDateTime+#39);
+    SQL.Add('select count(id) from chat where channel = '+#39+EnumChannelToString(m_channel)+#39+' and date_time > '+#39+GetCurrentStartDateTime+#39);
 
     if isStartedLocalChat = eMessage_update  then begin
       SQL.Add(' and id > '+IntToStr(m_lastIDMessage));
@@ -416,7 +518,7 @@ begin
     end;
 
     SQL.Clear;
-    SQL.Add('select id,channel,sender,recipient,date_time,call_id,message from chat where channel = '+#39+m_channel+#39+' and date_time > '+#39+GetCurrentStartDateTime+#39);
+    SQL.Add('select id,sender,recipient,date_time,call_id,message from chat where channel = '+#39+EnumChannelToString(m_channel)+#39+' and date_time > '+#39+GetCurrentStartDateTime+#39);
 
     if isStartedLocalChat = eMessage_update  then begin
       SQL.Add(' and id > '+IntToStr(m_lastIDMessage));
@@ -434,19 +536,18 @@ begin
 
     for i:=startCount to startCount+countMessage-1 do begin
       m_listMessage[i].m_idMessage:=StrToInt(VarToStr(Fields[0].Value));
-      m_listMessage[i].m_channel:=VarToStr(Fields[1].Value);
-      m_listMessage[i].m_sender:=StrToInt(VarToStr(Fields[2].Value));
-      m_listMessage[i].m_recipient:=StrToInt(VarToStr(Fields[3].Value));
-      m_listMessage[i].m_datetime:=StrToDateTime(VarToStr(Fields[4].Value));
-      m_listMessage[i].m_call:=StrToInt(VarToStr(Fields[5].Value));
-      m_listMessage[i].m_message:=VarToStr(Fields[6].Value);
+      m_listMessage[i].m_sender:=StrToInt(VarToStr(Fields[1].Value));
+      m_listMessage[i].m_recipient:=StrToInt(VarToStr(Fields[2].Value));
+      m_listMessage[i].m_datetime:=StrToDateTime(VarToStr(Fields[3].Value));
+      m_listMessage[i].m_call:=StrToInt(VarToStr(Fields[4].Value));
+      m_listMessage[i].m_message:=VarToStr(Fields[5].Value);
 
       m_lastIDMessage:=StrToInt(VarToStr(Fields[0].Value));
       Next;
     end;
 
     // сохраняем в историю лога
-    SaveToFileLog(m_pathToLogName);
+    SaveToFileLog;
   end;
 
   FreeAndNil(ado);
@@ -491,7 +592,7 @@ begin
   with ado do begin
     ado.Connection:=serverConnect;
     SQL.Clear;
-    SQL.Add('select id from chat where channel = '+#39+m_channel+#39+' and date_time > '+#39+GetCurrentStartDateTime+#39+' order by date_time DESC limit 1');
+    SQL.Add('select id from chat where channel = '+#39+EnumChannelToString(m_channel)+#39+' and date_time > '+#39+GetCurrentStartDateTime+#39+' order by date_time DESC limit 1');
 
     Active:=True;
     if Fields[0].Value<>null then begin
@@ -512,9 +613,71 @@ begin
  if m_lastIDMessage <> GetLastIDMessageBase then Result:=True;
 end;
 
+
+// инициализация браузеров
+procedure TOnlineChat.InitBrowser;
+var
+ i:Integer;
+begin
+  if isInitBrowser then Exit;
+  for i:=0 to cMAX_BROWSER-1 do m_listBrowser[i].InitLinkingBrowser(IntegerToEnumActiveBrowser(i),m_chatID);
+end;
+
+
+
+// есть ли уже файл истории на диске
+function TOnlineChat.isExistFileLog:Boolean;
+begin
+   Result:=False;
+
+   if not (FileExists(m_navigate.m_pathToLogNameMaster)) or
+      not (FileExists(m_navigate.m_pathToLogNameSlave)) then Exit;
+
+   Result:=True;
+end;
+
+
+// есть ли файлы логов в диреткории
+function TOnlineChat.isExistFileLog(InActiveBrowser:enumActiveBrowser):Boolean;
+begin
+  Result:=FileExists(m_navigate.GetPathToLogName(InActiveBrowser));
+end;
+
+
+procedure TOnlineChat.CreateFileLog;
+var
+ EmptyFile:TfileStream;
+ i:Integer;
+begin
+  // проверка есть ли папка chat_history
+  if not DirectoryExists(m_file.m_nodeFolder) then CreateDir(Pchar(m_file.m_nodeFolder));
+
+  // проверка есть ли папка chat_history/текущая дата
+  if not DirectoryExists(m_file.m_nodeFolder+'\'+m_file.m_fileName) then CreateDir(Pchar(m_file.m_nodeFolder+'\'+m_file.m_fileName));
+
+  // проверяем есть ли папка с каналом
+  if not DirectoryExists(m_file.m_nodeFolder+'\'+m_file.m_fileName+'\'+EnumChannelChatIDToString(m_chatID)) then CreateDir(Pchar(m_file.m_nodeFolder+'\'+m_file.m_fileName+'\'+EnumChannelChatIDToString(m_chatID)));
+
+  // проверка есть ли сам файл логов
+  for i:=0 to cMAX_BROWSER-1 do begin
+    if not isExistFileLog(IntegerToEnumActiveBrowser(i)) then begin
+      try
+        EmptyFile:= TFileStream.Create(m_navigate.GetPathToLogName(IntegerToEnumActiveBrowser(i)),fmCreate);
+      finally
+        EmptyFile.Free;
+      end;
+    end;
+  end;
+end;
+
+
 // отображаем на браузере то ради чего этот класс и нужен
 procedure TOnlineChat.ShowChat;
 begin
+  // проверяем какой у нас сейчас виден на форме браузер
+
+
+
   {
 
   message_main.Navigate(PChar(p_Message.GetPathToNavigate+'#last_'+IntToStr(last_id)),navNoWriteToCache);
