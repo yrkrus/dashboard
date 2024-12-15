@@ -46,40 +46,9 @@ begin
 end;
 
 
-
 procedure ThreadMessageMain.Show;
-var
-  last_id:Integer;
-  Doc: IHTMLDocument2;
-  HTMLContent:string;
-
-    v: Variant;
-  HTMLDocument: IHTMLDocument2;
-
 begin
-
   p_ChatMessage.ShowChat;
-
-
-  // проверяем есть ли но новые сообщения
-
-
- // last_id:=GetLastIDMessageFileLog(p_Chat.GetChannel,p_Chat.GetPathToLogName);
-
-
- // if not p_Chat.isExistNewMessage(last_id) then Exit;
-
-  // подгрузим новые сообщения
-//  p_Chat.LoadingMessageMain(enumMessage.eMessage_update);
-//  last_id:=GetLastIDMessageFileLog(p_Chat.GetChannel,p_Chat.GetPathToLogName);
-
-//  FormHome.lblerr.Caption:=DateTimeToStr(now);
-
-
-  with FormHome do begin
-// есть новые сообщения, надо их показать
- // p_Chat.ShowChat;
- end;
 end;
 
 
@@ -94,7 +63,9 @@ const
 begin
    inherited;
    CoInitialize(Nil);
-   Sleep(1000);
+
+   // делаем инициализацию браузеров
+   p_ChatMessage.InitBrowser;
 
   while not Terminated do
   begin

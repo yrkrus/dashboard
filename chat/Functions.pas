@@ -16,7 +16,6 @@ interface
                      InMessage: string):Boolean;                             // отправка сообщения
 
 
-  function GetLastIDMessageFileLog(InChannel,InFileName:string):Integer;     // нахождение последнего ID сообщения в логе
   procedure MessageSending(var MessageForms: TRichEdit;                          // отправка и первоночальный парсинг сообщения
                            InChannel: enumChannel;
                            InSender: Integer);
@@ -34,6 +33,9 @@ interface
   function EnumChannelToString(InChannel:enumChannel):string;                 //enumChannel -> string
   function GetActiveChannel:enumChannel;                                      // какой сейчас канал активен
   function EnumActiveBrowserToInteger(InActiveBrowser:enumActiveBrowser):Integer;    // enumActiveBrowser -> integer
+  procedure VisibleWebBrowser(InActiveBrowser:enumActiveBrowser; InChatID:enumChatID);    // показываем браузер
+  procedure HideWebBrowser(InActiveBrowser:enumActiveBrowser; InChatID:enumChatID);      // скрываем браузер
+  function isVisibleWebBrowser(InActiveBrowser:enumActiveBrowser; InChatID:enumChatID):Boolean;   // виден ли браузер или нет
 
 implementation
 
@@ -109,37 +111,6 @@ begin
    end;
 end;
 
-
-
-// нахождение последнего ID сообщения в логе
-function GetLastIDMessageFileLog(InChannel,InFileName:string):Integer;
-var
- SLFileLog:TStringList;
- FolderPath:string;
- Regex: TRegEx;
- Match:TMatch;
-
- lastStroka:string;
-begin
- SLFileLog:=TStringList.Create;
- SLFileLog.LoadFromFile(InFileName);
-
- if SLFileLog.Count = 0 then begin
-  Result:=0;
-  Exit;
- end;
-
- lastStroka:=SLFileLog[SLFileLog.Count-1];
-
- Regex:= TRegEx.Create('message_id="(\d+)"', [roIgnoreCase]);
- Match:= Regex.Match(lastStroka);
-
- if Match.Success then Result:= StrToInt(Match.Groups[1].Value)
- else Result:=0;
-
- if SLFileLog<>nil then FreeAndNil(SLFileLog);
-
-end;
 
 
 // парсинг сообщения перед отправкой в HTML формат
@@ -251,6 +222,71 @@ begin
 end;
 
 
+// показываем браузер
+procedure VisibleWebBrowser(InActiveBrowser:enumActiveBrowser; InChatID:enumChatID);
+var
+ i:Integer;
+ FoundComponent:TComponent;
+begin
+  with FormHome do begin
+    for i:=0 to ComponentCount-1 do
+    begin
+      FoundComponent:=Components[i];
+
+      // Проверяем, является ли компонент TWebBrowser
+      if (FoundComponent is TWebBrowser) and (Pos('chat_'+EnumChannelChatIDToString(InChatID)+'_'+EnumActiveBrowserToString(InActiveBrowser), FoundComponent.Name) > 0) then
+      begin
+        TControl(FoundComponent).Visible:=True;
+        Break;
+      end;
+    end;
+  end;
+end;
+
+// скрываем браузер
+procedure HideWebBrowser(InActiveBrowser:enumActiveBrowser; InChatID:enumChatID);
+var
+ i:Integer;
+ FoundComponent:TComponent;
+begin
+  with FormHome do begin
+    for i:=0 to ComponentCount-1 do
+    begin
+      FoundComponent:=Components[i];
+
+      // Проверяем, является ли компонент TWebBrowser
+      if (FoundComponent is TWebBrowser) and (Pos('chat_'+EnumChannelChatIDToString(InChatID)+'_'+EnumActiveBrowserToString(InActiveBrowser), FoundComponent.Name) > 0) then
+      begin
+        TControl(FoundComponent).Visible:=False;
+        Break;
+      end;
+    end;
+  end;
+end;
+
+
+// виден ли браузер или нет
+function isVisibleWebBrowser(InActiveBrowser:enumActiveBrowser; InChatID:enumChatID):Boolean;
+var
+ i:Integer;
+ FoundComponent:TComponent;
+begin
+  Result:=False;
+  with FormHome do begin
+    for i:=0 to ComponentCount-1 do
+    begin
+      FoundComponent:=Components[i];
+
+      // Проверяем, является ли компонент TWebBrowser
+      if (FoundComponent is TWebBrowser) and (Pos('chat_'+EnumChannelChatIDToString(InChatID)+'_'+EnumActiveBrowserToString(InActiveBrowser), FoundComponent.Name) > 0) then
+      begin
+        Result:=TControl(FoundComponent).Visible;
+        Break;
+      end;
+    end;
+  end;
+end;
+
 // скрываем все вкладки с личными чатами
 procedure HideAllTabSheetChat;
 var
@@ -298,9 +334,9 @@ end;
 function IntegerToEnumActiveBrowser(ID:Integer):enumActiveBrowser;
 begin
   case ID of
-   -1: Result:=eNone;
     0: Result:=eMaster;
     1: Result:=eSlave;
+    2: Result:=eNone;
   end;
 end;
 
@@ -309,9 +345,9 @@ end;
 function EnumActiveBrowserToInteger(InActiveBrowser:enumActiveBrowser):Integer;
 begin
   case InActiveBrowser of
-    eNone:    Result:=  -1;
-    eMaster:  Result:=   0;
-    eSlave:   Result:=   1;
+    eMaster:  Result:=  0;
+    eSlave:   Result:=  1;
+    eNone:    Result:=  2;
   end;
 end;
 

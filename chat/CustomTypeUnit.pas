@@ -12,15 +12,10 @@ unit CustomTypeUnit;
 
 interface
 
- type    // тип загрузки сообщений
-  enumMessage = (   eMessage_init,    // первоначальная загрузка
-                    eMessage_update   // обновление существующиъх сообщений
-                );
-
    type  // какой браузер сейчас активен основной или дополнительный
-   enumActiveBrowser = (  eNone = -1,
-                          eMaster = 0,
-                          eSlave  = 1
+   enumActiveBrowser = (  eMaster = 0,
+                          eSlave  = 1,
+                          eNone   = 2
                         );
 
    type

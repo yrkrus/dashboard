@@ -30,7 +30,6 @@ type
     Button1: TButton;
     ImgAddFile: TImage;
     ImgSmile: TImage;
-    ImgSendMessage: TImage;
     STMessageInfo1: TStaticText;
     STMessageInfo2: TStaticText;
     popMenuTagUser: TPopupMenu;
@@ -71,6 +70,7 @@ type
     chat_8_master: TWebBrowser;
     chat_9_master: TWebBrowser;
     chat_9_slave: TWebBrowser;
+    ImgSendMessage: TImage;
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure ProcessCommandLineParams(DEBUG:Boolean = False);

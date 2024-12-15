@@ -32,7 +32,7 @@ Coordinates=10,212,78,36
 Coordinates=368,10,77,58
 
 []
-Coordinates=108,341,91,36
+Coordinates=120,1,117,58
 Visible=True
 
 [STMessageInfo3]
@@ -77,9 +77,6 @@ Coordinates=440,87,40,36
 
 [N1]
 Coordinates=440,267,40,36
-
-[ImgSendMessage]
-Coordinates=120,1,117,58
 
 [sheet_5]
 Coordinates=483,331,60,36
