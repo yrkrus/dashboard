@@ -274,26 +274,21 @@ end;
 
 procedure TFormHome.Button1Click(Sender: TObject);
 var
-  m_browser:TWebBrowser;
+HTMLDocument: IHTMLDocument2;
+  Body: IHTMLElement;
+  NewElement: IHTMLElement;
+
+ v: Variant;
 begin
 
-  m_browser:=FindComponent('chatmainmaster') as TWebBrowser;
-   m_browser.Navigate('file:///C:/Users/home0/Desktop/DASHBOARD/develop/chat/Win64/Debug/chat_history/main/20241213.html');
-   // m_browser:=FormHome.PageChannel.FindComponent('chatmainmaster');
+  // ѕолучаем доступ к текущему документу
+     HTMLDocument:= chat_main_master.Document as IHTMLDocument2;
+     v := VarArrayCreate([0, 0], varVariant);
+     v[0] := '56789087978908ugdsjhjsdvkjhdfkhgdfh ghdof jshioso thj'; // Ёто ¬аша HTML строка
+     HTMLDocument.Write(PSafeArray(TVarData(v).VArray));
+     HTMLDocument.Close;
 
-    {
-    WebBrowser        := TWebBrowser.Create(PageChannel.Pages[0]);
-    TWinControl(WebBrowser).Name   := 'WebBrowser';
-    TWinControl(WebBrowser).Parent := PageChannel.Pages[0]; //set parent...can be panel, tabs etc
-    WebBrowser.Silent := true;  //don't show JS errors
-    WebBrowser.Visible:= true;  //visible...by default true
-    WebBrowser.Align:= alClient;  //visible...by default true
-    WebBrowser.Navigate('file:///C:/Users/home0/Desktop/DASHBOARD/develop/chat/Win64/Debug/chat_history/main/20241213.html');
-     }
-
-   //  chat_main_slave.Show;
 end;
-
 
 
 procedure TFormHome.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -302,11 +297,11 @@ begin
 end;
 
 procedure TFormHome.FormCreate(Sender: TObject);
-const
- DEBUG:Boolean = true;
 begin
-  ProcessCommandLineParams(DEBUG);
+  // проверка на запуска 2ой копи
+  CloneRun;
 
+  ProcessCommandLineParams(DEBUG);
 end;
 
 procedure TFormHome.FormShow(Sender: TObject);
@@ -316,7 +311,6 @@ begin
 
   // очистка UsersOnline
   ListBoxOnlineUsers.Clear;
-
 
   // скриываем первоночально все браузеры из пол€ видимости
   HideAllBrowser;

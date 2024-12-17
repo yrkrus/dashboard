@@ -128,6 +128,7 @@ procedure VisibleIconOperatorsGoHome(InStatus:enumHideShowGoHomeOperators;
                                      InClick:Boolean = False);                       // показывать\скрывать операторов ушедших домой
 procedure HappyNewYear;                                                              // пасхалка с новым годом
 function GetExistAccessToLocalChat(InUserId:Integer):Boolean;                        //есть ли доступ к локальному чату
+procedure OpenLocalChat;                                                             // открытые exe локального чата
 
 
 
@@ -3131,7 +3132,7 @@ begin
    dashStart:= CreateMutex(nil, True, dash_name);
    if GetLastError = ERROR_ALREADY_EXISTS then
    begin
-     MessageBox(HomeForm.Handle,PChar('Обнаружен запуск 2ой копии дашборда'+#13#13+'Для продолжения закройте предыдущую копию'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+     MessageBox(HomeForm.Handle,PChar('Обнаружен запуск 2ой копии дашборда'+#13#13+'Для продолжения закройте предыдущую копию'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
      KillProcess;
    end;
 end;
@@ -4523,5 +4524,21 @@ begin
     FreeAndNil(serverConnect);
 end;
 
+
+// открытые exe локального чата
+procedure OpenLocalChat;
+begin
+ if not GetExistAccessToLocalChat(SharedCurrentUserLogon.GetID) then begin
+    MessageBox(HomeForm.Handle,PChar('У Вас нет доступа к локальному чату'),PChar('Доступ отсутствует'),MB_OK+MB_ICONINFORMATION);
+    Exit;
+  end;
+
+  if not FileExists(CHAT_EXE) then begin
+    MessageBox(HomeForm.Handle,PChar('Не удается найти файл '+CHAT_EXE),PChar('Файл не найден'),MB_OK+MB_ICONERROR);
+    Exit;
+  end;
+
+  ShellExecute(HomeForm.Handle, 'Open', PChar(CHAT_EXE),PChar(CHAT_PARAM+' '+IntToStr(SharedCurrentUserLogon.GetID)),nil,SW_SHOW);
+end;
 
 end.

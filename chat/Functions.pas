@@ -36,6 +36,9 @@ interface
   procedure VisibleWebBrowser(InActiveBrowser:enumActiveBrowser; InChatID:enumChatID);    // показываем браузер
   procedure HideWebBrowser(InActiveBrowser:enumActiveBrowser; InChatID:enumChatID);      // скрываем браузер
   function isVisibleWebBrowser(InActiveBrowser:enumActiveBrowser; InChatID:enumChatID):Boolean;   // виден ли браузер или нет
+  procedure CloneRun;                                                                // проверка на 2ую копию
+  procedure CreatePopMenuTagUser;                                                     // создание popmenu для тэгирования пользака
+
 
 implementation
 
@@ -385,6 +388,30 @@ begin
     if PageChannel.ActivePage.Name = 'sheet_main' then Result:=ePublic
     else Result:=ePrivate;
   end;
+end;
+
+
+// проверка на 2ую копию
+procedure CloneRun;
+const
+ dash_name ='chat.exe';
+var
+ dashStart:Cardinal;
+begin
+  // проверка на запущенную копию
+   dashStart:= CreateMutex(nil, True, dash_name);
+   if GetLastError = ERROR_ALREADY_EXISTS then
+   begin
+     MessageBox(FormHome.Handle,PChar('Обнаружен запуск 2ой копии чата'+#13#13+'Для продолжения закройте предыдущую копию'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
+     KillProcess;
+   end;
+end;
+
+
+// создание popmenu для тэгирования пользака
+procedure CreatePopMenuTagUser;
+begin
+
 end;
 
 

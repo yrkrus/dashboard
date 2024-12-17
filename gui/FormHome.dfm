@@ -2,7 +2,7 @@ object HomeForm: THomeForm
   Left = 0
   Top = 0
   Caption = #1044#1072#1096#1073#1086#1088#1076' '#1050#1086#1083#1083#1062#1077#1085#1090#1088#1072
-  ClientHeight = 804
+  ClientHeight = 801
   ClientWidth = 1384
   Color = clWindow
   DefaultMonitor = dmDesktop
@@ -20,7 +20,7 @@ object HomeForm: THomeForm
   OnShow = FormShow
   DesignSize = (
     1384
-    804)
+    801)
   PixelsPerInch = 96
   TextHeight = 15
   object Label5: TLabel
@@ -455,10 +455,10 @@ object HomeForm: THomeForm
   end
   object ImageLogo: TImage
     Left = 1207
-    Top = 727
+    Top = 714
     Width = 157
     Height = 37
-    Anchors = [akRight]
+    Anchors = [akRight, akBottom]
     Enabled = False
     Picture.Data = {
       0A544A504547496D6167655B130000FFD8FFE000104A46494600010101007800
@@ -617,7 +617,7 @@ object HomeForm: THomeForm
       0480338009155ECBE1BF87F4CD74EA96BA1E8F6DA9302A6EE2B28D26208C1CB8
       19E471D7A514500685A68D6BA7AC62DEDEDE011870823882EC0E773018E9B980
       27D4804D5AA28A00FFD9}
-    ExplicitTop = 728
+    ExplicitTop = 715
   end
   object Label11: TLabel
     Left = 10
@@ -785,10 +785,10 @@ object HomeForm: THomeForm
   end
   object ImgNewYear: TImage
     Left = 1319
-    Top = 714
+    Top = 694
     Width = 55
     Height = 55
-    Anchors = [akRight]
+    Anchors = [akRight, akBottom]
     ParentShowHint = False
     Picture.Data = {
       0954506E67496D61676589504E470D0A1A0A0000000D49484452000002BC0000
@@ -5818,7 +5818,27 @@ object HomeForm: THomeForm
     ShowHint = False
     Stretch = True
     Visible = False
-    ExplicitTop = 708
+  end
+  object lblNewMessageLocalChat: TLabel
+    Left = 1165
+    Top = 761
+    Width = 209
+    Height = 13
+    Cursor = crHandPoint
+    Hint = #1054#1090#1082#1088#1099#1090#1100' '#1083#1086#1082#1072#1083#1100#1085#1099#1081' '#1095#1072#1090
+    Anchors = [akRight, akBottom]
+    Caption = #1053#1086#1074#1099#1077' '#1089#1086#1086#1073#1097#1077#1085#1080#1103' '#1074' '#1086#1073#1097#1077#1084' '#1095#1072#1090#1077' (N)'
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clRed
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = [fsBold]
+    ParentFont = False
+    ParentShowHint = False
+    ShowHint = True
+    Visible = False
+    OnClick = lblNewMessageLocalChatClick
+    ExplicitTop = 762
   end
   object panel_IVR: TPanel
     Left = 10
@@ -5996,7 +6016,7 @@ object HomeForm: THomeForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 783
+    Top = 780
     Width = 1384
     Height = 21
     Panels = <
@@ -6022,7 +6042,7 @@ object HomeForm: THomeForm
         Text = 'developer by     '
         Width = 150
       end>
-    ExplicitTop = 720
+    ExplicitTop = 761
   end
   object Button1: TButton
     Left = 300
@@ -6052,13 +6072,12 @@ object HomeForm: THomeForm
   end
   object PanelShadowRight: TPanel
     Left = 1217
-    Top = 13
+    Top = 12
     Width = 153
     Height = 16
     Anchors = [akRight]
     BevelOuter = bvNone
     TabOrder = 3
-    ExplicitTop = 11
     object imgRight: TImage
       Left = 136
       Top = 0

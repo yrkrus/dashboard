@@ -12,6 +12,11 @@ unit CustomTypeUnit;
 
 interface
 
+   type   // тип подгрузки сообщений
+   enumLoadMessage = (eAll,        // все
+                      eDiff        // разница
+                      );
+
    type  // какой браузер сейчас активен основной или дополнительный
    enumActiveBrowser = (  eMaster = 0,
                           eSlave  = 1,

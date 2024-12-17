@@ -74,7 +74,8 @@ begin
       try
         StartTime:=GetTickCount;
 
-        Queue(show);
+        // Queue(show);
+        Show;
 
         EndTime:= GetTickCount;
         Duration:= EndTime - StartTime;

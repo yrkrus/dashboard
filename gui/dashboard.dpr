@@ -46,7 +46,8 @@ uses
   FormGlobalSettingCheckFirebirdConnectUnit in 'FormGlobalSettingCheckFirebirdConnectUnit.pas' {FormGlobalSettingCheckFirebirdConnect},
   TUserUnit in 'TUserUnit.pas',
   TCustomTypeUnit in 'TCustomTypeUnit.pas',
-  GlobalVariables in 'GlobalVariables.pas';
+  GlobalVariables in 'GlobalVariables.pas',
+  TOnlineChat in 'TOnlineChat.pas';
 
 {$R *.res}
 

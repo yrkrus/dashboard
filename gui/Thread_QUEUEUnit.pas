@@ -127,7 +127,11 @@ procedure Thread_QUEUE.show;
 var
  listQueue:TQueue;
 begin
-  listQueue:=TQueue.Create;
+  try
+   listQueue:=TQueue.Create;
+  except
+   if not Assigned(listQueue) then Exit;
+  end;
 
   if (CONNECT_BD_ERROR=False) then showQueue(listQueue);
 

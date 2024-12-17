@@ -118,9 +118,9 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
 
       function Count:Integer;               // кол-во сообщений в памяти
 
-      procedure SaveToFileLog;
+      procedure SaveToFileLog(InCountMessage:enumLoadMessage);
       procedure Clear;
-      procedure LoadingMessage;     // получим сообщения
+      procedure LoadingMessage(InCountMessage:enumLoadMessage);     // получим сообщения с учетом есть ли новые сообщения или нет
 
       function GetLastIDMessage:Integer;     // последнее прогруженное сообщение
       function GetPathToLogName(InActiveBrowser:enumActiveBrowser):string;      // где живет лог
@@ -155,7 +155,7 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       function GetLastIDMessageBase:Integer;    // последнее сообщение котороое есть в базе
       function isExistFileLog:Boolean; overload;     // есть ли файлы логов в диреткории
       function isExistFileLog(InActiveBrowser:enumActiveBrowser):Boolean; overload;     // есть ли файлы логов в диреткории
-      function GetLastIDMessageFileLog:Integer;    // нахождение последнего ID сообщения в логе
+      function GetLastIDMessageFileLog(InActiveBrowser:enumActiveBrowser):Integer;    // нахождение последнего ID сообщения в логе
 
       procedure CreateFileLog;         // создание файла с чатом
 
@@ -258,7 +258,7 @@ begin
 
   // тут передаем в память twebbrowser чтобы потом через него взаимодействовать с чатом
   Self.m_browser:=FormHome.FindComponent(chatname) as TWebBrowser;
-  Self.m_browser.Navigate('about:blank');
+  Self.m_browser.Navigate(DEFAULT_URL);
   while m_browser.ReadyState <> READYSTATE_COMPLETE do Sleep(100);  // немного подождем
 
   Self.m_active:=eNone;
@@ -331,12 +331,37 @@ constructor TOnlineChat.Create(InChatID:enumChatID;
       m_navigate:=TStructNavigate.Create(m_chatID,m_file);
     end;
 
-   // подгрузим сообщения (первоначальная загрузка)
-    LoadingMessage;
+   // подгрузим сообщения (первоначальная загрузка)если есть уже сообщения то подгружаем разницу
+   if not isExistFileLog then  LoadingMessage(eAll)
+   else LoadingMessage(eDiff);
 
-    m_activeBrowser:=eNone;
+   // тут всегда будет eNone инаяе при загрузке не отображается истоия
+   m_activeBrowser:=eNone;
  end;
 
+ // генерация сообщения
+ function GenerateMessage(InOriginalMessage:TStructMessage; InTag:Integer):string;
+ const
+  color_user:string = '#4682B4';
+  color_time:string = '#A9A9A9';
+ var
+  tmp,message_time:string;
+ begin
+    message_time:=FormatDateTime('hh:mm', InOriginalMessage.m_datetime);
+
+   if InTag = -1 then begin // никого не вызвали
+     tmp:='<div id="last_'+IntToStr(InOriginalMessage.m_idMessage)+'"  message_id="'+ IntToStr(InOriginalMessage.m_idMessage)+'">'+
+          '<font color= "'+color_user+'">'+GetUserNameFIO(InOriginalMessage.m_sender)+'</font>'+'  '+'<font color ="'+color_time+'" style="font-size: xx-small;">'+message_time+'</font>'
+                         + '<br>'
+                         +  InOriginalMessage.m_message
+                         + '<br><br></div>';
+   end
+   else begin             // вызвыали через тэгирование
+      // TODO написать
+   end;
+
+   Result:=tmp;
+ end;
 
 destructor TOnlineChat.Destroy;
 var
@@ -416,14 +441,13 @@ begin
 end;
 
 
-procedure TOnlineChat.SaveToFileLog;
-const
-  color_user:string = '#4682B4';
-  color_time:string = '#A9A9A9';
+procedure TOnlineChat.SaveToFileLog(InCountMessage:enumLoadMessage);
 var
- i:Integer;
+ i,j,k:Integer;
  SLTemp:TStringList;
  message_time:string;
+ lastIDFile:Integer;
+ lastStructMessageID:Integer;
 begin
     // проверяем есть ли у нас уже истоия ранее сохраненных файлов
    if not isExistFileLog then begin   // история уже есть подгружаем
@@ -436,31 +460,55 @@ begin
   try
    SLTemp:=TStringList.Create;
 
-   for i:=0 to Count-1 do begin
-     message_time:=FormatDateTime('hh:mm', m_listMessage[i].m_datetime);
-
-     if m_listMessage[i].m_call = -1 then begin // никого не вызывали через тэгирование
-       SLTemp.Add('<div id="last_'+IntToStr(m_listMessage[i].m_idMessage)+'"  message_id="'+ IntToStr(m_listMessage[i].m_idMessage)+'">'+
-                  '<font color= "'+color_user+'">'+GetUserNameFIO(m_listMessage[i].m_sender)+'</font>'+'  '+'<font color ="'+color_time+'" style="font-size: xx-small;">'+message_time+'</font>'
-                                   + '<br>'
-                                   +  m_listMessage[i].m_message
-                                   + '<br><br></div>'
-      );
-     end
-     else begin
-       // TODO написать
-
-     end;
-   end;
-
-   try
-     for i:=0 to cMAX_BROWSER-1 do begin
-       SLTemp.SaveToFile(m_navigate.GetPathToLogName(enumActiveBrowser(i)));
-     end;
-   except
-      on E:EIdException do begin
-        FormHome.lblerr.Caption:=e.Message;
+   case InCountMessage of
+     eAll: begin
+      for i:=0 to Count-1 do begin
+        SLTemp.Add(GenerateMessage(m_listMessage[i],m_listMessage[i].m_call));
       end;
+
+       // сохраняем в файл(master\slave)
+       try
+         for i:=0 to cMAX_BROWSER-1 do begin
+           SLTemp.SaveToFile(m_navigate.GetPathToLogName(enumActiveBrowser(i)));
+         end;
+       except
+          on E:EIdException do begin
+            FormHome.lblerr.Caption:=e.Message;
+          end;
+       end;
+     end;
+     eDiff: begin
+      for i:=0 to cMAX_BROWSER-1 do begin
+       SLTemp.Clear;
+       // загрузим текущие сообщения в память
+       SLTemp.LoadFromFile(GetPathToLogName(enumActiveBrowser(i)));
+
+       // последнее сообщение в файле истории
+       lastIDFile:=GetLastIDMessageFileLog(enumActiveBrowser(i));
+
+        // нет изменений
+        if lastIDFile = m_lastIDMessage then begin
+         SLTemp.Clear;
+         Continue;
+        end;
+
+
+        for j:=0 to Count-1 do begin
+          if AnsiPos('message_id="'+IntToStr(m_listMessage[j].m_idMessage)+'"',SLTemp[SLTemp.Count-1])=0 then begin
+            SLTemp.Add(GenerateMessage(m_listMessage[j],m_listMessage[j].m_call));
+          end;
+        end;
+
+       // сохраняем в файл(master\slave)
+       try
+         SLTemp.SaveToFile(m_navigate.GetPathToLogName(enumActiveBrowser(i)));
+       except
+          on E:EIdException do begin
+            FormHome.lblerr.Caption:=e.Message;
+          end;
+       end;
+      end;
+     end;
    end;
 
    if SLTemp<>nil then FreeAndNil(SLTemp);
@@ -471,22 +519,35 @@ end;
 
 
 // получим сообщения для канала общего чата
-procedure  TOnlineChat.LoadingMessage;
+procedure  TOnlineChat.LoadingMessage(InCountMessage:enumLoadMessage);
 var
  i,startCount:Integer;
  ado:TADOQuery;
  serverConnect:TADOConnection;
  countMessage:Integer;
+
+ lastIDMessage:Integer; // последнее сообщение которое у нас есть в истории
+ lastStructMessageID:Integer;
 begin
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
   if not Assigned(serverConnect) then  Exit;
+
+  lastIDMessage:=0;
 
   with ado do begin
     ado.Connection:=serverConnect;
     SQL.Clear;
 
     SQL.Add('select count(id) from chat where channel = '+#39+EnumChannelToString(m_channel)+#39+' and date_time > '+#39+GetCurrentStartDateTime+#39);
+
+    if InCountMessage = eDiff then begin
+      // последнее собщение которое у нас есть в истории
+      lastIDMessage:=GetLastIDMessageFileLog(eMaster);
+
+      SQL.Add(' and id > '+#39+IntToStr(lastIDMessage)+#39);
+    end;
+
 
     Active:=True;
     countMessage:=StrToInt(VarToStr(Fields[0].Value));
@@ -495,18 +556,34 @@ begin
       FreeAndNil(ado);
       serverConnect.Close;
       if Assigned(serverConnect) then serverConnect.Free;
+
+      // на всякий случай проверим есть ли у нас файлы лога (это нужно когда переходим в новый день и еще нет собощений)
+       if not isExistFileLog then begin
+           // создадим файл лога
+         CreateFileLog;
+       end;
+
+      // так же на всякий случай проверим вдруг нет сообщений в памяти(это нужно для корерктно дальнейшей проверки)
+      if m_lastIDMessage=0 then m_lastIDMessage:=lastIDMessage;
+
       Exit;
     end;
 
     SQL.Clear;
     SQL.Add('select id,sender,recipient,date_time,call_id,message from chat where channel = '+#39+EnumChannelToString(m_channel)+#39+' and date_time > '+#39+GetCurrentStartDateTime+#39);
 
+    if InCountMessage = eDiff then begin
+      SQL.Add(' and id > '+#39+IntToStr(lastIDMessage)+#39);
+    end;
 
     SQL.Add(' order by date_time ASC');
 
-     Active:=True;
+    Active:=True;
 
-    for i:=0 to countMessage-1 do begin
+    // ID последнего сообщения в памяти StructMessage
+    lastStructMessageID:=GetLastStructMessageID;
+
+    for i:=lastStructMessageID to lastStructMessageID+countMessage-1 do begin
       m_listMessage[i].m_idMessage:=StrToInt(VarToStr(Fields[0].Value));
       m_listMessage[i].m_sender:=StrToInt(VarToStr(Fields[1].Value));
       m_listMessage[i].m_recipient:=StrToInt(VarToStr(Fields[2].Value));
@@ -519,7 +596,7 @@ begin
     end;
 
     // сохраняем в историю лога
-    SaveToFileLog;
+    SaveToFileLog(InCountMessage);
   end;
 
   FreeAndNil(ado);
@@ -628,8 +705,8 @@ begin
    m_listBrowser[EnumActiveBrowserToInteger(visibleBrowser)].m_browser.Navigate(m_navigate.GetPathToNavigate(visibleBrowser)+'#last_'+IntToStr(m_lastIDMessage));
 
    // пустую страницу ставим предидущему браузеру
-   if AnsiPos('about:blank', m_listBrowser[EnumActiveBrowserToInteger(InActiveBrowser)].m_browser.LocationURL) = 0 then begin
-    m_listBrowser[EnumActiveBrowserToInteger(InActiveBrowser)].m_browser.Navigate('about:blank');
+   if AnsiPos(DEFAULT_URL, m_listBrowser[EnumActiveBrowserToInteger(InActiveBrowser)].m_browser.LocationURL) = 0 then begin
+    m_listBrowser[EnumActiveBrowserToInteger(InActiveBrowser)].m_browser.Navigate(DEFAULT_URL);
    end;
 
    if not isVisibleWebBrowser(visibleBrowser,m_chatID) then VisibleWebBrowser(visibleBrowser,m_chatID);
@@ -671,7 +748,7 @@ end;
 
 
 // нахождение последнего ID сообщения в логе
-function TOnlineChat.GetLastIDMessageFileLog:Integer;
+function TOnlineChat.GetLastIDMessageFileLog(InActiveBrowser:enumActiveBrowser):Integer;
 var
  SLFileLog:TStringList;
  FolderPath:string;
@@ -679,14 +756,21 @@ var
  Match:TMatch;
 
  lastStroka:string;
+ isExistNow:Boolean;
 begin
- SLFileLog:=TStringList.Create;
- SLFileLog.LoadFromFile(m_navigate.GetPathToLogName(eMaster));
+  isExistNow:=False;
 
- if SLFileLog.Count = 0 then begin
-  Result:=0;
-  Exit;
- end;
+ SLFileLog:=TStringList.Create;
+   try
+     SLFileLog.LoadFromFile(m_navigate.GetPathToLogName(InActiveBrowser));
+   finally
+     if SLFileLog.Count = 0 then isExistNow:=True;
+   end;
+
+   if isExistNow then begin
+      Result:=0;
+      Exit;
+   end;
 
  lastStroka:=SLFileLog[SLFileLog.Count-1];
 
@@ -703,7 +787,7 @@ end;
 // отображаем на браузере то ради чего этот класс и нужен
 procedure TOnlineChat.ShowChat;
 var
- last_id:Integer;
+ lastID:Integer;
 begin
   // проверяем какой у нас сейчас виден на форме браузер
    if m_activeBrowser = eNone then begin
@@ -712,10 +796,10 @@ begin
    end;
 
    // теперь будем проверять есть ли у нас изменения в разнице между БД и тем что у нас сейчас в истории
-   last_id:=GetLastIDMessageFileLog;
-   if not isExistNewMessage(last_id) then Exit;
+   lastID:=GetLastIDMessageFileLog(eMaster);
+   if not isExistNewMessage(lastID) then Exit;
    // подгрузим новые сообщения
-    LoadingMessage;
+    LoadingMessage(eDiff);
 
     // отображем новые данные
     ShowBrowser(m_activeBrowser);

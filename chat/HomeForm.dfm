@@ -4,8 +4,8 @@ object FormHome: TFormHome
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = #1051#1086#1082#1072#1083#1100#1085#1099#1081' '#1063#1072#1090
-  ClientHeight = 643
-  ClientWidth = 1027
+  ClientHeight = 536
+  ClientWidth = 927
   Color = clWindow
   DefaultMonitor = dmDesktop
   Font.Charset = DEFAULT_CHARSET
@@ -22,8 +22,8 @@ object FormHome: TFormHome
   TextHeight = 13
   object StatusBar: TStatusBar
     Left = 0
-    Top = 624
-    Width = 1027
+    Top = 517
+    Width = 927
     Height = 19
     Panels = <
       item
@@ -35,18 +35,21 @@ object FormHome: TFormHome
         Text = 'copyright'
         Width = 50
       end>
+    ExplicitTop = 624
+    ExplicitWidth = 1027
   end
   object PanelSend: TPanel
     Left = 0
-    Top = 487
-    Width = 1027
-    Height = 137
+    Top = 419
+    Width = 927
+    Height = 98
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 2
+    ExplicitWidth = 971
     DesignSize = (
-      1027
-      137)
+      927
+      98)
     object lblerr: TLabel
       Left = 65
       Top = -3
@@ -62,13 +65,12 @@ object FormHome: TFormHome
       Visible = False
     end
     object ImgAddFile: TImage
-      Left = 11
-      Top = 21
+      Left = 8
+      Top = 18
       Width = 24
       Height = 25
       Cursor = crHandPoint
       Hint = #1044#1086#1073#1072#1074#1080#1090#1100' '#1074#1083#1086#1078#1077#1085#1080#1077
-      Anchors = [akRight]
       ParentShowHint = False
       Picture.Data = {
         0A544A504547496D6167658E020000FFD8FFE000104A46494600010100000100
@@ -96,12 +98,11 @@ object FormHome: TFormHome
       OnClick = ImgAddFileClick
     end
     object ImgSmile: TImage
-      Left = 11
-      Top = 61
+      Left = 8
+      Top = 44
       Width = 24
       Height = 24
       Cursor = crHandPoint
-      Anchors = [akRight]
       ParentShowHint = False
       Picture.Data = {
         0A544A504547496D61676501050000FFD8FFE000104A46494600010100000100
@@ -150,13 +151,12 @@ object FormHome: TFormHome
       OnClick = ImgSmileClick
     end
     object ImgFormatText: TImage
-      Left = 11
-      Top = 98
+      Left = 8
+      Top = 68
       Width = 24
       Height = 24
       Cursor = crHandPoint
       Hint = #1060#1086#1088#1084#1072#1090#1080#1088#1086#1074#1072#1085#1080#1077' '#1090#1077#1082#1089#1090#1072
-      Anchors = [akRight]
       ParentShowHint = False
       Picture.Data = {
         0A544A504547496D61676581040000FFD8FFE000104A46494600010100000100
@@ -201,8 +201,8 @@ object FormHome: TFormHome
       OnClick = ImgSmileClick
     end
     object ImgSendMessage: TImage
-      Left = 976
-      Top = 56
+      Left = 867
+      Top = 37
       Width = 32
       Height = 32
       Cursor = crHandPoint
@@ -256,17 +256,17 @@ object FormHome: TFormHome
       OnClick = ImgSendMessageClick
     end
     object PanelSendMessage: TPanel
-      Left = 42
-      Top = 9
-      Width = 925
-      Height = 115
+      Left = 40
+      Top = 7
+      Width = 809
+      Height = 88
       BevelOuter = bvNone
       TabOrder = 0
       object reMessage: TRichEdit
-        Left = 4
-        Top = 12
-        Width = 916
-        Height = 101
+        Left = 1
+        Top = 11
+        Width = 801
+        Height = 74
         Align = alCustom
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
@@ -274,7 +274,6 @@ object FormHome: TFormHome
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
-        PopupMenu = popMenuTagUser
         ScrollBars = ssVertical
         TabOrder = 0
         Zoom = 100
@@ -285,7 +284,7 @@ object FormHome: TFormHome
       end
       object STMessageInfo1: TStaticText
         Left = 15
-        Top = 17
+        Top = 22
         Width = 220
         Height = 20
         Caption = 'ctrl+enter '#1087#1077#1088#1077#1093#1086#1076' '#1085#1072' '#1085#1086#1074#1091#1102' '#1089#1090#1088#1086#1095#1082#1091
@@ -300,10 +299,12 @@ object FormHome: TFormHome
       end
       object STMessageInfo2: TStaticText
         Left = 15
-        Top = 33
-        Width = 391
+        Top = 38
+        Width = 495
         Height = 20
-        Caption = #1076#1083#1103' '#1091#1087#1086#1084#1080#1085#1072#1085#1080#1103' '#1085#1072#1087#1077#1095#1072#1090#1072#1090#1100' @ '#1080' '#1074#1099#1073#1088#1072#1090#1100' '#1085#1091#1078#1085#1086#1075#1086' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1103
+        Caption = 
+          #1076#1083#1103' '#1091#1087#1086#1084#1080#1085#1072#1085#1080#1103' '#1085#1072#1087#1077#1095#1072#1090#1072#1090#1100' @ '#1080' '#1074#1099#1073#1088#1072#1090#1100' '#1085#1091#1078#1085#1086#1075#1086' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1103' ('#1074' '#1088#1072 +
+          #1079#1088#1072#1073#1086#1090#1082#1077'...)'
         Enabled = False
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -315,12 +316,12 @@ object FormHome: TFormHome
       end
       object STMessageInfo3: TStaticText
         Left = 15
-        Top = 49
-        Width = 561
+        Top = 54
+        Width = 665
         Height = 20
         Caption = 
           #1076#1083#1103' '#1086#1090#1087#1088#1072#1074#1082#1080' '#1083#1080#1095#1085#1099#1093' '#1089#1086#1086#1073#1097#1077#1085#1080#1081' '#1085#1091#1078#1085#1086' 2 '#1088#1072#1079#1072' '#1082#1083#1080#1082#1085#1091#1090#1100' '#1085#1072' '#1087#1086#1083#1100#1079#1086#1074#1072#1090 +
-          #1077#1083#1103' '#1080#1079' '#1089#1087#1080#1089#1082#1072' "'#1054#1085#1083#1072#1081#1085'"'
+          #1077#1083#1103' '#1080#1079' '#1089#1087#1080#1089#1082#1072' "'#1054#1085#1083#1072#1081#1085'" ('#1074' '#1088#1072#1079#1088#1072#1073#1086#1090#1082#1077'...)'
         Enabled = False
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -332,8 +333,8 @@ object FormHome: TFormHome
       end
     end
     object Button1: TButton
-      Left = 726
-      Top = 74
+      Left = 746
+      Top = 26
       Width = 75
       Height = 25
       Caption = 'Button1'
@@ -345,32 +346,36 @@ object FormHome: TFormHome
   object PanelMessage: TPanel
     Left = 0
     Top = 0
-    Width = 858
-    Height = 487
+    Width = 759
+    Height = 419
     Align = alLeft
     BevelOuter = bvNone
     TabOrder = 0
     object PageChannel: TPageControl
       Left = 0
       Top = 0
-      Width = 858
-      Height = 487
+      Width = 759
+      Height = 419
       ActivePage = sheet_main
       Align = alClient
       TabOrder = 0
+      ExplicitWidth = 858
+      ExplicitHeight = 487
       object sheet_main: TTabSheet
         Caption = '  '#1054#1073#1097#1080#1081' '#1095#1072#1090'  '
+        ExplicitWidth = 850
+        ExplicitHeight = 459
         object chat_main_master: TWebBrowser
           Left = 0
           Top = 0
-          Width = 850
-          Height = 459
+          Width = 751
+          Height = 391
           Align = alClient
           TabOrder = 1
-          ExplicitLeft = 96
-          ExplicitTop = 11
+          ExplicitWidth = 850
+          ExplicitHeight = 460
           ControlData = {
-            4C000000DA570000702F00000000000000000000000000000000000000000000
+            4C0000009E4D0000692800000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126208000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -379,14 +384,14 @@ object FormHome: TFormHome
         object chat_main_slave: TWebBrowser
           Left = 0
           Top = 0
-          Width = 850
-          Height = 459
+          Width = 751
+          Height = 391
           Align = alClient
           TabOrder = 0
-          ExplicitLeft = 26
-          ExplicitTop = 98
+          ExplicitWidth = 850
+          ExplicitHeight = 460
           ControlData = {
-            4C000000DA570000702F00000000000000000000000000000000000000000000
+            4C0000009E4D0000692800000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126208000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -396,17 +401,21 @@ object FormHome: TFormHome
       object sheet_0: TTabSheet
         Caption = 'sheet_0'
         ImageIndex = 1
+        ExplicitWidth = 850
+        ExplicitHeight = 459
         object chat_0_master: TWebBrowser
           Left = 0
           Top = 0
-          Width = 850
-          Height = 459
+          Width = 751
+          Height = 391
           Align = alClient
           TabOrder = 1
           ExplicitLeft = 96
           ExplicitTop = 11
+          ExplicitWidth = 850
+          ExplicitHeight = 459
           ControlData = {
-            4C000000DA570000702F00000000000000000000000000000000000000000000
+            4C0000009E4D0000692800000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126208000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -415,14 +424,16 @@ object FormHome: TFormHome
         object chat_0_slave: TWebBrowser
           Left = 0
           Top = 0
-          Width = 850
-          Height = 459
+          Width = 751
+          Height = 391
           Align = alClient
           TabOrder = 0
           ExplicitLeft = 96
           ExplicitTop = 11
+          ExplicitWidth = 850
+          ExplicitHeight = 459
           ControlData = {
-            4C000000DA570000702F00000000000000000000000000000000000000000000
+            4C0000009E4D0000692800000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126208000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -432,17 +443,21 @@ object FormHome: TFormHome
       object sheet_2: TTabSheet
         Caption = 'sheet_2'
         ImageIndex = 2
+        ExplicitWidth = 850
+        ExplicitHeight = 459
         object chat_2_slave: TWebBrowser
           Left = 0
           Top = 0
-          Width = 850
-          Height = 459
+          Width = 751
+          Height = 391
           Align = alClient
           TabOrder = 1
           ExplicitLeft = 96
           ExplicitTop = 11
+          ExplicitWidth = 850
+          ExplicitHeight = 459
           ControlData = {
-            4C000000DA570000702F00000000000000000000000000000000000000000000
+            4C0000009E4D0000692800000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126208000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -451,14 +466,16 @@ object FormHome: TFormHome
         object chat_2_master: TWebBrowser
           Left = 0
           Top = 0
-          Width = 850
-          Height = 459
+          Width = 751
+          Height = 391
           Align = alClient
           TabOrder = 0
           ExplicitLeft = 96
           ExplicitTop = 11
+          ExplicitWidth = 850
+          ExplicitHeight = 459
           ControlData = {
-            4C000000DA570000702F00000000000000000000000000000000000000000000
+            4C0000009E4D0000692800000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126208000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -468,17 +485,21 @@ object FormHome: TFormHome
       object sheet_3: TTabSheet
         Caption = 'sheet_3'
         ImageIndex = 3
+        ExplicitWidth = 850
+        ExplicitHeight = 459
         object chat_3_master: TWebBrowser
           Left = 0
           Top = 0
-          Width = 850
-          Height = 459
+          Width = 751
+          Height = 391
           Align = alClient
           TabOrder = 1
           ExplicitLeft = 96
           ExplicitTop = 11
+          ExplicitWidth = 850
+          ExplicitHeight = 459
           ControlData = {
-            4C000000DA570000702F00000000000000000000000000000000000000000000
+            4C0000009E4D0000692800000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126208000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -487,14 +508,16 @@ object FormHome: TFormHome
         object chat_3_slave: TWebBrowser
           Left = 0
           Top = 0
-          Width = 850
-          Height = 459
+          Width = 751
+          Height = 391
           Align = alClient
           TabOrder = 0
           ExplicitLeft = 96
           ExplicitTop = 11
+          ExplicitWidth = 850
+          ExplicitHeight = 459
           ControlData = {
-            4C000000DA570000702F00000000000000000000000000000000000000000000
+            4C0000009E4D0000692800000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126208000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -504,17 +527,21 @@ object FormHome: TFormHome
       object sheet_4: TTabSheet
         Caption = 'sheet_4'
         ImageIndex = 4
+        ExplicitWidth = 850
+        ExplicitHeight = 459
         object chat_4_slave: TWebBrowser
           Left = 0
           Top = 0
-          Width = 850
-          Height = 459
+          Width = 751
+          Height = 391
           Align = alClient
           TabOrder = 1
           ExplicitLeft = 96
           ExplicitTop = 11
+          ExplicitWidth = 850
+          ExplicitHeight = 459
           ControlData = {
-            4C000000DA570000702F00000000000000000000000000000000000000000000
+            4C0000009E4D0000692800000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126208000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -523,14 +550,16 @@ object FormHome: TFormHome
         object chat_4_master: TWebBrowser
           Left = 0
           Top = 0
-          Width = 850
-          Height = 459
+          Width = 751
+          Height = 391
           Align = alClient
           TabOrder = 0
           ExplicitLeft = 96
           ExplicitTop = 11
+          ExplicitWidth = 850
+          ExplicitHeight = 459
           ControlData = {
-            4C000000DA570000702F00000000000000000000000000000000000000000000
+            4C0000009E4D0000692800000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126208000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -540,17 +569,21 @@ object FormHome: TFormHome
       object sheet_5: TTabSheet
         Caption = 'sheet_5'
         ImageIndex = 5
+        ExplicitWidth = 850
+        ExplicitHeight = 459
         object chat_5_master: TWebBrowser
           Left = 0
           Top = 0
-          Width = 850
-          Height = 459
+          Width = 751
+          Height = 391
           Align = alClient
           TabOrder = 1
           ExplicitLeft = 96
           ExplicitTop = 11
+          ExplicitWidth = 850
+          ExplicitHeight = 459
           ControlData = {
-            4C000000DA570000702F00000000000000000000000000000000000000000000
+            4C0000009E4D0000692800000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126208000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -559,14 +592,16 @@ object FormHome: TFormHome
         object chat_5_slave: TWebBrowser
           Left = 0
           Top = 0
-          Width = 850
-          Height = 459
+          Width = 751
+          Height = 391
           Align = alClient
           TabOrder = 0
           ExplicitLeft = 96
           ExplicitTop = 11
+          ExplicitWidth = 850
+          ExplicitHeight = 459
           ControlData = {
-            4C000000DA570000702F00000000000000000000000000000000000000000000
+            4C0000009E4D0000692800000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126208000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -576,17 +611,21 @@ object FormHome: TFormHome
       object sheet_6: TTabSheet
         Caption = 'sheet_6'
         ImageIndex = 6
+        ExplicitWidth = 850
+        ExplicitHeight = 459
         object chat_6_slave: TWebBrowser
           Left = 0
           Top = 0
-          Width = 850
-          Height = 459
+          Width = 751
+          Height = 391
           Align = alClient
           TabOrder = 1
           ExplicitLeft = 96
           ExplicitTop = 11
+          ExplicitWidth = 850
+          ExplicitHeight = 459
           ControlData = {
-            4C000000DA570000702F00000000000000000000000000000000000000000000
+            4C0000009E4D0000692800000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126208000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -595,14 +634,16 @@ object FormHome: TFormHome
         object chat_6_master: TWebBrowser
           Left = 0
           Top = 0
-          Width = 850
-          Height = 459
+          Width = 751
+          Height = 391
           Align = alClient
           TabOrder = 0
           ExplicitLeft = 96
           ExplicitTop = 11
+          ExplicitWidth = 850
+          ExplicitHeight = 459
           ControlData = {
-            4C000000DA570000702F00000000000000000000000000000000000000000000
+            4C0000009E4D0000692800000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126208000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -612,17 +653,21 @@ object FormHome: TFormHome
       object sheet_7: TTabSheet
         Caption = 'sheet_7'
         ImageIndex = 7
+        ExplicitWidth = 850
+        ExplicitHeight = 459
         object chat_7_master: TWebBrowser
           Left = 0
           Top = 0
-          Width = 850
-          Height = 459
+          Width = 751
+          Height = 391
           Align = alClient
           TabOrder = 1
           ExplicitLeft = 96
           ExplicitTop = 11
+          ExplicitWidth = 850
+          ExplicitHeight = 459
           ControlData = {
-            4C000000DA570000702F00000000000000000000000000000000000000000000
+            4C0000009E4D0000692800000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126208000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -631,14 +676,16 @@ object FormHome: TFormHome
         object chat_7_slave: TWebBrowser
           Left = 0
           Top = 0
-          Width = 850
-          Height = 459
+          Width = 751
+          Height = 391
           Align = alClient
           TabOrder = 0
           ExplicitLeft = 96
           ExplicitTop = 11
+          ExplicitWidth = 850
+          ExplicitHeight = 459
           ControlData = {
-            4C000000DA570000702F00000000000000000000000000000000000000000000
+            4C0000009E4D0000692800000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126208000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -648,17 +695,21 @@ object FormHome: TFormHome
       object sheet_8: TTabSheet
         Caption = 'sheet_8'
         ImageIndex = 8
+        ExplicitWidth = 850
+        ExplicitHeight = 459
         object chat_8_slave: TWebBrowser
           Left = 0
           Top = 0
-          Width = 850
-          Height = 459
+          Width = 751
+          Height = 391
           Align = alClient
           TabOrder = 1
           ExplicitLeft = 96
           ExplicitTop = 11
+          ExplicitWidth = 850
+          ExplicitHeight = 459
           ControlData = {
-            4C000000DA570000702F00000000000000000000000000000000000000000000
+            4C0000009E4D0000692800000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126208000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -667,14 +718,16 @@ object FormHome: TFormHome
         object chat_8_master: TWebBrowser
           Left = 0
           Top = 0
-          Width = 850
-          Height = 459
+          Width = 751
+          Height = 391
           Align = alClient
           TabOrder = 0
           ExplicitLeft = 96
           ExplicitTop = 11
+          ExplicitWidth = 850
+          ExplicitHeight = 459
           ControlData = {
-            4C000000DA570000702F00000000000000000000000000000000000000000000
+            4C0000009E4D0000692800000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126208000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -684,17 +737,21 @@ object FormHome: TFormHome
       object sheet_9: TTabSheet
         Caption = 'sheet_9'
         ImageIndex = 9
+        ExplicitWidth = 850
+        ExplicitHeight = 459
         object chat_9_master: TWebBrowser
           Left = 0
           Top = 0
-          Width = 850
-          Height = 459
+          Width = 751
+          Height = 391
           Align = alClient
           TabOrder = 1
           ExplicitLeft = 96
           ExplicitTop = 11
+          ExplicitWidth = 850
+          ExplicitHeight = 459
           ControlData = {
-            4C000000DA570000702F00000000000000000000000000000000000000000000
+            4C0000009E4D0000692800000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126208000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -703,14 +760,16 @@ object FormHome: TFormHome
         object chat_9_slave: TWebBrowser
           Left = 0
           Top = 0
-          Width = 850
-          Height = 459
+          Width = 751
+          Height = 391
           Align = alClient
           TabOrder = 0
           ExplicitLeft = 96
           ExplicitTop = 11
+          ExplicitWidth = 850
+          ExplicitHeight = 459
           ControlData = {
-            4C000000DA570000702F00000000000000000000000000000000000000000000
+            4C0000009E4D0000692800000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126208000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -720,17 +779,21 @@ object FormHome: TFormHome
       object sheet_1: TTabSheet
         Caption = 'sheet_1'
         ImageIndex = 10
+        ExplicitWidth = 850
+        ExplicitHeight = 459
         object chat_1_master: TWebBrowser
           Left = 0
           Top = 0
-          Width = 850
-          Height = 459
+          Width = 751
+          Height = 391
           Align = alClient
           TabOrder = 1
           ExplicitLeft = 96
           ExplicitTop = 11
+          ExplicitWidth = 850
+          ExplicitHeight = 459
           ControlData = {
-            4C000000DA570000702F00000000000000000000000000000000000000000000
+            4C0000009E4D0000692800000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126208000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -739,14 +802,16 @@ object FormHome: TFormHome
         object chat_1_slave: TWebBrowser
           Left = 0
           Top = 0
-          Width = 850
-          Height = 459
+          Width = 751
+          Height = 391
           Align = alClient
           TabOrder = 0
           ExplicitLeft = 96
           ExplicitTop = 11
+          ExplicitWidth = 850
+          ExplicitHeight = 459
           ControlData = {
-            4C000000DA570000702F00000000000000000000000000000000000000000000
+            4C0000009E4D0000692800000000000000000000000000000000000000000000
             000000004C000000000000000000000001000000E0D057007335CF11AE690800
             2B2E126208000000000000004C0000000114020000000000C000000000000046
             8000000000000000000000000000000000000000000000000000000000000000
@@ -756,25 +821,27 @@ object FormHome: TFormHome
     end
   end
   object PanelUsers: TPanel
-    Left = 858
+    Left = 759
     Top = 0
-    Width = 169
-    Height = 487
+    Width = 168
+    Height = 419
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
+    ExplicitLeft = 738
+    ExplicitHeight = 420
     object PanelUsersOnline: TPanel
       Left = 1
       Top = 19
       Width = 163
-      Height = 467
+      Height = 398
       BevelInner = bvLowered
       TabOrder = 1
       object ListBoxOnlineUsers: TListBox
         Left = 7
         Top = 15
         Width = 150
-        Height = 445
+        Height = 371
         Style = lbOwnerDrawVariable
         Align = alCustom
         BorderStyle = bsNone

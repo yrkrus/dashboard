@@ -145,6 +145,7 @@ type
     ST_operatorsHideCount: TStaticText;
     Button3: TButton;
     menu_Chat: TMenuItem;
+    lblNewMessageLocalChat: TLabel;
     procedure Button1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -186,6 +187,7 @@ type
     procedure img_goHome_NOClick(Sender: TObject);
     procedure Button3Click(Sender: TObject);
     procedure menu_ChatClick(Sender: TObject);
+    procedure lblNewMessageLocalChatClick(Sender: TObject);
 
 
 
@@ -703,6 +705,11 @@ begin
   FormServerIKCheck.Show;
 end;
 
+procedure THomeForm.lblNewMessageLocalChatClick(Sender: TObject);
+begin
+  OpenLocalChat;
+end;
+
 procedure THomeForm.listSG_ACTIVESIPDrawCell(Sender: TObject; ACol,
   ARow: Integer; Rect: TRect; State: TGridDrawState);
 begin
@@ -715,9 +722,6 @@ begin
       listSG_ACTIVESIP.Canvas.TextOut(Rect.Left, Rect.Top, listSG_ACTIVESIP.Cells[ACol, ARow]);
    end; }
 end;
-
-
-
 
 
 procedure THomeForm.menu_About_DebugClick(Sender: TObject);
@@ -745,18 +749,7 @@ end;
 
 procedure THomeForm.menu_ChatClick(Sender: TObject);
 begin
-  if not GetExistAccessToLocalChat(SharedCurrentUserLogon.GetID) then begin
-    MessageBox(Handle,PChar('У Вас нет доступа к локальному чату'),PChar('Доступ отсутствует'),MB_OK+MB_ICONINFORMATION);
-    Exit;
-  end;
-
-  if not FileExists(CHAT_EXE) then begin
-    MessageBox(Handle,PChar('Не удается найти файл '+CHAT_EXE),PChar('Файл не найден'),MB_OK+MB_ICONERROR);
-    Exit;
-  end;
-
-  ShellExecute(HomeForm.Handle, 'Open', PChar(CHAT_EXE),PChar(CHAT_PARAM+' '+IntToStr(SharedCurrentUserLogon.GetID)),nil,SW_SHOW);
-
+  OpenLocalChat;
 end;
 
 procedure THomeForm.menu_FormPropushennieClick(Sender: TObject);

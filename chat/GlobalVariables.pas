@@ -16,6 +16,10 @@ uses
 
 
 var
+ // режим разработки
+  DEBUG:Boolean = true;
+
+
   // текущая директория откуда запускаем chat.exe
   FOLDERPATH:string;
 
@@ -33,6 +37,9 @@ var
   // максимальное кол-во знаков в сообщений
   // после которого остаток сообщения будет перекинут на следующую строчкц
   MAX_LENGHT_LINES_ONE_FILEDS : Word = 100;
+
+  // дефолтный url адрес
+  DEFAULT_URL : string = 'about:blank';
 
   // текущие онлайн пользователи
   SharedOnlineUsers:  TOnlineUsers;
@@ -74,7 +81,8 @@ initialization  // Инициализация
  SharedLocalMainChat:=TOnlineChat.Create(eChatMain,ePublic);
 
 
-finalization
+
+ finalization
  SharedOnlineUsers.Free;
 
 end.
