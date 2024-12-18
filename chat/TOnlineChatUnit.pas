@@ -448,6 +448,7 @@ var
  message_time:string;
  lastIDFile:Integer;
  lastStructMessageID:Integer;
+ isExistMessage:Boolean;
 begin
     // проверяем есть ли у нас уже истоия ранее сохраненных файлов
    if not isExistFileLog then begin   // история уже есть подгружаем
@@ -493,10 +494,25 @@ begin
         end;
 
 
+
+
         for j:=0 to Count-1 do begin
-          if AnsiPos('message_id="'+IntToStr(m_listMessage[j].m_idMessage)+'"',SLTemp[SLTemp.Count-1])=0 then begin
-            SLTemp.Add(GenerateMessage(m_listMessage[j],m_listMessage[j].m_call));
+         //эта конструкция нужна если у нас пустой файл с иторией
+         if SLTemp.Count=0 then begin
+           SLTemp.Add(GenerateMessage(m_listMessage[j],m_listMessage[j].m_call));
+           Continue;
+         end;
+
+         // пройдемся по сообщениям
+         isExistMessage:=False;  // по умолчанию считаем что нет сообщения
+         for k:=0 to SLTemp.Count-1 do begin
+          if AnsiPos('message_id="'+IntToStr(m_listMessage[j].m_idMessage)+'"',SLTemp[k])<>0 then begin
+            isExistMessage:=True;
+            Break;
           end;
+         end;
+
+         if not isExistMessage then SLTemp.Add(GenerateMessage(m_listMessage[j],m_listMessage[j].m_call));
         end;
 
        // сохраняем в файл(master\slave)

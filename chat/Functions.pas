@@ -5,7 +5,8 @@ interface
   uses  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, TlHelp32, IdBaseComponent, IdComponent, ShellAPI, StdCtrls, ComCtrls,
   ExtCtrls,StrUtils,WinSvc,System.Win.ComObj, IdText, Data.Win.ADODB,
-  Data.DB, IdException, RegularExpressions,SHDocVw,CustomTypeUnit;
+  Data.DB, IdException, RegularExpressions,SHDocVw,CustomTypeUnit,
+  Vcl.Menus;
 
   procedure KillProcess;                                                     // принудительное завершение работы
   procedure createCopyright;                                                 // создание Copyright
@@ -37,7 +38,7 @@ interface
   procedure HideWebBrowser(InActiveBrowser:enumActiveBrowser; InChatID:enumChatID);      // скрываем браузер
   function isVisibleWebBrowser(InActiveBrowser:enumActiveBrowser; InChatID:enumChatID):Boolean;   // виден ли браузер или нет
   procedure CloneRun;                                                                // проверка на 2ую копию
-  procedure CreatePopMenuTagUser;                                                     // создание popmenu для тэгирования пользака
+
 
 
 implementation
@@ -160,9 +161,12 @@ var
  recipient:Integer;
  call_id:string;
 begin
+   Screen.Cursor:=crHourGlass;
 
    msg:=ReplaceMessageToHTMLFormat(MessageForms);
    if msg='' then begin
+    Screen.Cursor:=crDefault;
+
     MessageBox(FormHome.Handle,PChar('Не удалось распарсить сообщение'),PChar('Ошибка парсинга'),MB_OK+MB_ICONERROR);
     Exit;
    end;
@@ -182,9 +186,11 @@ begin
                      recipient,
                      call_id,
                      msg) then begin
+    Screen.Cursor:=crDefault;
     MessageBox(FormHome.Handle,PChar('Ошибка отправки сообщения:'+#13#13+SENDING_MESSAGE_ERROR),PChar('Ошибка отправки'),MB_OK+MB_ICONERROR);
    end;
 
+   Screen.Cursor:=crDefault;
    MessageForms.Clear;
 end;
 
@@ -405,13 +411,6 @@ begin
      MessageBox(FormHome.Handle,PChar('Обнаружен запуск 2ой копии чата'+#13#13+'Для продолжения закройте предыдущую копию'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
      KillProcess;
    end;
-end;
-
-
-// создание popmenu для тэгирования пользака
-procedure CreatePopMenuTagUser;
-begin
-
 end;
 
 

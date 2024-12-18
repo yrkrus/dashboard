@@ -32,7 +32,7 @@ Coordinates=10,212,78,36
 Coordinates=368,10,77,58
 
 []
-Coordinates=120,1,117,58
+Coordinates=581,221,117,36
 Visible=True
 
 [STMessageInfo3]
@@ -72,12 +72,6 @@ Coordinates=0,0,101,58
 [sheet_main]
 Coordinates=518,111,81,36
 
-[N11]
-Coordinates=440,87,40,36
-
-[N1]
-Coordinates=440,267,40,36
-
 [sheet_5]
 Coordinates=483,331,60,36
 
@@ -95,9 +89,6 @@ Coordinates=414,336,60,36
 
 [sheet_4]
 Coordinates=345,336,60,36
-
-[popMenuTagUser]
-Coordinates=581,221,117,36
 
 [sheet_3]
 Coordinates=276,336,60,36

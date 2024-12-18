@@ -48,6 +48,8 @@ var
   function GetCurrentTime:PChar; stdcall; external 'core.dll';       // текущее время
   function GetLocalChatNameFolder:PChar; stdcall; external 'core.dll';       // // папка с локальным чатом
   function GetExtensionLog:PChar; stdcall; external 'core.dll';       // // папка с локальным чатом
+  function KillTask(ExeFileName:string):integer;  stdcall; external 'core.dll';        // функция остановки exe
+  function GetTask(ExeFileName:string):Boolean;  stdcall; external 'core.dll';         // проверка запущен ли процесс
 
 
   // --- connect_to_server.dll ---
@@ -55,7 +57,7 @@ var
  function GetServerName:string;     stdcall;   external 'connect_to_server.dll'; // адрес базы
  function GetServerUser:string;     stdcall;   external 'connect_to_server.dll'; // логин
  function GetServerPassword:string; stdcall;   external 'connect_to_server.dll'; // пароль
-  // --- xml.dll ---
+{  // --- xml.dll ---
  type
    TXMLSettings = Pointer; // Указатель на класс TXMLSettings
   function CreateXMLSettings(SettingsFileName, GUIDVersion: PChar): TXMLSettings; stdcall; external 'xml.dll';
@@ -67,7 +69,7 @@ var
   procedure UpdateXMLRemoteVersion(TXML: TXMLSettings; GUIDVersion: PChar);       stdcall; external 'xml.dll';  // для службы обновления (тут не используется)
   function GetRemoteXMLVersion(TXML: TXMLSettings): PChar;                        stdcall; external 'xml.dll';  // для службы обновления (тут не используется)
   function GetXMLLastOnline(TXML: TXMLSettings): TDateTime;                       stdcall; external 'xml.dll';  // для службы обновления (тут не используется)
-
+  }
 
 implementation
 

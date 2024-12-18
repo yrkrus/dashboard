@@ -65,7 +65,7 @@ function getCurrentDateTimeWithTime:string;                                     
 function getForceActiveSessionClosed(InUserID:Integer):Boolean;                      // проверка нужно ли закрыть активную сессию
 //function createServerConnect:TADOConnection;                                         // создвание подключения к серверу
 function getSelectResponse(InStroka:string):Integer;                                 // запрос по статичтике данных
-procedure Logging(InLoggingID:enumLogging);                                             // логирование действий
+procedure LoggingRemote(InLoggingID:enumLogging);                                      // логирование действий
 function TLoggingToInt(InTLogging:enumLogging):Integer;                                 // проеобразование из TLogging в Integer
 function IntToTLogging(InLogging:Integer):enumLogging;                                  // проеобразование из Integer в TLogging
 procedure showUserNameAuthForm;                                                      // отображение ранее входивщего пользователя в выборе вариантов пользователей
@@ -139,7 +139,7 @@ uses
   FormAboutUnit, FormServerIKCheckUnit, Thread_CHECKSERVERSUnit, FormSettingsUnit, FormAuthUnit,
   FormErrorUnit, FormWaitUnit, Thread_AnsweredQueueUnit, FormUsersUnit, TTranslirtUnit,
   Thread_ACTIVESIP_updatetalkUnit, Thread_ACTIVESIP_updatePhoneTalkUnit, Thread_ACTIVESIP_countTalkUnit,
-  Thread_ACTIVESIP_QueueUnit, FormActiveSessionUnit, TIVRUnit, FormOperatorStatusUnit;
+  Thread_ACTIVESIP_QueueUnit, FormActiveSessionUnit, TIVRUnit, FormOperatorStatusUnit, TXmlUnit;
 
 
 
@@ -263,7 +263,7 @@ begin
 end;
 
  // логирование действий
-procedure Logging(InLoggingID:enumLogging);
+procedure LoggingRemote(InLoggingID:enumLogging);
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -540,16 +540,18 @@ end;
 
  //принудительное завершение работы
 procedure KillProcess;
+var
+ countKillExe:Integer;
 begin
    try
      if CONNECT_BD_ERROR=False then begin
 
        // логирование (выход)  , через команду или руками
-       if getForceActiveSessionClosed(SharedCurrentUserLogon.GetID) then Logging(eLog_exit_force)
+       if getForceActiveSessionClosed(SharedCurrentUserLogon.GetID) then LoggingRemote(eLog_exit_force)
        else
        begin
         // проверка на вдруг нажали просто отмена
-        if SharedCurrentUserLogon.GetID<>0 then Logging(eLog_exit);
+        if SharedCurrentUserLogon.GetID<>0 then LoggingRemote(eLog_exit);
        end;
 
        // очичтка текущего статуса оператора
@@ -557,6 +559,17 @@ begin
 
        // удаление активной сессии
        deleteActiveSession(getActiveSessionUser(SharedCurrentUserLogon.GetID));
+     end;
+
+     // закрываем chat_exe если открыт
+     countKillExe:=0;
+     while GetTask(PChar(CHAT_EXE)) do begin
+       KillTask(PChar(CHAT_EXE));
+
+       // на случай если не удасться закрыть дочерний exe
+       Sleep(500);
+       Inc(countKillExe);
+       if countKillExe>10 then Break;
      end;
 
    finally
@@ -3144,7 +3157,8 @@ var
  serverConnect:TADOConnection;
  curr_ver:string;
 
- XML:TXMLSettings;
+ //XML:TXMLSettings;
+   XML:TXML;
 begin
 
   ado:=TADOQuery.Create(nil);
@@ -3173,15 +3187,26 @@ begin
 
   // запишем текущую версию дашборда
   begin
+//   if FileExists(SETTINGS_XML) then begin
+//    XML:=CreateXMLSettingsSingle(PChar(SETTINGS_XML));
+//    // обновляем текущий
+//    UpdateXMLLocalVersion(XML,PChar(GUID_VESRION));
+//   end
+//   else begin
+//    XML:=CreateXMLSettings(PChar(SETTINGS_XML), PChar(GUID_VESRION));
+//   end;
+//   FreeXMLSettings(XML);
+
    if FileExists(SETTINGS_XML) then begin
-    XML:=CreateXMLSettingsSingle(PChar(SETTINGS_XML));
+    XML:=TXML.Create(PChar(SETTINGS_XML));
     // обновляем текущий
-    UpdateXMLLocalVersion(XML,PChar(GUID_VESRION));
+    XML.UpdateCurrentVersion(PChar(GUID_VESRION));
    end
    else begin
-    XML:=CreateXMLSettings(PChar(SETTINGS_XML), PChar(GUID_VESRION));
+    XML:=TXML.Create(PChar(SETTINGS_XML),PChar(GUID_VESRION));
    end;
-   FreeXMLSettings(XML);
+   XML.Free;
+
   end;
 
 end;

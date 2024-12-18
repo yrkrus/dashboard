@@ -254,6 +254,7 @@
         <DCCReference Include="TCustomTypeUnit.pas"/>
         <DCCReference Include="GlobalVariables.pas"/>
         <DCCReference Include="TOnlineChat.pas"/>
+        <DCCReference Include="TXmlUnit.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

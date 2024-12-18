@@ -32,10 +32,7 @@ type
     ImgSmile: TImage;
     STMessageInfo1: TStaticText;
     STMessageInfo2: TStaticText;
-    popMenuTagUser: TPopupMenu;
     STMessageInfo3: TStaticText;
-    N1: TMenuItem;
-    N11: TMenuItem;
     ImgFormatText: TImage;
     sheet_main: TTabSheet;
     sheet_0: TTabSheet;
@@ -88,13 +85,20 @@ type
     procedure ListBoxOnlineUsersClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
 
+    procedure PopMenuItemClick(Sender: TObject);
+    procedure ShowPopMenuTagUser(X,Y:Integer);
+
   private
     { Private declarations }
+    popMenuTagUser:TPopupMenu;
+
     procedure SendingClick;
     procedure ShowMessageInfo(InType: enumMessageInfo);
 
   public
     { Public declarations }
+
+
 
   ///////// ПОТОКИ ////////////
   Users_thread:TThread;
@@ -122,6 +126,38 @@ procedure Develop;
 begin
   MessageBox(FormHome.Handle,PChar('Пока не доступно, в разработке...'),PChar('Заглушка на будущее'),MB_OK+MB_ICONASTERISK);
 end;
+
+
+procedure TFormHome.PopMenuItemClick(Sender: TObject);
+begin
+  // Обработка клика по элементу меню
+  ShowMessage('Выбрана ' + (Sender as TMenuItem).Caption);
+end;
+
+// создание popmenu для тэгирования пользака
+procedure TFormHome.ShowPopMenuTagUser(X,Y:Integer);
+var
+  MenuItem: TMenuItem;
+begin
+  // Очищаем предыдущее содержимое меню
+   popMenuTagUser.Items.Clear;
+
+  // Добавляем элементы в меню
+  MenuItem := TMenuItem.Create(popMenuTagUser);
+  MenuItem.Caption := 'Опция 1';
+  MenuItem.OnClick := PopMenuItemClick;
+  popMenuTagUser.Items.Add(MenuItem);
+
+  MenuItem := TMenuItem.Create(popMenuTagUser);
+  MenuItem.Caption := 'Опция 2';
+  MenuItem.OnClick := PopMenuItemClick;
+  popMenuTagUser.Items.Add(MenuItem);
+
+  // Показываем всплывающее меню
+  popMenuTagUser.Popup(X, Y);
+
+end;
+
 
 procedure TFormHome.ShowMessageInfo(InType: enumMessageInfo);
 begin
@@ -238,11 +274,28 @@ end;
 procedure TFormHome.reMessageKeyPress(Sender: TObject; var Key: Char);
 var
   CurrentLine: string;
+ CaretPos: TPoint;
 begin
   if Key = #13 then
   begin
     SendingClick;
   end;
+
+
+ // проверим нужно ли тжгать пользователя
+  if Key='@' then begin
+     // Получаем позицию курсора
+     // Получаем позицию курсора в клиентских координатах
+    CaretPos := reMessage.CaretPos;
+
+    // Преобразуем в экранные координаты
+    CaretPos := reMessage.ClientToScreen(CaretPos);
+
+
+    //CaretPos := reMessage.ClientToScreen(Point(reMessage.CaretPos.X, reMessage.CaretPos.Y));
+    ShowPopMenuTagUser(CaretPos.X, CaretPos.Y);
+  end;
+
 
   // Получаем текущую строку, в которой находится курсор
   CurrentLine := reMessage.Lines[reMessage.Perform(EM_LINEFROMCHAR, reMessage.SelStart, 0)];
@@ -256,6 +309,9 @@ begin
     // Перемещаем курсор в конец новой строки
     reMessage.SelStart := reMessage.GetTextLen; // Перемещаем курсор в конец
   end;
+
+
+
 end;
 
 
@@ -317,6 +373,10 @@ begin
 
   // скрываем все вкладки с личными чатами
   HideAllTabSheetChat;
+
+  // создадим всплывающее меню на случай тэганья польака
+  popMenuTagUser:=TPopupMenu.Create(Self);
+  reMessage.PopupMenu:=popMenuTagUser;
 
   // создадим потоки
   createThread;

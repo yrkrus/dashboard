@@ -36,7 +36,7 @@ type
 implementation
 
 uses
-  FunctionUnit, FormHome, FormDEBUGUnit, GlobalVariables, FormOperatorStatusUnit, TCustomTypeUnit;
+  FunctionUnit, FormHome, FormDEBUGUnit, GlobalVariables, FormOperatorStatusUnit, TCustomTypeUnit, TXmlUnit;
 
 
 
@@ -49,7 +49,8 @@ uses
 { Thread_ACTIVESIP }
 procedure Thread_ACTIVESIP.UpdateActiveSipOperators(var p_ActiveSipOperators:TActiveSIP);
 var
- XML:TXMLSettings;
+ // XML:TXMLSettings;
+ XML:TXML;
 begin
   if (CONNECT_BD_ERROR=False) then begin
     // проверим есть ли новые операторы
@@ -69,9 +70,12 @@ begin
   // обновляем время
   HomeForm.StatusBar.Panels[0].Text:=DateTimeToStr(now);
 
-  XML:=CreateXMLSettingsSingle(PChar(SETTINGS_XML));
-  UpdateXMLLastOnline(XML);
-  FreeXMLSettings(XML);
+//  XML:=CreateXMLSettingsSingle(PChar(SETTINGS_XML));
+//  UpdateXMLLastOnline(XML);
+//  FreeXMLSettings(XML);
+  XML:=TXML.Create(PChar(SETTINGS_XML));
+  XML.UpdateLastOnline;
+  XML.Free;
 
 end;
 

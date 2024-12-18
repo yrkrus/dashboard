@@ -875,14 +875,4 @@ object FormHome: TFormHome
       TabOrder = 0
     end
   end
-  object popMenuTagUser: TPopupMenu
-    Left = 690
-    Top = 528
-    object N1: TMenuItem
-      Caption = #1055#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1100' 1'
-    end
-    object N11: TMenuItem
-      Caption = #1055#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1100' 2'
-    end
-  end
 end

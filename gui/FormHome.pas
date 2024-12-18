@@ -185,7 +185,6 @@ type
     procedure ST_StatusPanelWindowClick(Sender: TObject);
     procedure img_goHome_YESClick(Sender: TObject);
     procedure img_goHome_NOClick(Sender: TObject);
-    procedure Button3Click(Sender: TObject);
     procedure menu_ChatClick(Sender: TObject);
     procedure lblNewMessageLocalChatClick(Sender: TObject);
 
@@ -483,15 +482,6 @@ end;
 
 
 
-procedure THomeForm.Button3Click(Sender: TObject);
-var
- XML:TXMLSettings;
-begin
-  XML:=CreateXMLSettingsSingle(PChar(SETTINGS_XML));
-  ShowMessage(DateTimeToStr(GetXMLLastOnline(XML)));
-  FreeXMLSettings(XML);
-end;
-
 procedure THomeForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 var
   AMsgDialog: TForm;
@@ -549,6 +539,7 @@ begin
           Free;
         end;
       end;
+       KillProcess;
     end;
   end;
 end;

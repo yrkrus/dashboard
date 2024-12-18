@@ -120,14 +120,14 @@ begin
   if successEnter then begin
 
     // логирование (авторизация)
-    Logging(eLog_enter);
+    LoggingRemote(eLog_enter);
     Screen.Cursor:=crDefault;
    Close;
   end
   else begin
 
     // логирование (не успешная авторизация)
-   Logging(eLog_auth_error);
+   LoggingRemote(eLog_auth_error);
    Screen.Cursor:=crDefault;
 
    MessageBox(Handle,PChar('Ошибка авторизации, не верный пароль'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
