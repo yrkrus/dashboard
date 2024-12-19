@@ -51,7 +51,6 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants, Graphic
       count                                : Integer;
       m_mutex                              : TMutex;
 
-
       end;
    // class TQueue END
 

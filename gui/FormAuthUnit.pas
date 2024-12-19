@@ -6,11 +6,11 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ComCtrls,
   Vcl.ExtCtrls, Vcl.Grids,Data.Win.ADODB, Data.DB, IdException, Vcl.Imaging.jpeg,TUserUnit,
-  Vcl.WinXCtrls;
+  Vcl.WinXCtrls, Vcl.Imaging.pngimage;
 
 type
   TFormAuth = class(TForm)
-    Panel1: TPanel;
+    PanelAuth: TPanel;
     Пользователь: TLabel;
     Label1: TLabel;
     Image1: TImage;
@@ -22,6 +22,9 @@ type
     btnClose: TBitBtn;
     img_eay_open: TImage;
     img_eay_close: TImage;
+    ImageLogo: TImage;
+    ImgNewYear: TImage;
+    lblInfoError: TLabel;
     procedure btnCloseClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnAuthClick(Sender: TObject);
@@ -30,6 +33,10 @@ type
     procedure img_eay_openClick(Sender: TObject);
     procedure img_eay_closeClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure DefaultFormSize;
+    procedure FormSizeWithError(InStrokaError:string);
+    procedure comboxUserChange(Sender: TObject);
+    procedure edtPasswordChange(Sender: TObject);
 
   private
     { Private declarations }
@@ -43,7 +50,6 @@ type
 var
   FormAuth: TFormAuth;
 
-
 implementation
 
 uses
@@ -51,6 +57,56 @@ uses
 
 {$R *.dfm}
 
+
+procedure TFormAuth.DefaultFormSize;
+const
+  WidthDefaultForm:Word=338;
+  HeightDefaultForm:Word=251;
+  WidthDefaulPanel:Word=337;
+  HeightDefaultPanel:Word=249;
+  btnDefaultTop:Word=192;
+begin
+   // сама форма
+   Width:=WidthDefaultForm;
+   Height:=HeightDefaultForm;
+
+   // панель
+   PanelAuth.Width:=WidthDefaulPanel;
+   PanelAuth.Height:=HeightDefaultPanel;
+
+   // кнопки
+   btnAuth.Top:=btnDefaultTop;
+   btnClose.Top:=btnDefaultTop;
+
+   // ошибка
+   lblInfoError.Visible:=False;
+end;
+
+
+procedure TFormAuth.FormSizeWithError(InStrokaError:string);
+const
+  WidthDefaultForm:Word=338;
+  HeightDefaultForm:Word=276;
+  WidthDefaulPanel:Word=337;
+  HeightDefaultPanel:Word=275;
+  btnDefaultTop:Word=220;
+begin
+   // сама форма
+   Width:=WidthDefaultForm;
+   Height:=HeightDefaultForm;
+
+   // панель
+   PanelAuth.Width:=WidthDefaulPanel;
+   PanelAuth.Height:=HeightDefaultPanel;
+
+   // кнопки
+   btnAuth.Top:=btnDefaultTop;
+   btnClose.Top:=btnDefaultTop;
+
+   // ошибка
+   lblInfoError.Caption:=InStrokaError;
+   lblInfoError.Visible:=True;
+end;
 
 
 procedure TFormAuth.btnAuthClick(Sender: TObject);
@@ -69,7 +125,8 @@ begin
 
     begin
       if comboxUser.ItemIndex = -1 then begin
-        MessageBox(Handle,PChar('Не выбран пользователь'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+        FormSizeWithError('Не выбран пользователь');
+       // MessageBox(Handle,PChar('Не выбран пользователь'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
         Exit;
       end;
       current_user:=comboxUser.Items[comboxUser.ItemIndex];
@@ -77,7 +134,8 @@ begin
 
       current_pwd:=edtPassword.Text;
       if current_pwd = '' then begin
-        MessageBox(Handle,PChar('Пустой пароль'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+        FormSizeWithError('Пустой пароль');
+        //MessageBox(Handle,PChar('Пустой пароль'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
         Exit;
       end;
     end;
@@ -130,7 +188,8 @@ begin
    LoggingRemote(eLog_auth_error);
    Screen.Cursor:=crDefault;
 
-   MessageBox(Handle,PChar('Ошибка авторизации, не верный пароль'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+   FormSizeWithError('Ошибка авторизации, не верный пароль');
+   //MessageBox(Handle,PChar('Ошибка авторизации, не верный пароль'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
    Exit;
   end;
 
@@ -149,6 +208,16 @@ begin
  // FormWait.Show;
 
   // getTranslate('Тестовое сообщение');
+end;
+
+procedure TFormAuth.comboxUserChange(Sender: TObject);
+begin
+   DefaultFormSize;
+end;
+
+procedure TFormAuth.edtPasswordChange(Sender: TObject);
+begin
+  DefaultFormSize;
 end;
 
 procedure TFormAuth.edtPasswordKeyPress(Sender: TObject; var Key: Char);
@@ -193,7 +262,10 @@ procedure TFormAuth.FormShow(Sender: TObject);
 var
  i:Integer;
 begin
-   createIconPassword;
+  // размер окна по умолчанию
+  DefaultFormSize;
+
+  createIconPassword;
 
   // прогружаем пользователей
   LoadUsersAuthForm;
@@ -205,7 +277,8 @@ begin
   // версия
   lblVersion.Caption:=getVersion(GUID_VESRION,eGUI);
 
-
+  // пасхалки
+  HappyNewYear;
 end;
 
 procedure TFormAuth.img_eay_closeClick(Sender: TObject);

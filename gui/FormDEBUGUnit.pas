@@ -52,6 +52,10 @@ type
     Label32: TLabel;
     Label33: TLabel;
     Label34: TLabel;
+    Label35: TLabel;
+    lblThread_Chat: TLabel;
+    Label37: TLabel;
+    Label38: TLabel;
     procedure FormCreate(Sender: TObject);
   private
     { Private declarations }

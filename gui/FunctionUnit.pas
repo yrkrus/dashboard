@@ -129,7 +129,9 @@ procedure VisibleIconOperatorsGoHome(InStatus:enumHideShowGoHomeOperators;
 procedure HappyNewYear;                                                              // пасхалка с новым годом
 function GetExistAccessToLocalChat(InUserId:Integer):Boolean;                        //есть ли доступ к локальному чату
 procedure OpenLocalChat;                                                             // открытые exe локального чата
-
+function EnumChannelChatIDToString(InChatID:enumChatID):string;                // enumChatID -> string
+function EnumChannelToString(InChannel:enumChannel):string;                 //enumChannel -> string
+function EnumActiveBrowserToString(InActiveBrowser:enumActiveBrowser):string;     // enumActiveBrowser -> string
 
 
 implementation
@@ -139,7 +141,7 @@ uses
   FormAboutUnit, FormServerIKCheckUnit, Thread_CHECKSERVERSUnit, FormSettingsUnit, FormAuthUnit,
   FormErrorUnit, FormWaitUnit, Thread_AnsweredQueueUnit, FormUsersUnit, TTranslirtUnit,
   Thread_ACTIVESIP_updatetalkUnit, Thread_ACTIVESIP_updatePhoneTalkUnit, Thread_ACTIVESIP_countTalkUnit,
-  Thread_ACTIVESIP_QueueUnit, FormActiveSessionUnit, TIVRUnit, FormOperatorStatusUnit, TXmlUnit;
+  Thread_ACTIVESIP_QueueUnit, FormActiveSessionUnit, TIVRUnit, FormOperatorStatusUnit, TXmlUnit, TOnlineChat, Thread_ChatUnit;
 
 
 
@@ -520,6 +522,16 @@ begin
     end
     else UpdateAnsweredStop:=True;
 
+    // OnlineChat
+     if ONLINECHAT_thread=nil then
+    begin
+     FreeAndNil(ONLINECHAT_thread);
+     ONLINECHAT_thread:=Thread_Chat.Create(True);
+     ONLINECHAT_thread.Priority:=tpNormal;
+     UpdateOnlineChatStop:=True;
+    end
+    else UpdateOnlineChatStop:=True;
+
 
     // запуск потоков
     Statistics_thread.Resume;
@@ -532,6 +544,7 @@ begin
     ACTIVESIP_updateTalkPhone_thread.Resume;
     CHECKSERVERS_thread.Resume;
     ANSWEREDQUEUE_thread.Resume;
+    if SharedCurrentUserLogon.GetIsAccessLocalChat then ONLINECHAT_thread.Resume;
   end;
 
 
@@ -4512,11 +4525,12 @@ begin
   // Определяем дату Нового года
   DateNachalo := EncodeDateTime(YearOf(Now) + 1, 1, 1, 0, 0, 0, 0);
 
-  // Проверяем, находится ли текущая дата в диапазоне от 3 дней до Нового года и 8 дней после
-  if (DaysBetween(Now, DateNachalo) <= 8) and (DaysBetween(Now, DateNachalo) >= -3) then
+  // Проверяем, находится ли текущая дата в диапазоне от 7 дней до Нового года и 8 дней после
+  if (DaysBetween(Now, DateNachalo) <= 8) and (DaysBetween(Now, DateNachalo) >= -7) then
   begin
    HomeForm.ImgNewYear.Visible:=True;
    FormAbout.ImgNewYear.Visible:=True;
+   FormAuth.ImgNewYear.Visible:=True;
   end;
 end;
 
@@ -4553,10 +4567,10 @@ end;
 // открытые exe локального чата
 procedure OpenLocalChat;
 begin
- if not GetExistAccessToLocalChat(SharedCurrentUserLogon.GetID) then begin
+ if not SharedCurrentUserLogon.GetIsAccessLocalChat then begin
     MessageBox(HomeForm.Handle,PChar('У Вас нет доступа к локальному чату'),PChar('Доступ отсутствует'),MB_OK+MB_ICONINFORMATION);
     Exit;
-  end;
+ end;
 
   if not FileExists(CHAT_EXE) then begin
     MessageBox(HomeForm.Handle,PChar('Не удается найти файл '+CHAT_EXE),PChar('Файл не найден'),MB_OK+MB_ICONERROR);
@@ -4564,6 +4578,44 @@ begin
   end;
 
   ShellExecute(HomeForm.Handle, 'Open', PChar(CHAT_EXE),PChar(CHAT_PARAM+' '+IntToStr(SharedCurrentUserLogon.GetID)),nil,SW_SHOW);
+end;
+
+
+// enumChatID -> string
+function EnumChannelChatIDToString(InChatID:enumChatID):string;
+begin
+  case InChatID of
+    eChatMain:  Result:='main';
+    eChatID0:   Result:='0';
+    eChatID1:   Result:='1';
+    eChatID2:   Result:='2';
+    eChatID3:   Result:='3';
+    eChatID4:   Result:='4';
+    eChatID5:   Result:='5';
+    eChatID6:   Result:='6';
+    eChatID7:   Result:='7';
+    eChatID8:   Result:='8';
+    eChatID9:   Result:='9';
+  end;
+end;
+
+//enumChannel -> string
+function EnumChannelToString(InChannel:enumChannel):string;
+begin
+   case InChannel of
+     ePublic:   Result:='public';
+     ePrivate:  Result:='private';
+   end;
+end;
+
+// enumActiveBrowser -> string
+function EnumActiveBrowserToString(InActiveBrowser:enumActiveBrowser):string;
+begin
+  case InActiveBrowser of
+    eNone   :Result:='none';
+    eMaster :Result:='master';
+    eSlave  :Result:='slave';
+  end;
 end;
 
 end.

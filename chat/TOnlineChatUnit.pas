@@ -767,7 +767,6 @@ end;
 function TOnlineChat.GetLastIDMessageFileLog(InActiveBrowser:enumActiveBrowser):Integer;
 var
  SLFileLog:TStringList;
- FolderPath:string;
  Regex: TRegEx;
  Match:TMatch;
 

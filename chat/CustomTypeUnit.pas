@@ -17,19 +17,19 @@ interface
                       eDiff        // разница
                       );
 
-   type  // какой браузер сейчас активен основной или дополнительный
+   type  // какой браузер сейчас активен основной или дополнительный  !TODO эти же типы есть еще и в dashboard.exe
    enumActiveBrowser = (  eMaster = 0,
                           eSlave  = 1,
                           eNone   = 2
                         );
 
-   type
+   type // типы чатов  !TODO эти же типы есть еще и в dashboard.exe
    enumChannel  = ( ePublic,  // публичный (main)
                     ePrivate  // приватный (тет-а-тет)
                   );
 
 
-  type  // типы ID чатов
+  type  // типы ID чатов   !TODO эти же типы есть еще и в dashboard.exe
  enumChatID = ( eChatMain = -1,
                 eChatID0  = 0,
                 eChatID1  = 1,

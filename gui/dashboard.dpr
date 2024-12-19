@@ -48,7 +48,8 @@ uses
   TCustomTypeUnit in 'TCustomTypeUnit.pas',
   GlobalVariables in 'GlobalVariables.pas',
   TOnlineChat in 'TOnlineChat.pas',
-  TXmlUnit in 'TXmlUnit.pas';
+  TXmlUnit in 'TXmlUnit.pas',
+  Thread_ChatUnit in 'Thread_ChatUnit.pas';
 
 {$R *.res}
 

@@ -14,6 +14,9 @@ uses
   TActiveSIPUnit, TUserUnit, Data.Win.ADODB, Data.DB, SysUtils, Windows;
 
 var
+  // текущая директория откуда запускаем chat.exe
+  FOLDERPATH:string;
+
   // Текущая версия GUID   ctrl+shift+G (GUID)
   GUID_VESRION    :string = '11FC1DF8';
 
@@ -74,6 +77,8 @@ var
 implementation
 
 initialization  // Инициализация
+  FOLDERPATH:=ExtractFilePath(ParamStr(0));
+
   SharedActiveSipOperators := TActiveSIP.Create;
 
 

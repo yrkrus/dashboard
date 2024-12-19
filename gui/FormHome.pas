@@ -207,6 +207,7 @@ type
   ACTIVESIP_countTalk_thread:TThread;
   CHECKSERVERS_thread:TThread;
   ANSWEREDQUEUE_thread:TThread;
+  ONLINECHAT_thread:TThread;
 
   end;
 
@@ -254,12 +255,13 @@ type
   ДОБАВЛЕНО
   - на главной форме добавлено отображаение кол-во скрытых операторов при активном параметре "не показывать ушедших домой"
   - дашборд стал модульным
-  (не готово)- добавлен функционал "Локального чата"
+  - добавлен функционал "Локального чата"
+  - изменена форма аторизации
 
 
   ИСПРАВЛЕНО
   не работает проверить - исправлена ошибка не отображения активных операторов, при установленном параметре "не показывать ушедших домой"
-
+  - исправлено отображение статистики "ожидания в очереди" при переходе на следующий день
 
   =======================================================
 }
@@ -284,6 +286,7 @@ var
   UpdateACTIVESIPcountTalk:Boolean;                        // остановка обновления ACTIVESIP_countTalk_thread
   UpdateCHECKSERVERSSTOP:Boolean;                          // остановка обновления CHECKSERVERSSTOP
   UpdateAnsweredStop:Boolean;                              // остановка обновления AnsweredQueue
+  UpdateOnlineChatStop:Boolean;                            // остановка обновления OnlineChat
 
  const
   // Размер панели "Статусы операторов"
@@ -546,17 +549,17 @@ end;
 
 procedure THomeForm.FormCreate(Sender: TObject);
 var
-  FolderPath: string;
+ FolderDll:string;
 begin
-  FolderPath:= ExtractFilePath(ParamStr(0)) + 'dll';
+  FolderDll:= FOLDERPATH + 'dll';
 
   // Проверка на существование папки
-  if DirectoryExists(FolderPath) then begin
+  if DirectoryExists(FolderDll) then begin
     // путь к папке с DLL
-    SetDllDirectory(PChar(FolderPath));
+    SetDllDirectory(PChar(FolderDll));
   end
   else begin
-    MessageBox(Handle,PChar('Не найдена папка с dll библиотеками'+#13#13+FolderPath),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    MessageBox(Handle,PChar('Не найдена папка с dll библиотеками'+#13#13+FolderDll),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     KillProcess; // Завершаем выполнение процедуры, чтобы не продолжать дальше
   end;
   // очищаем все лист боксы
@@ -624,9 +627,6 @@ begin
     Panels[2].Text:=getUserRoleSTR(SharedCurrentUserLogon.GetID);
     Panels[3].Text:=GetCopyright;
    end;
-
-
-
 
    // заведение данных о текущей сесии
    createCurrentActiveSession(SharedCurrentUserLogon.GetID);
@@ -698,6 +698,7 @@ end;
 
 procedure THomeForm.lblNewMessageLocalChatClick(Sender: TObject);
 begin
+  lblNewMessageLocalChat.Visible:=False;
   OpenLocalChat;
 end;
 

@@ -63,26 +63,26 @@ interface
 
   type
    enumLogging = ( eLog_unknown              = -1,        // не известный статус
-                eLog_enter                = 0,         // Вход
-                eLog_exit                 = 1,         // Выход
-                eLog_auth_error           = 2,         // не успешная авторизация
-                eLog_exit_force           = 3,         // Выход (через команду force_closed)
-                eLog_add_queue_5000       = 4,         // добавление в очередь 5000
-                eLog_add_queue_5050       = 5,         // добавление в очередь 5050
-                eLog_add_queue_5000_5050  = 6,         // добавление в очередь 5000 и 5050
-                eLog_del_queue_5000       = 7,         // удаление из очереди 5000
-                eLog_del_queue_5050       = 8,         // удаление из очереди 5050
-                eLog_del_queue_5000_5050  = 9,         // удаление из очереди 5000 и 5050
-                eLog_available            = 10,        // доступен
-                eLog_home                 = 11,        // домой
-                eLog_exodus               = 12,        // исход
-                eLog_break                = 13,        // перерыв
-                eLog_dinner               = 14,        // обед
-                eLog_postvyzov            = 15,        // поствызов
-                eLog_studies              = 16,        // учеба
-                eLog_IT                   = 17,        // ИТ
-                eLog_transfer             = 18,        // переносы
-                eLog_reserve              = 19         // резерв
+                  eLog_enter                = 0,         // Вход
+                  eLog_exit                 = 1,         // Выход
+                  eLog_auth_error           = 2,         // не успешная авторизация
+                  eLog_exit_force           = 3,         // Выход (через команду force_closed)
+                  eLog_add_queue_5000       = 4,         // добавление в очередь 5000
+                  eLog_add_queue_5050       = 5,         // добавление в очередь 5050
+                  eLog_add_queue_5000_5050  = 6,         // добавление в очередь 5000 и 5050
+                  eLog_del_queue_5000       = 7,         // удаление из очереди 5000
+                  eLog_del_queue_5050       = 8,         // удаление из очереди 5050
+                  eLog_del_queue_5000_5050  = 9,         // удаление из очереди 5000 и 5050
+                  eLog_available            = 10,        // доступен
+                  eLog_home                 = 11,        // домой
+                  eLog_exodus               = 12,        // исход
+                  eLog_break                = 13,        // перерыв
+                  eLog_dinner               = 14,        // обед
+                  eLog_postvyzov            = 15,        // поствызов
+                  eLog_studies              = 16,        // учеба
+                  eLog_IT                   = 17,        // ИТ
+                  eLog_transfer             = 18,        // переносы
+                  eLog_reserve              = 19         // резерв
               );
 
 
@@ -130,6 +130,34 @@ interface
   enumProrgamm = ( eGUI,
                    eCHAT
                    );
+
+  type  // какой браузер сейчас активен основной или дополнительный  !TODO эти же типы есть еще и в chat.exe
+   enumActiveBrowser = (  eMaster = 0,
+                          eSlave  = 1,
+                          eNone   = 2
+                        );
+
+
+  type   // тип чата  !TODO эти же типы есть еще и в chat.exe
+  enumChannel  = ( ePublic,  // публичный (main)
+                   ePrivate  // приватный (тет-а-тет)
+                  );
+
+
+  type  // типы ID чатов !TODO эти же типы есть еще и в chat.exe
+ enumChatID = ( eChatMain = -1,
+                eChatID0  = 0,
+                eChatID1  = 1,
+                eChatID2  = 2,
+                eChatID3  = 3,
+                eChatID4  = 4,
+                eChatID5  = 5,
+                eChatID6  = 6,
+                eChatID7  = 7,
+                eChatID8  = 8,
+                eChatID9  = 9
+                );
+
 implementation
 
 

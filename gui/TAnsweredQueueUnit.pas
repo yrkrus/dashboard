@@ -167,6 +167,11 @@ end;
     with HomeForm do begin
        ST_SL.Caption:='SL: 100%';
        ST_SL.Font.Color:=colorGood;
+
+       lblStatistics_Answered30.Caption:='0';
+       lblStatistics_Answered60.Caption:='0';
+       lblStatistics_Answered120.Caption:='0';
+       lblStatistics_Answered121.Caption:='0';
     end;
  end;
 

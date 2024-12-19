@@ -5820,25 +5820,27 @@ object HomeForm: THomeForm
     Visible = False
   end
   object lblNewMessageLocalChat: TLabel
-    Left = 1165
-    Top = 761
-    Width = 209
-    Height = 13
+    Left = 1132
+    Top = 760
+    Width = 243
+    Height = 16
     Cursor = crHandPoint
     Hint = #1054#1090#1082#1088#1099#1090#1100' '#1083#1086#1082#1072#1083#1100#1085#1099#1081' '#1095#1072#1090
     Anchors = [akRight, akBottom]
     Caption = #1053#1086#1074#1099#1077' '#1089#1086#1086#1073#1097#1077#1085#1080#1103' '#1074' '#1086#1073#1097#1077#1084' '#1095#1072#1090#1077' (N)'
+    Color = clWindow
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clRed
-    Font.Height = -11
+    Font.Height = -13
     Font.Name = 'Tahoma'
     Font.Style = [fsBold]
+    ParentColor = False
     ParentFont = False
     ParentShowHint = False
     ShowHint = True
+    Transparent = False
     Visible = False
     OnClick = lblNewMessageLocalChatClick
-    ExplicitTop = 762
   end
   object panel_IVR: TPanel
     Left = 10
@@ -6042,7 +6044,7 @@ object HomeForm: THomeForm
         Text = 'developer by     '
         Width = 150
       end>
-    ExplicitTop = 761
+    ExplicitTop = 760
   end
   object Button1: TButton
     Left = 300
@@ -6058,7 +6060,7 @@ object HomeForm: THomeForm
     AlignWithMargins = True
     Left = 356
     Top = 746
-    Width = 777
+    Width = 772
     Height = 29
     AutoSize = False
     Font.Charset = RUSSIAN_CHARSET
@@ -6072,12 +6074,13 @@ object HomeForm: THomeForm
   end
   object PanelShadowRight: TPanel
     Left = 1217
-    Top = 12
+    Top = 13
     Width = 153
     Height = 16
     Anchors = [akRight]
     BevelOuter = bvNone
     TabOrder = 3
+    ExplicitTop = 12
     object imgRight: TImage
       Left = 136
       Top = 0
@@ -6446,7 +6449,6 @@ object HomeForm: THomeForm
       RowSelect = True
       ParentDoubleBuffered = False
       ParentFont = False
-      PopupMenu = popMenu_ActionOperators
       TabOrder = 2
       ViewStyle = vsReport
     end

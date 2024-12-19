@@ -4,7 +4,7 @@ object FormDEBUG: TFormDEBUG
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'DEBUG '#1048#1085#1092#1086
-  ClientHeight = 247
+  ClientHeight = 264
   ClientWidth = 572
   Color = clWindow
   DefaultMonitor = dmMainForm
@@ -649,6 +649,64 @@ object FormDEBUG: TFormDEBUG
     Alignment = taCenter
     AutoSize = False
     Caption = #1052#1072#1082#1089' (ms)'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
+  object Label35: TLabel
+    Left = 16
+    Top = 238
+    Width = 74
+    Height = 16
+    Caption = 'Thread_Chat'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+  end
+  object lblThread_Chat: TLabel
+    Left = 250
+    Top = 238
+    Width = 105
+    Height = 16
+    Alignment = taCenter
+    AutoSize = False
+    Caption = 'ms'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
+  object Label37: TLabel
+    Left = 350
+    Top = 238
+    Width = 105
+    Height = 16
+    Alignment = taCenter
+    AutoSize = False
+    Caption = 'ms'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
+  object Label38: TLabel
+    Left = 450
+    Top = 238
+    Width = 105
+    Height = 16
+    Alignment = taCenter
+    AutoSize = False
+    Caption = 'ms'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13

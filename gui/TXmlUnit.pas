@@ -15,7 +15,8 @@ uses
   System.Classes,
   System.SyncObjs,
   XMLDoc,
-  XMLIntf;
+  XMLIntf,
+  GlobalVariables;
 
 
  type
@@ -51,14 +52,11 @@ implementation
 { TXMLSettings }
 
  constructor TXML.Create(SettingsFileName,GUIDVesrion:string);
- var
-  FolderPath:string;
  begin
    inherited Create;
    m_mutex:=TMutex.Create(nil, False, 'Global\TXML');
 
-   FolderPath:=ExtractFilePath(ParamStr(0));
-   Self.m_fileSettings:=FolderPath + SettingsFileName;
+   Self.m_fileSettings:=FOLDERPATH + SettingsFileName;
 
    // סמחהאול פאיכ ס םאסענימךאלט
    if not isExistSettingsFile then begin
@@ -70,14 +68,10 @@ implementation
  end;
 
  constructor TXML.Create(SettingsFileName:string);
- var
-  FolderPath:string;
  begin
    inherited Create;
    m_mutex:=TMutex.Create(nil, False, 'Global\TXML');
-
-   FolderPath:=ExtractFilePath(ParamStr(0));
-   Self.m_fileSettings:=FolderPath + SettingsFileName;
+   Self.m_fileSettings:=FOLDERPATH + SettingsFileName;
 
    // סמחהאול פאיכ ס םאסענימךאלט
    if isExistSettingsFile then begin
