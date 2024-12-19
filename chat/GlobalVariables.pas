@@ -17,7 +17,7 @@ uses
 
 var
  // режим разработки
-  DEBUG:Boolean = true;
+  DEBUG:Boolean = false;
 
 
   // текущая директория откуда запускаем chat.exe

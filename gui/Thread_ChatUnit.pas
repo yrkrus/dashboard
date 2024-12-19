@@ -4,7 +4,7 @@ unit Thread_ChatUnit;
 interface
 
 uses
-    System.Classes, System.DateUtils, SysUtils, ActiveX, TOnlineChat;
+    System.Classes, System.DateUtils, SysUtils, ActiveX, TOnlineChat, TLogFileUnit;
 
 type
   Thread_Chat = class(TThread)
@@ -16,6 +16,7 @@ type
     procedure CriticalError;
   private
    LocalChat:TChat;
+   Log:TLoggingFile;
     { Private declarations }
   end;
 
@@ -49,6 +50,8 @@ begin
   CoInitialize(Nil);
   Sleep(1000);
 
+  Log:=TLoggingFile.Create('Thread_OnlineChat');
+
   LocalChat:=TChat.Create(eChatMain,ePublic);
 
   while not Terminated do
@@ -70,6 +73,9 @@ begin
          messclass:=e.ClassName;
          mess:=e.Message;
          TimeLastError:=Now;
+
+         // записываем в лог
+         Log.Save(messclass+'.'+mess,IS_ERROR);
 
          if SharedCurrentUserLogon.GetRole = role_administrator then Synchronize(CriticalError);
          INTERNAL_ERROR:=False;

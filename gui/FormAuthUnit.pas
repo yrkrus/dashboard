@@ -25,6 +25,7 @@ type
     ImageLogo: TImage;
     ImgNewYear: TImage;
     lblInfoError: TLabel;
+    lblInfoUpdateService: TLabel;
     procedure btnCloseClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnAuthClick(Sender: TObject);
@@ -119,6 +120,7 @@ var
  user_name,user_familiya:string;
  user_pwd:Integer;
  currentUser:TUserList;
+ activeSession:string;
 begin
 
   successEnter:=False;
@@ -126,7 +128,6 @@ begin
     begin
       if comboxUser.ItemIndex = -1 then begin
         FormSizeWithError('Не выбран пользователь');
-       // MessageBox(Handle,PChar('Не выбран пользователь'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
         Exit;
       end;
       current_user:=comboxUser.Items[comboxUser.ItemIndex];
@@ -135,7 +136,6 @@ begin
       current_pwd:=edtPassword.Text;
       if current_pwd = '' then begin
         FormSizeWithError('Пустой пароль');
-        //MessageBox(Handle,PChar('Пустой пароль'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
         Exit;
       end;
     end;
@@ -147,6 +147,13 @@ begin
   System.Delete(user_name,1,AnsiPos(' ',user_name));
   user_familiya:=current_user;
   System.Delete(user_familiya, AnsiPos(' ',user_familiya),Length(user_familiya));
+
+  // проверим есть ли уже активная сессия
+  if GetExistActiveSession(getUserID(user_name,user_familiya),activeSession) then begin
+    Screen.Cursor:=crDefault;
+    FormSizeWithError('Активна другая сессия '+#13+activeSession);
+    Exit;
+  end;
 
   pwd:=getHashPwd(current_pwd);
   user_pwd:=getUserPwd(getUserID(user_name,user_familiya));
@@ -176,11 +183,10 @@ begin
 
 
   if successEnter then begin
-
     // логирование (авторизация)
     LoggingRemote(eLog_enter);
     Screen.Cursor:=crDefault;
-   Close;
+    Close;
   end
   else begin
 
@@ -189,7 +195,6 @@ begin
    Screen.Cursor:=crDefault;
 
    FormSizeWithError('Ошибка авторизации, не верный пароль');
-   //MessageBox(Handle,PChar('Ошибка авторизации, не верный пароль'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
    Exit;
   end;
 
@@ -273,12 +278,14 @@ begin
   // отображение ранее входивщего пользователя в выборе вариантов пользователей
   showUserNameAuthForm;
 
-
   // версия
   lblVersion.Caption:=getVersion(GUID_VESRION,eGUI);
 
   // пасхалки
   HappyNewYear;
+
+  // проверка запущена ли служба обновления
+  if not GetStatusUpdateService then lblInfoUpdateService.Visible:=True;
 end;
 
 procedure TFormAuth.img_eay_closeClick(Sender: TObject);

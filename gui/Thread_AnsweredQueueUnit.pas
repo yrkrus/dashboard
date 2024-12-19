@@ -3,13 +3,14 @@ unit Thread_AnsweredQueueUnit;
 interface
 
 uses
-  System.Classes,SysUtils, ActiveX,TCustomTypeUnit, TAnsweredQueueUnit;
+  System.Classes,SysUtils, ActiveX,TCustomTypeUnit, TAnsweredQueueUnit, TLogFileUnit;
 
 type
   Thread_AnsweredQueue = class(TThread)
   private
     { Private declarations }
    messclass,mess: string;
+   Log:TLoggingFile;
 
   protected
     procedure Execute; override;
@@ -64,6 +65,8 @@ begin
    inherited;
    CoInitialize(Nil);
 
+   Log:=TLoggingFile.Create('Thread_AnsweredQueue');
+
   // создание класса с данными по статистике принятых звонков из очереди
   AnsweredQueue:=TAnsweredQueue.Create;
 
@@ -90,6 +93,9 @@ begin
          messclass:=e.ClassName;
          mess:=e.Message;
          TimeLastError:=Now;
+
+         // записываем в лог
+         Log.Save(messclass+'.'+mess,IS_ERROR);
 
          if SharedCurrentUserLogon.GetRole = role_administrator then Synchronize(CriticalError);
          INTERNAL_ERROR:=False;

@@ -3,7 +3,7 @@ unit Thread_ACTIVESIPUnit;
 interface
 
 uses
-  System.Classes, System.DateUtils, SysUtils, ActiveX, TActiveSIPUnit, Vcl.ComCtrls;
+  System.Classes, System.DateUtils, SysUtils, ActiveX, TActiveSIPUnit, Vcl.ComCtrls, TLogFileUnit;
 
 type
   Thread_ACTIVESIP = class(TThread)
@@ -16,7 +16,7 @@ type
     procedure UpdateActiveSipOperators(var p_ActiveSipOperators:TActiveSIP);
 
   private
-
+   Log:TLoggingFile;
   isCheckThreadSipOperators:Boolean; // флаг для первоначальной проверки всех активнх операторов, нужен только при старте дашборда
 
 
@@ -49,7 +49,6 @@ uses
 { Thread_ACTIVESIP }
 procedure Thread_ACTIVESIP.UpdateActiveSipOperators(var p_ActiveSipOperators:TActiveSIP);
 var
- // XML:TXMLSettings;
  XML:TXML;
 begin
   if (CONNECT_BD_ERROR=False) then begin
@@ -70,9 +69,6 @@ begin
   // обновляем время
   HomeForm.StatusBar.Panels[0].Text:=DateTimeToStr(now);
 
-//  XML:=CreateXMLSettingsSingle(PChar(SETTINGS_XML));
-//  UpdateXMLLastOnline(XML);
-//  FreeXMLSettings(XML);
   XML:=TXML.Create(PChar(SETTINGS_XML));
   XML.UpdateLastOnline;
   XML.Free;
@@ -487,6 +483,8 @@ begin
   CoInitialize(Nil);
   Sleep(100);
 
+  Log:=TLoggingFile.Create('Thread_ActiveSip');
+
   // default при первом запуске
   isCheckThreadSipOperators:=True;
 
@@ -521,6 +519,9 @@ begin
          messclass:=e.ClassName;
          mess:=e.Message;
          TimeLastError:=Now;
+
+         // записываем в лог
+         Log.Save(messclass+'.'+mess,IS_ERROR);
 
          if SharedCurrentUserLogon.GetRole = role_administrator then Synchronize(CriticalError);
          INTERNAL_ERROR:=False;

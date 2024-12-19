@@ -6059,9 +6059,9 @@ object HomeForm: THomeForm
   object STError: TStaticText
     AlignWithMargins = True
     Left = 356
-    Top = 746
+    Top = 732
     Width = 772
-    Height = 29
+    Height = 45
     AutoSize = False
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clRed
@@ -6856,6 +6856,7 @@ object HomeForm: THomeForm
     Height = 25
     Caption = 'Button3'
     TabOrder = 1
+    OnClick = Button3Click
   end
   object Timer_Thread_Start: TTimer
     Enabled = False

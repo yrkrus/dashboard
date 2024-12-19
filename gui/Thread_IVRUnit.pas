@@ -3,7 +3,7 @@ unit Thread_IVRUnit;
 interface
 
 uses
-  System.Classes,SysUtils, ActiveX, TIVRUnit, Vcl.StdCtrls, Vcl.Controls, Vcl.ComCtrls;
+  System.Classes,SysUtils, ActiveX, TIVRUnit, Vcl.StdCtrls, Vcl.Controls, Vcl.ComCtrls, TLogFileUnit;
 
 type
   Thread_IVR = class(TThread)
@@ -14,6 +14,9 @@ type
     procedure show(var p_listDrop: TIVR);     // переадача списка с данными по ссылке!!
     procedure showIVR(var p_listIVR:TIVR);  // переадача списка с данными по ссылке!!
     procedure CriticalError;
+ private
+  Log:TLoggingFile;
+
   end;
 
 
@@ -148,6 +151,9 @@ const
 begin
    inherited;
    CoInitialize(Nil);
+   Sleep(1000);
+
+   Log:=TLoggingFile.Create('Thread_IVR');
 
    listDrop:=TIVR.Create;
 
@@ -170,6 +176,9 @@ begin
          messclass:=e.ClassName;
          mess:=e.Message;
          TimeLastError:=Now;
+
+          // записываем в лог
+         Log.Save(messclass+'.'+mess,IS_ERROR);
 
          if SharedCurrentUserLogon.GetRole = role_administrator then Synchronize(CriticalError);
          INTERNAL_ERROR:=False;

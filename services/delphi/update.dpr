@@ -2,7 +2,10 @@ program update;
 
 uses
   Vcl.SvcMgr,
-  dashboard_update in 'dashboard_update.pas' {Service1: TService};
+  dashboard_update in 'dashboard_update.pas' {Service1: TService},
+  GlobalVariables in 'GlobalVariables.pas',
+  TXmlUnit in '..\..\gui\TXmlUnit.pas',
+  TLogFileUnit in '..\..\gui\TLogFileUnit.pas';
 
 {$R *.RES}
 
@@ -23,6 +26,6 @@ begin
   //
   if not Application.DelayInitialize or Application.Installing then
     Application.Initialize;
-  Application.CreateForm(TService1, Service1);
+  Application.CreateForm(Tupdate_dashboard, update_dashboard);
   Application.Run;
 end.

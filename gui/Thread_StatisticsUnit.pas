@@ -3,7 +3,7 @@ unit Thread_StatisticsUnit;
 interface
 
 uses
-  System.Classes,SysUtils, ActiveX;
+  System.Classes,SysUtils, ActiveX, TLogFileUnit;
 
 type
   Thread_Statistics = class(TThread)
@@ -13,6 +13,9 @@ type
     procedure Execute; override;
     procedure show;
     procedure CriticalError;
+
+  private
+    Log:TLoggingFile;
 
   end;
 
@@ -101,8 +104,9 @@ procedure Thread_Statistics.Execute;
 begin
 
   inherited;
-
   CoInitialize(Nil);
+
+  Log:=TLoggingFile.Create('Thread_Statistics');
 
   while not Terminated do
   begin
@@ -124,6 +128,9 @@ begin
          messclass:=e.ClassName;
          mess:=e.Message;
          TimeLastError:=Now;
+
+         // записываем в лог
+         Log.Save(messclass+'.'+mess,IS_ERROR);
 
          if SharedCurrentUserLogon.GetRole = role_administrator then Synchronize(CriticalError);
          INTERNAL_ERROR:=False;

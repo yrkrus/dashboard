@@ -178,6 +178,9 @@
             <FormType>dfm</FormType>
             <DesignClass>TService</DesignClass>
         </DCCReference>
+        <DCCReference Include="GlobalVariables.pas"/>
+        <DCCReference Include="..\..\gui\TXmlUnit.pas"/>
+        <DCCReference Include="..\..\gui\TLogFileUnit.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -200,14 +203,14 @@
                 </Source>
             </Delphi.Personality>
             <Deployment Version="3">
-                <DeployFile LocalName="Win32\Debug\update.exe" Configuration="Debug" Class="ProjectOutput">
-                    <Platform Name="Win32">
+                <DeployFile LocalName="Win64\Debug\update.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win64">
                         <RemoteName>update.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="Win64\Debug\update.exe" Configuration="Debug" Class="ProjectOutput">
-                    <Platform Name="Win64">
+                <DeployFile LocalName="Win32\Debug\update.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win32">
                         <RemoteName>update.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>

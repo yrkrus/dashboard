@@ -345,7 +345,6 @@ begin
 
      Caption:='Новые сообщения в общем чате ('+IntToStr(countNewMessage)+')';
    end;
-
 end;
 
 

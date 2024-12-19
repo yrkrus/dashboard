@@ -11,7 +11,8 @@ unit GlobalVariables;
 interface
 
 uses
-  TActiveSIPUnit, TUserUnit, Data.Win.ADODB, Data.DB, SysUtils, Windows;
+  TActiveSIPUnit, TUserUnit, Data.Win.ADODB,
+  Data.DB, SysUtils, Windows, TLogFileUnit;
 
 var
   // текущая директория откуда запускаем chat.exe
@@ -27,8 +28,14 @@ var
   CHAT_EXE         :string = 'chat.exe';
   CHAT_PARAM       :string = '--USER_ID';
 
+  // служба обновления
+  UPDATE_EXE        : string = 'update_dashboard.exe';
+
   // список с текущими активными операторами
   SharedActiveSipOperators: TActiveSIP;
+
+  // параметр для лога что есть ошибка
+  IS_ERROR:Boolean = True;
 
   // глобальная ошибка при подкобчении к БД
   CONNECT_BD_ERROR        :Boolean = False;
@@ -51,6 +58,7 @@ var
   function GetCurrentTime:PChar; stdcall; external 'core.dll';       // текущее время
   function GetLocalChatNameFolder:PChar; stdcall; external 'core.dll';       // // папка с локальным чатом
   function GetExtensionLog:PChar; stdcall; external 'core.dll';       // // папка с локальным чатом
+  function GetLogNameFolder:PChar; stdcall; external 'core.dll';       // // папка с логом
   function KillTask(ExeFileName:string):integer;  stdcall; external 'core.dll';        // функция остановки exe
   function GetTask(ExeFileName:string):Boolean;  stdcall; external 'core.dll';         // проверка запущен ли процесс
 
@@ -60,31 +68,22 @@ var
  function GetServerName:string;     stdcall;   external 'connect_to_server.dll'; // адрес базы
  function GetServerUser:string;     stdcall;   external 'connect_to_server.dll'; // логин
  function GetServerPassword:string; stdcall;   external 'connect_to_server.dll'; // пароль
-{  // --- xml.dll ---
- type
-   TXMLSettings = Pointer; // Указатель на класс TXMLSettings
-  function CreateXMLSettings(SettingsFileName, GUIDVersion: PChar): TXMLSettings; stdcall; external 'xml.dll';
-  function CreateXMLSettingsSingle(SettingsFileName: PChar): TXMLSettings;        stdcall; external 'xml.dll';
-  procedure FreeXMLSettings(TXML: TXMLSettings);                                  stdcall; external 'xml.dll';
-  procedure UpdateXMLLocalVersion(TXML: TXMLSettings; GUIDVersion: PChar);        stdcall; external 'xml.dll';
-  function GetLocalXMLVersion(TXML: TXMLSettings): PChar;                         stdcall; external 'xml.dll';
-  procedure UpdateXMLLastOnline(TXML: TXMLSettings);                              stdcall; external 'xml.dll';
-  procedure UpdateXMLRemoteVersion(TXML: TXMLSettings; GUIDVersion: PChar);       stdcall; external 'xml.dll';  // для службы обновления (тут не используется)
-  function GetRemoteXMLVersion(TXML: TXMLSettings): PChar;                        stdcall; external 'xml.dll';  // для службы обновления (тут не используется)
-  function GetXMLLastOnline(TXML: TXMLSettings): TDateTime;                       stdcall; external 'xml.dll';  // для службы обновления (тут не используется)
-  }
+
 
 implementation
+
 
 initialization  // Инициализация
   FOLDERPATH:=ExtractFilePath(ParamStr(0));
 
   SharedActiveSipOperators := TActiveSIP.Create;
 
+  //SharedLoggingFile := TLoggingFile.Create;
 
 finalization
   // Освобождение памяти
   SharedActiveSipOperators.Free;
   SharedCurrentUserLogon.Free;
+  //SharedLoggingFile.Free;
 
 end.

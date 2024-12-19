@@ -24,6 +24,7 @@ uses
   public
     constructor Create(SettingsFileName,GUIDVesrion:string); overload;
     constructor Create(SettingsFileName:string); overload;
+    constructor Create(); overload;
 
     destructor Destroy; override;
 
@@ -74,6 +75,18 @@ implementation
    Self.m_fileSettings:=FOLDERPATH + SettingsFileName;
 
    // סמחהאול פאיכ ס םאסענימךאלט
+   if isExistSettingsFile then begin
+    m_XMLDoc:=LoadXMLDocument(m_fileSettings);
+   end;
+ end;
+
+
+ constructor TXML.Create();
+ begin
+   inherited Create;
+   m_mutex:=TMutex.Create(nil, False, 'Global\TXML');
+   Self.m_fileSettings:=FOLDERPATH + SETTINGS_XML;
+
    if isExistSettingsFile then begin
     m_XMLDoc:=LoadXMLDocument(m_fileSettings);
    end;

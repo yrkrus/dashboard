@@ -172,6 +172,12 @@ begin
  Result:= PChar('.html');
 end;
 
+// папка с логом
+function GetLogNameFolder:PChar; stdcall; export;
+begin
+ Result:= PChar('log');
+end;
+
 
 // функция остановки exe
 function KillTask(ExeFileName: string): integer;stdcall;export;
@@ -229,6 +235,7 @@ exports
   GetCurrentTime,
   GetLocalChatNameFolder,
   GetExtensionLog,
+  GetLogNameFolder,
   KillTask,
   GetTask;
 

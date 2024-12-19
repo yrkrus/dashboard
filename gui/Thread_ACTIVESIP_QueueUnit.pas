@@ -3,7 +3,7 @@ unit Thread_ACTIVESIP_QueueUnit;
 interface
 
 uses
-    System.Classes, System.DateUtils, SysUtils, ActiveX, TActiveSIPUnit;
+    System.Classes, System.DateUtils, SysUtils, ActiveX, TActiveSIPUnit, TLogFileUnit;
 
 type
   Thread_ACTIVESIP_Queue = class(TThread)
@@ -14,6 +14,7 @@ type
     procedure show(var p_ActiveSipOperators:TActiveSIP);
     procedure CriticalError;
   private
+    Log:TLoggingFile;
     { Private declarations }
   end;
 
@@ -47,6 +48,8 @@ begin
   CoInitialize(Nil);
   Sleep(1000);
 
+  Log:=TLoggingFile.Create('Thread_ActiveSip_Queue');
+
   while not Terminated do
   begin
 
@@ -66,6 +69,9 @@ begin
          messclass:=e.ClassName;
          mess:=e.Message;
          TimeLastError:=Now;
+
+         // записываем в лог
+         Log.Save(messclass+'.'+mess,IS_ERROR);
 
          if SharedCurrentUserLogon.GetRole = role_administrator then Synchronize(CriticalError);
          INTERNAL_ERROR:=False;

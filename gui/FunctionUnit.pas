@@ -132,7 +132,8 @@ procedure OpenLocalChat;                                                        
 function EnumChannelChatIDToString(InChatID:enumChatID):string;                // enumChatID -> string
 function EnumChannelToString(InChannel:enumChannel):string;                 //enumChannel -> string
 function EnumActiveBrowserToString(InActiveBrowser:enumActiveBrowser):string;     // enumActiveBrowser -> string
-
+function GetExistActiveSession(InUserID:Integer; var ActiveSession:string):Boolean;  // есть ли активная сессия уже
+function GetStatusUpdateService:Boolean;                                           // проверка запущена ли служба обновления
 
 implementation
 
@@ -3194,7 +3195,7 @@ begin
 
   if GUID_VESRION <> curr_ver then begin
    MessageBox(HomeForm.Handle,PChar('Текущая версия дашборда отличается от актуальной версии'+#13#13
-                                    +'Перезагрузите компьютер или перезапустите службу обновления'),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
+                                    +'Перезагрузите компьютер или перезапустите службу обновления ('+UPDATE_EXE+')'),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
    KillProcess;
   end;
 
@@ -4616,6 +4617,44 @@ begin
     eMaster :Result:='master';
     eSlave  :Result:='slave';
   end;
+end;
+
+
+// есть ли активная сессия уже
+function GetExistActiveSession(InUserID:Integer; var ActiveSession:string):Boolean;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+   Result:=False;
+
+   ado:=TADOQuery.Create(nil);
+   serverConnect:=createServerConnect;
+   if not Assigned(serverConnect) then Exit;
+
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select pc,user_login_pc,last_active from active_session where user_id = '+#39+IntToStr(InUserID)+#39+' and last_active > '+#39+GetCurrentDateTimeDec(1)+#39);
+
+      Active:=True;
+
+      if Fields[0].Value<>null then begin
+        Result:=True;
+        ActiveSession:=VarToStr(Fields[0].Value)+' ('+VarToStr(Fields[1].Value)+') - '+VarToStr(Fields[2].Value);
+      end;
+    end;
+
+    FreeAndNil(ado);
+    serverConnect.Close;
+    FreeAndNil(serverConnect);
+end;
+
+
+// проверка запущена ли служба обновления
+function GetStatusUpdateService:Boolean;
+begin
+  Result:=GetTask(UPDATE_EXE);
 end;
 
 end.

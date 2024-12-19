@@ -49,7 +49,8 @@ uses
   GlobalVariables in 'GlobalVariables.pas',
   TOnlineChat in 'TOnlineChat.pas',
   TXmlUnit in 'TXmlUnit.pas',
-  Thread_ChatUnit in 'Thread_ChatUnit.pas';
+  Thread_ChatUnit in 'Thread_ChatUnit.pas',
+  TLogFileUnit in 'TLogFileUnit.pas';
 
 {$R *.res}
 

@@ -187,6 +187,7 @@ type
     procedure img_goHome_NOClick(Sender: TObject);
     procedure menu_ChatClick(Sender: TObject);
     procedure lblNewMessageLocalChatClick(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
 
 
 
@@ -257,7 +258,8 @@ type
   - дашборд стал модульным
   - добавлен функционал "Локального чата"
   - изменена форма аторизации
-
+  (не готово)- добавлен функционал "автоматического обновления"
+  (не готово)- добавлен функционал логирования работы дашборда и дочерних модулей
 
   ИСПРАВЛЕНО
   не работает проверить - исправлена ошибка не отображения активных операторов, при установленном параметре "не показывать ушедших домой"
@@ -301,7 +303,7 @@ DMUnit, FunctionUnit, FormPropushennieUnit, FormSettingsUnit, Thread_StatisticsU
   FormAuthUnit, FormActiveSessionUnit, FormRePasswordUnit, Thread_AnsweredQueueUnit,
   ReportsUnit, Thread_ACTIVESIP_updatetalkUnit, FormDEBUGUnit, FormErrorUnit, TCustomTypeUnit,
   GlobalVariables, FormUsersUnit, FormServersIKUnit, FormSettingsGlobalUnit,
-  FormTrunkUnit;
+  FormTrunkUnit, TLogFileUnit;
 
 
 {$R *.dfm}
@@ -485,6 +487,15 @@ end;
 
 
 
+procedure THomeForm.Button3Click(Sender: TObject);
+var
+ Log:TLoggingFile;
+begin
+   Log:=TLoggingFile.Create('button');
+   Log.Save('Тут мы что то написали без ошибки');
+   Log.Save('тут у нас ошибка',IS_ERROR);
+end;
+
 procedure THomeForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 var
   AMsgDialog: TForm;
@@ -618,7 +629,7 @@ begin
     FormRePassword.ShowModal;
   end;
   ////////////////////////////////
-                 //
+
   Screen.Cursor:=crHourGlass;
 
    // стататус бар

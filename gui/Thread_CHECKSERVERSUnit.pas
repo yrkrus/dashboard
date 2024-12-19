@@ -3,7 +3,7 @@ unit Thread_CHECKSERVERSUnit;
 interface
 
 uses
-  System.Classes,SysUtils, ActiveX, TCheckServersUnit, TCustomTypeUnit;
+  System.Classes,SysUtils, ActiveX, TCheckServersUnit, TCustomTypeUnit, TLogFileUnit;
 
 type
   Thread_CHECKSERVERS = class(TThread)
@@ -13,6 +13,9 @@ type
     procedure Execute; override;
     procedure show(var p_listServers: TCheckServersIK);
     procedure CriticalError;
+ private
+  Log:TLoggingFile;
+
   end;
 
 implementation
@@ -45,6 +48,8 @@ begin
   inherited;
   CoInitialize(Nil);
 
+  Log:=TLoggingFile.Create('Thread_CheckServersIK');
+
   listServers:=TCheckServersIK.Create;
 
   while not Terminated do
@@ -67,6 +72,9 @@ begin
            messclass:=e.ClassName;
            mess:=e.Message;
            TimeLastError:=Now;
+
+           // записываем в лог
+           Log.Save(messclass+'.'+mess,IS_ERROR);
 
            if SharedCurrentUserLogon.GetRole = role_administrator then Synchronize(CriticalError);
            INTERNAL_ERROR:=False;

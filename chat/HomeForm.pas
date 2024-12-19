@@ -224,7 +224,7 @@ begin
       if (i + 1 <= ParamCount) then
       begin
         USER_STARTED_CHAT_ID:= StrToInt(ParamStr(i + 1));
-        if DEBUG then ShowMessage('Value for --USER_ID: ' + ParamStr(i + 1));
+       // if DEBUG then ShowMessage('Value for --USER_ID: ' + ParamStr(i + 1));
 
       end
       else

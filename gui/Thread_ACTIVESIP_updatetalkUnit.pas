@@ -3,7 +3,7 @@ unit Thread_ACTIVESIP_updatetalkUnit;
 interface
 
 uses
-  System.Classes,SysUtils, ActiveX, System.SyncObjs,TActiveSIPUnit,GlobalVariables;
+  System.Classes,SysUtils, ActiveX, System.SyncObjs,TActiveSIPUnit,GlobalVariables, TLogFileUnit;
 
 type
   Thread_ACTIVESIP_updateTalk = class(TThread)
@@ -13,6 +13,7 @@ type
     procedure show(var p_ActiveSipOperators:TActiveSIP);
     procedure CriticalError;
   private
+    Log:TLoggingFile;
     { Private declarations }
   end;
 
@@ -47,8 +48,9 @@ const
 begin
    inherited;
    CoInitialize(Nil);
-
    Sleep(1000);
+
+   Log:=TLoggingFile.Create('Thread_ActiveSip_updateTalk');
 
   while not Terminated do
   begin
@@ -69,6 +71,9 @@ begin
          messclass:=e.ClassName;
          mess:=e.Message;
          TimeLastError:=Now;
+
+          // записываем в лог
+         Log.Save(messclass+'.'+mess,IS_ERROR);
 
          if SharedCurrentUserLogon.GetRole = role_administrator then Synchronize(CriticalError);
          INTERNAL_ERROR:=False;
