@@ -65,12 +65,10 @@ begin
      except
         on E:Exception do
         begin
-        // INTERNAL_ERROR:=true;
          messclass:=e.ClassName;
          mess:=e.Message;
 
          Synchronize(CriticalError);
-         //INTERNAL_ERROR:=False;
         end;
       end;
     end;

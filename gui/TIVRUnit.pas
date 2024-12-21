@@ -16,10 +16,11 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants, Graphic
  type
       TIVRStruct = class
       public
-      id                                   : Integer; // id по БД
-      phone                                : string;  // номер телефона
-      waiting_time_start                   : string;  // стартовое значение времени ожидание
-      trunk                                : string;  // откуда пришел звонок
+      m_id                                   : Integer; // id по БД
+      m_phone                                : string;  // номер телефона
+      m_waiting_time_start                   : string;  // стартовое значение времени ожидание
+      m_trunk                                : string;  // откуда пришел звонок
+      m_countNoChange                        : Integer; // кол-во раз сколько не изменилось значение ожидания во времени
 
       constructor Create;                  overload;
       procedure Clear;                      virtual;
@@ -30,56 +31,38 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants, Graphic
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-  // class TIVRDrop
-  type
-      TIVRDrop = class(TIVRStruct)
-      public
-      countDrop                       : Integer; // кол-во раз сколько дропнулись
 
-      constructor Create;             overload;
-      procedure Clear;                override;
-
-
-      end;
-
-
-  // class TIVRDrop END
-
-/////////////////////////////////////////////////////////////////////////////////////////
-   // class TIVR
+ // class TIVR
  type
       TIVR = class
       const
       cGLOBAL_ListIVR                      : Word = 100; // длинна массива
+      cGLOBAL_DropPhone                    : Word = 3; // кол-во сбросов при котором считается что номер ушел из IVR не дождавшись
 
       public
       listActiveIVR                        : array of TIVRStruct;
-      listDropIVR                          : array of TIVRDrop;
 
       constructor Create;                   overload;
       destructor Destroy;                   override;
 
 
-      function GetCountDrop                :Integer;
+      function Count                      : Integer;
 
-      function GetCountActive              : Integer;
-      procedure ClearActive;
-      procedure UpdateData(var p_listDrop:TIVR);                             // обновление данных в массиве listActiveIVR + count
-      function isExistActive(id:Integer)        :Boolean;   // проверка существует ли такой номер в отображении
+      procedure UpdateData;                             // обновление данных в массиве listActiveIVR
+      function isExistActive(id:Integer)   :Boolean;   // проверка существует ли такой номер в отображении
+      function isExistDropPhone(id:Integer): Boolean;  // проверка есть ли номер который сбросился из IVR
 
 
       private
-      count_active                          : Integer;
-      count_drop                            : Integer;
       m_mutex                               : TMutex;
 
-      function isExistDrop(id:Integer)        :Boolean;   // проверка существует ли такой номер в отображении
-      function isChangeDropTime(id:Integer; InNewTime:string):Boolean;  // проверка изменилось ли время в момента добавления в listdrop
-      procedure addCountDrop(id:Integer);     // добавление +1 к countDrop
-
-      procedure addListDrop(struct:TIVRStruct); // добавление всей структуры в listdrop
-      procedure clearDropExpensityCalls(listActive:array of TIVRStruct; arrayCount:Integer); // убирание просроченных звонков из listDrop
-      procedure DeleteDropID(id:Integer);
+      procedure ClearActiveAll;
+      function GetLastFreeIDStructActiveIVR:Integer;      //свободный  id какой есть в TIVRStruct
+      function isChangeWaitingTime(In_m_ID:Integer; InNewTime:string):Boolean; // проверка изменилось ли время
+      function GetWaitingTime(In_m_ID:Integer):string;  // нахождение времени ожидания
+      function GetStructIVRID(In_m_ID:Integer):Integer; // нахождение номера TIVRStruct по его m_id
+      function isExistIDIVRtoBD(In_m_id:Integer):Boolean;  // проверка есть ли еще звонок в IVR по БД
+      procedure CheckToQueuePhone;                      // проверка ушел ли у нас в очередь звонок
 
       end;
    // class TIVR END
@@ -102,25 +85,12 @@ constructor TIVRStruct.Create;
 
  procedure TIVRStruct.Clear;
  begin
-   Self.id:=0;
-   Self.phone:='';
-   Self.waiting_time_start:='';
-   Self.trunk:='';
+   Self.m_id:=0;
+   Self.m_phone:='';
+   Self.m_waiting_time_start:='';
+   Self.m_trunk:='';
+   Self.m_countNoChange:=0;
  end;
-
-
-constructor TIVRDrop.Create;
-begin
-  inherited Create; // Вызов конструктора базового класса
-  countDrop:= 0;
-end;
-
-
-procedure TIVRDrop.Clear;
-begin
-  inherited Clear; // Вызов метода Clear базового класса
-  countDrop:= 0;
-end;
 
 
 
@@ -130,15 +100,10 @@ constructor TIVR.Create;
  begin
     inherited;
     m_mutex:=TMutex.Create(nil, False, 'Global\TIVR');
-    count_active:=0;
-    count_drop:=0;
+
 
    SetLength(listActiveIVR,cGLOBAL_ListIVR);
    for i:=0 to cGLOBAL_ListIVR-1 do listActiveIVR[i]:=TIVRStruct.Create;
-
-   SetLength(listDropIVR,cGLOBAL_ListIVR);
-   for i:=0 to cGLOBAL_ListIVR-1 do listDropIVR[i]:=TIVRDrop.Create;
-
  end;
 
 destructor TIVR.Destroy;
@@ -146,48 +111,33 @@ var
  i: Integer;
 begin
   for i := Low(listActiveIVR) to High(listActiveIVR) do FreeAndNil(listActiveIVR[i]);
-  for i := Low(listDropIVR) to High(listDropIVR) do FreeAndNil(listDropIVR[i]);
-
   m_mutex.Free;
 
   inherited;
 end;
 
 
- function TIVR.GetCountActive;
- begin
-  if m_mutex.WaitFor(INFINITE)=wrSignaled then
-  try
-    Result:=Self.count_active;
-  finally
-    m_mutex.Release;
-  end;
- end;
-
-  function TIVR.GetCountDrop;
- begin
-  if m_mutex.WaitFor(INFINITE)=wrSignaled then
-  try
-    Result:=Self.count_drop;
-  finally
-    m_mutex.Release;
-  end;
- end;
-
- procedure TIVR.DeleteDropID(id:Integer);
+ function TIVR.Count;
  var
   i:Integer;
+  count:Integer;
  begin
-   for i:=0 to cGLOBAL_ListIVR-1 do begin
-     if listDropIVR[i].id = id then begin
-       listDropIVR[i].Clear;
-       Dec(count_drop);
-       Break;
+  if m_mutex.WaitFor(INFINITE)=wrSignaled then
+  try
+    count:=0;
+     for i := Low(listActiveIVR) to High(listActiveIVR) do begin
+      if listActiveIVR[i].m_id<>0 then Inc(count);
      end;
-   end;
+
+    Result:=count;
+  finally
+    m_mutex.Release;
+  end;
  end;
 
- procedure TIVR.ClearActive;
+
+
+procedure TIVR.ClearActiveAll;
  var
  i: Integer;
  begin
@@ -199,15 +149,133 @@ end;
   end;
  end;
 
+//свободный  id какой есть в TIVRStruct
+function TIVR.GetLastFreeIDStructActiveIVR:Integer;
+ var
+ i: Integer;
+begin
+  if m_mutex.WaitFor(INFINITE)=wrSignaled then
+  try
+    for i:=Low(listActiveIVR) to High(listActiveIVR) do begin
+      if listActiveIVR[i].m_id=0 then begin
+        Result:=i;
+        Break;
+      end;
+    end;
+  finally
+    m_mutex.Release;
+  end;
+end;
+
+// проверка изменилось ли время
+function TIVR.isChangeWaitingTime(In_m_ID:Integer; InNewTime:string):Boolean;
+var
+ oldWaiting:string;
+begin
+ Result:=False;
+
+ oldWaiting:=GetWaitingTime(In_m_ID);
+ if oldWaiting='' then Exit;
+
+ // время изменилось
+ if oldWaiting<>InNewTime then Result:=True;
+
+end;
+
+
+// нахождение времени ожидания
+function TIVR.GetWaitingTime(In_m_ID:Integer):string;
+var
+ i:Integer;
+begin
+ Result:='';
+  if m_mutex.WaitFor(INFINITE)=wrSignaled then
+  try
+    for i:=Low(listActiveIVR) to High(listActiveIVR) do begin
+      if listActiveIVR[i].m_id=In_m_ID then begin
+        Result:=listActiveIVR[i].m_waiting_time_start;
+        Break;
+      end;
+    end;
+  finally
+    m_mutex.Release;
+  end;
+end;
+
+// нахождение номера TIVRStruct по его m_id
+function TIVR.GetStructIVRID(In_m_ID:Integer):Integer;
+var
+ i:Integer;
+begin
+  if m_mutex.WaitFor(INFINITE)=wrSignaled then
+  try
+    for i:=Low(listActiveIVR) to High(listActiveIVR) do begin
+      if listActiveIVR[i].m_id=In_m_ID then begin
+        Result:=i;
+        Break;
+      end;
+    end;
+  finally
+    m_mutex.Release;
+  end;
+end;
+
+// проверка есть ли еще звонок в IVR по БД
+function TIVR.isExistIDIVRtoBD(In_m_id:Integer):Boolean;
+const
+ cTimeResponse:Word=1;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+  Result:=False;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then  Exit;
+
+
+  with ado do begin
+    ado.Connection:=serverConnect;
+    SQL.Clear;
+    SQL.Add('select count(id) from ivr where to_queue=''0'' and date_time > '+#39+GetCurrentDateTimeDec(cTimeResponse)+#39+' and id='+#39+IntToStr(In_m_id)+#39);
+
+    Active:=True;
+
+    if Fields[0].Value<>null then begin
+     if StrToInt(VarToStr(Fields[0].Value)) <> 0 then Result:=True;
+    end;
+  end;
+
+  FreeAndNil(ado);
+  serverConnect.Close;
+  if Assigned(serverConnect) then serverConnect.Free;
+end;
+
+ // проверка ушел ли у нас в очередь звонок
+ procedure TIVR.CheckToQueuePhone;
+ var
+  i:Integer;
+ begin
+  for i:=Low(listActiveIVR) to High(listActiveIVR) do begin
+    if listActiveIVR[i].m_id <> 0 then begin
+      if not isExistIDIVRtoBD(listActiveIVR[i].m_id) then
+      begin
+        // удаляем из памяти
+        listActiveIVR[i].Clear;
+      end;
+    end;
+  end;
+ end;
+
 
 function TIVR.isExistActive(id:Integer):Boolean;
 var
   i: Integer;
 begin
   Result:=False;
-  for i:= 0 to GetCountActive - 1 do
-  begin
-    if listActiveIVR[i].id = id then
+  for i:=Low(listActiveIVR) to High(listActiveIVR) do begin
+    if listActiveIVR[i].m_id = id then
     begin
       Result:=True;
       Break;
@@ -215,104 +283,26 @@ begin
   end;
 end;
 
-function TIVR.isExistDrop(id:Integer):Boolean;
+// проверка есть ли номер который сбросился из IVR
+function TIVR.isExistDropPhone(id:Integer): Boolean;
 var
   i: Integer;
 begin
   Result:=False;
-  for i:=0 to GetCountDrop - 1 do
-  begin
-    if listDropIVR[i].id = id then
+  for i:=Low(listActiveIVR) to High(listActiveIVR) do begin
+    if listActiveIVR[i].m_id = id then
     begin
-      Result:=True;
-      Break;
-    end;
-  end;
-end;
-
-
-function TIVR.isChangeDropTime(id:Integer; InNewTime:string):Boolean;
-var
-  i:Integer;
-begin
-  Result:=False;
-  for i:=0 to GetCountDrop - 1 do
-  begin
-    if listDropIVR[i].id = id then
-    begin
-      if listDropIVR[i].waiting_time_start <> InNewTime then Result:=True // время изменилось и это хорошо
-      else Result:=False;
-
-      Break;
-    end;
-  end;
-end;
-
-
-procedure TIVR.addCountDrop(id:Integer);
-var
-  i:Integer;
-begin
-  for i:=0 to GetCountDrop - 1 do
-  begin
-    if listDropIVR[i].id = id then
-    begin
-      Inc(listDropIVR[i].countDrop);
-      Break;
-    end;
-  end;
-end;
-
-
-procedure TIVR.addListDrop(struct:TIVRStruct);
-var
-  i:Integer;
-begin
-  if isExistDrop(struct.id) then Exit;
-
-  for i:=0 to cGLOBAL_ListIVR - 1 do
-  begin
-    if listDropIVR[i].id = 0 then
-    begin
-      listDropIVR[i].id:=struct.id;
-      listDropIVR[i].phone:=struct.phone;
-      listDropIVR[i].waiting_time_start:=struct.waiting_time_start;
-      listDropIVR[i].trunk:=struct.trunk;
-
-      Inc(count_drop);
-      Break;
-    end;
-  end;
-end;
-
-
-procedure TIVR.clearDropExpensityCalls(listActive:array of TIVRStruct; arrayCount:Integer);
-var
-  i,j:Integer;
-  isExist:Boolean;
-begin
-
-  for i:=0 to cGLOBAL_ListIVR-1 do begin
-    if listDropIVR[i].id<>0 then begin
-      isExist:=False;
-      for j:=0 to arrayCount-1 do begin
-        if listDropIVR[i].id = listActive[j].id then begin
-          isExist:=True;
-          Break;
-        end;
-      end;
-
-      if isExist=False then begin
-       DeleteDropID(listDropIVR[i].id);
+      if listActiveIVR[i].m_countNoChange>cGLOBAL_DropPhone then begin
+        Result:=True;
+        Break;
       end;
     end;
   end;
-
 end;
 
 
 
- procedure TIVR.UpdateData(var p_listDrop:TIVR);
+ procedure TIVR.UpdateData;
  const
   cTimeResponse:Word = 1; // время которое просматривается
  var
@@ -323,8 +313,9 @@ end;
  addListActive:Boolean;   // разрешено добавить в listActive! = true
  id:Integer;
 
+ freeIDStructIVR:Integer; // свободный ID
+ currentIDStructIVR:Integer;  // текущий просматриваемый ID
  begin
-
   countIVR:=0;
 
   ado:=TADOQuery.Create(nil);
@@ -352,9 +343,6 @@ end;
         end;
     end;
 
-     // очищаем весь список
-     ClearActive;
-
      if countIVR>=1 then begin
 
         SQL.Clear;
@@ -363,54 +351,42 @@ end;
         Active:=True;
 
         for i:=0 to countIVR-1 do begin
-          //addListActive:=False;
 
           try
-            if Fields[0].Value <> null then begin
+            if (Fields[0].Value = null) or
+               (Fields[1].Value = null) or
+               (Fields[2].Value = null) or
+               (Fields[3].Value = null)
+            then Next;
 
-               // проверяем есть ли дропнутые
-               {if p_listDrop.GetCountDrop<>0 then begin
-
-                 id:=StrToInt(VarToStr(Fields[0].Value));
-
-                 // проверим есть ли такой id в дропе
-                  if p_listDrop.isExistDrop(id) then begin
-                     // проверим изменилось ли время
-                     if p_listDrop.isChangeDropTime(id,VarToStr(Fields[2].Value))=False then begin
-                        // время не изменилось добавим +1 к drop
-                        p_listDrop.addCountDrop(id);
-                     end
-                     else begin
-                       addListActive:=True;
-                     end;
-                  end
-                  else begin
-                    addListActive:=True;
-                  end;
+            // проверим не ушел ли у нас в очередь звонок
+            CheckToQueuePhone;
 
 
-                  if addListActive then begin
-                    listActiveIVR[i].id:=StrToInt(VarToStr(Fields[0].Value));
-                    listActiveIVR[i].phone:=VarToStr(Fields[1].Value);
-                    listActiveIVR[i].waiting_time_start:=VarToStr(Fields[2].Value);
-                    listActiveIVR[i].trunk:=VarToStr(Fields[3].Value);
-                    Inc(count_active);
+            // проверим есть ли такой id уже у нас
+            if isExistActive(StrToInt(VarToStr(Fields[0].Value))) then begin
+               currentIDStructIVR:=GetStructIVRID(StrToInt(VarToStr(Fields[0].Value)));
 
-                    // запооняем и listDrop
-                    p_listDrop.addListDrop(listActiveIVR[i]);
-                  end;
-
-
+               // проверим изменилось ли время
+               if isChangeWaitingTime(StrToInt(VarToStr(Fields[0].Value)),VarToStr(Fields[2].Value)) then begin
+                 // обновим время
+                 listActiveIVR[currentIDStructIVR].m_waiting_time_start:=VarToStr(Fields[2].Value);
+                 listActiveIVR[currentIDStructIVR].m_countNoChange:=0;
                end
-               else} begin // тут первый запуск, чтобы были какие то данные которые будем проверять
-                listActiveIVR[i].id:=StrToInt(VarToStr(Fields[0].Value));
-                listActiveIVR[i].phone:=VarToStr(Fields[1].Value);
-                listActiveIVR[i].waiting_time_start:=VarToStr(Fields[2].Value);
-                listActiveIVR[i].trunk:=VarToStr(Fields[3].Value);
-                Inc(count_active);
+               else begin // время не изменилось значит надо увеличить счетчик
+                 Inc(listActiveIVR[currentIDStructIVR].m_countNoChange);
+               end;
 
-                // запооняем и listDrop
-                p_listDrop.addListDrop(listActiveIVR[i]);
+            end
+            else begin
+              // найдем свободный ID
+              freeIDStructIVR:=GetLastFreeIDStructActiveIVR;
+
+               begin // тут первый запуск, чтобы были какие то данные которые будем проверять
+                listActiveIVR[freeIDStructIVR].m_id:=StrToInt(VarToStr(Fields[0].Value));
+                listActiveIVR[freeIDStructIVR].m_phone:=VarToStr(Fields[1].Value);
+                listActiveIVR[freeIDStructIVR].m_waiting_time_start:=VarToStr(Fields[2].Value);
+                listActiveIVR[freeIDStructIVR].m_trunk:=VarToStr(Fields[3].Value);
                end;
             end;
 
@@ -418,10 +394,11 @@ end;
              Next;
           end;
         end;
+     end else begin
+       // очищаем весь список
+       if Count<>0 then ClearActiveAll;
      end;
 
-     //убираем просроченные звонки из listdrop
-     p_listDrop.clearDropExpensityCalls(listActiveIVR,count_active);
 
   end;
 

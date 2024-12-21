@@ -2,7 +2,7 @@ object HomeForm: THomeForm
   Left = 0
   Top = 0
   Caption = #1044#1072#1096#1073#1086#1088#1076' '#1050#1086#1083#1083#1062#1077#1085#1090#1088#1072
-  ClientHeight = 803
+  ClientHeight = 799
   ClientWidth = 1384
   Color = clWindow
   DefaultMonitor = dmDesktop
@@ -20,7 +20,7 @@ object HomeForm: THomeForm
   OnShow = FormShow
   DesignSize = (
     1384
-    803)
+    799)
   PixelsPerInch = 96
   TextHeight = 15
   object Label5: TLabel
@@ -455,7 +455,7 @@ object HomeForm: THomeForm
   end
   object ImageLogo: TImage
     Left = 1207
-    Top = 716
+    Top = 712
     Width = 157
     Height = 37
     Anchors = [akRight, akBottom]
@@ -767,25 +767,9 @@ object HomeForm: THomeForm
     Visible = False
     OnClick = img_statistics_QUEUEClick
   end
-  object lblDrop: TLabel
-    Left = 300
-    Top = 48
-    Width = 41
-    Height = 15
-    Caption = 'Label25'
-    Visible = False
-  end
-  object lblActive: TLabel
-    Left = 245
-    Top = 48
-    Width = 49
-    Height = 15
-    Caption = 'lblActive'
-    Visible = False
-  end
   object ImgNewYear: TImage
     Left = 1319
-    Top = 696
+    Top = 692
     Width = 55
     Height = 55
     Anchors = [akRight, akBottom]
@@ -5822,7 +5806,7 @@ object HomeForm: THomeForm
   end
   object lblNewMessageLocalChat: TLabel
     Left = 1132
-    Top = 762
+    Top = 758
     Width = 243
     Height = 16
     Cursor = crHandPoint
@@ -6020,7 +6004,7 @@ object HomeForm: THomeForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 782
+    Top = 778
     Width = 1384
     Height = 21
     Panels = <
@@ -6051,7 +6035,7 @@ object HomeForm: THomeForm
         Text = 'developer by     '
         Width = 150
       end>
-    ExplicitTop = 760
+    ExplicitTop = 762
   end
   object Button1: TButton
     Left = 300
@@ -6065,13 +6049,12 @@ object HomeForm: THomeForm
   end
   object PanelShadowRight: TPanel
     Left = 1217
-    Top = 13
+    Top = 12
     Width = 153
     Height = 16
     Anchors = [akRight]
     BevelOuter = bvNone
     TabOrder = 3
-    ExplicitTop = 12
     object imgRight: TImage
       Left = 136
       Top = 0

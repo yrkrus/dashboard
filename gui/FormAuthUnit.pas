@@ -149,11 +149,11 @@ begin
   System.Delete(user_familiya, AnsiPos(' ',user_familiya),Length(user_familiya));
 
   // проверим есть ли уже активная сессия
-  if GetExistActiveSession(getUserID(user_name,user_familiya),activeSession) then begin
+{  if GetExistActiveSession(getUserID(user_name,user_familiya),activeSession) then begin
     Screen.Cursor:=crDefault;
     FormSizeWithError('Активна другая сессия '+#13+activeSession);
     Exit;
-  end;
+  end;  }
 
   pwd:=getHashPwd(current_pwd);
   user_pwd:=getUserPwd(getUserID(user_name,user_familiya));

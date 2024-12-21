@@ -11,8 +11,8 @@ type
 
   protected
     procedure Execute; override;
-    procedure show(var p_listDrop: TIVR);     // переадача списка с данными по ссылке!!
-    procedure showIVR(var p_listIVR:TIVR);  // переадача списка с данными по ссылке!!
+    procedure show(var p_SharedIVR: TIVR);     // переадача списка с данными по ссылке!!
+    procedure showIVR(var p_SharedIVR: TIVR);
     procedure CriticalError;
  private
   Log:TLoggingFile;
@@ -34,7 +34,7 @@ begin
 end;
 
 
-procedure Thread_IVR.showIVR(var p_listIVR:TIVR);
+procedure Thread_IVR.showIVR(var p_SharedIVR:TIVR);
 var
  i:Integer;
  ListItem: TListItem;
@@ -44,7 +44,7 @@ var
 begin
   with HomeForm do begin
 
-    countIVR:=p_listIVR.GetCountActive;
+    countIVR:=p_SharedIVR.Count;
 
      if countIVR=0 then begin
        lblCount_IVR.Caption:='IVR';
@@ -65,81 +65,73 @@ begin
      // ListViewIVR.Clear;
 
       // Проходим по всем элементам списка
-      for i := 0 to countIVR - 1 do
-      begin
-        idToFind := p_listIVR.listActiveIVR[i].id; // Получаем id
-        existingItem := nil;
-
-        // Поиск существующего элемента по номеру телефона
-        for ListItem in ListViewIVR.Items do
+      for i:=Low(p_SharedIVR.listActiveIVR) to High(p_SharedIVR.listActiveIVR) do begin
         begin
-          if ListItem.Caption = IntToStr(idToFind) then
+          if p_SharedIVR.listActiveIVR[i].m_id=0 then Continue;
+
+          // не показываем номера те которые сбросились
+          if p_SharedIVR.listActiveIVR[i].m_countNoChange >= TIVR.cGLOBAL_DropPhone then Continue;
+
+
+
+          idToFind := p_SharedIVR.listActiveIVR[i].m_id; // Получаем id
+          existingItem := nil;
+
+          // Поиск существующего элемента по номеру телефона
+          for ListItem in ListViewIVR.Items do
           begin
-            existingItem := ListItem;
-            Break;
+            if ListItem.Caption = IntToStr(idToFind) then
+            begin
+              existingItem := ListItem;
+              Break;
+            end;
           end;
-        end;
 
-        if existingItem = nil then
-        begin
-          // Элемент не найден, добавляем новый
-          ListItem := ListViewIVR.Items.Add;
-          ListItem.Caption := IntToStr(p_listIVR.listActiveIVR[i].id); // id
-          ListItem.SubItems.Add(p_listIVR.listActiveIVR[i].phone); // Номер телефона
-          ListItem.SubItems.Add(p_listIVR.listActiveIVR[i].waiting_time_start); // Время ожидания
-          ListItem.SubItems.Add(p_listIVR.listActiveIVR[i].trunk); // trunk
-        end
-        else
-        begin
-          // Элемент найден, обновляем его данные
-          existingItem.SubItems[1] := p_listIVR.listActiveIVR[i].waiting_time_start; // Время ожидания
-         end;
+          if existingItem = nil then
+          begin
+            // Элемент не найден, добавляем новый
+            ListItem := ListViewIVR.Items.Add;
+            ListItem.Caption := IntToStr(p_SharedIVR.listActiveIVR[i].m_id); // id
+            ListItem.SubItems.Add(p_SharedIVR.listActiveIVR[i].m_phone); // Номер телефона
+            ListItem.SubItems.Add(p_SharedIVR.listActiveIVR[i].m_waiting_time_start); // Время ожидания
+            ListItem.SubItems.Add(p_SharedIVR.listActiveIVR[i].m_trunk); // trunk
+          end
+          else
+          begin
+            // Элемент найден, обновляем его данные
+            existingItem.SubItems[1] := p_SharedIVR.listActiveIVR[i].m_waiting_time_start; // Время ожидания
+           end;
+        end;
       end;
 
       // Удаляем элементы, которые отсутствуют в новых данных
       for i := ListViewIVR.Items.Count - 1 downto 0 do
       begin
-        if not p_listIVR.isExistActive(StrToInt(ListViewIVR.Items[i].Caption)) then
-          ListViewIVR.Items.Delete(i);
+        // убрались потому что ушлм в очередь
+        if not p_SharedIVR.isExistActive(StrToInt(ListViewIVR.Items[i].Caption)) then ListViewIVR.Items.Delete(i);
+
+        // убрались потому что сбросились и не дошли до очереди
+        if p_SharedIVR.isExistDropPhone(StrToInt(ListViewIVR.Items[i].Caption)) then ListViewIVR.Items.Delete(i);
       end;
-
-    finally
-     // ListViewIVR.Items.EndUpdate;
-     // ListViewIVR.Visible := True;
+    except
+        on E:Exception do
+        begin
+         messclass:=e.ClassName;
+         mess:=e.Message;
+         Synchronize(CriticalError);
+        end;
     end;
-
-    lblActive.Caption:='act_'+IntToStr(p_listIVR.GetCountActive);
-    {
-    mActive.Clear;
-    for i:=0 to p_listIVR.GetCountActive-1 do begin
-      mActive.Lines.Add(p_listIVR.listActiveIVR[i].phone);
-
-    end;  }
-
   end;
 end;
 
 
-procedure Thread_IVR.show(var p_listDrop: TIVR);
-var
- listIVR:TIVR;
- i:Integer;
+procedure Thread_IVR.show(var p_SharedIVR: TIVR);
 begin
-  listIVR:=TIVR.Create;
-  listIVR.UpdateData(p_listDrop);
+  if not CONNECT_BD_ERROR then begin
+     p_SharedIVR.UpdateData;
 
-  if (CONNECT_BD_ERROR=False) then showIVR(listIVR);
-
-  HomeForm.lblDrop.Caption:='drop_'+IntToStr(p_listDrop.GetCountDrop);
-
-  {HomeForm.mDrop.Clear;
-    for i:=0 to p_listDrop.GetCountDrop-1 do begin
-      if p_listDrop.listDropIVR[i].phone<>'' then begin
-        HomeForm.mDrop.Lines.Add(p_listDrop.listDropIVR[i].phone);
-      end;
-    end; }
-
-  if listIVR<>nil then FreeAndNil(listIVR);
+     showIVR(p_SharedIVR);
+  end;
 end;
 
 procedure Thread_IVR.Execute;
@@ -148,15 +140,12 @@ const
  var
   StartTime, EndTime: Cardinal;
   Duration: Cardinal;
-  listDrop: TIVR;
+
 begin
    inherited;
    CoInitialize(Nil);
-   Sleep(1000);
-
+   Sleep(500);
    Log:=TLoggingFile.Create('Thread_IVR');
-
-   listDrop:=TIVR.Create;
 
   while not Terminated do
   begin
@@ -165,7 +154,7 @@ begin
       try
         StartTime:=GetTickCount;
 
-        show(listDrop);
+        show(SharedIVR);
 
         EndTime:= GetTickCount;
         Duration:= EndTime - StartTime;

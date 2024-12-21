@@ -53,7 +53,7 @@ var
   type
   p_TADOConnection = Pointer; // Указатель на TADOConnection
   function createServerConnect: p_TADOConnection;     stdcall;    external 'core.dll';     // Создание подключения к серверу
-  function GetCopyright:string;                       stdcall;    external 'core.dll';     // copyright
+  function GetCopyright:Pchar;                       stdcall;    external 'core.dll';     // copyright
   function GetUserNameFIO(InUserID:Integer):PChar;    stdcall;    external 'core.dll'; // полчуение имени пользователя из его UserID
   function GetUserAccessLocalChat(InUserID:Integer):Boolean;   stdcall;     external 'core.dll';       // есть ли доступ у пользователя к локальному чату
   function GetCurrentDateTimeDec(DecMinutes:Integer):PChar; overload;  stdcall; external 'core.dll';       // текущее начала дня минус -DecMinutes
