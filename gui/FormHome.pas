@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Grids, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.Menus,Data.Win.ADODB, Data.DB, Vcl.Imaging.jpeg,System.SyncObjs,
-  TActiveSIPUnit,TUserUnit, Vcl.Imaging.pngimage, ShellAPI;
+  TActiveSIPUnit,TUserUnit, Vcl.Imaging.pngimage, ShellAPI, TLogFileUnit;
 
 
 type
@@ -51,7 +51,6 @@ type
     N2: TMenuItem;
     menu_activeSession: TMenuItem;
     menu_Reports: TMenuItem;
-    STError: TStaticText;
     ImageLogo: TImage;
     Label11: TLabel;
     Label17: TLabel;
@@ -111,7 +110,6 @@ type
     menu_SIPtrunk: TMenuItem;
     menu_GlobalSettings: TMenuItem;
     N16: TMenuItem;
-    N17: TMenuItem;
     PanelStatus: TPanel;
     PanelStatusIN: TPanel;
     Label22: TLabel;
@@ -197,6 +195,8 @@ type
   public
     { Public declarations }
 
+  Log:TLoggingFile;
+
   ///////// ПОТОКИ ////////////
   Statistics_thread:TThread;
   IVR_thread:TThread;
@@ -259,12 +259,15 @@ type
   - добавлен функционал "Локального чата"
   - изменена форма аторизации
   (не готово)- добавлен функционал "автоматического обновления"
-  (не готово)- добавлен функционал логирования работы дашборда и дочерних модулей
+  - добавлен функционал логирования работы дашборда и дочерних модулей
+  - общее и среднее время разговора поменялись местами
+
 
   ИСПРАВЛЕНО
   не работает проверить - исправлена ошибка не отображения активных операторов, при установленном параметре "не показывать ушедших домой"
   - исправлено отображение статистики "ожидания в очереди" при переходе на следующий день
-
+  - исправлен алгоритм заведения нового оператора в дашборд через редактирование старого SIP номера
+  - исправлено отображение оператора в очереди, когда оператор находился в очереди, а дашборд показывал что он не в в очереди
   =======================================================
 }
 
@@ -274,7 +277,6 @@ type
 
 var
   HomeForm: THomeForm;
-  TimeLastError:TDateTime;
 
 
   // thread
@@ -303,7 +305,7 @@ DMUnit, FunctionUnit, FormPropushennieUnit, FormSettingsUnit, Thread_StatisticsU
   FormAuthUnit, FormActiveSessionUnit, FormRePasswordUnit, Thread_AnsweredQueueUnit,
   ReportsUnit, Thread_ACTIVESIP_updatetalkUnit, FormDEBUGUnit, FormErrorUnit, TCustomTypeUnit,
   GlobalVariables, FormUsersUnit, FormServersIKUnit, FormSettingsGlobalUnit,
-  FormTrunkUnit, TLogFileUnit;
+  FormTrunkUnit;
 
 
 {$R *.dfm}
@@ -488,12 +490,13 @@ end;
 
 
 procedure THomeForm.Button3Click(Sender: TObject);
-var
- Log:TLoggingFile;
+
 begin
-   Log:=TLoggingFile.Create('button');
-   Log.Save('Тут мы что то написали без ошибки');
-   Log.Save('тут у нас ошибка',IS_ERROR);
+   if not Assigned(Log) then Log:=TLoggingFile.Create('button');
+
+   Log.Save('123');
+
+
 end;
 
 procedure THomeForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -634,9 +637,9 @@ begin
 
    // стататус бар
    with StatusBar do begin
-    Panels[1].Text:=SharedCurrentUserLogon.GetFamiliya+' '+SharedCurrentUserLogon.GetName;
-    Panels[2].Text:=getUserRoleSTR(SharedCurrentUserLogon.GetID);
-    Panels[3].Text:=GetCopyright;
+    Panels[2].Text:=SharedCurrentUserLogon.GetFamiliya+' '+SharedCurrentUserLogon.GetName;
+    Panels[3].Text:=getUserRoleSTR(SharedCurrentUserLogon.GetID);
+    Panels[4].Text:=GetCopyright;
    end;
 
    // заведение данных о текущей сесии

@@ -123,7 +123,8 @@ end;
 
 procedure Thread_QUEUE.CriticalError;
 begin
-  HomeForm.STError.Caption:=getCurrentDateTimeWithTime+' Thread_QUEUE.'+messclass+'.'+mess;
+  // записываем в лог
+ Log.Save(messclass+'.'+mess,IS_ERROR);
 end;
 
 procedure Thread_QUEUE.show;
@@ -168,16 +169,12 @@ begin
         except
           on E:Exception do
           begin
-           INTERNAL_ERROR:=true;
+           //INTERNAL_ERROR:=true;
            messclass:=e.ClassName;
            mess:=e.Message;
-           TimeLastError:=Now;
 
-           // записываем в лог
-           Log.Save(messclass+'.'+mess,IS_ERROR);
-
-           if SharedCurrentUserLogon.GetRole = role_administrator then Synchronize(CriticalError);
-           INTERNAL_ERROR:=False;
+           Synchronize(CriticalError);
+           //INTERNAL_ERROR:=False;
           end;
         end;
     end;

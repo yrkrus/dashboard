@@ -106,9 +106,6 @@ Coordinates=207,282,71,58
 [menu_About]
 Coordinates=1420,584,87,36
 
-[STError]
-Coordinates=185,690,59,36
-
 [Label3]
 Coordinates=256,146,53,58
 
@@ -158,7 +155,7 @@ Coordinates=250,418,111,58
 Coordinates=10,10,144,58
 
 []
-Coordinates=434,690,153,36
+Coordinates=185,690,59,36
 Visible=True
 
 [Timer_Thread_Start]

@@ -42,7 +42,8 @@ uses
 
  procedure Thread_ACTIVESIP.CriticalError;
  begin
-   HomeForm.STError.Caption:=getCurrentDateTimeWithTime+' Thread_ACTIVESIP.'+messclass+'.'+mess;
+   // записываем в лог
+   Log.Save(messclass+'.'+mess,IS_ERROR);
  end;
 
 
@@ -59,7 +60,8 @@ begin
     p_ActiveSipOperators.updateStatus;
     p_ActiveSipOperators.updateStatusOnHold;
 
-    // тут просто найцдем user_id операторов всех у кого есть доступ к дашборду (по факту вызываетмся когда нет этой записи в памяти)
+    // тут просто найцдем user_id операторов всех у кого есть доступ к дашборду
+    // (по факту вызываетмся когда нет этой записи в памяти)
     p_ActiveSipOperators.createUserID;
 
     // обновим дату последнего онлайна
@@ -67,8 +69,14 @@ begin
   end;
 
   // обновляем время
-  HomeForm.StatusBar.Panels[0].Text:=DateTimeToStr(now);
+  with HomeForm.StatusBar do begin
+    Panels[0].Text:=DateTimeToStr(now);
+    if GetStatusUpdateService then Panels[1].Text:='Служба обновления: работает'
+    else Panels[1].Text:='Служба обновления: не запущена';
+  end;
 
+
+  // текущая версия дашборда + онлайн время
   XML:=TXML.Create(PChar(SETTINGS_XML));
   XML.UpdateLastOnline;
   XML.Free;
@@ -226,9 +234,9 @@ begin
     // ===== ОБЩЕЕ ВРЕМЯ РАЗГОВОРА =====
     begin
      if  p_ActiveSipOperators.GetListOperators_TalkTimeAll(i) = 0 then ListItem.SubItems.Add('00:00:00 | 00:00:00')
-     else ListItem.SubItems.Add(getTimeAnsweredSecondsToString(p_ActiveSipOperators.GetListOperators_TalkTimeAll(i))
+     else ListItem.SubItems.Add(getTimeAnsweredSecondsToString(p_ActiveSipOperators.GetListOperators_TalkTimeAvg(i))
                                 +' | '
-                                +getTimeAnsweredSecondsToString(p_ActiveSipOperators.GetListOperators_TalkTimeAvg(i)));
+                                +getTimeAnsweredSecondsToString(p_ActiveSipOperators.GetListOperators_TalkTimeAll(i)));
 
     end;
   end;
@@ -386,9 +394,9 @@ begin
       // ===== ОБЩЕЕ ВРЕМЯ РАЗГОВОРА =====
       begin
        if  p_ActiveSipOperators.GetListOperators_TalkTimeAll(i) = 0 then ListItem.SubItems[6]:='00:00:00 | 00:00:00'
-       else ListItem.SubItems[6]:=getTimeAnsweredSecondsToString(p_ActiveSipOperators.GetListOperators_TalkTimeAll(i))
+       else ListItem.SubItems[6]:=getTimeAnsweredSecondsToString(p_ActiveSipOperators.GetListOperators_TalkTimeAvg(i))
                                   +' | '
-                                  +getTimeAnsweredSecondsToString(p_ActiveSipOperators.GetListOperators_TalkTimeAvg(i));
+                                  +getTimeAnsweredSecondsToString(p_ActiveSipOperators.GetListOperators_TalkTimeAll(i));
 
       end;
     end;
@@ -515,16 +523,12 @@ begin
      except
         on E:Exception do
         begin
-         INTERNAL_ERROR:=true;
+         //INTERNAL_ERROR:=true;
          messclass:=e.ClassName;
          mess:=e.Message;
-         TimeLastError:=Now;
 
-         // записываем в лог
-         Log.Save(messclass+'.'+mess,IS_ERROR);
-
-         if SharedCurrentUserLogon.GetRole = role_administrator then Synchronize(CriticalError);
-         INTERNAL_ERROR:=False;
+         Synchronize(CriticalError);
+        // INTERNAL_ERROR:=False;
         end;
       end;
     end;

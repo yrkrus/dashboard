@@ -194,8 +194,6 @@ begin
         countServers:=Fields[0].Value;
     except
         on E:EIdException do begin
-           CodOshibki:=e.Message;
-           if SharedCurrentUserLogon.GetRole = role_administrator then HomeForm.STError.Caption:=CodOshibki;
            FreeAndNil(ado);
            serverConnect.Close;
            FreeAndNil(serverConnect);
@@ -222,8 +220,6 @@ begin
        Active:=True;
       except
           on E:EIdException do begin
-             CodOshibki:=e.Message;
-             if SharedCurrentUserLogon.GetRole = role_administrator then HomeForm.STError.Caption:=CodOshibki;
 
              FreeAndNil(ado);
              serverConnect.Close;

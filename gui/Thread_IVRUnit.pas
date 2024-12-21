@@ -29,7 +29,8 @@ uses
 
 procedure Thread_IVR.CriticalError;
 begin
-  HomeForm.STError.Caption:=getCurrentDateTimeWithTime+' Thread_IVR.'+messclass+'.'+mess;
+   // записываем в лог
+   Log.Save(messclass+'.'+mess,IS_ERROR);
 end;
 
 
@@ -172,16 +173,9 @@ begin
       except
         on E:Exception do
         begin
-         INTERNAL_ERROR:=true;
          messclass:=e.ClassName;
          mess:=e.Message;
-         TimeLastError:=Now;
-
-          // записываем в лог
-         Log.Save(messclass+'.'+mess,IS_ERROR);
-
-         if SharedCurrentUserLogon.GetRole = role_administrator then Synchronize(CriticalError);
-         INTERNAL_ERROR:=False;
+         Synchronize(CriticalError);
         end;
       end;
     end;

@@ -49,6 +49,8 @@ type
   UserEditFileds_sip:Boolean;         // пользователь отредактировал поле sip, надо проверить
   UserEditFields_sipDefault:string;   // значение которое было изначально в поле логин
 
+  function GetCheckEditNewOperator(InUserID:Integer):Boolean;
+
   public
    currentEditUsers:Boolean;
    currentEditUsersID:UInt32;
@@ -57,7 +59,7 @@ type
 
     { Public declarations }
 
-   isUserEdit:Boolean;           // редактируется пользователь true - редактируется
+  // isUserEdit:Boolean;           // редактируется пользователь true - редактируется
   end;
 
 var
@@ -83,7 +85,47 @@ uses
 {$R *.dfm}
 
 
-function getResponseBD(InTypeAction:TAction_User):string;
+
+// сравнение строк
+function IsChangedMoreThan50Percent(const Original, New: string):Boolean;
+var
+  i, ChangesCount: Integer;
+  LengthToCompare: Integer;
+begin
+  // Определяем длину строки для сравнения
+  LengthToCompare := Length(Original);
+  if Length(New) > LengthToCompare then LengthToCompare := Length(New);
+
+  ChangesCount := 0;
+
+  // Сравниваем символы строк
+  for i := 1 to LengthToCompare do
+  begin
+    // Если символы различаются, увеличиваем счетчик изменений
+    if (i > Length(Original)) or (i > Length(New)) or (Original[i] <> New[i]) then  Inc(ChangesCount);
+  end;
+  // Проверяем, больше ли изменений 50% от длины самой длинной строки
+  Result := ChangesCount > (LengthToCompare div 2);
+end;
+
+
+// проверка текущего оператора решили отредактировать или полностью заменить редактированием
+function TFormAddNewUsers.GetCheckEditNewOperator(InUserID:Integer):Boolean;
+var
+  oldName:string;
+  oldFamiliya:string;
+begin
+  Result:=False;
+
+  oldName:=getUserNameBD(InUserID);
+  oldFamiliya:=getUserFamiliya(InUserID);
+
+  if ( IsChangedMoreThan50Percent(oldFamiliya,edtNewFamiliya.Text)) or
+     ( IsChangedMoreThan50Percent(oldName,edtNewName.Text)) then Result:=True;
+end;
+
+
+function getResponseBD(InTypeAction:TAction_User; var _errorDescription:string):Boolean;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -106,10 +148,16 @@ var
  userID:string;
 
 begin
+  Result:=False;
+  _errorDescription:='';
+
   Screen.Cursor:=crHourGlass;
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
+  if not Assigned(serverConnect) then begin
+    _errorDescription:='Не удалось соединиться с сервером';
+     Exit;
+  end;
 
   isNewUserOperator:=False;
 
@@ -213,7 +261,7 @@ begin
         on E:EIdException do begin
            Screen.Cursor:=crDefault;
            CodOshibki:=e.Message;
-           Result:='ОШИБКА! '+CodOshibki;
+           _errorDescription:=CodOshibki;
 
            FreeAndNil(ado);
            serverConnect.Close;
@@ -239,7 +287,7 @@ begin
           on E:EIdException do begin
              Screen.Cursor:=crDefault;
              CodOshibki:=e.Message;
-             Result:='ОШИБКА! '+CodOshibki;
+             _errorDescription:=CodOshibki;
              FreeAndNil(ado);
 
              serverConnect.Close;
@@ -258,7 +306,7 @@ begin
 
   Screen.Cursor:=crDefault;
 
-   Result:='OK';
+  Result:=True;
 end;
 
 
@@ -279,8 +327,6 @@ begin
        chkboxZoiper.Checked:=False;
 
         // локальный чат
-      //  chkboxAllowLocalChat.Enabled:=True;
-       // chkboxAllowLocalChat.Checked:=False;
         chkboxAllowLocalChat.Top:=cTopChatDefault;
 
         if comboxUserGroup.Text='Оператор (без дашборда)' then begin
@@ -310,8 +356,6 @@ begin
      else begin  // для всех остальных групп, кроме операторских
       PanelOperators.Visible:=False;
 
-      //chkboxAllowLocalChat.Enabled:=True;
-      //chkboxAllowLocalChat.Checked:=False;
       chkboxAllowLocalChat.Top:=cTopPanelOperators;
 
       edtOperatorSetting_SIP_show.Text:='';
@@ -433,45 +477,46 @@ end;
 
 
  // проверка корреткрности заполнения полей
- function getCheckFields:string;
+ function getCheckFields(var _errorDescription:string):Boolean;
  const
-  cMAX_COUNT_FIO_LENGHT:Word = 28;
+  cMAX_COUNT_FIO_LENGHT:Word = 35;
  var
  currentGroup:string;
  begin
-   Result:='ОШИБКА!';
+   Result:=False;
+   _errorDescription:='';
 
    with FormAddNewUsers do begin
       if edtNewFamiliya.Text='' then begin
-       Result:='ОШИБКА! Не заполнено поле "Фамилия"';
-       Exit;
+       _errorDescription:='Не заполнено поле "Фамилия"';
+        Exit;
       end;
 
       if edtNewName.Text='' then begin
-       Result:='ОШИБКА! Не заполнено поле "Имя"';
-       Exit;
+       _errorDescription:='Не заполнено поле "Имя"';
+        Exit;
       end;
 
       // длина Имя+Фамилия
       if Length(edtNewFamiliya.Text)+Length(edtNewName.Text)+1>cMAX_COUNT_FIO_LENGHT then begin
-       Result:='ОШИБКА! Общее максимальное кол-во символов в полях Фамилия+Имя не может быть больше '+ IntToStr(cMAX_COUNT_FIO_LENGHT)+' символов' +#13+#13
-                  +'Сейчас:'+#13+'Фамилия - '+IntToStr(Length(edtNewFamiliya.Text))+' символов'+#13
-                  +'Имя - '+IntToStr(Length(edtNewName.Text))+' символов';
+       _errorDescription:='Общее максимальное кол-во символов в полях Фамилия+Имя не может быть больше '+ IntToStr(cMAX_COUNT_FIO_LENGHT)+' символов' +#13+#13
+                          +'Сейчас:'+#13+'Фамилия - '+IntToStr(Length(edtNewFamiliya.Text))+' символов'+#13
+                          +'Имя - '+IntToStr(Length(edtNewName.Text))+' символов';
        Exit;
       end;
 
 
       if edtNewLogin.Text='' then begin
-       Result:='ОШИБКА! Не заполнено поле "Логин"';
+       _errorDescription:='Не заполнено поле "Логин"';
        Exit;
       end;
 
       // проверка логина
-      if currentEditUsers then begin
+      if currentEditUsers then begin // редактируется пользователь
         if userEditFields_login then begin
           if userEditFields_loginDefault<>edtNewLogin.Text then begin
             if getCheckLogin(edtNewLogin.Text) then begin
-             Result:='ОШИБКА! Логин '+edtNewLogin.Text+' уже существует';
+             _errorDescription:='Логин '+edtNewLogin.Text+' уже существует';
              Exit;
             end;
           end;
@@ -479,7 +524,7 @@ end;
       end
       else begin
         if getCheckLogin(edtNewLogin.Text) then begin
-         Result:='ОШИБКА! Логин '+edtNewLogin.Text+' уже существует';
+         _errorDescription:='Логин '+edtNewLogin.Text+' уже существует';
          Exit;
         end;
 
@@ -489,17 +534,17 @@ end;
       // пароль
       if chkboxmyPwd.Checked then begin
         if edtPwdNew.Text='' then begin
-         Result:='ОШИБКА! Не заполнено поле "Пароль"';
+         _errorDescription:='Не заполнено поле "Пароль"';
          Exit;
         end;
 
         if edtPwd2New.Text='' then begin
-         Result:='ОШИБКА! Не заполнено поле "Подтверждение"';
+         _errorDescription:='Не заполнено поле "Подтверждение"';
          Exit;
         end;
 
         if edtPwdNew.Text <> edtPwd2New.Text then begin
-         Result:='ОШИБКА! Пароли не совпадают';
+         _errorDescription:='Пароли не совпадают';
          Exit;
         end;
       end;
@@ -508,7 +553,7 @@ end;
       // группы доступа
       begin
         if comboxUserGroup.ItemIndex= -1 then begin
-           Result:='ОШИБКА! Не выбрана "Группа доступа"';
+           _errorDescription:='Не выбрана "Группа доступа"';
            Exit;
         end;
 
@@ -518,8 +563,18 @@ end;
         if (AnsiPos('Оператор',currentGroup) <> 0) or
            (AnsiPos('оператор',currentGroup)<> 0) then begin
 
+          // проверяем вдруг решили нового оператора просто отредактировать и старого не отключить
+          if currentEditUsers then begin
+            if GetCheckEditNewOperator(currentEditUsersID) then begin
+             _errorDescription:='Текущего пользователя нельзя заменить новым'+#13#13+
+                                'Для заведения нового пользователя, текущего необходимо отключить';
+             Exit;
+            end;
+          end;
+
+
           if edtOperatorSetting_SIP_show.Text='' then begin
-            Result:='ОШИБКА! Не заполнено поле "SIP номер"';
+            _errorDescription:='Не заполнено поле "SIP номер"';
             Exit;
           end;
 
@@ -528,8 +583,8 @@ end;
             if UserEditFileds_sip then begin
               if UserEditFields_sipDefault <> edtOperatorSetting_SIP_show.Text then begin
                 if isExistSipActiveOperator(edtOperatorSetting_SIP_show.Text) then begin
-                  Result:='ОШИБКА! SIP номер '+edtOperatorSetting_SIP_show.Text+' уже существует'+#13#13+
-                           'для добавления такого SIP необходимо сначало отключить пользователя '+getUserNameOperators(edtOperatorSetting_SIP_show.Text);
+                  _errorDescription:='SIP номер '+edtOperatorSetting_SIP_show.Text+' уже существует'+#13#13+
+                                     'для добавления такого SIP необходимо сначало отключить пользователя '+getUserNameOperators(edtOperatorSetting_SIP_show.Text);
                   Exit;
                 end;
               end;
@@ -538,8 +593,8 @@ end;
           else begin
 
             if isExistSipActiveOperator(edtOperatorSetting_SIP_show.Text) then begin
-              Result:='ОШИБКА! SIP номер '+edtOperatorSetting_SIP_show.Text+' уже существует'+#13#13+
-                       'для добавления такого SIP необходимо сначало отключить пользователя '+getUserNameOperators(edtOperatorSetting_SIP_show.Text);
+              _errorDescription:='SIP номер '+edtOperatorSetting_SIP_show.Text+' уже существует'+#13#13+
+                                 'для добавления такого SIP необходимо сначало отключить пользователя '+getUserNameOperators(edtOperatorSetting_SIP_show.Text);
               Exit;
             end;
           end;
@@ -547,14 +602,14 @@ end;
           if edtOperatorSetting_Tel_show.Text<>'' then begin
              // проверка на корректность ip телефонии
             if AnsiPos('10.34.200.',edtOperatorSetting_Tel_show.Text)=0 then begin
-              Result:='ОШИБКА! Некорректный формат "IP телефона"'+#13#13+'Телефон должен иметь формать "10.34.200.XXX"';
+              _errorDescription:='Некорректный формат "IP телефона"'+#13#13+'Телефон должен иметь формать "10.34.200.XXX"';
               Exit;
             end;
           end;
 
         end;
       end;
-       Result:='OK';
+       Result:=True;
    end;
  end;
 
@@ -640,27 +695,34 @@ end;
 
 procedure TFormAddNewUsers.btnAddNewUserClick(Sender: TObject);
 var
- resultat:string;
+ _errorDescription:string;
  ado:TADOQuery;
-
 begin
-  resultat:=getCheckFields;
 
-  if AnsiPos('ОШИБКА',resultat)<>0 then begin
-     MessageBox(Handle,PChar(resultat),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-     Exit;
-  end;
-
-  // добавляем нового пользака
-  if not currentEditUsers then resultat:=getResponseBD(user_add)
-  else resultat:=getResponseBD(user_update);
-
-
-  if AnsiPos('ОШИБКА',resultat)<>0  then begin
-    // не удалось добавить
-    MessageBox(Handle,PChar(resultat),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+  if not getCheckFields(_errorDescription) then begin
+    MessageBox(Handle,PChar(_errorDescription),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
   end;
+
+
+  // добавляем нового пользака
+  if not currentEditUsers then begin
+
+    if not getResponseBD(user_add, _errorDescription) then begin
+      MessageBox(Handle,PChar(_errorDescription),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+      Exit;
+    end;
+
+  end
+  else begin
+
+    if not getResponseBD(user_update,_errorDescription) then begin
+      MessageBox(Handle,PChar(_errorDescription),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+      Exit;
+    end;
+
+  end;
+
 
   // обновление данных
    show_form(SharedCurrentUserLogon.GetRole);

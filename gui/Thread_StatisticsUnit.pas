@@ -31,7 +31,8 @@ uses
 
 procedure  Thread_Statistics.CriticalError;
 begin
-  HomeForm.STError.Caption:=getCurrentDateTimeWithTime+' Thread_Statistics.'+messclass+'.'+mess;
+  // записываем в лог
+  Log.Save(messclass+'.'+mess,IS_ERROR);
 end;
 
 procedure Thread_Statistics.show;
@@ -79,14 +80,6 @@ begin
      // обновление активной сесии пользователя
     updateCurrentActiveSession(SharedCurrentUserLogon.GetID);
 
-    // TODO ghjерка нужно ли обнулить найденную ошибку из потоков ПРОВЕРИТЬ НЕ РАБОТАЕТ!!!!!
-    with HomeForm do begin
-     if STError.Caption<>'' then begin
-
-     // val:=TimeLastError - Now;
-      if TimeLastError - Now >= 30 then STError.Caption:='';
-     end;
-    end;
 
     // нужно ли закрыть текущую сессию
     if getForceActiveSessionClosed(SharedCurrentUserLogon.GetID) then KillProcess;
@@ -124,16 +117,11 @@ begin
       except
         on E:Exception do
         begin
-         INTERNAL_ERROR:=true;
+         //INTERNAL_ERROR:=true;
          messclass:=e.ClassName;
          mess:=e.Message;
-         TimeLastError:=Now;
-
-         // записываем в лог
-         Log.Save(messclass+'.'+mess,IS_ERROR);
-
-         if SharedCurrentUserLogon.GetRole = role_administrator then Synchronize(CriticalError);
-         INTERNAL_ERROR:=False;
+         Synchronize(CriticalError);
+        // INTERNAL_ERROR:=False;
         end;
       end;
     end;

@@ -26,7 +26,8 @@ uses
 
 procedure Thread_CHECKSERVERS.CriticalError;
 begin
-  HomeForm.STError.Caption:=getCurrentDateTimeWithTime+' Thread_CHECKSERVERS.'+messclass+'.'+mess;
+ // записываем в лог
+ Log.Save(messclass+'.'+mess,IS_ERROR);
 end;
 
 
@@ -50,7 +51,19 @@ begin
 
   Log:=TLoggingFile.Create('Thread_CheckServersIK');
 
-  listServers:=TCheckServersIK.Create;
+  try
+   listServers:=TCheckServersIK.Create;
+  except
+    on E:Exception do
+    begin
+     //INTERNAL_ERROR:=true;
+     messclass:=e.ClassName;
+     mess:=e.Message;
+     Synchronize(CriticalError);
+    // INTERNAL_ERROR:=False;
+    end;
+  end;
+
 
   while not Terminated do
   begin
@@ -68,16 +81,11 @@ begin
         except
           on E:Exception do
           begin
-           INTERNAL_ERROR:=true;
+           //INTERNAL_ERROR:=true;
            messclass:=e.ClassName;
            mess:=e.Message;
-           TimeLastError:=Now;
-
-           // записываем в лог
-           Log.Save(messclass+'.'+mess,IS_ERROR);
-
-           if SharedCurrentUserLogon.GetRole = role_administrator then Synchronize(CriticalError);
-           INTERNAL_ERROR:=False;
+           Synchronize(CriticalError);
+          // INTERNAL_ERROR:=False;
           end;
         end;
       end;

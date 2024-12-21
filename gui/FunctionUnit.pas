@@ -918,7 +918,7 @@ begin
 
       with ListViewSIP.Columns.Add do
       begin
-        Caption:='Общее | Сред. время';
+        Caption:='Сред. время | Общее';
         Width:=Round((InWidth*cProcentWidth_time)/100);
         Alignment:=taCenter;
       end;
@@ -1362,8 +1362,6 @@ begin
         countServers:=Fields[0].Value;
     except
         on E:EIdException do begin
-           CodOshibki:=e.Message;
-           if SharedCurrentUserLogon.GetRole = role_administrator then HomeForm.STError.Caption:=CodOshibki;
            FreeAndNil(ado);
            serverConnect.Close;
            FreeAndNil(serverConnect);
@@ -1513,8 +1511,7 @@ begin
         countActive:=Fields[0].Value;
     except
         on E:EIdException do begin
-           CodOshibki:=e.Message;
-           if SharedCurrentUserLogon.GetRole = role_administrator then HomeForm.STError.Caption:=CodOshibki;
+           
            FreeAndNil(ado);
            serverConnect.Close;
            FreeAndNil(serverConnect);

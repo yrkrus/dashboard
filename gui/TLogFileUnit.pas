@@ -71,6 +71,7 @@ uses
       function GetPathToLogName:string;     // абсолбтный путь до лога
       function isExistFileLog:Boolean;           // есть и файл лога на диске
       procedure CreateFileLog;                  // создаем файл лога
+      procedure InitLogNextDay;    // инициализация лога  на следующий день
 
       end;
    // class TLoggingFile END
@@ -138,6 +139,8 @@ begin
 end;
 
 
+
+
 function TLoggingFile.GetPathToLogName:string;
 begin
   if m_mutex.WaitFor(INFINITE)=wrSignaled then
@@ -182,11 +185,32 @@ begin
 end;
 
 
+
+// инициализация лога на следующий день
+procedure TLoggingFile.InitLogNextDay;
+begin
+ // проверка есть ли папка log/текущая дата
+  if not DirectoryExists(m_file.m_rootFolder+'\'+m_file.m_nodeFolder+'\'+GetCurrentTime) then begin
+
+   m_navigate.m_pathToLogName:=m_file.m_rootFolder+
+                               m_file.m_nodeFolder+'\'+
+                               GetCurrentTime+'\'+
+                               m_file.m_fileName+m_file.m_fileExtension;
+
+    if not isExistFileLog then CreateFileLog;
+  end;
+
+end;
+
+
 procedure TLoggingFile.Save(InSTroka: string; isError: Boolean = False);
 var
  SLLog:TStringList;
 begin
   if not isExistFileLog then CreateFileLog;
+
+  // на всякий случай проверим не перещли лт в новый день
+  InitLogNextDay;
 
   SLLog:=TStringList.Create;
 

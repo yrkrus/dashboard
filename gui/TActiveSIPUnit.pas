@@ -341,13 +341,13 @@ uses
   countAnswered:Integer;
   countAll,curr_seconds:Integer;
  begin
-   if getCountSipOperators=0 then  Exit;
+   if getCountSipOperators=0 then Exit;
 
    // проверяем вдруг изменолось кол-во звонков
    for i:=0 to Length(listOperators)-1 do begin
 
       if listOperators[i].sip_number<>'' then begin
-        if (listOperators[i].count_talk<>0) {and (listOperators[i].list_talk_time_all.Count<>0)} then begin
+        if (listOperators[i].count_talk<>0) then begin
 
           if listOperators[i].count_talk > listOperators[i].list_talk_time_all.Count then begin
 
@@ -559,12 +559,17 @@ uses
  procedure TActiveSIP.updateCountTalk;
  var
   i:Integer;
+  oldCount:Integer;
+  newCount:Integer;
  begin
    if getCountSipOperators=0 then Exit;
 
    for i:=0 to Length(listOperators)-1 do begin
       if listOperators[i].sip_number<>'' then begin
-         listOperators[i].count_talk:=getCountAnsweredCall(listOperators[i].sip_number);
+         oldCount:=listOperators[i].count_talk;
+         newCount:=getCountAnsweredCall(listOperators[i].sip_number);
+
+         if oldCount<>newCount then listOperators[i].count_talk:=newCount;
       end;
    end;
  end;
@@ -613,6 +618,8 @@ uses
   i,j,countQueue:Integer;
   ado:TADOQuery;
   serverConnect:TADOConnection;
+  tempQueue:string;
+  oldQueue:string;
  begin
    if getCountSipOperators=0 then Exit;
 
@@ -624,11 +631,12 @@ uses
     ado.Connection:=serverConnect;
 
      for i:=0 to Length(listOperators)-1 do begin
-        listOperators[i].queue:='';
+       tempQueue:='';
 
         if Active then Active:=False;
 
         if listOperators[i].sip_number<>'' then begin
+          oldQueue:=listOperators[i].queue;
 
           SQL.Clear;
           SQL.Add('select count(id) from operators_queue where sip = '+#39+listOperators[i].sip_number+#39);
@@ -638,7 +646,6 @@ uses
 
           if countQueue=0 then begin
             listOperators[i].queue:='';
-            //Next;
             Continue;
           end;
 
@@ -647,14 +654,18 @@ uses
           SQL.Add('select queue from operators_queue where sip = '+#39+listOperators[i].sip_number+#39);
           Active:=True;
 
+
           for j:=0 to countQueue-1 do begin
 
             if Fields[0].Value <> null then begin
-               if listOperators[i].queue='' then listOperators[i].queue:=VarToStr(Fields[0].Value)
-               else listOperators[i].queue:=listOperators[i].queue+' и '+VarToStr(Fields[0].Value);
+               if tempQueue='' then tempQueue:=VarToStr(Fields[0].Value)
+               else tempQueue:=tempQueue+' и '+VarToStr(Fields[0].Value);
             end;
             Next;
           end;
+
+          if oldQueue<>tempQueue then listOperators[i].queue:=tempQueue;
+
         end;
      end;
   end;
@@ -793,9 +804,9 @@ var
 
       if listOperators[i].sip_number<>'' then begin
 
-          SQL.Clear;
-          SQL.Add('select talk_time from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and sip = '+#39+listOperators[i].sip_number+#39+' and answered=''1'' and hash is null limit 1');
-          Active:=True;
+         SQL.Clear;
+         SQL.Add('select talk_time from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and sip = '+#39+listOperators[i].sip_number+#39+' and answered=''1'' and hash is null limit 1');
+         Active:=True;
 
          try
             if Fields[0].Value = Null then  begin
@@ -811,7 +822,7 @@ var
             end;
          end;
 
-          Next;
+        Next;
       end;
    end;
 
@@ -886,7 +897,6 @@ procedure TActiveSIP.updateTalkTimeAll;
  begin
   // обновляем общее время
   updateListTalkTimeAll;
-
  end;
 
 

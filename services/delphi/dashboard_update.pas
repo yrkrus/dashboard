@@ -31,7 +31,7 @@ var
 implementation
 
 uses
-  GlobalVariables, TXmlUnit;
+  GlobalVariables, TXmlUnit, TLogFileUnit;
 
 {$R *.dfm}
 
@@ -127,11 +127,30 @@ end;
 procedure Tupdate_dashboard.TimerMonitoringTimer(Sender: TObject);
 var
  XML:TXML;
+
+ Log:TLoggingFile;
+
+ test:TStringList;
 begin
+test:=TStringList.Create;
+
+  test.Add('1');
+  test.SaveToFile('C:\Users\home0\Desktop\DASHBOARD\develop\services\delphi\Win64\Debug\test.log');
+
+  Log:=TLoggingFile.Create(PChar('update'));
+
+
+  test.Add('2');
+  test.SaveToFile('C:\Users\home0\Desktop\DASHBOARD\develop\services\delphi\Win64\Debug\test.log');
+
+ //Log.Save('Запуск процесса проверки обновления');
+
  // тут че то делаем
-//  XML:=TXML.Create;
-//  XML.UpdateRemoteVersion('хуй');
-//  XML.Free;
+ // XML:=TXML.Create;
+ // XML.UpdateRemoteVersion('999999');
+ // XML.Free;
+
+//Log.Free;
 end;
 
 end.

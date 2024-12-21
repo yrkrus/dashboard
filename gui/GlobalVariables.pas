@@ -40,7 +40,7 @@ var
   // глобальная ошибка при подкобчении к БД
   CONNECT_BD_ERROR        :Boolean = False;
   // внутренняя ошибка
-  INTERNAL_ERROR          :Boolean =  False;
+ // INTERNAL_ERROR          :Boolean =  False;
 
   // текущий залогиненый пользователь в системе
   SharedCurrentUserLogon: TUser;
