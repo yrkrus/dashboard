@@ -148,6 +148,8 @@ begin
    serverConnect:=createServerConnect;
    if not Assigned(serverConnect) then
    begin
+     FreeAndNil(ado);
+     FreeAndNil(serverConnect);
      Exit;
    end;
 

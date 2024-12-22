@@ -34,7 +34,7 @@ uses
 { Thread_ACTIVESIP }
 procedure Thread_ACTIVESIP_updatePhoneTalk.show(var p_ActiveSipOperators:TActiveSIP);
 begin
-  if (CONNECT_BD_ERROR=False) then begin
+  if not CONNECT_BD_ERROR then begin
     p_ActiveSipOperators.updatePhoneTalk;
   end;
 end;

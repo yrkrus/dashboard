@@ -10,7 +10,8 @@ unit TActiveSIPUnit;
 
 interface
 
-uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants, Graphics, System.SyncObjs, IdException, TUserUnit;
+uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
+     Variants, Graphics, System.SyncObjs, IdException, TUserUnit, TCustomTypeUnit;
 
   // class TOnline
 
@@ -43,7 +44,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants, Graphic
       phone                                  : string;        // номер телефона
       talk_time                              : string;        // время разговора
       queue                                  : string;        // какая очередь
-      status                                 : integer;       // текущий статус оператора
+      status                                 : enumStatusOperators;       // текущий статус оператора
       access_dashboard                       : Boolean;       // есть ли доступ к дашборду
       operator_name                          : string;        // имя оператора
       isOnHold                               : Boolean;       // оператор находится в статусе onHold
@@ -83,6 +84,8 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants, Graphic
 
 
       procedure Clear;                       // очистка от всех значений
+      function GetListOperatorsGoHome:TStringList;    // список операторов которые ушли домой
+      function GetListOperatorsGoHomeNotCloseDashboard:TStringList; // список операторов которые ушли домой но забыли закрыть дашбор
 
 
       public
@@ -128,7 +131,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants, Graphic
       function GetListOperators_UserID(id:Integer):Integer;          // listOperators.user_id
       function GetListOperators_OperatorName(id:Integer):string;     // listOperators.operator_name
       function GetListOperators_SipNumber(id:Integer):string;        // listOperators.sip_number
-      function GetListOperators_Status(id:Integer):Integer;          // listOperators.status
+      function GetListOperators_Status(id:Integer):enumStatusOperators;          // listOperators.status
       function GetListOperators_AccessDashboad(id:Integer):Boolean;  // listOperators.access_dashboard
       function GetListOperators_Queue(id:Integer):string;            // listOperators.queue
       function GetListOperators_TalkTime(id:Integer):string;         // listOperators.talk_time
@@ -176,7 +179,7 @@ uses
  begin
    inherited;
    Self.list_talk_time_all:=TStringList.Create;
-   Self.status:= -1;
+   Self.status:= eUnknown;
    Self.access_dashboard:=False;
    Self.online:=TOnline.Create;
    id:=0;
@@ -197,7 +200,7 @@ uses
    Self.phone:='';
    Self.talk_time:='';
    Self.queue:='';
-   Self.status:=-1;
+   Self.status:=eUnknown;
    Self.access_dashboard:=False;
    Self.operator_name:='';
    Self.isOnHold:=False;
@@ -261,7 +264,6 @@ uses
  begin
     if m_mutex.WaitFor(INFINITE) = wrSignaled  then begin
       try
-        // Result:=sipOperators.Count;
         Result:=countSipOperators;
       finally
         m_mutex.Release;
@@ -274,7 +276,6 @@ uses
  begin
     if m_mutex.WaitFor(INFINITE) = wrSignaled  then begin
       try
-        // Result:=sipOperators.Count;
         Result:=countSIpOPeratorsHide;
       finally
         m_mutex.Release;
@@ -299,6 +300,199 @@ uses
       end;
     end;
  end;
+
+
+ // список операторов которые ушли домой
+function TActiveSIP.GetListOperatorsGoHome:TStringList;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ countStatus:Integer;
+ i,j:Integer;
+ preHome:TStringList;
+ operatorExit,operatorGoHome:Boolean;
+ GoHomeNotCloseDashboad:TStringList;
+begin
+  Result:=TStringList.Create;
+  Result.Sorted:=True;
+  Result.Duplicates:=dupIgnore;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then Exit;
+
+  //
+
+  with ado do begin
+    ado.Connection:=serverConnect;
+
+    SQL.Clear;
+    SQL.Add('select count(distinct(user_id)) from logging where action=''11'' ');
+    Active:=True;
+
+    countStatus:=Fields[0].Value;
+
+    if countStatus=0 then begin
+      FreeAndNil(ado);
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+      Exit;
+    end;
+    if Active then Active:=False;
+
+    // теперь проверим вдруг оператор случайно нажал кнопку домой (такое уже случалось)
+     begin
+        preHome:=TStringList.Create;
+
+        SQL.Clear;
+        SQL.Add('select distinct(user_id) from logging where action=''11'' ');
+        Active:=True;
+
+         for i:=0 to countStatus-1 do begin
+           preHome.Add(VarToStr(Fields[0].Value));
+           Next;
+         end;
+
+       if Active then Active:=False;
+
+       for i:=0 to countStatus-1 do begin
+         SQL.Clear;
+         SQL.Add('select action from logging where user_id = '#39+preHome[i]+#39+' order by date_time desc limit 2');
+         Active:=True;
+
+         operatorExit:=False;
+         operatorGoHome:=False;
+
+         for j:=0 to 1 do begin
+            if j=0 then begin
+              if VarToStr(Fields[0].Value)= '1' then operatorExit:=True;
+            end
+            else if j=1 then begin
+              if VarToStr(Fields[0].Value)= '11' then operatorGoHome:=True;
+            end;
+           Next;
+         end;
+
+         if (operatorExit) and (operatorGoHome) then Result.Add(preHome[i]);
+         if Active then Active:=False;
+       end;
+     end;
+
+
+     // и теперь проверим вдруг есть операторы\помогаторы(статус без доступа к дашборду)
+     begin
+       if Active then Active:=False;
+       SQL.Clear;
+       SQL.Add('select count(distinct(sip)) from queue where sip IN (select sip from operators where user_id IN (select id from users where role = ''6''))');
+       Active:=True;
+
+       countStatus:=Fields[0].Value;
+       if countStatus = 0 then begin
+         FreeAndNil(ado);
+         serverConnect.Close;
+         FreeAndNil(serverConnect);
+         if preHome<>nil then FreeAndNil(preHome);
+         Exit;
+       end;
+
+       if Active then Active:=False;
+       SQL.Clear;
+       SQL.Add('select distinct(sip) from queue where sip IN (select sip from operators where user_id IN (select id from users where role = ''6''))');
+       Active:=True;
+
+       for i:=0 to countStatus-1 do begin
+         if getCurrentQueueOperator(VarToStr(Fields[0].Value)) = queue_null then Result.Add(IntToStr(getUserID(StrToInt(VarToStr(Fields[0].Value)))));
+         Next;
+       end;
+     end;
+
+     //  и наконец проверим операторов которые нажади кнопку домой, но не закрыли дашборд
+     GoHomeNotCloseDashboad:=GetListOperatorsGoHomeNotCloseDashboard;
+     if GoHomeNotCloseDashboad.Count<>0 then begin
+       for i:=0 to GoHomeNotCloseDashboad.Count-1 do begin
+         Result.Add(GoHomeNotCloseDashboad[i]);
+       end;
+     end;
+     if Assigned(GoHomeNotCloseDashboad) then FreeAndNil(GoHomeNotCloseDashboad);
+
+
+     if Active then Active:=False;
+
+     Result.Sort;
+  end;
+  FreeAndNil(ado);
+  serverConnect.Close;
+  FreeAndNil(serverConnect);
+  if preHome<>nil then FreeAndNil(preHome);
+
+end;
+
+// список операторов которые ушли домой но забыли закрыть дашбор
+function TActiveSIP.GetListOperatorsGoHomeNotCloseDashboard:TStringList;
+ var
+  i:Integer;
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ countActiveSession:Integer;
+ userId:Integer;
+begin
+  Result:=TStringList.Create;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then Exit;
+
+  with ado do begin
+    ado.Connection:=serverConnect;
+    SQL.Clear;
+
+    if Active then Active:=False;
+
+    SQL.Clear;
+    SQL.Add('select count(user_id) from active_session where last_active>'+#39+GetCurrentStartDateTime+#39);
+    Active:=True;
+
+    countActiveSession:=Fields[0].Value;
+
+    if countActiveSession = 0 then begin
+       FreeAndNil(ado);
+       serverConnect.Close;
+       FreeAndNil(serverConnect);
+       Exit;
+    end;
+
+    if Active then Active:=False;
+
+    SQL.Clear;
+    SQL.Add('select user_id,last_active from active_session where last_active>'+#39+GetCurrentStartDateTime+#39);
+    Active:=True;
+
+    for i:=0 to countActiveSession-1 do begin
+     if (Fields[0].Value <> Null) and (Fields[1].Value <> Null) then begin
+        userId:=StrToInt(VarToStr(Fields[0].Value));
+
+         // проверим оператор ли
+        if UserIsOperator(userId) then begin
+           // проверим его статус чтобы было статус "Домой"
+          if getStatusOperator(userId) = eHome then begin
+             // проверим время
+             if (Round((Now - VarToDateTime(Fields[1].Value)) * 24 * 60) > cHIDETIME_ListSIPOperators) then begin
+                Result.Add(IntToStr(userId));
+             end;
+          end;
+        end;
+     end;
+
+      Next;
+    end;
+
+  end;
+
+   FreeAndNil(ado);
+   serverConnect.Close;
+   FreeAndNil(serverConnect);
+
+end;
 
 
  procedure TActiveSIP.showActiveAndFreeOperatorsForm;
@@ -407,13 +601,13 @@ uses
 
     if m_mutex.WaitFor(INFINITE) = wrSignaled  then
     begin
+       if isReBuild then begin
+          Self.Clear;
+       end;
+
       try
 
          if isNotViewGoHome = False then begin  // показываем всех операторов
-
-          if isReBuild then begin
-            Self.Clear;
-          end;
 
              with ado do begin
                 ado.Connection:=serverConnect;
@@ -457,17 +651,16 @@ uses
          else begin // показываем только операторов которые не ушли домой
 
            // смотрим кто у нас ушел домой
-            operatorsGoHome:=getListOperatorsGoHome(Self);
+            operatorsGoHome:=getListOperatorsGoHome;
             if operatorsGoHome.Count=0 then begin
              FreeAndNil(ado);
              serverConnect.Close;
              FreeAndNil(serverConnect);
+
+             // нет того кто ушел домой, и мы уже сделали rebuild,
+             // теперь тогла вызываем простой generate
+             generateSipOperators(False);
              Exit;
-            end;
-
-
-            if isReBuild then begin
-              Self.Clear;
             end;
 
             operatorsGoHomeNow:='';
@@ -702,10 +895,10 @@ var
 
        try
           if Fields[0].Value = Null then  begin
-            listOperators[i].status:=-1;
+            listOperators[i].status:=eUnknown;
           end
           else begin
-            listOperators[i].status:=StrToInt(VarToStr(Fields[0].Value));
+            listOperators[i].status:=IntegerToEnumStatusOperators(StrToInt(VarToStr(Fields[0].Value)));
           end;
        except
           on E:Exception do
@@ -870,7 +1063,7 @@ var
               listOperators[i].online.date_online:= VarToDateTime(Fields[0].Value);
 
               // так же проверим не забыл ли он выйти из дашаборда при выставлении статуса "домой"
-              if listOperators[i].status = 2  then begin
+              if listOperators[i].status = eHome  then begin
 
                 if (Round((Now - listOperators[i].online.date_online) * 24 * 60) > cHIDETIME_ListSIPOperators) then begin
                    listOperators[i].online.hide:=True;
@@ -943,13 +1136,14 @@ procedure TActiveSIP.updateTalkTimeAll;
       end
       else begin
 
-       operatorsGoHome:=getListOperatorsGoHome(Self);
-        {if operatorsGoHome.Count=0 then begin
+       operatorsGoHome:=getListOperatorsGoHome;
+       if operatorsGoHome.Count=0 then begin
          FreeAndNil(ado);
          serverConnect.Close;
          FreeAndNil(serverConnect);
          Exit;
-        end;}
+       end;
+
         if operatorsGoHome.Count<>0 then begin
           operatorsGoHomeNow:='';
           for i:=0 to operatorsGoHome.Count-1 do begin
@@ -964,7 +1158,6 @@ procedure TActiveSIP.updateTalkTimeAll;
           if Fields[0].Value<>null then count_sip:=Fields[0].Value;
         end;
       end;
-
 
    end;
 
@@ -1100,7 +1293,7 @@ begin
 end;
 
 
-function TActiveSIP.GetListOperators_Status(id:Integer):Integer;
+function TActiveSIP.GetListOperators_Status(id:Integer):enumStatusOperators;
 begin
   if m_mutex.WaitFor(INFINITE) = wrSignaled  then begin
     try

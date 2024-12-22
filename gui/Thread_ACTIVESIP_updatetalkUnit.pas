@@ -32,7 +32,7 @@ end;
 
 procedure Thread_ACTIVESIP_updateTalk.show(var p_ActiveSipOperators:TActiveSIP);
 begin
-  if (CONNECT_BD_ERROR=False) then begin
+  if not CONNECT_BD_ERROR then begin
     with p_ActiveSipOperators do begin
       updateTalkTime;
       updateTalkTimeAll;

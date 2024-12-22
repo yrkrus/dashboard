@@ -32,7 +32,7 @@ end;
 
 procedure Thread_ACTIVESIP_countTalk.show(var p_ActiveSipOperators:TActiveSIP);
 begin
-  if (CONNECT_BD_ERROR=False) then begin
+  if not CONNECT_BD_ERROR then begin
     p_ActiveSipOperators.updateCountTalk;
   end;
 end;

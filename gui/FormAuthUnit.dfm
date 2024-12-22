@@ -24,7 +24,8 @@
     Top = 0
     Width = 337
     Height = 275
-    BevelInner = bvLowered
+    BevelInner = bvRaised
+    BevelOuter = bvLowered
     TabOrder = 0
     DesignSize = (
       337

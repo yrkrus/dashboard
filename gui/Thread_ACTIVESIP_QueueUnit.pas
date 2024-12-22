@@ -33,7 +33,7 @@ end;
 
 procedure Thread_ACTIVESIP_Queue.show(var p_ActiveSipOperators:TActiveSIP);
 begin
-  if (CONNECT_BD_ERROR=False) then begin
+  if not CONNECT_BD_ERROR then begin
     p_ActiveSipOperators.updateQueue;
   end;
 end;

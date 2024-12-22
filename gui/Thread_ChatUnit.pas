@@ -35,7 +35,7 @@ end;
 
 procedure Thread_Chat.show;
 begin
-  if (CONNECT_BD_ERROR=False) then begin
+  if not CONNECT_BD_ERROR then begin
     LocalChat.CheckNewMessage;
   end;
 end;

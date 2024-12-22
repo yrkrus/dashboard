@@ -39,7 +39,7 @@ procedure Thread_Statistics.show;
 //var
 // val:Double;
 begin
-  if (CONNECT_BD_ERROR=False) then  begin
+  if not CONNECT_BD_ERROR then begin
     with HomeForm do begin
       if StrToInt(GetStatistics_day(stat_summa))<>0 then begin
 

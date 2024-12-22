@@ -23,7 +23,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants, Graphic
       m_countNoChange                        : Integer; // кол-во раз сколько не изменилось значение ожидания во времени
 
       constructor Create;                  overload;
-      procedure Clear;                      virtual;
+      procedure Clear;                     virtual;
 
       end;
    // class TIVRStruct END
@@ -126,7 +126,10 @@ end;
   try
     count:=0;
      for i := Low(listActiveIVR) to High(listActiveIVR) do begin
-      if listActiveIVR[i].m_id<>0 then Inc(count);
+      if listActiveIVR[i].m_id<>0 then begin
+       // дополнительная проверка чтобы не учитывались звонки которые сбросились
+       if listActiveIVR[i].m_countNoChange <= cGLOBAL_DropPhone then Inc(count);
+      end;
      end;
 
     Result:=count;
@@ -357,7 +360,11 @@ end;
                (Fields[1].Value = null) or
                (Fields[2].Value = null) or
                (Fields[3].Value = null)
-            then Next;
+            then begin
+             Next;
+             Continue;
+            end;
+
 
             // проверим не ушел ли у нас в очередь звонок
             CheckToQueuePhone;

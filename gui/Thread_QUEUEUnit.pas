@@ -137,7 +137,7 @@ begin
    if not Assigned(listQueue) then Exit;
   end;
 
-  if (CONNECT_BD_ERROR=False) then showQueue(listQueue);
+  if not CONNECT_BD_ERROR then showQueue(listQueue);
 
   if listQueue<>nil then FreeAndNil(listQueue);
 end;

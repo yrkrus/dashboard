@@ -62,48 +62,61 @@ interface
                   close );
 
   type
-   enumLogging = ( eLog_unknown              = -1,        // не известный статус
-                  eLog_enter                = 0,         // Вход
-                  eLog_exit                 = 1,         // Выход
-                  eLog_auth_error           = 2,         // не успешная авторизация
-                  eLog_exit_force           = 3,         // Выход (через команду force_closed)
-                  eLog_add_queue_5000       = 4,         // добавление в очередь 5000
-                  eLog_add_queue_5050       = 5,         // добавление в очередь 5050
-                  eLog_add_queue_5000_5050  = 6,         // добавление в очередь 5000 и 5050
-                  eLog_del_queue_5000       = 7,         // удаление из очереди 5000
-                  eLog_del_queue_5050       = 8,         // удаление из очереди 5050
-                  eLog_del_queue_5000_5050  = 9,         // удаление из очереди 5000 и 5050
-                  eLog_available            = 10,        // доступен
-                  eLog_home                 = 11,        // домой
-                  eLog_exodus               = 12,        // исход
-                  eLog_break                = 13,        // перерыв
-                  eLog_dinner               = 14,        // обед
-                  eLog_postvyzov            = 15,        // поствызов
-                  eLog_studies              = 16,        // учеба
-                  eLog_IT                   = 17,        // ИТ
-                  eLog_transfer             = 18,        // переносы
-                  eLog_reserve              = 19         // резерв
-              );
+   enumLogging = (  eLog_unknown              = -1,        // не известный статус
+                    eLog_enter                = 0,         // Вход
+                    eLog_exit                 = 1,         // Выход
+                    eLog_auth_error           = 2,         // не успешная авторизация
+                    eLog_exit_force           = 3,         // Выход (через команду force_closed)
+                    eLog_add_queue_5000       = 4,         // добавление в очередь 5000
+                    eLog_add_queue_5050       = 5,         // добавление в очередь 5050
+                    eLog_add_queue_5000_5050  = 6,         // добавление в очередь 5000 и 5050
+                    eLog_del_queue_5000       = 7,         // удаление из очереди 5000
+                    eLog_del_queue_5050       = 8,         // удаление из очереди 5050
+                    eLog_del_queue_5000_5050  = 9,         // удаление из очереди 5000 и 5050
+                    eLog_available            = 10,        // доступен
+                    eLog_home                 = 11,        // домой
+                    eLog_exodus               = 12,        // исход
+                    eLog_break                = 13,        // перерыв
+                    eLog_dinner               = 14,        // обед
+                    eLog_postvyzov            = 15,        // поствызов
+                    eLog_studies              = 16,        // учеба
+                    eLog_IT                   = 17,        // ИТ
+                    eLog_transfer             = 18,        // переносы
+                    eLog_reserve              = 19         // резерв
+                );
 
-
+   type   // текущие статусы операторов
+   enumStatusOperators = (  eUnknown    = -1,    // unknown
+                            eReserved0  = 0,     // резерв
+                            eAvailable  = 1,     // доступен
+                            eHome       = 2,     // домой
+                            eExodus     = 3,     // исход
+                            eBreak      = 4,     // перерыв
+                            eDinner     = 5,     // обед
+                            ePostvyzov  = 6,     // поствызов
+                            eStudies    = 7,     // учеба
+                            eIT         = 8,     // ИТ
+                            eTransfer   = 9,     // переносы
+                            eReserve    = 10     // резерв
+   );
 
   type   // тип запрошенных данных из очереди
    enumQueueType = (answered,            //  кол-во отвеченных
-                no_answered,          //  кол-во  не отвеченных
-                no_answered_return,   //  кол-во не отвеченных + вернувшиеся которые решили перезвонить
-                procent_answered,
-                procent_no_answered,
-                all_answered          // всего отвечено
-                );
+                    no_answered,          //  кол-во  не отвеченных
+                    no_answered_return,   //  кол-во не отвеченных + вернувшиеся которые решили перезвонить
+                    procent_answered,
+                    procent_no_answered,
+                    all_answered          // всего отвечено
+                    );
 
 
  type   // тип запрошенных данных из очереди
    enumStatistiscDay = (stat_answered,            //  кол-во отвеченных
-                     stat_no_answered,         //  кол-во  не отвеченных
-                     stat_no_answered_return,  //  кол-во  не отвеченных + вернувшиеся решили перезвонить
-                     stat_procent_no_answered, // процент
-                     stat_procent_no_answered_return, // процент + вернувшиеся
-                     stat_summa                // сумма
+                       stat_no_answered,         //  кол-во  не отвеченных
+                       stat_no_answered_return,  //  кол-во  не отвеченных + вернувшиеся решили перезвонить
+                       stat_procent_no_answered, // процент
+                       stat_procent_no_answered_return, // процент + вернувшиеся
+                       stat_summa                // сумма
                      );
 
   type    // типы доступов
@@ -117,8 +130,8 @@ interface
 
   type   // тип разрешение\запрет на доступ к меню
    enumAccessStatus = ( access_DISABLED  = 0,
-                     access_ENABLED   =1
-                   );
+                        access_ENABLED   = 1
+                      );
 
   type   // тип показывать\скрывать ушедших домой операторов
    enumHideShowGoHomeOperators = (  goHome_Hide,   // скрывать

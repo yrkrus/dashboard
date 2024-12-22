@@ -82,22 +82,21 @@ procedure showWait(Status:enumShow_wait);                                       
 function remoteCommand_Responce(InStroka:string):string;                             // отправка запроса на добавление удаленной команды
 function getUserSIP(InIDUser:integer):string;                                        // отображение SIP пользвоателя
 function isExistRemoteCommand(command:enumLogging):Boolean;                             // проверка есть ли уже такая удаленная команда на сервера
-function getStatus(InStatus:Integer):string;                                         // полчуение имени status оператора
+function getStatus(InStatus:enumStatusOperators):string;                                  // полчуение имени status оператора
 function getCurrentQueueOperator(InSipNumber:string):enumQueueCurrent;                  // в какой очереди сейчас находится оператор
 procedure clearOperatorStatus;                                                       // очитска текущего статуса оператора
-procedure checkCurrentStatusOperator(InOperatorStatus:Integer);                      // проверка и отображение кнопок статусов оператора
+procedure checkCurrentStatusOperator(InOperatorStatus:enumStatusOperators);                      // проверка и отображение кнопок статусов оператора
 procedure showStatusOperator(InShow:Boolean = True);                                 // отобрадение панели статусы операторов
-function getLastStatusTime(InUserid,InOperatorStatus:Integer):string;                // подсчет времени в текущем статусе оператора
+function getLastStatusTime(InUserid:Integer; InOperatorStatus:enumStatusOperators):string;                // подсчет времени в текущем статусе оператора
 function getStatusOperatorToTLogging(InOperatorStatus:Integer):enumLogging;             // преобразование текущего статуса оператора из int в TLogging
 function isOperatorGoHome(inUserID:Integer):Boolean;                                 // проверка оператор ушел домой или нет
 function getIsExitOperatorCurrentQueue(InCurrentRole:enumRole;InUserID:Integer):Boolean;// проверка вдруг оператор забыл выйти из линии
 function getLastStatusTimeOnHold(InStartTimeonHold:string):string;                   // подсчет времени в статусе OnHold
-function getListOperatorsGoHome(var p_ActiveSipOperators:TActiveSIP):TStringList;    // список операторов которые ушли домой
 function getTranslate(Stroka: string):string;                                        // Транслитерация из рус - > транлирт
 //function getUserFIO(InUserID:Integer):string;                                        // полчуение имени пользователя из его UserID
 function getUserFamiliya(InUserID:Integer):string;                                   // полчуение фамилии пользователя из его UserID
 function getUserNameBD(InUserID:Integer):string;                                     // полчуение имени пользователя из его UserID
-function getUserIsOperator(InUserID:Integer):Boolean;                                // проверка userID принадлежит оператору или нет TRUE - оператор
+function UserIsOperator(InUserID:Integer):Boolean;                                  // проверка userID принадлежит оператору или нет TRUE - оператор
 procedure disableOperator(InUserId:Integer);                                         // отключение оператора и перенос его в таблицу operators_disable
 function getDateTimeToDateBD(InDateTime:string):string;                              // перевод даты и времени в ненормальный вид для BD
 function enableUser(InUserID:Integer):string;                                        // включение пользователя
@@ -134,6 +133,11 @@ function EnumChannelToString(InChannel:enumChannel):string;                 //en
 function EnumActiveBrowserToString(InActiveBrowser:enumActiveBrowser):string;     // enumActiveBrowser -> string
 function GetExistActiveSession(InUserID:Integer; var ActiveSession:string):Boolean;  // есть ли активная сессия уже
 function GetStatusUpdateService:Boolean;                                           // проверка запущена ли служба обновления
+function IntegerToEnumStatusOperators(InStatusId:Integer):enumStatusOperators;     // Integer -> enumStatusOperators
+function EnumStatusOperatorsToInteger(InStatus:enumStatusOperators):Integer;        // enumStatusOperators -> integer
+function getStatusOperator(InUserId:Integer):enumStatusOperators;                  // текущий стаус оператора из таблицы operators
+
+
 
 implementation
 
@@ -558,7 +562,7 @@ var
  countKillExe:Integer;
 begin
    try
-     if CONNECT_BD_ERROR=False then begin
+     if not CONNECT_BD_ERROR then begin
 
        // логирование (выход)  , через команду или руками
        if getForceActiveSessionClosed(SharedCurrentUserLogon.GetID) then LoggingRemote(eLog_exit_force)
@@ -2273,7 +2277,7 @@ end;
 
 
 // полчуение имени status оператора
-function getStatus(InStatus:Integer):string;
+function getStatus(InStatus:enumStatusOperators):string;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -2287,7 +2291,7 @@ begin
     ado.Connection:=serverConnect;
 
     SQL.Clear;
-    SQL.Add('select status from status where id = '+#39+IntToStr(InStatus)+#39);
+    SQL.Add('select status from status where id = '+#39+IntToStr(EnumStatusOperatorsToInteger(InStatus))+#39);
     Active:=True;
 
     if Fields[0].Value<>null then Result:=VarToStr(Fields[0].Value)
@@ -2333,7 +2337,7 @@ begin
     end;
 
     // проверим пользователь принадлежит группе операторов
-    if getUserIsOperator(InUserID) then begin
+    if UserIsOperator(InUserID) then begin
       disableOperator(InUserID);
       deleteOperator(InUserID);
     end;
@@ -3463,12 +3467,12 @@ end;
 
 
 // проверка и отображение кнопок статусов оператора
-procedure checkCurrentStatusOperator(InOperatorStatus:Integer);
+procedure checkCurrentStatusOperator(InOperatorStatus:enumStatusOperators);
 begin
   with HomeForm do begin
 
     case InOperatorStatus of
-     1:begin    // доступен
+     eAvailable:begin    // доступен
        btnStatus_exodus.Enabled:=True;
        btnStatus_break.Enabled:=True;
        btnStatus_dinner.Enabled:=True;
@@ -3479,7 +3483,7 @@ begin
        btnStatus_home.Enabled:=True;
        btnStatus_reserve.Enabled:=True;
      end;
-     2:begin    // домой
+     eHome:begin    // домой
        btnStatus_exodus.Enabled:=True;
        btnStatus_break.Enabled:=True;
        btnStatus_dinner.Enabled:=True;
@@ -3490,7 +3494,7 @@ begin
        btnStatus_home.Enabled:=False;
        btnStatus_reserve.Enabled:=True;
      end;
-     3:begin    // исход
+     eExodus:begin    // исход
        btnStatus_exodus.Enabled:=False;
        btnStatus_break.Enabled:=True;
        btnStatus_dinner.Enabled:=True;
@@ -3502,7 +3506,7 @@ begin
        btnStatus_reserve.Enabled:=True;
 
      end;
-     4:begin    // перерыв
+     eBreak:begin    // перерыв
        btnStatus_exodus.Enabled:=True;
        btnStatus_break.Enabled:=False;
        btnStatus_dinner.Enabled:=True;
@@ -3513,7 +3517,7 @@ begin
        btnStatus_home.Enabled:=True;
        btnStatus_reserve.Enabled:=True;
      end;
-     5:begin   // обед
+     eDinner:begin   // обед
        btnStatus_exodus.Enabled:=True;
        btnStatus_break.Enabled:=True;
        btnStatus_dinner.Enabled:=False;
@@ -3524,7 +3528,7 @@ begin
        btnStatus_home.Enabled:=True;
        btnStatus_reserve.Enabled:=True;
      end;
-     6:begin   // поствызов
+     ePostvyzov:begin   // поствызов
        btnStatus_exodus.Enabled:=True;
        btnStatus_break.Enabled:=True;
        btnStatus_dinner.Enabled:=True;
@@ -3535,7 +3539,7 @@ begin
        btnStatus_home.Enabled:=True;
        btnStatus_reserve.Enabled:=True;
      end;
-     7:begin   // учеба
+     eStudies:begin   // учеба
        btnStatus_exodus.Enabled:=True;
        btnStatus_break.Enabled:=True;
        btnStatus_dinner.Enabled:=True;
@@ -3546,7 +3550,7 @@ begin
        btnStatus_home.Enabled:=True;
        btnStatus_reserve.Enabled:=True;
      end;
-     8:begin   // ИТ
+     eIT:begin   // ИТ
        btnStatus_exodus.Enabled:=True;
        btnStatus_break.Enabled:=True;
        btnStatus_dinner.Enabled:=True;
@@ -3557,7 +3561,7 @@ begin
        btnStatus_home.Enabled:=True;
        btnStatus_reserve.Enabled:=True;
      end;
-     9:begin  // переносы
+     eTransfer:begin  // переносы
        btnStatus_exodus.Enabled:=True;
        btnStatus_break.Enabled:=True;
        btnStatus_dinner.Enabled:=True;
@@ -3568,7 +3572,7 @@ begin
        btnStatus_home.Enabled:=True;
        btnStatus_reserve.Enabled:=True;
      end;
-     10:begin  // резерв
+     eReserve:begin  // резерв
        btnStatus_exodus.Enabled:=True;
        btnStatus_break.Enabled:=True;
        btnStatus_dinner.Enabled:=True;
@@ -3584,7 +3588,7 @@ begin
 
   with FormOperatorStatus do begin
     case InOperatorStatus of
-     1:begin    // доступен
+     eAvailable:begin    // доступен
        btnStatus_exodus.Enabled:=True;
        btnStatus_break.Enabled:=True;
        btnStatus_dinner.Enabled:=True;
@@ -3595,7 +3599,7 @@ begin
        btnStatus_home.Enabled:=True;
        btnStatus_reserve.Enabled:=True;
      end;
-     2:begin    // домой
+     eHome:begin    // домой
        btnStatus_exodus.Enabled:=True;
        btnStatus_break.Enabled:=True;
        btnStatus_dinner.Enabled:=True;
@@ -3606,7 +3610,7 @@ begin
        btnStatus_home.Enabled:=False;
        btnStatus_reserve.Enabled:=True;
      end;
-     3:begin    // исход
+     eExodus:begin    // исход
        btnStatus_exodus.Enabled:=False;
        btnStatus_break.Enabled:=True;
        btnStatus_dinner.Enabled:=True;
@@ -3618,7 +3622,7 @@ begin
        btnStatus_reserve.Enabled:=True;
 
      end;
-     4:begin    // перерыв
+     eBreak:begin    // перерыв
        btnStatus_exodus.Enabled:=True;
        btnStatus_break.Enabled:=False;
        btnStatus_dinner.Enabled:=True;
@@ -3629,7 +3633,7 @@ begin
        btnStatus_home.Enabled:=True;
        btnStatus_reserve.Enabled:=True;
      end;
-     5:begin   // обед
+     eDinner:begin   // обед
        btnStatus_exodus.Enabled:=True;
        btnStatus_break.Enabled:=True;
        btnStatus_dinner.Enabled:=False;
@@ -3640,7 +3644,7 @@ begin
        btnStatus_home.Enabled:=True;
        btnStatus_reserve.Enabled:=True;
      end;
-     6:begin   // поствызов
+     ePostvyzov:begin   // поствызов
        btnStatus_exodus.Enabled:=True;
        btnStatus_break.Enabled:=True;
        btnStatus_dinner.Enabled:=True;
@@ -3651,7 +3655,7 @@ begin
        btnStatus_home.Enabled:=True;
        btnStatus_reserve.Enabled:=True;
      end;
-     7:begin   // учеба
+     eStudies:begin   // учеба
        btnStatus_exodus.Enabled:=True;
        btnStatus_break.Enabled:=True;
        btnStatus_dinner.Enabled:=True;
@@ -3662,7 +3666,7 @@ begin
        btnStatus_home.Enabled:=True;
        btnStatus_reserve.Enabled:=True;
      end;
-     8:begin   // ИТ
+     eIT:begin   // ИТ
        btnStatus_exodus.Enabled:=True;
        btnStatus_break.Enabled:=True;
        btnStatus_dinner.Enabled:=True;
@@ -3673,7 +3677,7 @@ begin
        btnStatus_home.Enabled:=True;
        btnStatus_reserve.Enabled:=True;
      end;
-     9:begin  // переносы
+     eTransfer:begin  // переносы
        btnStatus_exodus.Enabled:=True;
        btnStatus_break.Enabled:=True;
        btnStatus_dinner.Enabled:=True;
@@ -3684,7 +3688,7 @@ begin
        btnStatus_home.Enabled:=True;
        btnStatus_reserve.Enabled:=True;
      end;
-     10:begin  // резерв
+     eReserve:begin  // резерв
        btnStatus_exodus.Enabled:=True;
        btnStatus_break.Enabled:=True;
        btnStatus_dinner.Enabled:=True;
@@ -3701,7 +3705,7 @@ end;
 
 
 // подсчет времени в текущем статусе оператора
-function getLastStatusTime(InUserid,InOperatorStatus:Integer):string;
+function getLastStatusTime(InUserid:Integer; InOperatorStatus:enumStatusOperators):string;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -3717,7 +3721,8 @@ begin
   if not Assigned(serverConnect) then Exit;
 
   // текущий статуса из лога
-  status:=TLoggingToInt(getStatusOperatorToTLogging(InOperatorStatus));
+  status:=TLoggingToInt(getStatusOperatorToTLogging(EnumStatusOperatorsToInteger(InOperatorStatus)));
+
 
   with ado do begin
     ado.Connection:=serverConnect;
@@ -3830,126 +3835,6 @@ begin
 end;
 
 
-
-// список операторов которые ушли домой
-function getListOperatorsGoHome(var p_ActiveSipOperators:TActiveSIP):TStringList;
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
- countStatus:Integer;
- i,j:Integer;
- preHome:TStringList;
- operatorExit,operatorGoHome:Boolean;
-begin
-  Result:=TStringList.Create;
-
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select count(distinct(user_id)) from logging where action=''11'' ');
-    Active:=True;
-
-    countStatus:=Fields[0].Value;
-
-    if countStatus=0 then begin
-      FreeAndNil(ado);
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-      Exit;
-    end;
-    if Active then Active:=False;
-
-    // теперь проверим вдруг оператор случайно нажал кнопку домой (такое уже случалось)
-     begin
-        preHome:=TStringList.Create;
-
-        SQL.Clear;
-        SQL.Add('select distinct(user_id) from logging where action=''11'' ');
-        Active:=True;
-
-         for i:=0 to countStatus-1 do begin
-           preHome.Add(VarToStr(Fields[0].Value));
-           Next;
-         end;
-
-       if Active then Active:=False;
-
-       for i:=0 to countStatus-1 do begin
-         SQL.Clear;
-         SQL.Add('select action from logging where user_id = '#39+preHome[i]+#39+' order by date_time desc limit 2');
-         Active:=True;
-
-         operatorExit:=False;
-         operatorGoHome:=False;
-
-         for j:=0 to 1 do begin
-            if j=0 then begin
-              if VarToStr(Fields[0].Value)= '1' then operatorExit:=True;
-            end
-            else if j=1 then begin
-              if VarToStr(Fields[0].Value)= '11' then operatorGoHome:=True;
-            end;
-           Next;
-         end;
-
-         if (operatorExit) and (operatorGoHome) then Result.Add(preHome[i]);
-         if Active then Active:=False;
-       end;
-     end;
-
-     // проверим операторов которые нажади кнопку домой, но не закрыли дашборд
-     for i:=0 to p_ActiveSipOperators.cGLOBAL_ListSIPOperators-1 do begin
-       if p_ActiveSipOperators.GetListOperators_SipNumber(i)<>'' then begin
-         if p_ActiveSipOperators.GetListOperators_OnlineHide(i) then begin
-           Result.Add(IntToStr(p_ActiveSipOperators.GetListOperators_UserID(i)));
-         end;
-       end;
-     end;
-
-
-     // и теперь проверим вдруг есть операторы\помогаторы(статус без доступа к дашборду)
-     begin
-       if Active then Active:=False;
-       SQL.Clear;
-       SQL.Add('select count(distinct(sip)) from queue where sip IN (select sip from operators where user_id IN (select id from users where role = ''6''))');
-       Active:=True;
-
-       countStatus:=Fields[0].Value;
-       if countStatus = 0 then begin
-         FreeAndNil(ado);
-         serverConnect.Close;
-         FreeAndNil(serverConnect);
-         if preHome<>nil then FreeAndNil(preHome);
-         Exit;
-       end;
-
-       if Active then Active:=False;
-       SQL.Clear;
-       SQL.Add('select distinct(sip) from queue where sip IN (select sip from operators where user_id IN (select id from users where role = ''6''))');
-       Active:=True;
-
-       for i:=0 to countStatus-1 do begin
-         if getCurrentQueueOperator(VarToStr(Fields[0].Value)) = queue_null then Result.Add(IntToStr(getUserID(StrToInt(VarToStr(Fields[0].Value)))));
-         Next;
-       end;
-     end;
-
-     if Active then Active:=False;
-
-  end;
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
-  if preHome<>nil then FreeAndNil(preHome);
-
-end;
-
 // проверка вдруг оператор забыл выйти из линии
 function getIsExitOperatorCurrentQueue(InCurrentRole:enumRole;InUserID:Integer):Boolean;
 begin
@@ -3993,7 +3878,7 @@ begin
 end;
 
 // проверка userID принадлежит оператору или нет TRUE - оператор
-function getUserIsOperator(InUserID:Integer):Boolean;
+function UserIsOperator(InUserID:Integer):Boolean;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -4251,6 +4136,36 @@ begin
 
       if Fields[0].Value<>null then begin
         Result:=IntToTLogging(StrToInt(VarToStr(Fields[0].Value)));
+      end;
+    end;
+
+    FreeAndNil(ado);
+    serverConnect.Close;
+    FreeAndNil(serverConnect);
+end;
+
+
+// текущий стаус оператора из таблицы operators
+function getStatusOperator(InUserId:Integer):enumStatusOperators;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+   Result:=eUnknown;
+
+   ado:=TADOQuery.Create(nil);
+   serverConnect:=createServerConnect;
+   if not Assigned(serverConnect) then Exit;
+
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select status from operators where user_id = '+#39+IntToStr(InUserId)+#39);
+
+      Active:=True;
+
+      if Fields[0].Value<>null then begin
+        Result:=IntegerToEnumStatusOperators(StrToInt(VarToStr(Fields[0].Value)));
       end;
     end;
 
@@ -4614,6 +4529,44 @@ begin
     eMaster :Result:='master';
     eSlave  :Result:='slave';
   end;
+end;
+
+ // Integer -> enumStatusOperators
+function IntegerToEnumStatusOperators(InStatusId:Integer):enumStatusOperators;
+begin
+ case InStatusId of
+   -1:  Result:=eUnknown;         // unknown
+    0:  Result:=eReserved0;       // резерв
+    1:  Result:=eAvailable;       // доступен
+    2:  Result:=eHome;            // домой
+    3:  Result:=eExodus;          // исход
+    4:  Result:=eBreak;           // перерыв
+    5:  Result:=eDinner;          // обед
+    6:  Result:=ePostvyzov;       // поствызов
+    7:  Result:=eStudies;         // учеба
+    8:  Result:=eIT;              // ИТ
+    9:  Result:=eTransfer;        // переносы
+   10:  Result:=eReserve;         // резерв
+ end;
+end;
+
+ // enumStatusOperators -> integer
+function EnumStatusOperatorsToInteger(InStatus:enumStatusOperators):Integer;
+begin
+ case InStatus of
+   eUnknown:    Result:= -1;      // unknown
+   eReserved0:  Result:= 0;       // резерв
+   eAvailable:  Result:= 1;       // доступен
+   eHome:       Result:= 2;       // домой
+   eExodus:     Result:= 3;       // исход
+   eBreak:      Result:= 4;       // перерыв
+   eDinner:     Result:= 5;       // обед
+   ePostvyzov:  Result:= 6;       // поствызов
+   eStudies:    Result:= 7;       // учеба
+   eIT:         Result:= 8;       // ИТ
+   eTransfer:   Result:= 9;       // переносы
+   eReserve:    Result:= 10;      // резерв
+ end;
 end;
 
 

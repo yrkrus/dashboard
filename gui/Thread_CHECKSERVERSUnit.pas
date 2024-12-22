@@ -33,7 +33,7 @@ end;
 
 procedure Thread_CHECKSERVERS.show(var p_listServers: TCheckServersIK);
 begin
- if (CONNECT_BD_ERROR=False) then p_listServers.CheckServerFirebird;
+ if not CONNECT_BD_ERROR then p_listServers.CheckServerFirebird;
 end;
 
 

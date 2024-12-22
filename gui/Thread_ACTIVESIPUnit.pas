@@ -52,7 +52,7 @@ procedure Thread_ACTIVESIP.UpdateActiveSipOperators(var p_ActiveSipOperators:TAc
 var
  XML:TXML;
 begin
-  if (CONNECT_BD_ERROR=False) then begin
+  if not CONNECT_BD_ERROR then begin
     // проверим есть ли новые операторы
     p_ActiveSipOperators.checkNewSipOperators(isCheckThreadSipOperators);
 
@@ -108,12 +108,12 @@ begin
 
      // ===== СТАТУС =====
      begin
-       if p_ActiveSipOperators.GetListOperators_Status(i) = -1 then begin // статус 'НЕИЗВЕСТЕН'
+       if p_ActiveSipOperators.GetListOperators_Status(i) = eUnknown then begin // статус 'НЕИЗВЕСТЕН'
 
          // проверим есть ли доступ к дашборду
          if p_ActiveSipOperators.GetListOperators_AccessDashboad(i) then begin
             // проверим вдруг разговаривал оператор и просто ушел домой
-            if isOperatorGoHome(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i)))) then ListItem.SubItems.Add(getStatus(2))
+            if isOperatorGoHome(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i)))) then ListItem.SubItems.Add(getStatus(eHome))
             else ListItem.SubItems.Add('неизвестен');
 
             if p_ActiveSipOperators.GetListOperators_OperatorName(i) = SharedCurrentUserLogon.GetFamiliya+' '+SharedCurrentUserLogon.GetName then begin
@@ -146,7 +146,7 @@ begin
        else begin
 
           // изменяем статус на "разговор", если доступен и разговаривают
-          if (p_ActiveSipOperators.GetListOperators_Status(i) = 1) and
+          if (p_ActiveSipOperators.GetListOperators_Status(i) = eAvailable) and
              (p_ActiveSipOperators.GetListOperators_Queue(i) <> '') and
              ((p_ActiveSipOperators.GetListOperators_Phone(i) <> ''){ and (listOperators[i].talk_time<>'')} ) then begin
 
@@ -159,7 +159,7 @@ begin
 
           end else begin
             // добавляем время сколько сейчас находится оператор в статусе
-            if p_ActiveSipOperators.GetListOperators_Status(i) > 2 then begin
+            if p_ActiveSipOperators.GetListOperators_Status(i) > eHome then begin
 
               ListItem.SubItems.Add(getStatus(p_ActiveSipOperators.GetListOperators_Status(i))
                                     +' ('+getLastStatusTime(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i))), p_ActiveSipOperators.GetListOperators_Status(i))
@@ -175,7 +175,7 @@ begin
               else begin
                ListItem.SubItems.Add(getStatus(p_ActiveSipOperators.GetListOperators_Status(i)));
 
-                if p_ActiveSipOperators.GetListOperators_Status(i) = 1 then begin // кол-во свободных операторов
+                if p_ActiveSipOperators.GetListOperators_Status(i) = eAvailable then begin // кол-во свободных операторов
                    Inc(p_ActiveSipOperators.countFreeOperators);
                 end;
               end;
@@ -266,12 +266,12 @@ begin
 
        // ===== СТАТУС =====
        begin
-         if p_ActiveSipOperators.GetListOperators_Status(i) = -1 then begin // статус 'НЕИЗВЕСТЕН'
+         if p_ActiveSipOperators.GetListOperators_Status(i) = eUnknown then begin // статус 'НЕИЗВЕСТЕН'
 
            // проверим есть ли доступ к дашборду
            if p_ActiveSipOperators.GetListOperators_AccessDashboad(i) then begin
               // проверим вдруг разговаривал оператор и просто ушел домой
-              if isOperatorGoHome(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i)))) then ListItem.SubItems[1]:=getStatus(2)
+              if isOperatorGoHome(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i)))) then ListItem.SubItems[1]:=getStatus(eHome)
               else ListItem.SubItems[1]:='неизвестен';
 
               if p_ActiveSipOperators.GetListOperators_OperatorName(i) = SharedCurrentUserLogon.GetFamiliya+' '+SharedCurrentUserLogon.GetName then begin
@@ -304,7 +304,7 @@ begin
          else begin
 
             // изменяем статус на "разговор", если доступен и разговаривают
-            if (p_ActiveSipOperators.GetListOperators_Status(i) = 1) and
+            if (p_ActiveSipOperators.GetListOperators_Status(i) = eAvailable) and
                (p_ActiveSipOperators.GetListOperators_Queue(i) <> '') and
                ((p_ActiveSipOperators.GetListOperators_Phone(i) <> ''){ and (listOperators[i].talk_time<>'')} ) then begin
 
@@ -318,7 +318,7 @@ begin
 
             end else begin
               // добавляем время сколько сейчас находится оператор в статусе
-              if p_ActiveSipOperators.GetListOperators_Status(i) > 2 then begin
+              if p_ActiveSipOperators.GetListOperators_Status(i) > eHome then begin
 
                 ListItem.SubItems[1]:=getStatus(p_ActiveSipOperators.GetListOperators_Status(i))
                                       +' ('+getLastStatusTime(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i))), p_ActiveSipOperators.GetListOperators_Status(i))
@@ -336,7 +336,7 @@ begin
                 else begin
                  ListItem.SubItems[1]:=getStatus(p_ActiveSipOperators.GetListOperators_Status(i));
 
-                  if p_ActiveSipOperators.GetListOperators_Status(i) = 1 then begin // кол-во свободных операторов
+                  if p_ActiveSipOperators.GetListOperators_Status(i) = eAvailable then begin // кол-во свободных операторов
                      Inc(p_ActiveSipOperators.countFreeOperators);
                   end;
                 end;
@@ -469,8 +469,8 @@ begin
       // Удаляем элементы, которые отсутствуют в новых данных
       for i:= ListViewSIP.Items.Count - 1 downto 0 do
       begin
-         if not p_ActiveSipOperators.isExistOperator(ListViewSIP.Items[i].Caption) then
-          ListViewSIP.Items.Delete(i);
+         if not p_ActiveSipOperators.isExistOperator(ListViewSIP.Items[i].Caption) then ListViewSIP.Items.Delete(i);
+
       end;
 
     finally
@@ -523,12 +523,10 @@ begin
      except
         on E:Exception do
         begin
-         //INTERNAL_ERROR:=true;
          messclass:=e.ClassName;
          mess:=e.Message;
 
          Synchronize(CriticalError);
-        // INTERNAL_ERROR:=False;
         end;
       end;
     end;

@@ -33,7 +33,7 @@ end;
 
  procedure Thread_AnsweredQueue.show(var p_AnsweredQueue: TAnsweredQueue);
 begin
-  if (CONNECT_BD_ERROR=False) then begin
+  if not CONNECT_BD_ERROR then begin
     // проверяем вдруг надо обновить всю статистку
     // такое случается если изменить настроки корреткировки ожидания в очереди
    with p_AnsweredQueue do begin
