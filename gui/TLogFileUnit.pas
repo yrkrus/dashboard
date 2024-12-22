@@ -166,7 +166,7 @@ var
  i:Integer;
 begin
   // проверка есть ли папка chat_history
-  if not DirectoryExists(m_file.m_nodeFolder) then CreateDir(Pchar(m_file.m_nodeFolder));
+  if not DirectoryExists(m_file.m_rootFolder+'\'+m_file.m_nodeFolder) then CreateDir(Pchar(m_file.m_rootFolder+'\'+m_file.m_nodeFolder));
 
   // проверка есть ли папка log/текущая дата
   if not DirectoryExists(m_file.m_rootFolder+'\'+m_file.m_nodeFolder+'\'+GetCurrentTime) then CreateDir(Pchar(m_file.m_rootFolder+'\'+m_file.m_nodeFolder+'\'+GetCurrentTime));

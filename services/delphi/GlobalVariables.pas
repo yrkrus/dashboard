@@ -10,6 +10,9 @@ const
  // файл с настройками
  SETTINGS_XML    :string = 'settings.xml';
 
+ // параметр для лога что есть ошибка
+ IS_ERROR:Boolean = True;
+
 var
   FOLDERPATH:string;
 

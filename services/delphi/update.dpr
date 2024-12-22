@@ -5,7 +5,8 @@ uses
   dashboard_update in 'dashboard_update.pas' {Service1: TService},
   GlobalVariables in 'GlobalVariables.pas',
   TXmlUnit in '..\..\gui\TXmlUnit.pas',
-  TLogFileUnit in '..\..\gui\TLogFileUnit.pas';
+  TLogFileUnit in '..\..\gui\TLogFileUnit.pas' {$R *.RES},
+  TFTPUnit in '..\..\gui\TFTPUnit.pas';
 
 {$R *.RES}
 
@@ -24,8 +25,24 @@ begin
   //
   // Application.DelayInitialize := True;
   //
+
   if not Application.DelayInitialize or Application.Installing then
     Application.Initialize;
   Application.CreateForm(Tupdate_dashboard, update_dashboard);
   Application.Run;
+
+//  SvcMgr.Application.Initialize;
+//  SvcMgr.Application.CreateForm(Tupdate_dashboard, update_dashboard);
+//  SvcMgr.Application.Run;
+//  // this isn't a service application, and we've creating the MainForm to debug
+//  // But if application runned by Windows Service manager, don't create anything
+//  if (not Service1.SrvcRunning) then begin
+//    Forms.Application.Initialize;
+//    Forms.Application.CreateForm(TMainForm, MainForm);
+//    MainForm.Show;
+//    MainForm.Update;
+//    Service1.OnExecute(Service1);
+//  end;
+
+
 end.

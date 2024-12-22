@@ -213,9 +213,7 @@ type
     {
     FTP для будущих обновлений!!!
 
-    ftp:/dashboard
-    update_dash
-    update_dash
+
 
     там в корне будут zip создаваться с версиями
 
@@ -304,7 +302,7 @@ DMUnit, FunctionUnit, FormPropushennieUnit, FormSettingsUnit, Thread_StatisticsU
   FormAuthUnit, FormActiveSessionUnit, FormRePasswordUnit, Thread_AnsweredQueueUnit,
   ReportsUnit, Thread_ACTIVESIP_updatetalkUnit, FormDEBUGUnit, FormErrorUnit, TCustomTypeUnit,
   GlobalVariables, FormUsersUnit, FormServersIKUnit, FormSettingsGlobalUnit,
-  FormTrunkUnit;
+  FormTrunkUnit, TFTPUnit;
 
 
 {$R *.dfm}
@@ -489,11 +487,10 @@ end;
 
 
 procedure THomeForm.Button3Click(Sender: TObject);
-
+ var
+  ftpClient:TFTP;
 begin
-   if not Assigned(Log) then Log:=TLoggingFile.Create('button');
-
-   Log.Save('123');
+  ftpClient:=TFTP.Create('update',eFTP_Zip);
 
 
 end;

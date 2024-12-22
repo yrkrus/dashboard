@@ -50,7 +50,8 @@ uses
   TOnlineChat in 'TOnlineChat.pas',
   TXmlUnit in 'TXmlUnit.pas',
   Thread_ChatUnit in 'Thread_ChatUnit.pas',
-  TLogFileUnit in 'TLogFileUnit.pas';
+  TLogFileUnit in 'TLogFileUnit.pas',
+  TFTPUnit in 'TFTPUnit.pas';
 
 {$R *.res}
 

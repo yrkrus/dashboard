@@ -4,7 +4,8 @@ interface
 
 uses
   System.SysUtils, System.Classes, Data.Win.ADODB, Data.DB, IdBaseComponent,
-  IdComponent, IdRawBase, IdRawClient, IdIcmpClient, FIBDatabase, pFIBDatabase;
+  IdComponent, IdRawBase, IdRawClient, IdIcmpClient, FIBDatabase, pFIBDatabase,
+  IdTCPConnection, IdTCPClient, IdExplicitTLSClientServerBase, IdFTP;
 
 type
   TDM = class(TDataModule)

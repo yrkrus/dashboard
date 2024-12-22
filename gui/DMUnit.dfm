@@ -28,7 +28,7 @@ object DM: TDM
     Top = 15
   end
   object pFIBDatabase1: TpFIBDatabase
-    DBName = '10.34.222.88/3050:A_MAIN_034_0018'
+    DBName = '10.34.222.88/3050:'
     DBParams.Strings = (
       'password=PDNTP'
       'user_name=CHEA'

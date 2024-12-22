@@ -172,6 +172,21 @@ interface
                 );
 
 
+  type  // типы расширений которые можно будет скачать\закачать на ftp
+  enumExtensionFTP = (  eFTP_Unknown,
+                        eFTP_Zip,
+                        eFTP_Doc,
+                        eFTP_Docx,
+                        eFTP_Xls,
+                        eFTP_Xlsx,
+                        eFTP_Txt,
+                        eFTP_Jpeg,
+                        eFTP_Png,
+                        eFTP_Pdf
+                      );
+
+
+
 implementation
 
 

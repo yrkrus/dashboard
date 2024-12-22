@@ -127,23 +127,13 @@ end;
 procedure Tupdate_dashboard.TimerMonitoringTimer(Sender: TObject);
 var
  XML:TXML;
-
  Log:TLoggingFile;
-
- test:TStringList;
 begin
-test:=TStringList.Create;
 
-  test.Add('1');
-  test.SaveToFile('C:\Users\home0\Desktop\DASHBOARD\develop\services\delphi\Win64\Debug\test.log');
+  Log:=TLoggingFile.Create('dash');
 
-  Log:=TLoggingFile.Create(PChar('update'));
-
-
-  test.Add('2');
-  test.SaveToFile('C:\Users\home0\Desktop\DASHBOARD\develop\services\delphi\Win64\Debug\test.log');
-
- //Log.Save('Запуск процесса проверки обновления');
+  Log.Save('Запуск процесса проверки обновления');
+  Log.Save('А тут ошибка',IS_ERROR);
 
  // тут че то делаем
  // XML:=TXML.Create;
@@ -151,6 +141,9 @@ test:=TStringList.Create;
  // XML.Free;
 
 //Log.Free;
+
+
+ // TimerMonitoring.Enabled:=False;
 end;
 
 end.

@@ -149,7 +149,7 @@
         <UWP_DelphiLogo44>C:\Users\home0\Desktop\DASHBOARD\develop\gui\ico\diagram09(1).png</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>C:\Users\home0\Desktop\DASHBOARD\develop\gui\ico\diagram09.png</UWP_DelphiLogo150>
         <VerInfo_MinorVer>12</VerInfo_MinorVer>
-        <VerInfo_Keys>CompanyName=Petrov Yuri;FileDescription=Дашбоард коллцентра;FileVersion=1.12.0.2;InternalName=;LegalCopyright=Petrov Yuri;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Дашбоард коллцентра;ProductVersion=1.12.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petrov Yuri;FileDescription=Дашборд коллцентра;FileVersion=1.12.0.2;InternalName=;LegalCopyright=Petrov Yuri;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Дашборд коллцентра;ProductVersion=1.12.0.0;Comments=</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <VerInfo_Build>2</VerInfo_Build>
     </PropertyGroup>
@@ -257,6 +257,7 @@
         <DCCReference Include="TXmlUnit.pas"/>
         <DCCReference Include="Thread_ChatUnit.pas"/>
         <DCCReference Include="TLogFileUnit.pas"/>
+        <DCCReference Include="TFTPUnit.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

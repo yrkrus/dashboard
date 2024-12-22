@@ -30,7 +30,7 @@ var
   CHAT_PARAM       :string = '--USER_ID';
 
   // служба обновления
-  UPDATE_EXE        : string = 'update_dashboard.exe';
+  UPDATE_EXE        : string = 'update.exe';
 
   // список с текущими активными операторами
   SharedActiveSipOperators: TActiveSIP;
@@ -66,10 +66,13 @@ var
 
 
   // --- connect_to_server.dll ---
- function GetServerAddress:string;  stdcall;   external 'connect_to_server.dll'; // адрес сервера
- function GetServerName:string;     stdcall;   external 'connect_to_server.dll'; // адрес базы
- function GetServerUser:string;     stdcall;   external 'connect_to_server.dll'; // логин
- function GetServerPassword:string; stdcall;   external 'connect_to_server.dll'; // пароль
+ function GetServerAddress:string;      stdcall;   external 'connect_to_server.dll'; // адрес сервера
+ function GetServerName:string;         stdcall;   external 'connect_to_server.dll'; // адрес базы
+ function GetServerUser:string;         stdcall;   external 'connect_to_server.dll'; // логин
+ function GetServerPassword:string;     stdcall;   external 'connect_to_server.dll'; // пароль
+ function GetFTPServerAddress:string;   stdcall;   external 'connect_to_server.dll'; // адрес ftp
+ function GetFTPServerUser:string;      stdcall;   external 'connect_to_server.dll'; // логин
+ function GetFTPServerPassword:string;  stdcall;   external 'connect_to_server.dll'; // пароль
 
 
 implementation

@@ -6830,7 +6830,6 @@ object HomeForm: THomeForm
     Height = 25
     Caption = 'Button3'
     TabOrder = 1
-    Visible = False
     OnClick = Button3Click
   end
   object Timer_Thread_Start: TTimer

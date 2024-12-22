@@ -62,6 +62,12 @@ var
   function GetLocalChatNameFolder:PChar; stdcall; external 'core.dll';       // // папка с локальным чатом
   function GetExtensionLog:PChar; stdcall; external 'core.dll';       // // папка с локальным чатом
 
+  // --- connect_to_server.dll ---
+  function GetFTPServerAddress:string;   stdcall;   external 'connect_to_server.dll'; // адрес ftp
+  function GetFTPServerUser:string;      stdcall;   external 'connect_to_server.dll'; // логин
+  function GetFTPServerPassword:string;  stdcall;   external 'connect_to_server.dll'; // пароль
+
+
 implementation
 
 

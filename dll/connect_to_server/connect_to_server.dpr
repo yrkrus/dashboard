@@ -23,6 +23,12 @@ const
   Shared_const_BD_UserName      :string  = 'dash';
   Shared_const_BD_UserPassword  :string  = 'dash';
 
+  // авторизация на ftp
+  Shared_const_FTP_Addr         :string = 'dashboard';
+  Shared_const_FTP_User         :string = 'update_dash';
+  Shared_const_FTP_Pass         :string = 'update_dash';
+
+
 {$R *.res}
 
 // функция получения адреса сервера
@@ -50,10 +56,34 @@ begin
   Result:=Shared_const_BD_UserPassword;
 end;
 
+
+// функция адреса ftp
+function GetFTPServerAddress:string;stdcall;export;
+begin
+  Result:=Shared_const_FTP_Addr;
+end;
+
+// функция ftp user
+function GetFTPServerUser:string;stdcall;export;
+begin
+  Result:=Shared_const_FTP_User;
+end;
+
+// функция ftp password
+function GetFTPServerPassword:string;stdcall;export;
+begin
+  Result:=Shared_const_FTP_Pass;
+end;
+
+
+
 exports  GetServerAddress,
          GetServerName,
          GetServerUser,
-         GetServerPassword;
+         GetServerPassword,
+         GetFTPServerAddress,
+         GetFTPServerUser,
+         GetFTPServerPassword;
 
 begin
 end.
