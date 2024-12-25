@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.SvcMgr,
-  Vcl.Dialogs,Registry, Vcl.ExtCtrls;
+  Vcl.Dialogs,Registry, Vcl.ExtCtrls, System.Zip;
 
 type
   Tupdate_dashboard = class(TService)
@@ -31,7 +31,7 @@ var
 implementation
 
 uses
-  GlobalVariables, TXmlUnit, TLogFileUnit;
+  GlobalVariables, TXmlUnit, TLogFileUnit, TFTPUnit, TCustomTypeUnit;
 
 {$R *.dfm}
 
@@ -102,7 +102,6 @@ procedure Tupdate_dashboard.ServiceExecute(Sender: TService);
 begin
  while not terminated do
  begin
-   Sleep(1000);
    ServiceThread.ProcessRequests(False);
  end;
 end;
@@ -124,26 +123,210 @@ begin
  Stopped:=True;
 end;
 
+
+procedure ExecuteBatchFile(const BatchFilePath: string);
+var
+  StartupInfo: TStartupInfo;
+  ProcessInfo: TProcessInformation;
+  ExitCode: DWORD;
+begin
+  ZeroMemory(@StartupInfo, SizeOf(StartupInfo));
+  StartupInfo.cb := SizeOf(StartupInfo);
+  StartupInfo.dwFlags := STARTF_USESHOWWINDOW;
+  StartupInfo.wShowWindow := SW_HIDE; // Скрыть окно
+
+  CreateProcess(nil, PChar('cmd.exe /C "' + BatchFilePath + '"'),nil, nil, False, 0, nil, nil, StartupInfo, ProcessInfo);
+
+  // Создаем процесс для запуска .bat файла
+  {if CreateProcess(nil, PChar('cmd.exe /C "' + BatchFilePath + '"'),
+    nil, nil, False, 0, nil, nil, StartupInfo, ProcessInfo) then
+  begin
+    // Ждем завершения процесса
+    WaitForSingleObject(ProcessInfo.hProcess, INFINITE);
+    // Получаем код завершения
+    GetExitCodeProcess(ProcessInfo.hProcess, ExitCode);
+    CloseHandle(ProcessInfo.hProcess);
+    CloseHandle(ProcessInfo.hThread);
+  end
+  else
+  begin
+    // Обработка ошибок
+    RaiseLastOSError;
+  end; }
+end;
+
+
+// распаковывем zip архив
+procedure UnPack(InFileName:string; var p_Log:TLoggingFile; var p_listUpdate:TStringList);
+var
+ ZipFile:TZipFile;
+ i:Integer;
+ FileName:string;
+ folderDest:string;
+begin
+   p_Log.Save('Распаковка архива <b>'+InFileName+'</b>');
+   folderDest:=FOLDERPATH+GetUpdateNameFolder;
+
+   try
+     ZipFile:=TZipFile.Create;
+     ZipFile.Open(folderDest+'\'+InFileName, zmRead);
+
+     try
+        // Перебираем все файлы в архиве
+        for I := 0 to ZipFile.FileCount - 1 do
+        begin
+          FileName := ZipFile.FileNames[I]; // Получаем имя файла
+          // Извлекаем файл
+          ZipFile.Extract(I, PChar(folderDest));
+          // Отслеживаем извлечение
+          p_Log.Save('Извлечен файл: <b>'+FileName+'</b>');
+          p_listUpdate.Add(StringReplace(FileName,'/','\',[rfReplaceAll]));
+        end;
+     except
+       on E:Exception do
+       begin
+         p_Log.Save('Не удалось извлечь файл: <b>'+FileName+'</b> | '+e.Message,IS_ERROR);
+       end;
+     end;
+   finally
+     if ZipFile<>nil then ZipFile.Free;
+     DeleteFile(folderDest+'\'+InFileName);
+   end;
+end;
+
+// создание установщика
+procedure CreateCMD(var p_XML:TXML; var p_listUpdate:TStringList);
+var
+  Bat:TStringList;
+  i:Integer;
+begin
+  Bat:=TStringList.Create;
+   with Bat do begin
+     Add('@echo off');
+     Add('set DirectoryUpdate='+FOLDERPATH+GetUpdateNameFolder);
+     Add('set Directory='+FOLDERPATH);
+     Add('::');
+     Add('echo                      AutoUpdate Dashboard ');
+     Add('echo                  upgrade '+p_XML.GetCurrentVersion+' to '+p_XML.GetRemoteVersion);
+     Add('echo                    started after 10 sec ...');
+     Add('echo.');
+     Add('ping -n 10 localhost>Nul');
+     Add('::');
+
+      // закрываем exe
+     Add('taskkill /F /IM '+DASHBOARD_EXE);
+     Add('taskkill /F /IM '+CHAT_EXE);
+     Add('::');
+
+     // закрываем обновлялку
+     Add('net stop '+SERVICE_NAME);
+
+
+      // копируем новые файлы
+      for i:=0 to p_listUpdate.Count-1 do begin
+       Add('echo F | xcopy "%DirectoryUpdate%\'+p_listUpdate[i]+'"'+' "%Directory%'+p_listUpdate[i]+'" /Y /C');
+      end;
+      Add('::');
+
+    // запускаем обновлялку
+    Add('net start '+SERVICE_NAME);
+    Add('exit')
+   end;
+
+   // сохраняем
+   if FileExists(FOLDERPATH+UPDATE_BAT) then DeleteFile(FOLDERPATH+UPDATE_BAT);
+   Bat.SaveToFile(FOLDERPATH+UPDATE_BAT);
+end;
+
 procedure Tupdate_dashboard.TimerMonitoringTimer(Sender: TObject);
+const
+ cTIMER_ERROR   :Cardinal = 60000;  // 1 мин
+ cTIMER_OK      :Cardinal = 600000; // 10 мин
 var
  XML:TXML;
- Log:TLoggingFile;
+ ftpClient:TFTP;
+ log:TLoggingFile;
+ remoteVersion:string;
+ SLFilesUpdateList:TStringList;   //  список файлов которые будем обновлять
+
 begin
+ Sleep(3000);
+ log:=TLoggingFile.Create('update');
+ log.Save('Проверка новой версии');
 
-  Log:=TLoggingFile.Create('dash');
+  // проверяем текущую версию
+  XML:=TXML.Create;
 
-  Log.Save('Запуск процесса проверки обновления');
-  Log.Save('А тут ошибка',IS_ERROR);
+  if not XML.isExistSettingsFile then begin
+    log.Save('Отсутствует файл настроек '+SETTINGS_XML, IS_ERROR);
+    log.Save('Следующая попытка проверки версии через 1 мин');
+    TimerMonitoring.Interval:=cTIMER_ERROR;
+    Exit;
+  end;
 
- // тут че то делаем
- // XML:=TXML.Create;
- // XML.UpdateRemoteVersion('999999');
- // XML.Free;
+  // найдем текущую версию
+  remoteVersion:=GetRemoteVersionDashboard;
+  if remoteVersion='null' then begin
+   log.Save('Не удается получить текущую версию дашборда', IS_ERROR);
+   log.Save('Следующая попытка проверки версии через 1 мин');
+   TimerMonitoring.Interval:=cTIMER_ERROR;
+   Exit;
+  end
+  else begin
+    // запишем текущую удаленную версию
+    XML.UpdateRemoteVersion(remoteVersion);
+  end;
 
-//Log.Free;
+  if CompareText(XML.GetCurrentVersion, XML.GetRemoteVersion) = 0 then begin
+    log.Save('Актуальная версия');
+    log.Save('Следующая попытка проверки версии через 10 мин');
+    TimerMonitoring.Interval:=cTIMER_OK;
+    Exit;
+  end;
+
+  log.Save('Обнаружена новая версия: <b>'+remoteVersion+'</b>');
 
 
- // TimerMonitoring.Enabled:=False;
+  ftpClient:=TFTP.Create('update','update',eDownload);
+  ftpClient.DownloadFile(remoteVersion+'.zip');
+
+  // успешно скачали запуск обновления
+  if ftpClient.isDownloadedFile(remoteVersion+'.zip') then begin
+   log.Save('Установка новой версии: <b>'+remoteVersion+'</b>');
+
+   while GetTask(DASHBOARD_EXE) do begin
+    log.Save('Запущен родительский процесс: <b>'+DASHBOARD_EXE+'</b>. Ожидание закрытия процесса ...');
+    Sleep(cTIMER_ERROR);
+   end;
+
+   SLFilesUpdateList:=TStringList.Create;
+
+   // распаковываем
+   UnPack(remoteVersion+'.zip', log, SLFilesUpdateList);
+
+   // создаем cmd
+    CreateCMD(XML,SLFilesUpdateList);
+    if Assigned(SLFilesUpdateList) then FreeAndNil(SLFilesUpdateList);
+
+    // запускаем
+    if FileExists(FOLDERPATH+UPDATE_BAT) then begin
+      // обновляем инфо что обновились
+      XML.UpdateCurrentVersion(remoteVersion);
+
+      ExecuteBatchFile(FOLDERPATH+UPDATE_BAT);
+    end
+    else begin
+     log.Save('Не удалось создать дочерний процесс обновления ...', IS_ERROR);
+    end;
+  end;
+
+
+
+  log.Save('Следующая попытка проверки версии через 10 мин');
+  TimerMonitoring.Interval:=cTIMER_OK;
+
+  if Assigned(ftpClient) then FreeAndNil(ftpClient);
+  if Assigned(XML) then FreeAndNil(XML);
 end;
 
 end.

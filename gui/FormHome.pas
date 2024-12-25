@@ -6,7 +6,8 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Grids, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.Menus,Data.Win.ADODB, Data.DB, Vcl.Imaging.jpeg,System.SyncObjs,
-  TActiveSIPUnit,TUserUnit, Vcl.Imaging.pngimage, ShellAPI, TLogFileUnit;
+  TActiveSIPUnit,TUserUnit, Vcl.Imaging.pngimage, ShellAPI, TLogFileUnit,
+  System.Zip;
 
 
 type
@@ -254,7 +255,7 @@ type
   - дашборд стал модульным
   - добавлен функционал "Локального чата"
   - изменена форма аторизации
-  (не готово)- добавлен функционал "автоматического обновления"
+  - добавлен функционал "автоматического обновления"
   - добавлен функционал логирования работы дашборда и дочерних модулей
   - общее и среднее время разговора поменялись местами
   - звонок зависший в IVR после 3сек скрывается из отображения
@@ -302,7 +303,7 @@ DMUnit, FunctionUnit, FormPropushennieUnit, FormSettingsUnit, Thread_StatisticsU
   FormAuthUnit, FormActiveSessionUnit, FormRePasswordUnit, Thread_AnsweredQueueUnit,
   ReportsUnit, Thread_ACTIVESIP_updatetalkUnit, FormDEBUGUnit, FormErrorUnit, TCustomTypeUnit,
   GlobalVariables, FormUsersUnit, FormServersIKUnit, FormSettingsGlobalUnit,
-  FormTrunkUnit, TFTPUnit;
+  FormTrunkUnit, TFTPUnit, TXmlUnit;
 
 
 {$R *.dfm}
@@ -485,14 +486,160 @@ end;
 
 
 
+// распаковывем zip архив
+procedure UnPack(InFileName:string; var p_Log:TLoggingFile; var p_listUpdate:TStringList);
+var
+ ZipFile:TZipFile;
+ i:Integer;
+ FileName:string;
+ folderDest:string;
+begin
+   p_Log.Save('Распаковка архива <b>'+InFileName+'</b>');
+   folderDest:=FOLDERPATH+GetUpdateNameFolder;
+
+   try
+     ZipFile:=TZipFile.Create;
+     ZipFile.Open(folderDest+'\'+InFileName, zmRead);
+
+     try
+        // Перебираем все файлы в архиве
+        for I := 0 to ZipFile.FileCount - 1 do
+        begin
+          FileName := ZipFile.FileNames[I]; // Получаем имя файла
+          // Извлекаем файл
+          ZipFile.Extract(I, PChar(folderDest));
+          // Отслеживаем извлечение
+          p_Log.Save('Извлечен файл: <b>'+FileName+'</b>');
+          p_listUpdate.Add(StringReplace(FileName,'/','\',[rfReplaceAll]));
+        end;
+     except
+       on E:Exception do
+       begin
+         p_Log.Save('Не удалось извлечь файл: <b>'+FileName+'</b> | '+e.Message,IS_ERROR);
+       end;
+     end;
+   finally
+     if ZipFile<>nil then ZipFile.Free;
+     DeleteFile(folderDest+'\'+InFileName);
+   end;
+end;
+
+
+// создание установщика
+procedure CreateCMD(var p_XML:TXML; var p_listUpdate:TStringList);
+var
+  Bat:TStringList;
+  i:Integer;
+begin
+  Bat:=TStringList.Create;
+   with Bat do begin
+     Add('@echo off');
+     Add('set DirectoryUpdate='+FOLDERPATH+GetUpdateNameFolder+'\');
+     Add('set Directory='+FOLDERPATH);
+     Add('::');
+     Add('echo                      AutoUpdate Dashboard ');
+     Add('echo                  upgrade '+p_XML.GetCurrentVersion+' to '+p_XML.GetRemoteVersion);
+     Add('echo                    started after 10 sec ...');
+     Add('echo.');
+     Add('ping -n 10 localhost>Nul');
+     Add('::');
+
+      // закрываем exe
+     Add('taskkill /F /IM '+DASHBOARD_EXE);
+     Add('taskkill /F /IM '+CHAT_EXE);
+     Add('::');
+
+     // закрываем обновлялку
+     Add('net stop '+UPDATE_SERVICES);
+
+
+      // копируем новые файлы
+      for i:=0 to p_listUpdate.Count-1 do begin
+       Add('echo F | xcopy "%DirectoryUpdate%\'+p_listUpdate[i]+'"'+' "%Directory%'+p_listUpdate[i]+'" /Y /C');
+      end;
+      Add('::');
+
+    // запускаем обновлялку
+    Add('net start '+UPDATE_SERVICES);
+    Add('exit')
+   end;
+   Bat.SaveToFile(FOLDERPATH+'update.bat');
+end;
+
 
 procedure THomeForm.Button3Click(Sender: TObject);
- var
-  ftpClient:TFTP;
+var
+ XML:TXML;
+ ftpClient:TFTP;
+ log:TLoggingFile;
+ remoteVersion:string;
+ SLFilesUpdateList:TStringList;   //  список файлов которые будем обновлять
+
 begin
-  ftpClient:=TFTP.Create('update',eFTP_Zip);
+ log:=TLoggingFile.Create('update');
+ log.Save('Проверка новой версии');
+
+  // проверяем текущую версию
+  XML:=TXML.Create;
+
+  if not XML.isExistSettingsFile then begin
+    log.Save('Отсутствует файл настроек '+SETTINGS_XML, IS_ERROR);
+    log.Save('Следующая попытка проверки версии через 1 мин');
+    //TimerMonitoring.Interval:=cTIMER_ERROR;
+    Exit;
+  end;
+
+  // найдем текущую версию
+  remoteVersion:=GetRemoteVersionDashboard;
+  if remoteVersion='null' then begin
+   log.Save('Не удается получить текущую версию дашборда', IS_ERROR);
+   log.Save('Следующая попытка проверки версии через 1 мин');
+  // TimerMonitoring.Interval:=cTIMER_ERROR;
+   Exit;
+  end
+  else begin
+    // запишем текущую удаленную версию
+    XML.UpdateRemoteVersion(remoteVersion);
+  end;
+
+{  if CompareText(XML.GetCurrentVersion, XML.GetRemoteVersion) = 0 then begin
+    log.Save('Актуальная версия');
+    log.Save('Следующая попытка проверки версии через 10 мин');
+   // TimerMonitoring.Interval:=cTIMER_OK;
+    Exit;
+  end;   }
+
+  log.Save('Обнаружена новая версия: <b>'+remoteVersion+'</b>');
 
 
+  ftpClient:=TFTP.Create('update','update',eDownload);
+  ftpClient.DownloadFile(remoteVersion+'.zip');
+
+  // успешно скачали запуск обновления
+  if ftpClient.isDownloadedFile(remoteVersion+'.zip') then begin
+   log.Save('Установка новой версии: <b>'+remoteVersion+'</b>');
+
+  { while GetTask(DASHBOARD_EXE) do begin
+    log.Save('Запущен родительский процесс: <b>'+DASHBOARD_EXE+'</b>. Ожидание закрытия процесса ...');
+    Sleep(cTIMER_ERROR);
+   end; }
+
+   SLFilesUpdateList:=TStringList.Create;
+
+   // распаковываем
+   UnPack(remoteVersion+'.zip', log, SLFilesUpdateList);
+
+   // создаем cmd
+    CreateCMD(XML,SLFilesUpdateList);
+  end;
+
+
+
+  log.Save('Следующая попытка проверки версии через 10 мин');
+ // TimerMonitoring.Interval:=cTIMER_OK;
+
+  if Assigned(ftpClient) then FreeAndNil(ftpClient);
+  if Assigned(XML) then FreeAndNil(XML);
 end;
 
 procedure THomeForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -609,8 +756,11 @@ begin
   // проверка на ткущую версию
   CheckCurrentVersion;
 
+  // очистка от временных файлов после автообновления
+  ClearAfterUpdate;
+
    // проверка на 2ую копию дошборда
-  cloneRun;
+  CloneRun;
 
   Screen.Cursor:=crHourGlass;
 

@@ -22,6 +22,9 @@ var
   // Текущая версия GUID   ctrl+shift+G (GUID)
   GUID_VESRION    :string = '11FC1DF8';
 
+  // exe родителя
+  DASHBOARD_EXE    :string = 'dashboard.exe';
+
   // файл с настройками
   SETTINGS_XML    :string = 'settings.xml';
 
@@ -31,6 +34,8 @@ var
 
   // служба обновления
   UPDATE_EXE        : string = 'update.exe';
+  UPDATE_SERVICES   : string = 'update_dashboard';
+  UPDATE_BAT        : string = 'update.bat'; // обновлялка
 
   // список с текущими активными операторами
   SharedActiveSipOperators: TActiveSIP;
@@ -59,8 +64,10 @@ var
   function GetCurrentStartDateTime:PChar; overload;  stdcall; external 'core.dll';       // текущее начала дня с минутами 00:00:00
   function GetCurrentTime:PChar; stdcall; external 'core.dll';       // текущее время
   function GetLocalChatNameFolder:PChar; stdcall; external 'core.dll';       // // папка с локальным чатом
-  function GetExtensionLog:PChar; stdcall; external 'core.dll';       // // папка с локальным чатом
-  function GetLogNameFolder:PChar; stdcall; external 'core.dll';       // // папка с логом
+  function GetExtensionLog:PChar; stdcall; external 'core.dll';        // папка с локальным чатом
+  function GetLogNameFolder:PChar; stdcall; external 'core.dll';       // папка с логом
+  function GetUpdateNameFolder:PChar; stdcall; external 'core.dll';       // папка с update (обновленияем)
+  function GetRemoteVersionDashboard:PChar; stdcall;external 'core.dll';        // текущая версия дашборда (БД)
   function KillTask(ExeFileName:string):integer;  stdcall; external 'core.dll';        // функция остановки exe
   function GetTask(ExeFileName:string):Boolean;  stdcall; external 'core.dll';         // проверка запущен ли процесс
 

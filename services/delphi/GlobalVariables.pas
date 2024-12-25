@@ -7,6 +7,12 @@ const
  SERVICE_NAME               :string = 'update_dashboard';
  SERVICE_DESCRIPTION        :string = 'Служба обновления Дашборд КоллЦентра';
 
+ // exe родителя
+ DASHBOARD_EXE    :string = 'dashboard.exe';
+ CHAT_EXE         :string = 'chat.exe';
+
+ UPDATE_BAT       :string = 'update.bat';
+
  // файл с настройками
  SETTINGS_XML    :string = 'settings.xml';
 
@@ -27,15 +33,19 @@ var
   function GetCurrentTime:PChar; stdcall; external 'core.dll';       // текущее время
   function GetExtensionLog:PChar; stdcall; external 'core.dll';       // // тип лога
   function GetLogNameFolder:PChar; stdcall; external 'core.dll';       // // папка с логом
+  function GetUpdateNameFolder:PChar; stdcall; external 'core.dll';       // // папка с update (обновленияем)
+  function GetRemoteVersionDashboard:PChar; stdcall;external 'core.dll';        // текущая версия дашборда (БД)
   function KillTask(ExeFileName:string):integer;  stdcall; external 'core.dll';        // функция остановки exe
   function GetTask(ExeFileName:string):Boolean;  stdcall; external 'core.dll';         // проверка запущен ли процесс
 
    // --- connect_to_server.dll ---
- function GetServerAddress:string;  stdcall;   external 'connect_to_server.dll'; // адрес сервера
- function GetServerName:string;     stdcall;   external 'connect_to_server.dll'; // адрес базы
- function GetServerUser:string;     stdcall;   external 'connect_to_server.dll'; // логин
- function GetServerPassword:string; stdcall;   external 'connect_to_server.dll'; // пароль
-
+ function GetServerAddress:string;      stdcall;   external 'connect_to_server.dll'; // адрес сервера
+ function GetServerName:string;         stdcall;   external 'connect_to_server.dll'; // адрес базы
+ function GetServerUser:string;         stdcall;   external 'connect_to_server.dll'; // логин
+ function GetServerPassword:string;     stdcall;   external 'connect_to_server.dll'; // пароль
+ function GetFTPServerAddress:string;   stdcall;   external 'connect_to_server.dll'; // адрес ftp
+ function GetFTPServerUser:string;      stdcall;   external 'connect_to_server.dll'; // логин
+ function GetFTPServerPassword:string;  stdcall;   external 'connect_to_server.dll'; // пароль
 
 implementation
 

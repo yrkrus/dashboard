@@ -6,7 +6,8 @@ uses
   GlobalVariables in 'GlobalVariables.pas',
   TXmlUnit in '..\..\gui\TXmlUnit.pas',
   TLogFileUnit in '..\..\gui\TLogFileUnit.pas' {$R *.RES},
-  TFTPUnit in '..\..\gui\TFTPUnit.pas';
+  TFTPUnit in '..\..\gui\TFTPUnit.pas',
+  TCustomTypeUnit in '..\..\gui\TCustomTypeUnit.pas';
 
 {$R *.RES}
 

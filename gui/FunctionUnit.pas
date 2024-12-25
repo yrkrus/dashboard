@@ -6,7 +6,8 @@ interface
   Dialogs, Registry, IniFiles, TlHelp32, IdBaseComponent, IdComponent,ShellAPI, StdCtrls, ComCtrls,
   ExtCtrls,WinSock,Math,IdHashCRC,Nb30,IdMessage,StrUtils,WinSvc,System.Win.ComObj, IdSMTP, IdText,
   IdSSL, IdSSLOpenSSL,IdAttachmentFile,DMUnit, FormHome, Data.Win.ADODB, Data.DB, IdIcmpClient,IdException, System.DateUtils,
-  FIBDatabase, pFIBDatabase, TCustomTypeUnit,TUserUnit, Vcl.Menus, GlobalVariables,TActiveSIPUnit;
+  FIBDatabase, pFIBDatabase, TCustomTypeUnit,TUserUnit, Vcl.Menus, GlobalVariables,TActiveSIPUnit,
+   System.IOUtils;
 
 
 
@@ -71,7 +72,7 @@ function IntToTLogging(InLogging:Integer):enumLogging;                          
 procedure showUserNameAuthForm;                                                      // отображение ранее входивщего пользователя в выборе вариантов пользователей
 function getUserFamiliyaName_LastSuccessEnter(InUser_login_pc,
                                               InUser_pc:string):string;              // нахождение userID после успешного входа на пк
-procedure cloneRun;                                                                  // проверка на 2ую копию дашборда
+procedure CloneRun;                                                                  // проверка на 2ую копию дашборда
 function getCountAnsweredCall(InSipOperator:string):Integer;                         // кол-во отвеченных звонков оператором
 function getCountAnsweredCallAll:Integer;                                            // кол-во отвеченных звонков всех операторов
 function createListAnsweredCall(InSipOperator:string):TStringList;                   // создвание списка со всем отвеченными звонками  sip оператора
@@ -136,6 +137,7 @@ function GetStatusUpdateService:Boolean;                                        
 function IntegerToEnumStatusOperators(InStatusId:Integer):enumStatusOperators;     // Integer -> enumStatusOperators
 function EnumStatusOperatorsToInteger(InStatus:enumStatusOperators):Integer;        // enumStatusOperators -> integer
 function getStatusOperator(InUserId:Integer):enumStatusOperators;                  // текущий стаус оператора из таблицы operators
+procedure ClearAfterUpdate;                                                       //  очистка от всего что осталось после обновления
 
 
 
@@ -3150,14 +3152,12 @@ begin
 end;
 
 // проверка на 2ую копию дашборда
-procedure cloneRun;
-const
- dash_name ='dashboard.exe';
+procedure CloneRun;
 var
  dashStart:Cardinal;
 begin
   // проверка на запущенную копию
-   dashStart:= CreateMutex(nil, True, dash_name);
+   dashStart:= CreateMutex(nil, True, PChar(DASHBOARD_EXE));
    if GetLastError = ERROR_ALREADY_EXISTS then
    begin
      MessageBox(HomeForm.Handle,PChar('Обнаружен запуск 2ой копии дашборда'+#13#13+'Для продолжения закройте предыдущую копию'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
@@ -3168,33 +3168,12 @@ end;
 // проверка на актуальную версию
 procedure CheckCurrentVersion;
 var
- ado:TADOQuery;
- serverConnect:TADOConnection;
- curr_ver:string;
-
- //XML:TXMLSettings;
-   XML:TXML;
+ remoteVersion:string;
+ XML:TXML;
 begin
+  remoteVersion:=GetRemoteVersionDashboard;
 
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select id from version_current');
-    Active:=True;
-
-    curr_ver:=Fields[0].Value;
-  end;
-
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
-
-  if GUID_VESRION <> curr_ver then begin
+  if GUID_VESRION <> remoteVersion then begin
    MessageBox(HomeForm.Handle,PChar('Текущая версия дашборда отличается от актуальной версии'+#13#13
                                     +'Перезагрузите компьютер или перезапустите службу обновления ('+UPDATE_EXE+')'),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
    KillProcess;
@@ -3202,16 +3181,6 @@ begin
 
   // запишем текущую версию дашборда
   begin
-//   if FileExists(SETTINGS_XML) then begin
-//    XML:=CreateXMLSettingsSingle(PChar(SETTINGS_XML));
-//    // обновляем текущий
-//    UpdateXMLLocalVersion(XML,PChar(GUID_VESRION));
-//   end
-//   else begin
-//    XML:=CreateXMLSettings(PChar(SETTINGS_XML), PChar(GUID_VESRION));
-//   end;
-//   FreeXMLSettings(XML);
-
    if FileExists(SETTINGS_XML) then begin
     XML:=TXML.Create(PChar(SETTINGS_XML));
     // обновляем текущий
@@ -3221,9 +3190,7 @@ begin
     XML:=TXML.Create(PChar(SETTINGS_XML),PChar(GUID_VESRION));
    end;
    XML.Free;
-
   end;
-
 end;
 
 // отображение\сркытие окна запроса на сервер
@@ -4605,6 +4572,18 @@ end;
 function GetStatusUpdateService:Boolean;
 begin
   Result:=GetTask(UPDATE_EXE);
+end;
+
+//  очистка от всего что осталось после обновления
+procedure ClearAfterUpdate;
+var
+ folderUpdate:string;
+begin
+   folderUpdate:=FOLDERPATH+GetUpdateNameFolder;
+  // удаляем сначало всю директорию
+  if DirectoryExists(folderUpdate) then  TDirectory.Delete(folderUpdate, True);
+
+  if FileExists(FOLDERPATH+UPDATE_BAT) then DeleteFile(FOLDERPATH+UPDATE_BAT);
 end;
 
 end.

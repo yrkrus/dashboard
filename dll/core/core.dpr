@@ -114,6 +114,33 @@ begin
 end;
 
 
+// текущая версия дашборда (БД)
+function GetRemoteVersionDashboard:PChar; stdcall;export;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+  Result:=Pchar('null');
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then  Exit;
+
+   with ado do begin
+      ado.Connection:=serverConnect;
+
+      SQL.Clear;
+      SQL.Add('select id from version_current');
+      Active:=True;
+
+      Result:=Pchar(VarToStr(Fields[0].Value));
+   end;
+
+  FreeAndNil(ado);
+  serverConnect.Close;
+  if Assigned(serverConnect) then serverConnect.Free;
+end;
+
 
 function GetUserNameFIO(InUserID:Integer):PChar; export;
 begin
@@ -178,6 +205,12 @@ begin
  Result:= PChar('log');
 end;
 
+// папка с update
+function GetUpdateNameFolder:PChar; stdcall; export;
+begin
+ Result:= PChar('update');
+end;
+
 
 // функция остановки exe
 function KillTask(ExeFileName: string): integer;stdcall;export;
@@ -230,12 +263,14 @@ exports
   GetCopyright,
   GetUserNameFIO,
   GetUserAccessLocalChat,
+  GetRemoteVersionDashboard,
   GetCurrentStartDateTime,
   GetCurrentDateTimeDec,
   GetCurrentTime,
   GetLocalChatNameFolder,
   GetExtensionLog,
   GetLogNameFolder,
+  GetUpdateNameFolder,
   KillTask,
   GetTask;
 

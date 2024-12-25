@@ -185,6 +185,11 @@ interface
                         eFTP_Pdf
                       );
 
+  type // режим работы ftp
+  enumModeFTP = (eDownload, // скачать с ftp
+                 eUpload    // залить на ftp
+                );
+
 
 
 implementation

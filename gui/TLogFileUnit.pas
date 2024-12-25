@@ -55,8 +55,8 @@ uses
  type
       TLoggingFile = class
 
-      public
-      constructor Create(InNameLog:string);                   overload;
+      public                               // создавать <hr> черту или нет
+      constructor Create(InNameLog:string; isCreateInitBlockHR:Boolean = True);            overload;
       destructor Destroy;                   override;
 
 
@@ -68,10 +68,12 @@ uses
       m_file                               : TStructFileInfo;  // вся инфа по логу
       m_navigate                           : TStructNavigate;
 
+      isInitBlockHR                        : Boolean;          //инициализация <hr> блока
+
       function GetPathToLogName:string;     // абсолбтный путь до лога
-      function isExistFileLog:Boolean;           // есть и файл лога на диске
-      procedure CreateFileLog;                  // создаем файл лога
-      procedure InitLogNextDay;    // инициализация лога  на следующий день
+      function isExistFileLog:Boolean;      // есть и файл лога на диске
+      procedure CreateFileLog;              // создаем файл лога
+      procedure InitLogNextDay;             // инициализация лога  на следующий день
 
       end;
    // class TLoggingFile END
@@ -107,7 +109,7 @@ end;
 
 
 
-constructor TLoggingFile.Create(InNameLog:string);
+constructor TLoggingFile.Create(InNameLog:string; isCreateInitBlockHR:Boolean = True);
 begin
   m_mutex:=TMutex.Create(nil, False, 'Global\TLoggingFile');
 
@@ -124,6 +126,10 @@ begin
 
     m_navigate:=TStructNavigate.Create(m_file);
   end;
+
+  if isCreateInitBlockHR = False then isInitBlockHR:=True
+  else isCreateInitBlockHR:=False;
+
 
   // проверим есть ли файл лога уже
   if not isExistFileLog then CreateFileLog;
@@ -177,9 +183,6 @@ begin
       EmptyFile:= TFileStream.Create(GetPathToLogName,fmCreate);
     finally
       EmptyFile.Free;
-
-      // новое начало лога
-      Save('<hr>');
     end;
   end;
 end;
@@ -188,6 +191,8 @@ end;
 
 // инициализация лога на следующий день
 procedure TLoggingFile.InitLogNextDay;
+var
+ SLLog:TStringList;
 begin
  // проверка есть ли папка log/текущая дата
   if not DirectoryExists(m_file.m_rootFolder+'\'+m_file.m_nodeFolder+'\'+GetCurrentTime) then begin
@@ -198,6 +203,27 @@ begin
                                m_file.m_fileName+m_file.m_fileExtension;
 
     if not isExistFileLog then CreateFileLog;
+  end;
+
+  // горизонтальная строка начала логиирования
+  if not isInitBlockHR then begin
+   if m_mutex.WaitFor(INFINITE)=wrSignaled then
+    try
+       SLLog:=TStringList.Create;
+       SLLog.LoadFromFile(GetPathToLogName);
+
+       SLLog.Add('<hr>');
+
+      try
+        SLLog.SaveToFile(GetPathToLogName);
+      finally
+        if Assigned(SLLog) then FreeAndNil(SLLog);
+      end;
+    finally
+      m_mutex.Release;
+    end;
+
+    isInitBlockHR:=True;
   end;
 
 end;
@@ -219,14 +245,8 @@ begin
     SLLog.LoadFromFile(GetPathToLogName);
     if isError then InSTroka:='<font color="red"><b>'+InSTroka+'</b></font>';
 
-    if InSTroka = '<hr>' then begin
-      SLLog.Add(InSTroka);
-    end
-    else begin
-      SLLog.Add( DateTimeToStr(Now)+' '+
-               InSTroka+'<br>'
-               );
-    end;
+    SLLog.Add( DateTimeToStr(Now)+' '+ InSTroka+'<br>');
+
     try
       SLLog.SaveToFile(GetPathToLogName);
     finally

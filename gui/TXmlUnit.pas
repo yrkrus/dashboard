@@ -37,14 +37,15 @@ uses
     procedure UpdateLastOnline;                             // обновление последней даты в сети
 
     function GetLastOnline:TDateTime;                       // время когда последний раз была запущен клиент
+    function isExistSettingsFile: Boolean;                  // проверка существует ли файл с настройками
 
   private
     m_fileSettings: string;                                 // путь с файлом настроек
     m_XMLDoc: IXMLDocument;
     m_RootNode, m_ChildNode: IXMLNode;
-    m_mutex: TMutex;
+    //m_mutex: TMutex;
 
-    function isExistSettingsFile: Boolean;                  // проверка существует ли файл с настройками
+
     procedure CreateDefaultFileSettings(GUIDVesrion:string); // создание первоначального файла с настройками
   end;
 
@@ -55,7 +56,7 @@ implementation
  constructor TXML.Create(SettingsFileName,GUIDVesrion:string);
  begin
    inherited Create;
-   m_mutex:=TMutex.Create(nil, False, 'Global\TXML');
+   //m_mutex:=TMutex.Create(nil, False, 'Global\TXML');
 
    Self.m_fileSettings:=FOLDERPATH + SettingsFileName;
 
@@ -71,7 +72,7 @@ implementation
  constructor TXML.Create(SettingsFileName:string);
  begin
    inherited Create;
-   m_mutex:=TMutex.Create(nil, False, 'Global\TXML');
+  // m_mutex:=TMutex.Create(nil, False, 'Global\TXML');
    Self.m_fileSettings:=FOLDERPATH + SettingsFileName;
 
    // создаем файл с настрйоками
@@ -84,7 +85,7 @@ implementation
  constructor TXML.Create();
  begin
    inherited Create;
-   m_mutex:=TMutex.Create(nil, False, 'Global\TXML');
+ //  m_mutex:=TMutex.Create(nil, False, 'Global\TXML');
    Self.m_fileSettings:=FOLDERPATH + SETTINGS_XML;
 
    if isExistSettingsFile then begin
@@ -96,7 +97,7 @@ destructor TXML.Destroy;
 begin
   // Освобождение ресурсов, если это необходимо
   m_XMLDoc:= nil;
-  m_mutex.Free;
+ // m_mutex.Free;
 
   inherited Destroy;
 end;
@@ -110,8 +111,8 @@ end;
 
 procedure TXML.CreateDefaultFileSettings(GUIDVesrion:string);
 begin
-  if m_mutex.WaitFor(INFINITE)=wrSignaled then
-  try
+ // if m_mutex.WaitFor(INFINITE)=wrSignaled then
+//  try
     try
       // Создаем новый XML-документ
       m_XMLDoc := TXMLDocument.Create(nil);
@@ -136,9 +137,9 @@ begin
     finally
       m_XMLDoc:=nil;
     end;
-  finally
-    m_mutex.Release;
-  end;
+ // finally
+ //   m_mutex.Release;
+ // end;
 end;
 
 
@@ -146,8 +147,8 @@ procedure TXML.UpdateCurrentVersion(GUIDVesrion:string);
 begin
   if not isExistSettingsFile then CreateDefaultFileSettings(GUIDVesrion);
 
-  if m_mutex.WaitFor(INFINITE)=wrSignaled then
-  try
+ // if m_mutex.WaitFor(INFINITE)=wrSignaled then
+ // try
     m_XMLDoc:= LoadXMLDocument(m_fileSettings);
     try
       m_RootNode := m_XMLDoc.DocumentElement;
@@ -162,9 +163,9 @@ begin
     finally
      m_XMLDoc := nil;
     end;
-  finally
-    m_mutex.Release;
-  end;
+ // finally
+ //   m_mutex.Release;
+ // end;
 end;
 
 
@@ -172,8 +173,8 @@ procedure TXML.UpdateRemoteVersion(GUIDVesrion:string);
 begin
   if not isExistSettingsFile then CreateDefaultFileSettings(GUIDVesrion);
 
-  if m_mutex.WaitFor(INFINITE)=wrSignaled then
-  try
+ /// if m_mutex.WaitFor(INFINITE)=wrSignaled then
+ // try
     m_XMLDoc:= LoadXMLDocument(m_fileSettings);
     try
       m_RootNode := m_XMLDoc.DocumentElement;
@@ -188,16 +189,16 @@ begin
     finally
      m_XMLDoc := nil;
     end;
-  finally
-    m_mutex.Release;
-  end;
+ // finally
+ //   m_mutex.Release;
+ // end;
 end;
 
 
 procedure TXML.UpdateLastOnline;
 begin
-  if m_mutex.WaitFor(INFINITE) = wrSignaled then
-  try
+ // if m_mutex.WaitFor(INFINITE) = wrSignaled then
+ // try
     m_XMLDoc := LoadXMLDocument(m_fileSettings);
     try
       // Пытаемся найти узел LastOnline
@@ -218,9 +219,9 @@ begin
     finally
       m_XMLDoc:=nil;
     end;
-  finally
-    m_mutex.Release;
-  end;
+ // finally
+ //   m_mutex.Release;
+ // end;
 end;
 
 
@@ -232,13 +233,13 @@ begin
     Exit;
   end;
 
-  if m_mutex.WaitFor(INFINITE)=wrSignaled then
-  try
+//  if m_mutex.WaitFor(INFINITE)=wrSignaled then
+//  try
     m_XMLDoc:= LoadXMLDocument(m_fileSettings);
 
     try
       m_RootNode := m_XMLDoc.DocumentElement;
-      m_ChildNode := m_RootNode.ChildNodes.FindNode('Current');
+      m_ChildNode := m_RootNode.ChildNodes.FindNode('Versions').ChildNodes.FindNode('Current');
 
       if Assigned(m_ChildNode) then
       begin
@@ -247,9 +248,9 @@ begin
     finally
       m_XMLDoc := nil;
     end;
-  finally
-    m_mutex.Release;
-  end;
+ // finally
+ //   m_mutex.Release;
+ // end;
 end;
 
 
@@ -261,13 +262,13 @@ begin
     Exit;
   end;
 
-  if m_mutex.WaitFor(INFINITE)=wrSignaled then
-  try
+ // if m_mutex.WaitFor(INFINITE)=wrSignaled then
+ // try
     m_XMLDoc:= LoadXMLDocument(m_fileSettings);
 
     try
       m_RootNode := m_XMLDoc.DocumentElement;
-      m_ChildNode := m_RootNode.ChildNodes.FindNode('Remote');
+       m_ChildNode := m_RootNode.ChildNodes.FindNode('Versions').ChildNodes.FindNode('Remote');
 
       if Assigned(m_ChildNode) then
       begin
@@ -276,16 +277,16 @@ begin
     finally
       m_XMLDoc := nil;
     end;
-  finally
-    m_mutex.Release;
-  end;
+ // finally
+ //   m_mutex.Release;
+ // end;
 end;
 
 
 function TXML.GetLastOnline:TDateTime;
 begin
-  if m_mutex.WaitFor(INFINITE)=wrSignaled then
-  try
+ // if m_mutex.WaitFor(INFINITE)=wrSignaled then
+ // try
     m_XMLDoc:= LoadXMLDocument(m_fileSettings);
 
     try
@@ -299,9 +300,9 @@ begin
     finally
       m_XMLDoc := nil;
     end;
-  finally
-    m_mutex.Release;
-  end;
+ // finally
+ //   m_mutex.Release;
+ // end;
 end;
 
 
