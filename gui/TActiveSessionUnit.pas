@@ -130,38 +130,43 @@ function TActiveSession.GetCountActiveSessionBD:Word;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
- countActive:Integer;
 begin
+  Result:=0;
+
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-    SQL.Add('select count(id) from active_session');
-
-    try
-        Active:=True;
-        countActive:=Fields[0].Value;
-    except
-        on E:EIdException do begin
-           Result:=0;
-
-           FreeAndNil(ado);
-           serverConnect.Close;
-           FreeAndNil(serverConnect);
-
-           Exit;
-        end;
-    end;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select count(id) from active_session');
 
-  Result:=countActive;
+      try
+        Active:=True;
+        Result:=StrToInt(VarToStr(Fields[0].Value));
+      except
+          on E:EIdException do begin
+            FreeAndNil(ado);
+            if Assigned(serverConnect) then begin
+              serverConnect.Close;
+              FreeAndNil(serverConnect);
+            end;
+           Exit;
+          end;
+      end;
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 procedure TActiveSession.UpdateActiveSession;
@@ -176,24 +181,29 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
 
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-    SQL.Add('SELECT asession.user_id, r.name_role, CONCAT(u.familiya, '+#39' '+#39+', u.name) '+
-            ' AS full_name, asession.pc, asession.ip, asession.last_active FROM active_session'+
-            ' AS asession JOIN users AS u ON asession.user_id = u.id JOIN role AS r ON u.role = r.id');
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('SELECT asession.user_id, r.name_role, CONCAT(u.familiya, '+#39' '+#39+', u.name) '+
+              ' AS full_name, asession.pc, asession.ip, asession.last_active FROM active_session'+
+              ' AS asession JOIN users AS u ON asession.user_id = u.id JOIN role AS r ON u.role = r.id');
 
       try
         Active:=True;
       except
           on E:EIdException do begin
-             FreeAndNil(ado);
-             serverConnect.Close;
-             FreeAndNil(serverConnect);
-
-             Exit;
+            FreeAndNil(ado);
+            if Assigned(serverConnect) then begin
+              serverConnect.Close;
+              FreeAndNil(serverConnect);
+            end;
+           Exit;
           end;
       end;
 
@@ -227,19 +237,18 @@ begin
            if getCurrentQueueOperator(getUserSIP(listActiveSession[i].userID)) = queue_null  then listActiveSession[i].isQueue:=False
            else listActiveSession[i].isQueue:=True;
         end
-        else begin
-            listActiveSession[i].isQueue:=False;
-        end;
+        else listActiveSession[i].isQueue:=False;
 
         Next;
       end;
-
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
   end;
-
-
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
 end;
 
 procedure TActiveSession.CreateListActiveSession;

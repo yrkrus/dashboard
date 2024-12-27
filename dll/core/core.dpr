@@ -41,6 +41,7 @@ begin
       on E: Exception do
       begin
         Free; // Освобождаем память в случае ошибки
+        Result:=nil;
         //raise; // Можно поднять исключение, чтобы сообщить об ошибке
       end;
     end;
@@ -69,20 +70,22 @@ begin
   serverConnect:=createServerConnect;
   if not Assigned(serverConnect) then  Exit;
 
-  with ado do begin
-    ado.Connection:=serverConnect;
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
 
-    SQL.Clear;
-    SQL.Add('select familiya,name from users where id = '+#39+IntToStr(InUserID)+#39);
+      SQL.Clear;
+      SQL.Add('select familiya,name from users where id = '+#39+IntToStr(InUserID)+#39);
 
-    Active:=True;
+      Active:=True;
 
-    Result:=VarToStr(Fields[0].Value)+' '+VarToStr(Fields[1].Value);
+      Result:=VarToStr(Fields[0].Value)+' '+VarToStr(Fields[1].Value);
+    end;
+  finally
+    FreeAndNil(ado);
+    serverConnect.Close;
+    if Assigned(serverConnect) then FreeAndNil(serverConnect);
   end;
-
-  FreeAndNil(ado);
-  serverConnect.Close;
-  if Assigned(serverConnect) then serverConnect.Free;
 end;
 
 
@@ -96,21 +99,29 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then  Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select chat from users where id = '+#39+IntToStr(InUserID)+#39);
-
-    Active:=True;
-    if StrToInt(VarToStr(Fields[0].Value)) = 1  then  Result:=True;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  if Assigned(serverConnect) then serverConnect.Free;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+
+      SQL.Clear;
+      SQL.Add('select chat from users where id = '+#39+IntToStr(InUserID)+#39);
+
+      Active:=True;
+      if StrToInt(VarToStr(Fields[0].Value)) = 1  then  Result:=True;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 
@@ -124,8 +135,12 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then  Exit;
+ if not Assigned(serverConnect) then begin
+    FreeAndNil(ado);
+    Exit;
+ end;
 
+  try
    with ado do begin
       ado.Connection:=serverConnect;
 
@@ -135,10 +150,13 @@ begin
 
       Result:=Pchar(VarToStr(Fields[0].Value));
    end;
-
-  FreeAndNil(ado);
-  serverConnect.Close;
-  if Assigned(serverConnect) then serverConnect.Free;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 

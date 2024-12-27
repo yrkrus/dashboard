@@ -124,8 +124,12 @@ begin
 
  ado:=TADOQuery.Create(nil);
  serverConnect:=createServerConnect;
- if not Assigned(serverConnect) then Exit;
+ if not Assigned(serverConnect) then begin
+   FreeAndNil(ado);
+   Exit;
+ end;
 
+ try
   with ado do begin
     ado.Connection:=serverConnect;
 
@@ -143,11 +147,13 @@ begin
     if StrToInt(VarToStr(Fields[4].Value))=1 then menu_active_session:=True;
 
   end;
-
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
-
+ finally
+   FreeAndNil(ado);
+   if Assigned(serverConnect) then begin
+     serverConnect.Close;
+     FreeAndNil(serverConnect);
+   end;
+ end;
 end;
 
 // class TUserAccess END
@@ -180,7 +186,10 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
 
   try
     with ado do begin
@@ -194,8 +203,10 @@ begin
     end;
   finally
     FreeAndNil(ado);
-    serverConnect.Close;
-    FreeAndNil(serverConnect);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
   end;
 end;
 
@@ -210,8 +221,12 @@ begin
 
    ado:=TADOQuery.Create(nil);
    serverConnect:=createServerConnect;
-   if not Assigned(serverConnect) then Exit;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
 
+  try
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
@@ -223,10 +238,13 @@ begin
         if StrToInt(VarToStr(Fields[0].Value)) = 1 then Result:=True;
       end;
     end;
-
+  finally
     FreeAndNil(ado);
-    serverConnect.Close;
-    FreeAndNil(serverConnect);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 

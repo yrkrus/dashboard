@@ -296,7 +296,7 @@ begin
 
    while GetTask(DASHBOARD_EXE) do begin
     log.Save('Запущен родительский процесс: <b>'+DASHBOARD_EXE+'</b>. Ожидание закрытия процесса ...');
-    Sleep(cTIMER_ERROR);
+    Sleep(Round( cTIMER_ERROR / 6));
    end;
 
    SLFilesUpdateList:=TStringList.Create;

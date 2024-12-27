@@ -223,23 +223,29 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then  Exit;
-
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-    SQL.Add('select id from chat where channel = '+#39+EnumChannelToString(m_channel)+#39+' and date_time > '+#39+GetCurrentStartDateTime+#39+' order by date_time DESC limit 1');
-
-    Active:=True;
-    if Fields[0].Value<>null then begin
-      Result:=StrToInt(VarToStr(Fields[0].Value));
-    end;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  if Assigned(serverConnect) then serverConnect.Free;
+  try
+     with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select id from chat where channel = '+#39+EnumChannelToString(m_channel)+#39+' and date_time > '+#39+GetCurrentStartDateTime+#39+' order by date_time DESC limit 1');
+
+      Active:=True;
+      if Fields[0].Value<>null then begin
+        Result:=StrToInt(VarToStr(Fields[0].Value));
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 
@@ -253,23 +259,29 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then  Exit;
-
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-    SQL.Add('select count(id) from chat where channel = '+#39+EnumChannelToString(m_channel)+#39+' and date_time > '+#39+GetCurrentStartDateTime+#39+' and id >'+#39+IntToStr(InLastIDMessage)+#39);
-
-    Active:=True;
-    if Fields[0].Value<>null then begin
-      Result:=StrToInt(VarToStr(Fields[0].Value));
-    end;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  if Assigned(serverConnect) then serverConnect.Free;
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select count(id) from chat where channel = '+#39+EnumChannelToString(m_channel)+#39+' and date_time > '+#39+GetCurrentStartDateTime+#39+' and id >'+#39+IntToStr(InLastIDMessage)+#39);
+
+      Active:=True;
+      if Fields[0].Value<>null then begin
+        Result:=StrToInt(VarToStr(Fields[0].Value));
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 

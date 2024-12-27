@@ -151,50 +151,62 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
+  if not Assigned(serverConnect) then begin
+     Screen.Cursor:=crDefault;
+     FreeAndNil(ado);
+     Exit;
+  end;
+
 
   if InStatus=monitoring_ENABLE then monitoring:=1
   else monitoring:=0;
 
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
 
-    case InTypePanel_Server of
-      server_add:begin
-        SQL.Add('insert into sip_trunks (alias,username,is_monitoring) values ('+#39+InAlias+#39+','+#39+InLogin+#39+','+#39+IntToStr(monitoring)+#39+')');
-      end;
-      server_delete:begin
-        SQL.Add('delete from sip_trunks where id='+#39+FormTrunkEdit.p_editID+#39);
-      end;
-      server_edit: begin
-         SQL.Add('update sip_trunks set alias = '+#39+InAlias+#39
-                                            +', username = '+#39+InLogin+#39
-                                            +', is_monitoring = '+#39+IntToStr(monitoring)+#39
-                                            +' where id = '+#39+FormTrunkEdit.p_editID+#39);
-      end;
-    end;
-
-    try
-        ExecSQL;
-    except
-        on E:EIdException do begin
-           Screen.Cursor:=crDefault;
-           CodOshibki:=e.Message;
-           Result:='Œÿ»¡ ¿! '+CodOshibki;
-           FreeAndNil(ado);
-           serverConnect.Close;
-           FreeAndNil(serverConnect);
-
-           Exit;
+      case InTypePanel_Server of
+        server_add:begin
+          SQL.Add('insert into sip_trunks (alias,username,is_monitoring) values ('+#39+InAlias+#39+','+#39+InLogin+#39+','+#39+IntToStr(monitoring)+#39+')');
         end;
-    end;
+        server_delete:begin
+          SQL.Add('delete from sip_trunks where id='+#39+FormTrunkEdit.p_editID+#39);
+        end;
+        server_edit: begin
+           SQL.Add('update sip_trunks set alias = '+#39+InAlias+#39
+                                              +', username = '+#39+InLogin+#39
+                                              +', is_monitoring = '+#39+IntToStr(monitoring)+#39
+                                              +' where id = '+#39+FormTrunkEdit.p_editID+#39);
+        end;
+      end;
 
+      try
+          ExecSQL;
+      except
+          on E:EIdException do begin
+            Screen.Cursor:=crDefault;
+            CodOshibki:=e.Message;
+            Result:='Œÿ»¡ ¿! '+CodOshibki;
+            FreeAndNil(ado);
+            if Assigned(serverConnect) then begin
+              serverConnect.Close;
+              FreeAndNil(serverConnect);
+            end;
+
+             Exit;
+          end;
+      end;
+
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
   Screen.Cursor:=crDefault;
   Result:='OK';
 end;
@@ -209,8 +221,12 @@ begin
 
  ado:=TADOQuery.Create(nil);
  serverConnect:=createServerConnect;
- if not Assigned(serverConnect) then Exit;
+ if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+ end;
 
+ try
   with ado do begin
     ado.Connection:=serverConnect;
 
@@ -221,10 +237,13 @@ begin
     if Fields[0].Value=0 then Result:=False
     else Result:=True;
   end;
-
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+ finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+ end;
 end;
 
 

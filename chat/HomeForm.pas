@@ -283,7 +283,7 @@ begin
 
 
  // проверим нужно ли тжгать пользователя
-  if Key='@' then begin
+ { if Key='@' then begin
      // Получаем позицию курсора
      // Получаем позицию курсора в клиентских координатах
     CaretPos := reMessage.CaretPos;
@@ -294,7 +294,7 @@ begin
 
     //CaretPos := reMessage.ClientToScreen(Point(reMessage.CaretPos.X, reMessage.CaretPos.Y));
     ShowPopMenuTagUser(CaretPos.X, CaretPos.Y);
-  end;
+  end;   }
 
 
   // Получаем текущую строку, в которой находится курсор
@@ -403,13 +403,13 @@ var
  SelectedItems:Integer;
  userFIO:string;
 begin
-  SelectedItems:=ListBoxOnlineUsers.ItemIndex;
+ { SelectedItems:=ListBoxOnlineUsers.ItemIndex;
 
   if SelectedItems = -1 then Exit;
   userFIO:= ListBoxOnlineUsers.Items[SelectedItems];
 
   // добавляем тэг пользователя
-  AddTagUserMessage(reMessage,reMessage.SelStart,userFIO);
+  AddTagUserMessage(reMessage,reMessage.SelStart,userFIO); }
 end;
 
 procedure TFormHome.ListBoxOnlineUsersDblClick(Sender: TObject);

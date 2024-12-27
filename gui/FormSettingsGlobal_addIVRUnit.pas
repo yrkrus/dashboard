@@ -53,41 +53,49 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-    if not InEditTime then SQL.Add('insert into settings (queue_5000_time,queue_5050_time) values ('+#39+InQueue5000+#39
-                                                                                                    +','+#39+InQueue5050+#39+')')
-    else begin
-
-     SQL.Add('insert into settings (queue_5000_time,queue_5050_time,date_time) values ('+#39+InQueue5000+#39
-                                                                                            +','+#39+InQueue5050+#39
-                                                                                            +','+#39+getDateTimeToDateBD(DateToStr(FormSettingsGlobal_addIVR.DateQueue.Date)+' '+TimeToStr(FormSettingsGlobal_addIVR.TimeQueue.Time))+#39+')');
-    end;
-
-
-
-    try
-        ExecSQL;
-    except
-        on E:EIdException do begin
-           Screen.Cursor:=crDefault;
-           CodOshibki:=e.Message;
-           Result:='Œÿ»¡ ¿! '+CodOshibki;
-           FreeAndNil(ado);
-           serverConnect.Close;
-           FreeAndNil(serverConnect);
-
-           Exit;
-        end;
-    end;  
+  if not Assigned(serverConnect) then begin
+    Screen.Cursor:=crDefault;
+    FreeAndNil(ado);
+    Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      if not InEditTime then SQL.Add('insert into settings (queue_5000_time,queue_5050_time) values ('+#39+InQueue5000+#39
+                                                                                                      +','+#39+InQueue5050+#39+')')
+      else begin
+
+       SQL.Add('insert into settings (queue_5000_time,queue_5050_time,date_time) values ('+#39+InQueue5000+#39
+                                                                                              +','+#39+InQueue5050+#39
+                                                                                              +','+#39+getDateTimeToDateBD(DateToStr(FormSettingsGlobal_addIVR.DateQueue.Date)+' '+TimeToStr(FormSettingsGlobal_addIVR.TimeQueue.Time))+#39+')');
+      end;
+
+      try
+          ExecSQL;
+      except
+          on E:EIdException do begin
+             Screen.Cursor:=crDefault;
+             CodOshibki:=e.Message;
+             Result:='Œÿ»¡ ¿! '+CodOshibki;
+             FreeAndNil(ado);
+             if Assigned(serverConnect) then begin
+               serverConnect.Close;
+               FreeAndNil(serverConnect);
+             end;
+             Exit;
+          end;
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+
   Screen.Cursor:=crDefault;
   Result:='OK';
 end;

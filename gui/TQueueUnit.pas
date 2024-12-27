@@ -152,71 +152,78 @@ end;
  begin
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-    SQL.Add('select count(phone) from queue where date_time > '+#39+GetCurrentDateTimeDec(cTimeResponse)+#39+' and fail = ''0'' and sip = ''-1'' and hash is NULL');
-
-    Active:=True;
-    if Fields[0].Value<>null then countQueue:=Fields[0].Value;
-
-    try
-      Active:=True;
-    except
-        on E:EIdException do begin
-           FreeAndNil(ado);
-           serverConnect.Close;
-           FreeAndNil(serverConnect);
-
-           Exit;
-        end;
-    end;
-
-     // очищаем весь список
-     Clear;
-     if countQueue = 0 then begin
-       count:=countQueue;
-
-       FreeAndNil(ado);
-       serverConnect.Close;
-       FreeAndNil(serverConnect);
-       Exit;
-     end;
-
-
-     if countQueue<>0 then begin
-
-        SQL.Clear;
-        SQL.Add('select id,phone,waiting_time,number_queue from queue where date_time > '+#39+GetCurrentDateTimeDec(cTimeResponse)+#39+' and fail = ''0'' and sip = ''-1'' and hash is NULL');
-
-        Active:=True;
-
-        for i:=0 to countQueue-1 do begin
-          try
-            if (Fields[0].Value <> null) and
-               (Fields[1].Value <> null) and
-               (Fields[2].Value <> null) and
-               (Fields[3].Value <> null)
-              then begin
-              listActiveQueue[i].id:=StrToInt(VarToStr(Fields[0].Value));
-              listActiveQueue[i].phone:=VarToStr(Fields[1].Value);
-              listActiveQueue[i].waiting_time_start:=VarToStr(Fields[2].Value);
-              listActiveQueue[i].queue:=VarToStr(Fields[3].Value);
-            end;
-          finally
-             Next;
-          end;
-        end;
-     end;
-
-     count:=countQueue;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select count(phone) from queue where date_time > '+#39+GetCurrentDateTimeDec(cTimeResponse)+#39+' and fail = ''0'' and sip = ''-1'' and hash is NULL');
+
+      Active:=True;
+      if Fields[0].Value<>null then countQueue:=Fields[0].Value;
+
+      try
+        Active:=True;
+      except
+          on E:EIdException do begin
+            FreeAndNil(ado);
+            if Assigned(serverConnect) then begin
+              serverConnect.Close;
+              FreeAndNil(serverConnect);
+            end;
+            Exit;
+          end;
+      end;
+
+       // очищаем весь список
+       Clear;
+       if countQueue = 0 then begin
+         count:=countQueue;
+
+         FreeAndNil(ado);
+         serverConnect.Close;
+         FreeAndNil(serverConnect);
+         Exit;
+       end;
+
+       if countQueue<>0 then begin
+
+          SQL.Clear;
+          SQL.Add('select id,phone,waiting_time,number_queue from queue where date_time > '+#39+GetCurrentDateTimeDec(cTimeResponse)+#39+' and fail = ''0'' and sip = ''-1'' and hash is NULL');
+
+          Active:=True;
+
+          for i:=0 to countQueue-1 do begin
+            try
+              if (Fields[0].Value <> null) and
+                 (Fields[1].Value <> null) and
+                 (Fields[2].Value <> null) and
+                 (Fields[3].Value <> null)
+                then begin
+                listActiveQueue[i].id:=StrToInt(VarToStr(Fields[0].Value));
+                listActiveQueue[i].phone:=VarToStr(Fields[1].Value);
+                listActiveQueue[i].waiting_time_start:=VarToStr(Fields[2].Value);
+                listActiveQueue[i].queue:=VarToStr(Fields[3].Value);
+              end;
+            finally
+               Next;
+            end;
+          end;
+       end;
+
+       count:=countQueue;
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
  end;
 
 

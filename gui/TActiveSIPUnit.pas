@@ -319,112 +319,122 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
 
-  //
 
-  with ado do begin
-    ado.Connection:=serverConnect;
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
 
-    SQL.Clear;
-    SQL.Add('select count(distinct(user_id)) from logging where action=''11'' ');
-    Active:=True;
+      SQL.Clear;
+      SQL.Add('select count(distinct(user_id)) from logging where action=''11'' ');
+      Active:=True;
 
-    countStatus:=Fields[0].Value;
+      countStatus:=Fields[0].Value;
 
-    if countStatus=0 then begin
-      FreeAndNil(ado);
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-      Exit;
-    end;
-    if Active then Active:=False;
+      if countStatus=0 then begin
+        FreeAndNil(ado);
+        if Assigned(serverConnect) then begin
+          serverConnect.Close;
+          FreeAndNil(serverConnect);
+        end;
 
-    // теперь проверим вдруг оператор случайно нажал кнопку домой (такое уже случалось)
-     begin
-        preHome:=TStringList.Create;
+        Exit;
+      end;
+      if Active then Active:=False;
 
-        SQL.Clear;
-        SQL.Add('select distinct(user_id) from logging where action=''11'' ');
-        Active:=True;
+      // теперь проверим вдруг оператор случайно нажал кнопку домой (такое уже случалось)
+       begin
+          preHome:=TStringList.Create;
+
+          SQL.Clear;
+          SQL.Add('select distinct(user_id) from logging where action=''11'' ');
+          Active:=True;
+
+           for i:=0 to countStatus-1 do begin
+             preHome.Add(VarToStr(Fields[0].Value));
+             Next;
+           end;
+
+         if Active then Active:=False;
 
          for i:=0 to countStatus-1 do begin
-           preHome.Add(VarToStr(Fields[0].Value));
-           Next;
+           SQL.Clear;
+           SQL.Add('select action from logging where user_id = '#39+preHome[i]+#39+' order by date_time desc limit 2');
+           Active:=True;
+
+           operatorExit:=False;
+           operatorGoHome:=False;
+
+           for j:=0 to 1 do begin
+              if j=0 then begin
+                if VarToStr(Fields[0].Value)= '1' then operatorExit:=True;
+              end
+              else if j=1 then begin
+                if VarToStr(Fields[0].Value)= '11' then operatorGoHome:=True;
+              end;
+             Next;
+           end;
+
+           if (operatorExit) and (operatorGoHome) then Result.Add(preHome[i]);
+           if Active then Active:=False;
          end;
+       end;
 
-       if Active then Active:=False;
 
-       for i:=0 to countStatus-1 do begin
+       // и теперь проверим вдруг есть операторы\помогаторы(статус без доступа к дашборду)
+       begin
+         if Active then Active:=False;
          SQL.Clear;
-         SQL.Add('select action from logging where user_id = '#39+preHome[i]+#39+' order by date_time desc limit 2');
+         SQL.Add('select count(distinct(sip)) from queue where sip IN (select sip from operators where user_id IN (select id from users where role = ''6''))');
          Active:=True;
 
-         operatorExit:=False;
-         operatorGoHome:=False;
-
-         for j:=0 to 1 do begin
-            if j=0 then begin
-              if VarToStr(Fields[0].Value)= '1' then operatorExit:=True;
-            end
-            else if j=1 then begin
-              if VarToStr(Fields[0].Value)= '11' then operatorGoHome:=True;
+         countStatus:=Fields[0].Value;
+         if countStatus = 0 then begin
+            FreeAndNil(ado);
+            if Assigned(serverConnect) then begin
+              serverConnect.Close;
+              FreeAndNil(serverConnect);
             end;
-           Next;
+            if Assigned(preHome) then FreeAndNil(preHome);
+           Exit;
          end;
 
-         if (operatorExit) and (operatorGoHome) then Result.Add(preHome[i]);
          if Active then Active:=False;
+         SQL.Clear;
+         SQL.Add('select distinct(sip) from queue where sip IN (select sip from operators where user_id IN (select id from users where role = ''6''))');
+         Active:=True;
+
+         for i:=0 to countStatus-1 do begin
+           if getCurrentQueueOperator(VarToStr(Fields[0].Value)) = queue_null then Result.Add(IntToStr(getUserID(StrToInt(VarToStr(Fields[0].Value)))));
+           Next;
+         end;
        end;
-     end;
 
+       //  и наконец проверим операторов которые нажади кнопку домой, но не закрыли дашборд
+       GoHomeNotCloseDashboad:=GetListOperatorsGoHomeNotCloseDashboard;
+       if GoHomeNotCloseDashboad.Count<>0 then begin
+         for i:=0 to GoHomeNotCloseDashboad.Count-1 do begin
+           Result.Add(GoHomeNotCloseDashboad[i]);
+         end;
+       end;
+       if Assigned(GoHomeNotCloseDashboad) then FreeAndNil(GoHomeNotCloseDashboad);
 
-     // и теперь проверим вдруг есть операторы\помогаторы(статус без доступа к дашборду)
-     begin
        if Active then Active:=False;
-       SQL.Clear;
-       SQL.Add('select count(distinct(sip)) from queue where sip IN (select sip from operators where user_id IN (select id from users where role = ''6''))');
-       Active:=True;
-
-       countStatus:=Fields[0].Value;
-       if countStatus = 0 then begin
-         FreeAndNil(ado);
-         serverConnect.Close;
-         FreeAndNil(serverConnect);
-         if preHome<>nil then FreeAndNil(preHome);
-         Exit;
-       end;
-
-       if Active then Active:=False;
-       SQL.Clear;
-       SQL.Add('select distinct(sip) from queue where sip IN (select sip from operators where user_id IN (select id from users where role = ''6''))');
-       Active:=True;
-
-       for i:=0 to countStatus-1 do begin
-         if getCurrentQueueOperator(VarToStr(Fields[0].Value)) = queue_null then Result.Add(IntToStr(getUserID(StrToInt(VarToStr(Fields[0].Value)))));
-         Next;
-       end;
-     end;
-
-     //  и наконец проверим операторов которые нажади кнопку домой, но не закрыли дашборд
-     GoHomeNotCloseDashboad:=GetListOperatorsGoHomeNotCloseDashboard;
-     if GoHomeNotCloseDashboad.Count<>0 then begin
-       for i:=0 to GoHomeNotCloseDashboad.Count-1 do begin
-         Result.Add(GoHomeNotCloseDashboad[i]);
-       end;
-     end;
-     if Assigned(GoHomeNotCloseDashboad) then FreeAndNil(GoHomeNotCloseDashboad);
-
-
-     if Active then Active:=False;
-
-     Result.Sort;
+       Result.Sort;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
   end;
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
-  if preHome<>nil then FreeAndNil(preHome);
 
+  if Assigned(preHome) then FreeAndNil(preHome);
 end;
 
 // список операторов которые ушли домой но забыли закрыть дашбор
@@ -440,58 +450,66 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-
-    if Active then Active:=False;
-
-    SQL.Clear;
-    SQL.Add('select count(user_id) from active_session where last_active>'+#39+GetCurrentStartDateTime+#39);
-    Active:=True;
-
-    countActiveSession:=Fields[0].Value;
-
-    if countActiveSession = 0 then begin
-       FreeAndNil(ado);
-       serverConnect.Close;
-       FreeAndNil(serverConnect);
-       Exit;
-    end;
-
-    if Active then Active:=False;
-
-    SQL.Clear;
-    SQL.Add('select user_id,last_active from active_session where last_active>'+#39+GetCurrentStartDateTime+#39);
-    Active:=True;
-
-    for i:=0 to countActiveSession-1 do begin
-     if (Fields[0].Value <> Null) and (Fields[1].Value <> Null) then begin
-        userId:=StrToInt(VarToStr(Fields[0].Value));
-
-         // проверим оператор ли
-        if UserIsOperator(userId) then begin
-           // проверим его статус чтобы было статус "Домой"
-          if getStatusOperator(userId) = eHome then begin
-             // проверим время
-             if (Round((Now - VarToDateTime(Fields[1].Value)) * 24 * 60) > cHIDETIME_ListSIPOperators) then begin
-                Result.Add(IntToStr(userId));
-             end;
-          end;
-        end;
-     end;
-
-      Next;
-    end;
-
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-   FreeAndNil(ado);
-   serverConnect.Close;
-   FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
 
+      if Active then Active:=False;
+
+      SQL.Clear;
+      SQL.Add('select count(user_id) from active_session where last_active>'+#39+GetCurrentStartDateTime+#39);
+      Active:=True;
+
+      countActiveSession:=Fields[0].Value;
+
+      if countActiveSession = 0 then begin
+         FreeAndNil(ado);
+         if Assigned(serverConnect) then begin
+           serverConnect.Close;
+           FreeAndNil(serverConnect);
+         end;
+         Exit;
+      end;
+
+      if Active then Active:=False;
+
+      SQL.Clear;
+      SQL.Add('select user_id,last_active from active_session where last_active>'+#39+GetCurrentStartDateTime+#39);
+      Active:=True;
+
+      for i:=0 to countActiveSession-1 do begin
+       if (Fields[0].Value <> Null) and (Fields[1].Value <> Null) then begin
+          userId:=StrToInt(VarToStr(Fields[0].Value));
+
+           // проверим оператор ли
+          if UserIsOperator(userId) then begin
+             // проверим его статус чтобы было статус "Домой"
+            if getStatusOperator(userId) = eHome then begin
+               // проверим время
+               if (Round((Now - VarToDateTime(Fields[1].Value)) * 24 * 60) > cHIDETIME_ListSIPOperators) then begin
+                  Result.Add(IntToStr(userId));
+               end;
+            end;
+          end;
+       end;
+
+        Next;
+      end;
+
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 
@@ -597,7 +615,11 @@ end;
  begin
    ado:=TADOQuery.Create(nil);
    serverConnect:=createServerConnect;
-   if not Assigned(serverConnect) then Exit;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
 
     if m_mutex.WaitFor(INFINITE) = wrSignaled  then
     begin
@@ -609,6 +631,7 @@ end;
 
          if isNotViewGoHome = False then begin  // показываем всех операторов
 
+           try
              with ado do begin
                 ado.Connection:=serverConnect;
                 SQL.Clear;
@@ -644,6 +667,13 @@ end;
                     end;
                  end;
              end;
+           finally
+             FreeAndNil(ado);
+              if Assigned(serverConnect) then begin
+                serverConnect.Close;
+                FreeAndNil(serverConnect);
+              end;
+           end;
 
            // кол-во скрытых операторов =0, т.к. показываем всех
            countSIpOPeratorsHide:=0;
@@ -653,9 +683,12 @@ end;
            // смотрим кто у нас ушел домой
             operatorsGoHome:=getListOperatorsGoHome;
             if operatorsGoHome.Count=0 then begin
-             FreeAndNil(ado);
-             serverConnect.Close;
-             FreeAndNil(serverConnect);
+
+                FreeAndNil(ado);
+                if Assigned(serverConnect) then begin
+                  serverConnect.Close;
+                  FreeAndNil(serverConnect);
+                end;
 
              // нет того кто ушел домой, и мы уже сделали rebuild,
              // теперь тогла вызываем простой generate
@@ -668,6 +701,8 @@ end;
               if operatorsGoHomeNow='' then operatorsGoHomeNow:=#39+getUserSIP(StrToInt(operatorsGoHome[i]))+#39
               else operatorsGoHomeNow:=operatorsGoHomeNow+','+#39+getUserSIP(StrToInt(operatorsGoHome[i]))+#39;
             end;
+
+          try
            with ado do begin
               ado.Connection:=serverConnect;
               SQL.Clear;
@@ -702,8 +737,15 @@ end;
                   end;
                end;
            end;
+          finally
+            FreeAndNil(ado);
+            if Assigned(serverConnect) then begin
+              serverConnect.Close;
+              FreeAndNil(serverConnect);
+            end;
+          end;
 
-           if operatorsGoHome<>nil then begin
+           if Assigned(operatorsGoHome) then begin
              countSIpOPeratorsHide:=operatorsGoHome.Count;  // кол-во скрытых операторов
              FreeAndNil(operatorsGoHome);
            end;
@@ -743,10 +785,6 @@ end;
         m_mutex.Release;
       end;
     end;
-
-    FreeAndNil(ado);
-    serverConnect.Close;
-    FreeAndNil(serverConnect);
  end;
 
  procedure TActiveSIP.updateCountTalk;
@@ -777,32 +815,39 @@ end;
 
    ado:=TADOQuery.Create(nil);
    serverConnect:=createServerConnect;
-   if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-     for i:=0 to Length(listOperators)-1 do begin
-
-        if Active then Active:=False;
-
-        if listOperators[i].sip_number<>'' then begin
-
-            SQL.Clear;
-            SQL.Add('select phone from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and sip = '+#39+listOperators[i].sip_number+#39+' and answered=''1'' and hash is null limit 1');
-            Active:=True;
-
-            if Fields[0].Value = null then listOperators[i].phone:=''
-            else listOperators[i].phone:=VarToStr(Fields[0].Value);
-
-          Next;
-        end;
-     end;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+
+       for i:=0 to Length(listOperators)-1 do begin
+
+          if Active then Active:=False;
+
+          if listOperators[i].sip_number<>'' then begin
+
+              SQL.Clear;
+              SQL.Add('select phone from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and sip = '+#39+listOperators[i].sip_number+#39+' and answered=''1'' and hash is null limit 1');
+              Active:=True;
+
+              if Fields[0].Value = null then listOperators[i].phone:=''
+              else listOperators[i].phone:=VarToStr(Fields[0].Value);
+
+            Next;
+          end;
+       end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
  end;
 
 
@@ -818,54 +863,61 @@ end;
 
    ado:=TADOQuery.Create(nil);
    serverConnect:=createServerConnect;
-   if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-     for i:=0 to Length(listOperators)-1 do begin
-       tempQueue:='';
-
-        if Active then Active:=False;
-
-        if listOperators[i].sip_number<>'' then begin
-          oldQueue:=listOperators[i].queue;
-
-          SQL.Clear;
-          SQL.Add('select count(id) from operators_queue where sip = '+#39+listOperators[i].sip_number+#39);
-          Active:=True;
-
-          countQueue:=Fields[0].Value;
-
-          if countQueue=0 then begin
-            listOperators[i].queue:='';
-            Continue;
-          end;
-
-          // найдем все очереди
-          SQL.Clear;
-          SQL.Add('select queue from operators_queue where sip = '+#39+listOperators[i].sip_number+#39);
-          Active:=True;
-
-
-          for j:=0 to countQueue-1 do begin
-
-            if Fields[0].Value <> null then begin
-               if tempQueue='' then tempQueue:=VarToStr(Fields[0].Value)
-               else tempQueue:=tempQueue+' и '+VarToStr(Fields[0].Value);
-            end;
-            Next;
-          end;
-
-          if oldQueue<>tempQueue then listOperators[i].queue:=tempQueue;
-
-        end;
-     end;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+
+       for i:=0 to Length(listOperators)-1 do begin
+         tempQueue:='';
+
+          if Active then Active:=False;
+
+          if listOperators[i].sip_number<>'' then begin
+            oldQueue:=listOperators[i].queue;
+
+            SQL.Clear;
+            SQL.Add('select count(id) from operators_queue where sip = '+#39+listOperators[i].sip_number+#39);
+            Active:=True;
+
+            countQueue:=Fields[0].Value;
+
+            if countQueue=0 then begin
+              listOperators[i].queue:='';
+              Continue;
+            end;
+
+            // найдем все очереди
+            SQL.Clear;
+            SQL.Add('select queue from operators_queue where sip = '+#39+listOperators[i].sip_number+#39);
+            Active:=True;
+
+
+            for j:=0 to countQueue-1 do begin
+
+              if Fields[0].Value <> null then begin
+                 if tempQueue='' then tempQueue:=VarToStr(Fields[0].Value)
+                 else tempQueue:=tempQueue+' и '+VarToStr(Fields[0].Value);
+              end;
+              Next;
+            end;
+
+            if oldQueue<>tempQueue then listOperators[i].queue:=tempQueue;
+
+          end;
+       end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
  end;
 
 
@@ -879,13 +931,17 @@ var
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
 
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
 
-   for i:=0 to Length(listOperators)-1 do begin
+     for i:=0 to Length(listOperators)-1 do begin
 
       if Active then Active:=False;
 
@@ -903,22 +959,26 @@ var
        except
           on E:Exception do
           begin
-           FreeAndNil(ado);
-           serverConnect.Close;
-           FreeAndNil(serverConnect);
+            FreeAndNil(ado);
+            if Assigned(serverConnect) then begin
+              serverConnect.Close;
+              FreeAndNil(serverConnect);
+            end;
            Exit;
           end;
        end;
 
-        Next;
-   end;
+       Next;
+     end;
 
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
   end;
-
-   FreeAndNil(ado);
-   serverConnect.Close;
-   FreeAndNil(serverConnect);
-
  end;
 
 
@@ -932,45 +992,57 @@ var
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-
-   for i:=0 to Length(listOperators)-1 do begin
-
-      if Active then Active:=False;
-
-        SQL.Clear;
-        SQL.Add('select date_time_start from operators_ohhold where date_time_stop is NULL and sip = '+#39+listOperators[i].sip_number+#39);
-        Active:=True;
-
-       try
-          if Fields[0].Value = Null then  begin
-            listOperators[i].isOnHold:=False;
-            listOperators[i].onHoldStartTime:='';
-          end
-          else begin
-            listOperators[i].isOnHold:=True;
-            listOperators[i].onHoldStartTime:=VarToStr(Fields[0].Value);
-          end;
-       except
-          on E:Exception do
-          begin
-            updateStatus;
-          end;
-       end;
-
-        Next;
-   end;
-
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-   FreeAndNil(ado);
-   serverConnect.Close;
-   FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
 
+     for i:=0 to Length(listOperators)-1 do begin
+
+        if Active then Active:=False;
+
+          SQL.Clear;
+          SQL.Add('select date_time_start from operators_ohhold where date_time_stop is NULL and sip = '+#39+listOperators[i].sip_number+#39);
+          Active:=True;
+
+         try
+            if Fields[0].Value = Null then  begin
+              listOperators[i].isOnHold:=False;
+              listOperators[i].onHoldStartTime:='';
+            end
+            else begin
+              listOperators[i].isOnHold:=True;
+              listOperators[i].onHoldStartTime:=VarToStr(Fields[0].Value);
+            end;
+         except
+            on E:Exception do
+            begin
+              FreeAndNil(ado);
+              if Assigned(serverConnect) then begin
+                serverConnect.Close;
+                FreeAndNil(serverConnect);
+              end;
+
+              updateStatus;
+            end;
+         end;
+
+          Next;
+     end;
+
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
  end;
 
 
@@ -985,46 +1057,58 @@ var
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-
-   for i:=0 to Length(listOperators)-1 do begin
-
-      if Active then Active:=False;
-
-      if listOperators[i].sip_number<>'' then begin
-
-         SQL.Clear;
-         SQL.Add('select talk_time from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and sip = '+#39+listOperators[i].sip_number+#39+' and answered=''1'' and hash is null limit 1');
-         Active:=True;
-
-         try
-            if Fields[0].Value = Null then  begin
-              listOperators[i].talk_time:='';
-            end
-            else begin
-              listOperators[i].talk_time:=VarToStr(Fields[0].Value);
-            end;
-         except
-            on E:Exception do
-            begin
-              updateTalkTime;
-            end;
-         end;
-
-        Next;
-      end;
-   end;
-
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-   FreeAndNil(ado);
-   serverConnect.Close;
-   FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
 
+     for i:=0 to Length(listOperators)-1 do begin
+
+        if Active then Active:=False;
+
+        if listOperators[i].sip_number<>'' then begin
+
+           SQL.Clear;
+           SQL.Add('select talk_time from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and sip = '+#39+listOperators[i].sip_number+#39+' and answered=''1'' and hash is null limit 1');
+           Active:=True;
+
+           try
+              if Fields[0].Value = Null then  begin
+                listOperators[i].talk_time:='';
+              end
+              else begin
+                listOperators[i].talk_time:=VarToStr(Fields[0].Value);
+              end;
+           except
+              on E:Exception do
+              begin
+                FreeAndNil(ado);
+                if Assigned(serverConnect) then begin
+                  serverConnect.Close;
+                  FreeAndNil(serverConnect);
+                end;
+
+                updateTalkTime;
+              end;
+           end;
+
+          Next;
+        end;
+     end;
+
+    end;
+  finally
+   FreeAndNil(ado);
+   if Assigned(serverConnect) then begin
+     serverConnect.Close;
+     FreeAndNil(serverConnect);
+   end;
+  end;
  end;
 
 
@@ -1039,49 +1123,55 @@ var
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-
-   for i:=0 to Length(listOperators)-1 do begin
-
-      if Active then Active:=False;
-
-      if listOperators[i].sip_number<>'' then begin
-
-          // нет смысла проверять т.к. его тупо нет в списке
-          if not isExistOperatorInLastActiveBD(listOperators[i].sip_number) then Continue;
-
-          SQL.Clear;
-          SQL.Add('select last_active from active_session where user_id = '+#39+IntToStr(GetListOperators_UserID(i))+#39+' order by last_active DESC limit 1');
-          Active:=True;
-
-         try
-            if Fields[0].Value <> Null then  begin
-              listOperators[i].online.date_online:= VarToDateTime(Fields[0].Value);
-
-              // так же проверим не забыл ли он выйти из дашаборда при выставлении статуса "домой"
-              if listOperators[i].status = eHome  then begin
-
-                if (Round((Now - listOperators[i].online.date_online) * 24 * 60) > cHIDETIME_ListSIPOperators) then begin
-                   listOperators[i].online.hide:=True;
-                end
-                else listOperators[i].online.hide:=False;
-              end;
-            end;
-         finally
-             Next;
-         end;
-      end;
-   end;
+  if not Assigned(serverConnect) then begin
+      FreeAndNil(ado);
+      Exit;
   end;
 
-   FreeAndNil(ado);
-   serverConnect.Close;
-   FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
 
+     for i:=0 to Length(listOperators)-1 do begin
+
+        if Active then Active:=False;
+
+        if listOperators[i].sip_number<>'' then begin
+
+            // нет смысла проверять т.к. его тупо нет в списке
+            if not isExistOperatorInLastActiveBD(listOperators[i].sip_number) then Continue;
+
+            SQL.Clear;
+            SQL.Add('select last_active from active_session where user_id = '+#39+IntToStr(GetListOperators_UserID(i))+#39+' order by last_active DESC limit 1');
+            Active:=True;
+
+           try
+              if Fields[0].Value <> Null then  begin
+                listOperators[i].online.date_online:= VarToDateTime(Fields[0].Value);
+
+                // так же проверим не забыл ли он выйти из дашаборда при выставлении статуса "домой"
+                if listOperators[i].status = eHome  then begin
+
+                  if (Round((Now - listOperators[i].online.date_online) * 24 * 60) > cHIDETIME_ListSIPOperators) then begin
+                     listOperators[i].online.hide:=True;
+                  end
+                  else listOperators[i].online.hide:=False;
+                end;
+              end;
+           finally
+               Next;
+           end;
+        end;
+     end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
  end;
 
 
@@ -1122,48 +1212,58 @@ procedure TActiveSIP.updateTalkTimeAll;
   // проверяем есть ли новые операторы
    ado:=TADOQuery.Create(nil);
    serverConnect:=createServerConnect;
-   if not Assigned(serverConnect) then Exit;
-
-   with ado do begin
-      ado.Connection:=serverConnect;
-      SQL.Clear;
-
-      if notViewGoHome = False then begin
-       SQL.Add('select count(distinct(sip)) from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and sip <> ''-1'' order by sip asc');
-
-       Active:=True;
-       if Fields[0].Value<>null then count_sip:=Fields[0].Value;
-      end
-      else begin
-
-       operatorsGoHome:=getListOperatorsGoHome;
-       if operatorsGoHome.Count=0 then begin
-         FreeAndNil(ado);
-         serverConnect.Close;
-         FreeAndNil(serverConnect);
-         Exit;
-       end;
-
-        if operatorsGoHome.Count<>0 then begin
-          operatorsGoHomeNow:='';
-          for i:=0 to operatorsGoHome.Count-1 do begin
-            if operatorsGoHomeNow='' then operatorsGoHomeNow:=#39+getUserSIP(StrToInt(operatorsGoHome[i]))+#39
-            else operatorsGoHomeNow:=operatorsGoHomeNow+','+#39+getUserSIP(StrToInt(operatorsGoHome[i]))+#39;
-          end;
-
-          SQL.Add('select count(distinct(sip)) from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and sip not IN ('+operatorsGoHomeNow+') and sip <> ''-1'' order by sip asc');
-          if operatorsGoHome<>nil then FreeAndNil(operatorsGoHome);
-
-          Active:=True;
-          if Fields[0].Value<>null then count_sip:=Fields[0].Value;
-        end;
-      end;
-
+   if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
    end;
 
-   FreeAndNil(ado);
-   serverConnect.Close;
-   FreeAndNil(serverConnect);
+   try
+     with ado do begin
+        ado.Connection:=serverConnect;
+        SQL.Clear;
+
+        if notViewGoHome = False then begin
+         SQL.Add('select count(distinct(sip)) from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and sip <> ''-1'' order by sip asc');
+
+         Active:=True;
+         if Fields[0].Value<>null then count_sip:=Fields[0].Value;
+        end
+        else begin
+
+         operatorsGoHome:=getListOperatorsGoHome;
+         if operatorsGoHome.Count=0 then begin
+            FreeAndNil(ado);
+            if Assigned(serverConnect) then begin
+              serverConnect.Close;
+              FreeAndNil(serverConnect);
+            end;
+
+           Exit;
+         end;
+
+          if operatorsGoHome.Count<>0 then begin
+            operatorsGoHomeNow:='';
+            for i:=0 to operatorsGoHome.Count-1 do begin
+              if operatorsGoHomeNow='' then operatorsGoHomeNow:=#39+getUserSIP(StrToInt(operatorsGoHome[i]))+#39
+              else operatorsGoHomeNow:=operatorsGoHomeNow+','+#39+getUserSIP(StrToInt(operatorsGoHome[i]))+#39;
+            end;
+
+            SQL.Add('select count(distinct(sip)) from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and sip not IN ('+operatorsGoHomeNow+') and sip <> ''-1'' order by sip asc');
+            if operatorsGoHome<>nil then FreeAndNil(operatorsGoHome);
+
+            Active:=True;
+            if Fields[0].Value<>null then count_sip:=Fields[0].Value;
+          end;
+        end;
+
+     end;
+   finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+   end;
 
    if count_sip <> getCountSipOperators then begin
      if notViewGoHome=False then generateSipOperators(True) // обновить список с активными операторами
@@ -1210,22 +1310,28 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select count(last_active) from active_session where user_id = (select user_id from operators where sip = '+#39+InSip+#39+')' );
-    Active:=True;
-
-    if Fields[0].Value <> 0 then Result:=True;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
 
+      SQL.Clear;
+      SQL.Add('select count(last_active) from active_session where user_id = (select user_id from operators where sip = '+#39+InSip+#39+')' );
+      Active:=True;
+
+      if Fields[0].Value <> 0 then Result:=True;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 

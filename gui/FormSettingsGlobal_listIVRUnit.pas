@@ -47,33 +47,43 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-    SQL.Add('delete from settings where id='+#39+InID+#39);
-
-    try
-        ExecSQL;
-    except
-        on E:EIdException do begin
-           Screen.Cursor:=crDefault;
-           CodOshibki:=e.Message;
-           Result:='ОШИБКА! '+CodOshibki;
-           FreeAndNil(ado);
-           serverConnect.Close;
-           FreeAndNil(serverConnect);
-
-           Exit;
-        end;
-    end;
-
+  if not Assigned(serverConnect) then begin
+     Screen.Cursor:=crDefault;
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('delete from settings where id='+#39+InID+#39);
+
+      try
+          ExecSQL;
+      except
+          on E:EIdException do begin
+             Screen.Cursor:=crDefault;
+             CodOshibki:=e.Message;
+             Result:='ОШИБКА! '+CodOshibki;
+             FreeAndNil(ado);
+             if Assigned(serverConnect) then begin
+               serverConnect.Close;
+               FreeAndNil(serverConnect);
+             end;
+
+             Exit;
+          end;
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+
   Screen.Cursor:=crDefault;
   Result:='OK';
 end;
@@ -89,46 +99,54 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select count(id) from settings');
-
-    Active:=True;
-
-    countList:=Fields[0].Value;
+  if not Assigned(serverConnect) then begin
+     Screen.Cursor:=crDefault;
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  with FormSettingsGlobal_listIVR.listSG_List do begin
-   RowCount:=1;      // типа очистка текущего списка
-   RowCount:=countList;
-
+  try
     with ado do begin
+      ado.Connection:=serverConnect;
 
       SQL.Clear;
-      SQL.Add('select * from settings order by date_time DESC');
+      SQL.Add('select count(id) from settings');
 
       Active:=True;
 
-       for i:=0 to countList-1 do begin
-         Cells[0,i]:=Fields[0].Value;  // id
-         Cells[1,i]:=Fields[3].Value;  // дата добавление
-         Cells[2,i]:=Fields[1].Value;  // 5000
-         Cells[3,i]:=Fields[2].Value;  // 5050
+      countList:=Fields[0].Value;
+    end;
 
-         Next;
-       end;
+    with FormSettingsGlobal_listIVR.listSG_List do begin
+     RowCount:=1;      // типа очистка текущего списка
+     RowCount:=countList;
 
-       FormSettingsGlobal_listIVR.Caption:='История корректировок: '+IntToStr(countList);
+      with ado do begin
+
+        SQL.Clear;
+        SQL.Add('select * from settings order by date_time DESC');
+
+        Active:=True;
+
+         for i:=0 to countList-1 do begin
+           Cells[0,i]:=Fields[0].Value;  // id
+           Cells[1,i]:=Fields[3].Value;  // дата добавление
+           Cells[2,i]:=Fields[1].Value;  // 5000
+           Cells[3,i]:=Fields[2].Value;  // 5050
+
+           Next;
+         end;
+
+         FormSettingsGlobal_listIVR.Caption:='История корректировок: '+IntToStr(countList);
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
     end;
   end;
-
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
 
   Screen.Cursor:=crDefault;
 end;

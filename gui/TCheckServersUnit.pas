@@ -146,12 +146,11 @@ var
 begin
    ado:=TADOQuery.Create(nil);
    serverConnect:=createServerConnect;
-   if not Assigned(serverConnect) then
-   begin
+  if not Assigned(serverConnect) then begin
      FreeAndNil(ado);
-     FreeAndNil(serverConnect);
      Exit;
-   end;
+  end;
+
 
   try
     with ado do begin
@@ -168,8 +167,10 @@ begin
     end;
   finally
     FreeAndNil(ado);
-    serverConnect.Close;
-    FreeAndNil(serverConnect);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
   end;
 end;
 
@@ -183,72 +184,79 @@ var
 begin
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
 
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select count(id) from server_ik');
-
-    try
-        Active:=True;
-        countServers:=Fields[0].Value;
-    except
-        on E:EIdException do begin
-           FreeAndNil(ado);
-           serverConnect.Close;
-           FreeAndNil(serverConnect);
-
-           Exit;
-        end;
-    end;
-
-
-    if countServers>=1 then begin
-
-      //создадиим структуру
-      SetLength(listServers,countServers);
-      for i:=0 to countServers-1 do listServers[i]:=TStructServers.Create;
-
-      count:=countServers;
-
-      if Active then ACtive:=false;
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
 
       SQL.Clear;
-      SQL.Add('select id,ip,address,alias from server_ik');
+      SQL.Add('select count(id) from server_ik');
 
       try
-       Active:=True;
+          Active:=True;
+          countServers:=Fields[0].Value;
       except
           on E:EIdException do begin
-
              FreeAndNil(ado);
-             serverConnect.Close;
-             FreeAndNil(serverConnect);
-
+             if Assigned(serverConnect) then begin
+               serverConnect.Close;
+               FreeAndNil(serverConnect);
+             end;
              Exit;
           end;
       end;
 
 
-       for i:=0 to countServers-1 do begin
-         listServers[i].id:=StrToInt(VarToStr(Fields[0].Value));
-         listServers[i].ip:=VarToStr(Fields[1].Value);
-         listServers[i].address:=VarToStr(Fields[2].Value);
-         listServers[i].alias:=VarToStr(Fields[3].Value);
-         listServers[i].countErrors:=0;
+      if countServers>=1 then begin
 
-         Next;
-       end;
+        //создадиим структуру
+        SetLength(listServers,countServers);
+        for i:=0 to countServers-1 do listServers[i]:=TStructServers.Create;
+
+        count:=countServers;
+
+        if Active then ACtive:=false;
+
+        SQL.Clear;
+        SQL.Add('select id,ip,address,alias from server_ik');
+
+        try
+         Active:=True;
+        except
+            on E:EIdException do begin
+              FreeAndNil(ado);
+              if Assigned(serverConnect) then begin
+                serverConnect.Close;
+                FreeAndNil(serverConnect);
+              end;
+
+              Exit;
+            end;
+        end;
+
+
+         for i:=0 to countServers-1 do begin
+           listServers[i].id:=StrToInt(VarToStr(Fields[0].Value));
+           listServers[i].ip:=VarToStr(Fields[1].Value);
+           listServers[i].address:=VarToStr(Fields[2].Value);
+           listServers[i].alias:=VarToStr(Fields[3].Value);
+           listServers[i].countErrors:=0;
+
+           Next;
+         end;
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
     end;
   end;
-
-
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
-
 end;
 
 

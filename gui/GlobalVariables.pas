@@ -20,7 +20,7 @@ var
   FOLDERPATH:string;
 
   // Текущая версия GUID   ctrl+shift+G (GUID)
-  GUID_VESRION    :string = '11FC1DF8';
+  GUID_VESRION    :string = 'DC0B7341';
 
   // exe родителя
   DASHBOARD_EXE    :string = 'dashboard.exe';

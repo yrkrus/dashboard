@@ -58,47 +58,57 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-
-    case InTypePanel_Server of
-      server_add:begin
-        SQL.Add('insert into server_ik (ip,address,alias) values ('+#39+InIP+#39+','+#39+InAddr+#39+','+#39+InAlias+#39+')');
-      end;
-      server_delete:begin
-        SQL.Add('delete from server_ik where ip='+#39+InIP+#39+' and address='+#39+InAddr+#39+' and alias = '+#39+InAlias+#39);
-      end;
-      server_edit: begin
-         SQL.Add('update server_ik set ip = '+#39+InIP+#39
-                                            +', address = '+#39+InAddr+#39
-                                            +', alias = '+#39+InAlias+#39
-                                            +' where id = '+#39+FormServerIKEdit.p_editID+#39);
-      end;
-    end;
-
-    try
-        ExecSQL;
-    except
-        on E:EIdException do begin
-           Screen.Cursor:=crDefault;
-           CodOshibki:=e.Message;
-           Result:='Œÿ»¡ ¿! '+CodOshibki;
-           FreeAndNil(ado);
-           serverConnect.Close;
-           FreeAndNil(serverConnect);
-
-           Exit;
-        end;
-    end;
-
+  if not Assigned(serverConnect) then begin
+     Screen.Cursor:=crDefault;
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+
+      case InTypePanel_Server of
+        server_add:begin
+          SQL.Add('insert into server_ik (ip,address,alias) values ('+#39+InIP+#39+','+#39+InAddr+#39+','+#39+InAlias+#39+')');
+        end;
+        server_delete:begin
+          SQL.Add('delete from server_ik where ip='+#39+InIP+#39+' and address='+#39+InAddr+#39+' and alias = '+#39+InAlias+#39);
+        end;
+        server_edit: begin
+           SQL.Add('update server_ik set ip = '+#39+InIP+#39
+                                              +', address = '+#39+InAddr+#39
+                                              +', alias = '+#39+InAlias+#39
+                                              +' where id = '+#39+FormServerIKEdit.p_editID+#39);
+        end;
+      end;
+
+      try
+          ExecSQL;
+      except
+          on E:EIdException do begin
+             Screen.Cursor:=crDefault;
+             CodOshibki:=e.Message;
+             Result:='Œÿ»¡ ¿! '+CodOshibki;
+             FreeAndNil(ado);
+             if Assigned(serverConnect) then begin
+               serverConnect.Close;
+               FreeAndNil(serverConnect);
+             end;
+             Exit;
+          end;
+      end;
+
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+
   Screen.Cursor:=crDefault;
   Result:='OK';
 end;

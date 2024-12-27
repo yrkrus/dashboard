@@ -235,24 +235,30 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then  Exit;
-
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-    SQL.Add('select count(id) from ivr where to_queue=''0'' and date_time > '+#39+GetCurrentDateTimeDec(cTimeResponse)+#39+' and id='+#39+IntToStr(In_m_id)+#39);
-
-    Active:=True;
-
-    if Fields[0].Value<>null then begin
-     if StrToInt(VarToStr(Fields[0].Value)) <> 0 then Result:=True;
-    end;
+  if not Assigned(serverConnect) then begin
+    FreeAndNil(ado);
+    Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  if Assigned(serverConnect) then serverConnect.Free;
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select count(id) from ivr where to_queue=''0'' and date_time > '+#39+GetCurrentDateTimeDec(cTimeResponse)+#39+' and id='+#39+IntToStr(In_m_id)+#39);
+
+      Active:=True;
+
+      if Fields[0].Value<>null then begin
+       if StrToInt(VarToStr(Fields[0].Value)) <> 0 then Result:=True;
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
  // проверка ушел ли у нас в очередь звонок
@@ -323,95 +329,102 @@ end;
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-    SQL.Add('select count(phone) from ivr where to_queue=''0'' and date_time > '+#39+GetCurrentDateTimeDec(cTimeResponse)+#39);
-
-
-    Active:=True;
-    if Fields[0].Value<>null then countIVR:=Fields[0].Value;
-
-    try
-      Active:=True;
-    except
-        on E:EIdException do begin
-           FreeAndNil(ado);
-           serverConnect.Close;
-           FreeAndNil(serverConnect);
-
-           Exit;
-        end;
-    end;
-
-     if countIVR>=1 then begin
-
-        SQL.Clear;
-        SQL.Add('select id,phone,waiting_time,trunk from ivr where to_queue=''0'' and  date_time > '+#39+GetCurrentDateTimeDec(cTimeResponse)+#39);
-
-        Active:=True;
-
-        for i:=0 to countIVR-1 do begin
-
-          try
-            if (Fields[0].Value = null) or
-               (Fields[1].Value = null) or
-               (Fields[2].Value = null) or
-               (Fields[3].Value = null)
-            then begin
-             Next;
-             Continue;
-            end;
-
-
-            // проверим не ушел ли у нас в очередь звонок
-            CheckToQueuePhone;
-
-
-            // проверим есть ли такой id уже у нас
-            if isExistActive(StrToInt(VarToStr(Fields[0].Value))) then begin
-               currentIDStructIVR:=GetStructIVRID(StrToInt(VarToStr(Fields[0].Value)));
-
-               // проверим изменилось ли время
-               if isChangeWaitingTime(StrToInt(VarToStr(Fields[0].Value)),VarToStr(Fields[2].Value)) then begin
-                 // обновим время
-                 listActiveIVR[currentIDStructIVR].m_waiting_time_start:=VarToStr(Fields[2].Value);
-                 listActiveIVR[currentIDStructIVR].m_countNoChange:=0;
-               end
-               else begin // время не изменилось значит надо увеличить счетчик
-                 Inc(listActiveIVR[currentIDStructIVR].m_countNoChange);
-               end;
-
-            end
-            else begin
-              // найдем свободный ID
-              freeIDStructIVR:=GetLastFreeIDStructActiveIVR;
-
-               begin // тут первый запуск, чтобы были какие то данные которые будем проверять
-                listActiveIVR[freeIDStructIVR].m_id:=StrToInt(VarToStr(Fields[0].Value));
-                listActiveIVR[freeIDStructIVR].m_phone:=VarToStr(Fields[1].Value);
-                listActiveIVR[freeIDStructIVR].m_waiting_time_start:=VarToStr(Fields[2].Value);
-                listActiveIVR[freeIDStructIVR].m_trunk:=VarToStr(Fields[3].Value);
-               end;
-            end;
-
-          finally
-             Next;
-          end;
-        end;
-     end else begin
-       // очищаем весь список
-       if Count<>0 then ClearActiveAll;
-     end;
-
-
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+      with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select count(phone) from ivr where to_queue=''0'' and date_time > '+#39+GetCurrentDateTimeDec(cTimeResponse)+#39);
+
+
+      Active:=True;
+      if Fields[0].Value<>null then countIVR:=Fields[0].Value;
+
+      try
+        Active:=True;
+      except
+          on E:EIdException do begin
+             FreeAndNil(ado);
+             if Assigned(serverConnect) then begin
+               serverConnect.Close;
+               FreeAndNil(serverConnect);
+             end;
+
+             Exit;
+          end;
+      end;
+
+       if countIVR>=1 then begin
+
+          SQL.Clear;
+          SQL.Add('select id,phone,waiting_time,trunk from ivr where to_queue=''0'' and  date_time > '+#39+GetCurrentDateTimeDec(cTimeResponse)+#39);
+
+          Active:=True;
+
+          for i:=0 to countIVR-1 do begin
+
+            try
+              if (Fields[0].Value = null) or
+                 (Fields[1].Value = null) or
+                 (Fields[2].Value = null) or
+                 (Fields[3].Value = null)
+              then begin
+               Next;
+               Continue;
+              end;
+
+
+              // проверим не ушел ли у нас в очередь звонок
+              CheckToQueuePhone;
+
+
+              // проверим есть ли такой id уже у нас
+              if isExistActive(StrToInt(VarToStr(Fields[0].Value))) then begin
+                 currentIDStructIVR:=GetStructIVRID(StrToInt(VarToStr(Fields[0].Value)));
+
+                 // проверим изменилось ли время
+                 if isChangeWaitingTime(StrToInt(VarToStr(Fields[0].Value)),VarToStr(Fields[2].Value)) then begin
+                   // обновим время
+                   listActiveIVR[currentIDStructIVR].m_waiting_time_start:=VarToStr(Fields[2].Value);
+                   listActiveIVR[currentIDStructIVR].m_countNoChange:=0;
+                 end
+                 else begin // время не изменилось значит надо увеличить счетчик
+                   Inc(listActiveIVR[currentIDStructIVR].m_countNoChange);
+                 end;
+
+              end
+              else begin
+                // найдем свободный ID
+                freeIDStructIVR:=GetLastFreeIDStructActiveIVR;
+
+                 begin // тут первый запуск, чтобы были какие то данные которые будем проверять
+                  listActiveIVR[freeIDStructIVR].m_id:=StrToInt(VarToStr(Fields[0].Value));
+                  listActiveIVR[freeIDStructIVR].m_phone:=VarToStr(Fields[1].Value);
+                  listActiveIVR[freeIDStructIVR].m_waiting_time_start:=VarToStr(Fields[2].Value);
+                  listActiveIVR[freeIDStructIVR].m_trunk:=VarToStr(Fields[3].Value);
+                 end;
+              end;
+
+            finally
+               Next;
+            end;
+          end;
+       end else begin
+         // очищаем весь список
+         if Count<>0 then ClearActiveAll;
+       end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
  end;
 
 

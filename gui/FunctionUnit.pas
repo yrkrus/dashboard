@@ -279,7 +279,11 @@ var
 begin
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
+  if not Assigned(serverConnect) then begin
+    FreeAndNil(ado);
+    Exit;
+  end;
+
 
    try
      with ado do begin
@@ -297,8 +301,10 @@ begin
         except
             on E:EIdException do begin
                FreeAndNil(ado);
-               serverConnect.Close;
-               FreeAndNil(serverConnect);
+               if Assigned(serverConnect) then begin
+                 serverConnect.Close;
+                 FreeAndNil(serverConnect);
+               end;
 
                Exit;
             end;
@@ -306,8 +312,10 @@ begin
      end;
    finally
     FreeAndNil(ado);
-    serverConnect.Close;
-    FreeAndNil(serverConnect);
+    if Assigned(serverConnect) then begin
+     serverConnect.Close;
+     FreeAndNil(serverConnect);
+    end;
    end;
 end;
 
@@ -404,20 +412,27 @@ var
 begin
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-    SQL.Add('select id from role where name_role = '+#39+InRole+#39);
-
-    Active:=True;
-    Result:=StrToInt(VarToStr(Fields[0].Value));
+  if not Assigned(serverConnect) then begin
+    FreeAndNil(ado);
+    Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select id from role where name_role = '+#39+InRole+#39);
+
+      Active:=True;
+      Result:=StrToInt(VarToStr(Fields[0].Value));
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+     serverConnect.Close;
+     FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 // создание потоков
@@ -553,8 +568,6 @@ begin
     ANSWEREDQUEUE_thread.Resume;
     if SharedCurrentUserLogon.GetIsAccessLocalChat then ONLINECHAT_thread.Resume;
   end;
-
-
 end;
 
 
@@ -649,22 +662,30 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-    SQL.Add(InStroka);
-    Active:=True;
-    if Fields[0].Value<>null then begin
-     if Fields[0].Value<=0 then Result:=0
-     else Result:=StrToInt(Fields[0].Value);
-    end;
+  if not Assigned(serverConnect) then begin
+    FreeAndNil(ado);
+    Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add(InStroka);
+      Active:=True;
+      if Fields[0].Value<>null then begin
+       if Fields[0].Value<=0 then Result:=0
+       else Result:=StrToInt(Fields[0].Value);
+      end;
+    end;
+  finally
+   FreeAndNil(ado);
+   if Assigned(serverConnect) then begin
+     serverConnect.Close;
+     FreeAndNil(serverConnect);
+   end;
+  end;
+
 end;
 
 
@@ -1060,23 +1081,30 @@ var
   ado:TADOQuery;
   serverConnect:TADOConnection;
 begin
-    ado:=TADOQuery.Create(nil);
-    serverConnect:=createServerConnect;
-    if not Assigned(serverConnect) then Exit;
+   ado:=TADOQuery.Create(nil);
+   serverConnect:=createServerConnect;
+   if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+   end;
 
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-    SQL.Add('select count(phone) from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and sip = '+#39+InSipOperator+#39+' and answered = ''1'' and fail = ''0'' and hash is not null' );
-    Active:=True;
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select count(phone) from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and sip = '+#39+InSipOperator+#39+' and answered = ''1'' and fail = ''0'' and hash is not null' );
+      Active:=True;
 
-    if Fields[0].Value<>null then Result:=Fields[0].Value
-    else Result:=0;
+      if Fields[0].Value<>null then Result:=Fields[0].Value
+      else Result:=0;
+    end;
+  finally
+   FreeAndNil(ado);
+   if Assigned(serverConnect) then begin
+     serverConnect.Close;
+     FreeAndNil(serverConnect);
+   end;
   end;
-
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
 end;
 
 
@@ -1086,10 +1114,14 @@ var
   ado:TADOQuery;
   serverConnect:TADOConnection;
 begin
-    ado:=TADOQuery.Create(nil);
-    serverConnect:=createServerConnect;
-    if not Assigned(serverConnect) then Exit;
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+    FreeAndNil(ado);
+    Exit;
+  end;
 
+ try
   with ado do begin
     ado.Connection:=serverConnect;
     SQL.Clear;
@@ -1099,10 +1131,13 @@ begin
     if Fields[0].Value<>null then Result:=Fields[0].Value
     else Result:=0;
   end;
-
+ finally
   FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  if Assigned(serverConnect) then begin
+     serverConnect.Close;
+     FreeAndNil(serverConnect);
+  end;
+ end;
 end;
 
 
@@ -1117,27 +1152,32 @@ begin
    Result:=TStringList.Create;
    ado:=TADOQuery.Create(nil);
    serverConnect:=createServerConnect;
-   if not Assigned(serverConnect) then Exit;
-
+   if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+   end;
     // кол-во звонков
     countTalk:=getCountAnsweredCall(InSipOperator);
 
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-    SQL.Add('select talk_time from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and sip = '+#39+InSipOperator+#39+' and answered = ''1'' and fail = ''0''and hash is not null' );
-    Active:=True;
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select talk_time from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and sip = '+#39+InSipOperator+#39+' and answered = ''1'' and fail = ''0''and hash is not null' );
+      Active:=True;
 
-    for i:=0 to countTalk-1 do begin
-     Result.Add(Fields[0].Value);
-     Next;
+      for i:=0 to countTalk-1 do begin
+       Result.Add(Fields[0].Value);
+       Next;
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+       serverConnect.Close;
+       FreeAndNil(serverConnect);
     end;
   end;
-
-
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
 end;
 
 // создание интерфейса пропущенные
@@ -1219,24 +1259,32 @@ var
  ado:TADOQuery;
  serverConnect: TADOConnection;
 begin
+  Result:='null';
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then  Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select version,bild from version_update where guid = '+#39+GUID+#39+' and programm = '+#39+EnumProgrammToStr(programm)+#39+' order by id DESC limit 1');
-    Active:=True;
-
-    Result:='v.'+Fields[0].Value+' bild '+Fields[1].Value;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  if Assigned(serverConnect) then  serverConnect.Free;
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+
+      SQL.Clear;
+      SQL.Add('select version,bild from version_update where guid = '+#39+GUID+#39+' and programm = '+#39+EnumProgrammToStr(programm)+#39+' order by id DESC limit 1');
+      Active:=True;
+
+      if (Fields[0].Value<>null) and (Fields[1].Value<>null) then  Result:='v.'+Fields[0].Value+' bild '+Fields[1].Value;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 
 end;
 
@@ -1248,70 +1296,74 @@ var
  serverConnect:TADOConnection;
  countVersion,i:Integer;
 begin
-
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select count(id) from version_update where programm = '+#39+EnumProgrammToStr(programm)+#39);
-    Active:=True;
-
-    countVersion:=Fields[0].Value;
-
-    SQL.Clear;
-    SQL.Add('select date_update,version,update_text from version_update where programm = '+#39+EnumProgrammToStr(programm)+#39+' order by date_update DESC');
-    Active:=True;
-
-    with FormAbout do begin
-       case programm of
-          eGUI: begin
-            REHistory_GUI.Clear;
-
-            for i:=0 to countVersion-1 do begin
-                 with REHistory_GUI do begin
-                  Lines.Add('версия '+VarToStr(Fields[1].Value) + ' ('+VarToStr(Fields[0].Value)+')');
-                  Lines.Add(Fields[2].Value);
-                  Lines.Add('');
-                  Lines.Add('');
-                  Lines.Add('');
-                 end;
-               Next;
-            end;
-
-            REHistory_GUI.SelStart:=0;
-            STInfoVersionGUI.Caption:=getVersion(GUID_VESRION,programm);
-          end;
-          eCHAT: begin
-
-            REHistory_CHAT.Clear;
-
-            for i:=0 to countVersion-1 do begin
-                 with REHistory_CHAT do begin
-                  Lines.Add('версия '+VarToStr(Fields[1].Value) + ' ('+VarToStr(Fields[0].Value)+')');
-                  Lines.Add(Fields[2].Value);
-                  Lines.Add('');
-                  Lines.Add('');
-                  Lines.Add('');
-                 end;
-               Next;
-            end;
-
-            REHistory_CHAT.SelStart:=0;
-            STInfoVersionCHAT.Caption:=getVersion(GUID_VESRION,programm);
-          end;
-       end;
-    end;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
+   try
+     with ado do begin
+        ado.Connection:=serverConnect;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+        SQL.Clear;
+        SQL.Add('select count(id) from version_update where programm = '+#39+EnumProgrammToStr(programm)+#39);
+        Active:=True;
 
+        countVersion:=Fields[0].Value;
+
+        SQL.Clear;
+        SQL.Add('select date_update,version,update_text from version_update where programm = '+#39+EnumProgrammToStr(programm)+#39+' order by date_update DESC');
+        Active:=True;
+
+        with FormAbout do begin
+           case programm of
+              eGUI: begin
+                REHistory_GUI.Clear;
+
+                for i:=0 to countVersion-1 do begin
+                     with REHistory_GUI do begin
+                      Lines.Add('версия '+VarToStr(Fields[1].Value) + ' ('+VarToStr(Fields[0].Value)+')');
+                      Lines.Add(Fields[2].Value);
+                      Lines.Add('');
+                      Lines.Add('');
+                      Lines.Add('');
+                     end;
+                   Next;
+                end;
+
+                REHistory_GUI.SelStart:=0;
+                STInfoVersionGUI.Caption:=getVersion(GUID_VESRION,programm);
+              end;
+              eCHAT: begin
+
+                REHistory_CHAT.Clear;
+
+                for i:=0 to countVersion-1 do begin
+                     with REHistory_CHAT do begin
+                      Lines.Add('версия '+VarToStr(Fields[1].Value) + ' ('+VarToStr(Fields[0].Value)+')');
+                      Lines.Add(Fields[2].Value);
+                      Lines.Add('');
+                      Lines.Add('');
+                      Lines.Add('');
+                     end;
+                   Next;
+                end;
+
+                REHistory_CHAT.SelStart:=0;
+                STInfoVersionCHAT.Caption:=getVersion(GUID_VESRION,programm);
+              end;
+           end;
+        end;
+     end;
+   finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+   end;
 end;
 
 
@@ -1356,127 +1408,136 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
 
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-    SQL.Add('select count(id) from server_ik');
-
-    try
-        Active:=True;
-        countServers:=Fields[0].Value;
-    except
-        on E:EIdException do begin
-           FreeAndNil(ado);
-           serverConnect.Close;
-           FreeAndNil(serverConnect);
-
-           Exit;
-        end;
-    end;
-
-    if countServers>=1 then begin
-
-      // выставляем размерность
-      SetLength(lblStatusServer,countServers);
-      SetLength(lblAddressServer,countServers);
-      SetLength(lblIP,countServers);
-
+  try
+   with ado do begin
+      ado.Connection:=serverConnect;
       SQL.Clear;
-      SQL.Add('select id,ip,address from server_ik order by ip ASC');
+      SQL.Add('select count(id) from server_ik');
 
       try
-        Active:=True;
+          Active:=True;
+          countServers:=Fields[0].Value;
       except
           on E:EIdException do begin
-             CodOshibki:=e.Message;
-             FreeAndNil(ado);
-             serverConnect.Close;
-             FreeAndNil(serverConnect);
-
+            FreeAndNil(ado);
+            if Assigned(serverConnect) then begin
+              serverConnect.Close;
+              FreeAndNil(serverConnect);
+            end;
              Exit;
           end;
       end;
 
+      if countServers>=1 then begin
 
-      for i:=0 to countServers-1 do begin
+        // выставляем размерность
+        SetLength(lblStatusServer,countServers);
+        SetLength(lblAddressServer,countServers);
+        SetLength(lblIP,countServers);
 
-        // статус
-        begin
-          nameIP:=VarToStr(Fields[0].Value);
+        SQL.Clear;
+        SQL.Add('select id,ip,address from server_ik order by ip ASC');
 
-          lblStatusServer[i]:=TLabel.Create(FormServerIKCheck);
-          lblStatusServer[i].Name:='lbl_'+nameIP;
-          lblStatusServer[i].Tag:=1;
-          lblStatusServer[i].Caption:='проверка';
-          lblStatusServer[i].Left:=8;
+        try
+          Active:=True;
+        except
+            on E:EIdException do begin
+               CodOshibki:=e.Message;
+               FreeAndNil(ado);
+               if Assigned(serverConnect) then begin
+                 serverConnect.Close;
+                 FreeAndNil(serverConnect);
+               end;
 
-          if i=0 then lblStatusServer[i].Top:=cTOPSTART
-          else lblStatusServer[i].Top:=cTOPSTART+(Round(cTOPSTART/2)*i);
-
-          lblStatusServer[i].Font.Name:='Tahoma';
-          lblStatusServer[i].Font.Size:=8;
-          lblStatusServer[i].Font.Style:=[fsBold];
-          lblStatusServer[i].AutoSize:=False;
-          lblStatusServer[i].Width:=78;
-          lblStatusServer[i].Height:=13;
-          lblStatusServer[i].Alignment:=taCenter;
-          lblStatusServer[i].Parent:=FormServerIKCheck;
+               Exit;
+            end;
         end;
 
-        // адрес
-        begin
-          lblAddressServer[i]:=TLabel.Create(FormServerIKCheck);
-          lblAddressServer[i].Name:='lblAddr_'+nameIP;
-          lblAddressServer[i].Tag:=1;
-          lblAddressServer[i].Caption:=VarToStr(Fields[2].Value);
-          lblAddressServer[i].Left:=90;
 
-          if i=0 then lblAddressServer[i].Top:=cTOPSTART
-          else lblAddressServer[i].Top:=cTOPSTART+(Round(cTOPSTART/2)*i);
+        for i:=0 to countServers-1 do begin
 
-          lblAddressServer[i].Font.Name:='Tahoma';
-          lblAddressServer[i].Font.Size:=8;
-          lblAddressServer[i].AutoSize:=False;
-          lblAddressServer[i].Width:=333;
-          lblAddressServer[i].Height:=13;
-          lblAddressServer[i].Alignment:=taCenter;
-          lblAddressServer[i].Parent:=FormServerIKCheck;
+          // статус
+          begin
+            nameIP:=VarToStr(Fields[0].Value);
+
+            lblStatusServer[i]:=TLabel.Create(FormServerIKCheck);
+            lblStatusServer[i].Name:='lbl_'+nameIP;
+            lblStatusServer[i].Tag:=1;
+            lblStatusServer[i].Caption:='проверка';
+            lblStatusServer[i].Left:=8;
+
+            if i=0 then lblStatusServer[i].Top:=cTOPSTART
+            else lblStatusServer[i].Top:=cTOPSTART+(Round(cTOPSTART/2)*i);
+
+            lblStatusServer[i].Font.Name:='Tahoma';
+            lblStatusServer[i].Font.Size:=8;
+            lblStatusServer[i].Font.Style:=[fsBold];
+            lblStatusServer[i].AutoSize:=False;
+            lblStatusServer[i].Width:=78;
+            lblStatusServer[i].Height:=13;
+            lblStatusServer[i].Alignment:=taCenter;
+            lblStatusServer[i].Parent:=FormServerIKCheck;
+          end;
+
+          // адрес
+          begin
+            lblAddressServer[i]:=TLabel.Create(FormServerIKCheck);
+            lblAddressServer[i].Name:='lblAddr_'+nameIP;
+            lblAddressServer[i].Tag:=1;
+            lblAddressServer[i].Caption:=VarToStr(Fields[2].Value);
+            lblAddressServer[i].Left:=90;
+
+            if i=0 then lblAddressServer[i].Top:=cTOPSTART
+            else lblAddressServer[i].Top:=cTOPSTART+(Round(cTOPSTART/2)*i);
+
+            lblAddressServer[i].Font.Name:='Tahoma';
+            lblAddressServer[i].Font.Size:=8;
+            lblAddressServer[i].AutoSize:=False;
+            lblAddressServer[i].Width:=333;
+            lblAddressServer[i].Height:=13;
+            lblAddressServer[i].Alignment:=taCenter;
+            lblAddressServer[i].Parent:=FormServerIKCheck;
+          end;
+
+          // IP
+          begin
+            lblIP[i]:=TLabel.Create(FormServerIKCheck);
+            lblIP[i].Name:='lblIP_'+nameIP;
+            lblIP[i].Tag:=1;
+            lblIP[i].Caption:=VarToStr(Fields[1].Value);
+            lblIP[i].Left:=427;
+
+            if i=0 then lblIP[i].Top:=cTOPSTART
+            else lblIP[i].Top:=cTOPSTART+(Round(cTOPSTART/2)*i);
+
+            lblIP[i].Font.Name:='Tahoma';
+            lblIP[i].Font.Size:=8;
+            lblIP[i].AutoSize:=False;
+            lblIP[i].Width:=144;
+            lblIP[i].Height:=13;
+            lblIP[i].Alignment:=taCenter;
+            lblIP[i].Parent:=FormServerIKCheck;
+          end;
+
+          Next;
         end;
-
-        // IP
-        begin
-          lblIP[i]:=TLabel.Create(FormServerIKCheck);
-          lblIP[i].Name:='lblIP_'+nameIP;
-          lblIP[i].Tag:=1;
-          lblIP[i].Caption:=VarToStr(Fields[1].Value);
-          lblIP[i].Left:=427;
-
-          if i=0 then lblIP[i].Top:=cTOPSTART
-          else lblIP[i].Top:=cTOPSTART+(Round(cTOPSTART/2)*i);
-
-          lblIP[i].Font.Name:='Tahoma';
-          lblIP[i].Font.Size:=8;
-          lblIP[i].AutoSize:=False;
-          lblIP[i].Width:=144;
-          lblIP[i].Height:=13;
-          lblIP[i].Alignment:=taCenter;
-          lblIP[i].Parent:=FormServerIKCheck;
-        end;
-
-        Next;
       end;
+
+   end;
+
+   FormServerIKCheck.Caption:=FormServerIKCheck.Caption+' ('+IntToStr(countServers)+')';
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
     end;
-
   end;
-
-  FormServerIKCheck.Caption:=FormServerIKCheck.Caption+' ('+IntToStr(countServers)+')';
-
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
-
 end;
 
 // создание окна активных сессий
@@ -1505,263 +1566,272 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
 
+  try
   with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-    SQL.Add('select count(id) from active_session');
-
-    try
-        Active:=True;
-        countActive:=Fields[0].Value;
-    except
-        on E:EIdException do begin
-           
-           FreeAndNil(ado);
-           serverConnect.Close;
-           FreeAndNil(serverConnect);
-
-           Exit;
-        end;
-    end;
-
-    if countActive>=1 then begin
-
-      // выставляем размерность
-      SetLength(lblUSERID,countActive);
-      SetLength(lblROLE,countActive);
-      SetLength(lblUSERNAME,countActive);
-      SetLength(lblPC,countActive);
-      SetLength(lblIP,countActive);
-      SetLength(lblONLINE,countActive);
-      SetLength(lblSTATUS,countActive);
-      SetLength(btnCLOSE_SESSION,countActive);
-      SetLength(btnCLOSE_QUEUE,countActive);
-
+      ado.Connection:=serverConnect;
       SQL.Clear;
-      // order by id ASC
-
-      SQL.Add('SELECT asession.user_id, r.name_role, CONCAT(u.familiya, '+#39' '+#39+', u.name) AS full_name, asession.pc, asession.ip, asession.last_active FROM active_session AS asession JOIN users AS u ON asession.user_id = u.id JOIN role AS r ON u.role = r.id');
+      SQL.Add('select count(id) from active_session');
 
       try
-        Active:=True;
+          Active:=True;
+          countActive:=Fields[0].Value;
       except
           on E:EIdException do begin
-             CodOshibki:=e.Message;
              FreeAndNil(ado);
-             serverConnect.Close;
-             FreeAndNil(serverConnect);
+             if Assigned(serverConnect) then begin
+               serverConnect.Close;
+               FreeAndNil(serverConnect);
+             end;
 
              Exit;
           end;
       end;
 
+      if countActive>=1 then begin
 
-      for i:=0 to countActive-1 do begin
+        // выставляем размерность
+        SetLength(lblUSERID,countActive);
+        SetLength(lblROLE,countActive);
+        SetLength(lblUSERNAME,countActive);
+        SetLength(lblPC,countActive);
+        SetLength(lblIP,countActive);
+        SetLength(lblONLINE,countActive);
+        SetLength(lblSTATUS,countActive);
+        SetLength(btnCLOSE_SESSION,countActive);
+        SetLength(btnCLOSE_QUEUE,countActive);
 
-        // ID
-        begin
-          nameID:=VarToStr(Fields[0].Value);
+        SQL.Clear;
+        // order by id ASC
 
-          lblUSERID[i]:=TLabel.Create(FormActiveSession.PanelActive);
-          lblUSERID[i].Name:='lblUSERID_'+nameID;
-          lblUSERID[i].Tag:=1;
-          lblUSERID[i].Caption:=VarToStr(Fields[0].Value);
-          lblUSERID[i].Left:=6;
+        SQL.Add('SELECT asession.user_id, r.name_role, CONCAT(u.familiya, '+#39' '+#39+', u.name) AS full_name, asession.pc, asession.ip, asession.last_active FROM active_session AS asession JOIN users AS u ON asession.user_id = u.id JOIN role AS r ON u.role = r.id');
 
-          if i=0 then lblUSERID[i].Top:=cTOPSTART
-          else lblUSERID[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
+        try
+          Active:=True;
+        except
+            on E:EIdException do begin
+               CodOshibki:=e.Message;
+               FreeAndNil(ado);
+               if Assigned(serverConnect) then begin
+                  serverConnect.Close;
+                  FreeAndNil(serverConnect);
+               end;
 
-          lblUSERID[i].Font.Name:='Tahoma';
-          lblUSERID[i].Font.Size:=10;
-          lblUSERID[i].AutoSize:=False;
-          lblUSERID[i].Width:=79;
-          lblUSERID[i].Height:=16;
-          lblUSERID[i].Alignment:=taCenter;
-          lblUSERID[i].Parent:=FormActiveSession.PanelActive;
-
+               Exit;
+            end;
         end;
 
-        // роль
-        begin
-          lblROLE[i]:=TLabel.Create(FormActiveSession.PanelActive);
-          lblROLE[i].Name:='lblROLE_'+nameID;
-          lblROLE[i].Tag:=1;
-          lblROLE[i].Caption:=VarToStr(Fields[1].Value);
-          lblROLE[i].Left:=85;
 
-          if i=0 then lblROLE[i].Top:=cTOPSTART
-          else lblROLE[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
+        for i:=0 to countActive-1 do begin
 
-          lblROLE[i].Font.Name:='Tahoma';
-          lblROLE[i].Font.Size:=10;
-          lblROLE[i].AutoSize:=False;
-          lblROLE[i].Width:=150;
-          lblROLE[i].Height:=16;
-          lblROLE[i].Alignment:=taCenter;
-          lblROLE[i].Parent:=FormActiveSession.PanelActive;
-        end;
+          // ID
+          begin
+            nameID:=VarToStr(Fields[0].Value);
 
-        // пользователь
-        begin
-          lblUSERNAME[i]:=TLabel.Create(FormActiveSession.PanelActive);
-          lblUSERNAME[i].Name:='lblUSERNAME_'+nameID;
-          lblUSERNAME[i].Tag:=1;
-          lblUSERNAME[i].Caption:=VarToStr(Fields[2].Value);
-          lblUSERNAME[i].Left:=235;
+            lblUSERID[i]:=TLabel.Create(FormActiveSession.PanelActive);
+            lblUSERID[i].Name:='lblUSERID_'+nameID;
+            lblUSERID[i].Tag:=1;
+            lblUSERID[i].Caption:=VarToStr(Fields[0].Value);
+            lblUSERID[i].Left:=6;
 
-          if i=0 then lblUSERNAME[i].Top:=cTOPSTART
-          else lblUSERNAME[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
+            if i=0 then lblUSERID[i].Top:=cTOPSTART
+            else lblUSERID[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
 
-          lblUSERNAME[i].Font.Name:='Tahoma';
-          lblUSERNAME[i].Font.Size:=10;
-          lblUSERNAME[i].AutoSize:=False;
-          lblUSERNAME[i].Width:=168;
-          lblUSERNAME[i].Height:=16;
-          lblUSERNAME[i].Alignment:=taCenter;
-          lblUSERNAME[i].Parent:=FormActiveSession.PanelActive;
-        end;
+            lblUSERID[i].Font.Name:='Tahoma';
+            lblUSERID[i].Font.Size:=10;
+            lblUSERID[i].AutoSize:=False;
+            lblUSERID[i].Width:=79;
+            lblUSERID[i].Height:=16;
+            lblUSERID[i].Alignment:=taCenter;
+            lblUSERID[i].Parent:=FormActiveSession.PanelActive;
 
-        // компьютер
-        begin
-          lblPC[i]:=TLabel.Create(FormActiveSession.PanelActive);
-          lblPC[i].Name:='lblPC_'+nameID;
-          lblPC[i].Tag:=1;
-          lblPC[i].Caption:=VarToStr(Fields[3].Value);
-          lblPC[i].Left:=403;
-
-          if i=0 then lblPC[i].Top:=cTOPSTART
-          else lblPC[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
-
-          lblPC[i].Font.Name:='Tahoma';
-          lblPC[i].Font.Size:=10;
-          lblPC[i].AutoSize:=False;
-          lblPC[i].Width:=87;
-          lblPC[i].Height:=16;
-          lblPC[i].Alignment:=taCenter;
-          lblPC[i].Parent:=FormActiveSession.PanelActive;
-        end;
-
-        // IP
-        begin
-          lblIP[i]:=TLabel.Create(FormActiveSession.PanelActive);
-          lblIP[i].Name:='lblIP_'+nameID;
-          lblIP[i].Tag:=1;
-          lblIP[i].Caption:=VarToStr(Fields[4].Value);
-          lblIP[i].Left:=489;
-
-          if i=0 then lblIP[i].Top:=cTOPSTART
-          else lblIP[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
-
-          lblIP[i].Font.Name:='Tahoma';
-          lblIP[i].Font.Size:=10;
-          lblIP[i].AutoSize:=False;
-          lblIP[i].Width:=120;
-          lblIP[i].Height:=16;
-          lblIP[i].Alignment:=taCenter;
-          lblIP[i].Parent:=FormActiveSession.PanelActive;
-        end;
-
-        // Дата онлайна
-        begin
-          lblONLINE[i]:=TLabel.Create(FormActiveSession.PanelActive);
-          lblONLINE[i].Name:='lblONLINE_'+nameID;
-          lblONLINE[i].Tag:=1;
-          lblONLINE[i].Caption:=VarToStr(Fields[5].Value);
-          lblONLINE[i].Left:=609;
-
-          if i=0 then lblONLINE[i].Top:=cTOPSTART
-          else lblONLINE[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
-
-          lblONLINE[i].Font.Name:='Tahoma';
-          lblONLINE[i].Font.Size:=10;
-          lblONLINE[i].AutoSize:=False;
-          lblONLINE[i].Width:=121;
-          lblONLINE[i].Height:=16;
-          lblONLINE[i].Alignment:=taCenter;
-          lblONLINE[i].Parent:=FormActiveSession.PanelActive;
-        end;
-
-        // Статус
-        begin
-          lblSTATUS[i]:=TLabel.Create(FormActiveSession.PanelActive);
-          lblSTATUS[i].Name:='lblSTATUS_'+nameID;
-          lblSTATUS[i].Tag:=1;
-          lblSTATUS[i].Caption:='ONLINE!';
-          lblSTATUS[i].Left:=730;
-
-          if i=0 then lblSTATUS[i].Top:=cTOPSTART
-          else lblSTATUS[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
-
-          lblSTATUS[i].Font.Name:='Tahoma';
-          lblSTATUS[i].Font.Size:=10;
-          lblSTATUS[i].AutoSize:=False;
-          lblSTATUS[i].Width:=94;
-          lblSTATUS[i].Height:=16;
-          lblSTATUS[i].Alignment:=taCenter;
-          lblSTATUS[i].Parent:=FormActiveSession.PanelActive;
-        end;
-
-        // Закрыть сессию
-        begin
-          btnCLOSE_SESSION[i]:=TButton.Create(FormActiveSession.PanelActive);
-          btnCLOSE_SESSION[i].Name:='btnCLOSE_SESSION_'+nameID;
-          btnCLOSE_SESSION[i].Tag:=1;
-          btnCLOSE_SESSION[i].Caption:='Завершить сессию!';
-          btnCLOSE_SESSION[i].Left:=837;
-
-          if i=0 then btnCLOSE_SESSION[i].Top:=cTOPSTART - 5
-          else btnCLOSE_SESSION[i].Top:=cTOPSTART+(Round(cTOPSTART)*i)-5;
-
-          btnCLOSE_SESSION[i].Font.Name:='Tahoma';
-          btnCLOSE_SESSION[i].Font.Size:=10;
-          btnCLOSE_SESSION[i].Width:=126;
-          btnCLOSE_SESSION[i].Height:=25;
-          btnCLOSE_SESSION[i].Parent:=FormActiveSession.PanelActive;
-        end;
-
-         // Убрать из очереди
-        begin
-          btnCLOSE_QUEUE[i]:=TButton.Create(FormActiveSession.PanelActive);
-          btnCLOSE_QUEUE[i].Name:='btnCLOSE_QUEUE_'+nameID;
-          btnCLOSE_QUEUE[i].Tag:=1;
-          btnCLOSE_QUEUE[i].Caption:='Убрать из очереди';
-          btnCLOSE_QUEUE[i].Left:=971;
-
-          if i=0 then btnCLOSE_QUEUE[i].Top:=cTOPSTART - 5
-          else btnCLOSE_QUEUE[i].Top:=cTOPSTART+(Round(cTOPSTART)*i)-5;
-
-          btnCLOSE_QUEUE[i].Font.Name:='Tahoma';
-          btnCLOSE_QUEUE[i].Font.Size:=10;
-          btnCLOSE_QUEUE[i].Width:=126;
-          btnCLOSE_QUEUE[i].Height:=25;
-          btnCLOSE_QUEUE[i].Parent:=FormActiveSession.PanelActive;
-
-          if (AnsiPos('Оператор',VarToStr(Fields[1].Value)) <> 0) or
-              (AnsiPos('оператор',VarToStr(Fields[1].Value))<> 0) then begin
-            btnCLOSE_QUEUE[i].Enabled:=True;
-          end
-          else begin
-            btnCLOSE_QUEUE[i].Enabled:=False;
           end;
 
+          // роль
+          begin
+            lblROLE[i]:=TLabel.Create(FormActiveSession.PanelActive);
+            lblROLE[i].Name:='lblROLE_'+nameID;
+            lblROLE[i].Tag:=1;
+            lblROLE[i].Caption:=VarToStr(Fields[1].Value);
+            lblROLE[i].Left:=85;
+
+            if i=0 then lblROLE[i].Top:=cTOPSTART
+            else lblROLE[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
+
+            lblROLE[i].Font.Name:='Tahoma';
+            lblROLE[i].Font.Size:=10;
+            lblROLE[i].AutoSize:=False;
+            lblROLE[i].Width:=150;
+            lblROLE[i].Height:=16;
+            lblROLE[i].Alignment:=taCenter;
+            lblROLE[i].Parent:=FormActiveSession.PanelActive;
+          end;
+
+          // пользователь
+          begin
+            lblUSERNAME[i]:=TLabel.Create(FormActiveSession.PanelActive);
+            lblUSERNAME[i].Name:='lblUSERNAME_'+nameID;
+            lblUSERNAME[i].Tag:=1;
+            lblUSERNAME[i].Caption:=VarToStr(Fields[2].Value);
+            lblUSERNAME[i].Left:=235;
+
+            if i=0 then lblUSERNAME[i].Top:=cTOPSTART
+            else lblUSERNAME[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
+
+            lblUSERNAME[i].Font.Name:='Tahoma';
+            lblUSERNAME[i].Font.Size:=10;
+            lblUSERNAME[i].AutoSize:=False;
+            lblUSERNAME[i].Width:=168;
+            lblUSERNAME[i].Height:=16;
+            lblUSERNAME[i].Alignment:=taCenter;
+            lblUSERNAME[i].Parent:=FormActiveSession.PanelActive;
+          end;
+
+          // компьютер
+          begin
+            lblPC[i]:=TLabel.Create(FormActiveSession.PanelActive);
+            lblPC[i].Name:='lblPC_'+nameID;
+            lblPC[i].Tag:=1;
+            lblPC[i].Caption:=VarToStr(Fields[3].Value);
+            lblPC[i].Left:=403;
+
+            if i=0 then lblPC[i].Top:=cTOPSTART
+            else lblPC[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
+
+            lblPC[i].Font.Name:='Tahoma';
+            lblPC[i].Font.Size:=10;
+            lblPC[i].AutoSize:=False;
+            lblPC[i].Width:=87;
+            lblPC[i].Height:=16;
+            lblPC[i].Alignment:=taCenter;
+            lblPC[i].Parent:=FormActiveSession.PanelActive;
+          end;
+
+          // IP
+          begin
+            lblIP[i]:=TLabel.Create(FormActiveSession.PanelActive);
+            lblIP[i].Name:='lblIP_'+nameID;
+            lblIP[i].Tag:=1;
+            lblIP[i].Caption:=VarToStr(Fields[4].Value);
+            lblIP[i].Left:=489;
+
+            if i=0 then lblIP[i].Top:=cTOPSTART
+            else lblIP[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
+
+            lblIP[i].Font.Name:='Tahoma';
+            lblIP[i].Font.Size:=10;
+            lblIP[i].AutoSize:=False;
+            lblIP[i].Width:=120;
+            lblIP[i].Height:=16;
+            lblIP[i].Alignment:=taCenter;
+            lblIP[i].Parent:=FormActiveSession.PanelActive;
+          end;
+
+          // Дата онлайна
+          begin
+            lblONLINE[i]:=TLabel.Create(FormActiveSession.PanelActive);
+            lblONLINE[i].Name:='lblONLINE_'+nameID;
+            lblONLINE[i].Tag:=1;
+            lblONLINE[i].Caption:=VarToStr(Fields[5].Value);
+            lblONLINE[i].Left:=609;
+
+            if i=0 then lblONLINE[i].Top:=cTOPSTART
+            else lblONLINE[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
+
+            lblONLINE[i].Font.Name:='Tahoma';
+            lblONLINE[i].Font.Size:=10;
+            lblONLINE[i].AutoSize:=False;
+            lblONLINE[i].Width:=121;
+            lblONLINE[i].Height:=16;
+            lblONLINE[i].Alignment:=taCenter;
+            lblONLINE[i].Parent:=FormActiveSession.PanelActive;
+          end;
+
+          // Статус
+          begin
+            lblSTATUS[i]:=TLabel.Create(FormActiveSession.PanelActive);
+            lblSTATUS[i].Name:='lblSTATUS_'+nameID;
+            lblSTATUS[i].Tag:=1;
+            lblSTATUS[i].Caption:='ONLINE!';
+            lblSTATUS[i].Left:=730;
+
+            if i=0 then lblSTATUS[i].Top:=cTOPSTART
+            else lblSTATUS[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
+
+            lblSTATUS[i].Font.Name:='Tahoma';
+            lblSTATUS[i].Font.Size:=10;
+            lblSTATUS[i].AutoSize:=False;
+            lblSTATUS[i].Width:=94;
+            lblSTATUS[i].Height:=16;
+            lblSTATUS[i].Alignment:=taCenter;
+            lblSTATUS[i].Parent:=FormActiveSession.PanelActive;
+          end;
+
+          // Закрыть сессию
+          begin
+            btnCLOSE_SESSION[i]:=TButton.Create(FormActiveSession.PanelActive);
+            btnCLOSE_SESSION[i].Name:='btnCLOSE_SESSION_'+nameID;
+            btnCLOSE_SESSION[i].Tag:=1;
+            btnCLOSE_SESSION[i].Caption:='Завершить сессию!';
+            btnCLOSE_SESSION[i].Left:=837;
+
+            if i=0 then btnCLOSE_SESSION[i].Top:=cTOPSTART - 5
+            else btnCLOSE_SESSION[i].Top:=cTOPSTART+(Round(cTOPSTART)*i)-5;
+
+            btnCLOSE_SESSION[i].Font.Name:='Tahoma';
+            btnCLOSE_SESSION[i].Font.Size:=10;
+            btnCLOSE_SESSION[i].Width:=126;
+            btnCLOSE_SESSION[i].Height:=25;
+            btnCLOSE_SESSION[i].Parent:=FormActiveSession.PanelActive;
+          end;
+
+           // Убрать из очереди
+          begin
+            btnCLOSE_QUEUE[i]:=TButton.Create(FormActiveSession.PanelActive);
+            btnCLOSE_QUEUE[i].Name:='btnCLOSE_QUEUE_'+nameID;
+            btnCLOSE_QUEUE[i].Tag:=1;
+            btnCLOSE_QUEUE[i].Caption:='Убрать из очереди';
+            btnCLOSE_QUEUE[i].Left:=971;
+
+            if i=0 then btnCLOSE_QUEUE[i].Top:=cTOPSTART - 5
+            else btnCLOSE_QUEUE[i].Top:=cTOPSTART+(Round(cTOPSTART)*i)-5;
+
+            btnCLOSE_QUEUE[i].Font.Name:='Tahoma';
+            btnCLOSE_QUEUE[i].Font.Size:=10;
+            btnCLOSE_QUEUE[i].Width:=126;
+            btnCLOSE_QUEUE[i].Height:=25;
+            btnCLOSE_QUEUE[i].Parent:=FormActiveSession.PanelActive;
+
+            if (AnsiPos('Оператор',VarToStr(Fields[1].Value)) <> 0) or
+                (AnsiPos('оператор',VarToStr(Fields[1].Value))<> 0) then begin
+              btnCLOSE_QUEUE[i].Enabled:=True;
+            end
+            else begin
+              btnCLOSE_QUEUE[i].Enabled:=False;
+            end;
+
+          end;
+
+
+
+          Next;
         end;
-
-
-
-        Next;
       end;
+
     end;
 
-  end;
-
   //FormServerIKCheck.Caption:=FormServerIKCheck.Caption+' ('+IntToStr(countServers)+')';
-
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
-
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 
@@ -1774,23 +1844,29 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select name_role from role where id = '+#39+IntToStr(InGroup)+#39);
-    Active:=True;
-
-    if Fields[0].Value<>null then Result:=Fields[0].Value
-    else Result:='null';
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
 
+      SQL.Clear;
+      SQL.Add('select name_role from role where id = '+#39+IntToStr(InGroup)+#39);
+      Active:=True;
+
+      if Fields[0].Value<>null then Result:=Fields[0].Value
+      else Result:='null';
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 
@@ -1803,23 +1879,29 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select name_role from role where id = (select role from users where id = '+#39+IntToStr(InUserID)+#39+')' );
-    Active:=True;
-
-    if Fields[0].Value<>null then Result:=Fields[0].Value
-    else Result:='null';
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
 
+      SQL.Clear;
+      SQL.Add('select name_role from role where id = (select role from users where id = '+#39+IntToStr(InUserID)+#39+')' );
+      Active:=True;
+
+      if Fields[0].Value<>null then Result:=Fields[0].Value
+      else Result:='null';
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 
@@ -1832,26 +1914,32 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select role from users where id = (select user_id from operators where sip = '+#39+InSip+#39+')' );
-    Active:=True;
-
-    if Fields[0].Value<>null then begin
-      if StrToInt(VarToStr(Fields[0].Value)) = 6 then Result:=False
-      else Result:=True;
-    end
-    else Result:=False;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
 
+      SQL.Clear;
+      SQL.Add('select role from users where id = (select user_id from operators where sip = '+#39+InSip+#39+')' );
+      Active:=True;
+
+      if Fields[0].Value<>null then begin
+        if StrToInt(VarToStr(Fields[0].Value)) = 6 then Result:=False
+        else Result:=True;
+      end
+      else Result:=False;
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 
@@ -1864,22 +1952,29 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select is_need_reset_pwd from users where id = '+#39+IntToStr(InUserID)+#39);
-    Active:=True;
-
-    if Fields[0].Value=0 then Result:=False
-    else Result:=True;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+
+      SQL.Clear;
+      SQL.Add('select is_need_reset_pwd from users where id = '+#39+IntToStr(InUserID)+#39);
+      Active:=True;
+
+      if Fields[0].Value=0 then Result:=False
+      else Result:=True;
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 
 end;
 
@@ -1893,23 +1988,29 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select id from role where name_role = '+#39+InGroup+#39);
-    Active:=True;
-
-    if Fields[0].Value<>null then Result:=Fields[0].Value
-    else Result:= -1;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
 
+      SQL.Clear;
+      SQL.Add('select id from role where name_role = '+#39+InGroup+#39);
+      Active:=True;
+
+      if Fields[0].Value<>null then Result:=Fields[0].Value
+      else Result:= -1;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 
@@ -1922,23 +2023,29 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select id from users where login = '+#39+InLogin+#39);
-    Active:=True;
-
-    if Fields[0].Value<>null then Result:=Fields[0].Value
-    else Result:= -1;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
 
+      SQL.Clear;
+      SQL.Add('select id from users where login = '+#39+InLogin+#39);
+      Active:=True;
+
+      if Fields[0].Value<>null then Result:=Fields[0].Value
+      else Result:= -1;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 
@@ -1951,23 +2058,29 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select sip from operators where user_id = '+#39+IntToStr(InIDUser)+#39);
-    Active:=True;
-
-    if Fields[0].Value<>null then Result:=VarToStr(Fields[0].Value)
-    else Result:='null';
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
 
+      SQL.Clear;
+      SQL.Add('select sip from operators where user_id = '+#39+IntToStr(InIDUser)+#39);
+      Active:=True;
+
+      if Fields[0].Value<>null then Result:=VarToStr(Fields[0].Value)
+      else Result:='null';
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 
@@ -1984,80 +2097,88 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-
-    if InUserRole = role_administrator then begin
-      if InShowDisableUsers=False then SQL.Add('select count(id) from users where disabled =''0'' ')
-      else SQL.Add('select count(id) from users where disabled =''1'' ');
-    end
-    else begin
-      only_operators_roleID:=GetOnlyOperatorsRoleID;
-      for i:=0 to only_operators_roleID.Count-1 do begin
-        if id_operators='' then id_operators:=#39+only_operators_roleID[i]+#39
-        else id_operators:=id_operators+','#39+only_operators_roleID[i]+#39;
-      end;
-
-      if InShowDisableUsers=False then SQL.Add('select count(id) from users where disabled =''0'' and role IN('+id_operators+') ')
-      else SQL.Add('select count(id) from users where disabled =''1'' and role IN('+id_operators+') ');
-     if only_operators_roleID<>nil then FreeAndNil(only_operators_roleID);
-    end;
-
-    Active:=True;
-
-    countUsers:=Fields[0].Value;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  with FormUsers.listSG_Users do begin
-   RowCount:=1;      // типа очистка текущего списка
-   RowCount:=countUsers;
-
-    with ado do begin
+  try
+      with ado do begin
+      ado.Connection:=serverConnect;
 
       SQL.Clear;
 
       if InUserRole = role_administrator then begin
-       if InShowDisableUsers=False then SQL.Add('select id,familiya,name,login,role,disabled from users where disabled = ''0'' order by familiya ASC')
-       else SQL.Add('select id,familiya,name,login,role,disabled from users where disabled = ''1'' order by familiya ASC');
+        if InShowDisableUsers=False then SQL.Add('select count(id) from users where disabled =''0'' ')
+        else SQL.Add('select count(id) from users where disabled =''1'' ');
       end
-      else  begin
-       if InShowDisableUsers=False then SQL.Add('select id,familiya,name,login,role,disabled from users where disabled = ''0'' and role IN('+id_operators+') order by familiya ASC')
-       else SQL.Add('select id,familiya,name,login,role,disabled from users where disabled = ''1'' and role IN('+id_operators+') order by familiya ASC');
-      end;
+      else begin
+        only_operators_roleID:=GetOnlyOperatorsRoleID;
+        for i:=0 to only_operators_roleID.Count-1 do begin
+          if id_operators='' then id_operators:=#39+only_operators_roleID[i]+#39
+          else id_operators:=id_operators+','#39+only_operators_roleID[i]+#39;
+        end;
 
+        if InShowDisableUsers=False then SQL.Add('select count(id) from users where disabled =''0'' and role IN('+id_operators+') ')
+        else SQL.Add('select count(id) from users where disabled =''1'' and role IN('+id_operators+') ');
+       if only_operators_roleID<>nil then FreeAndNil(only_operators_roleID);
+      end;
 
       Active:=True;
 
-       for i:=0 to countUsers-1 do begin
-         Cells[0,i]:=Fields[0].Value;                       // id
-         Cells[1,i]:=Fields[1].Value+ ' '+Fields[2].Value;  // фамилия + имя
-         Cells[2,i]:=Fields[3].Value;                       // login
-         Cells[3,i]:=getUserGroupSTR(Fields[4].Value);      // группа прав
-         if InShowDisableUsers=False then begin             // состояние
-          Cells[4,i]:='Активен';
-         end
-         else begin
-          if VarToStr(Fields[3].Value)='0' then Cells[4,i]:='Активен'
-          else Cells[4,i]:='Отключен';
-         end;
-
-         Next;
-       end;
-
-       FormUsers.Caption:='Пользователи: '+IntToStr(countUsers);
-
+      countUsers:=Fields[0].Value;
     end;
+
+    with FormUsers.listSG_Users do begin
+       RowCount:=1;      // типа очистка текущего списка
+       RowCount:=countUsers;
+
+        with ado do begin
+
+          SQL.Clear;
+
+          if InUserRole = role_administrator then begin
+           if InShowDisableUsers=False then SQL.Add('select id,familiya,name,login,role,disabled from users where disabled = ''0'' order by familiya ASC')
+           else SQL.Add('select id,familiya,name,login,role,disabled from users where disabled = ''1'' order by familiya ASC');
+          end
+          else  begin
+           if InShowDisableUsers=False then SQL.Add('select id,familiya,name,login,role,disabled from users where disabled = ''0'' and role IN('+id_operators+') order by familiya ASC')
+           else SQL.Add('select id,familiya,name,login,role,disabled from users where disabled = ''1'' and role IN('+id_operators+') order by familiya ASC');
+          end;
+
+
+          Active:=True;
+
+           for i:=0 to countUsers-1 do begin
+             Cells[0,i]:=Fields[0].Value;                       // id
+             Cells[1,i]:=Fields[1].Value+ ' '+Fields[2].Value;  // фамилия + имя
+             Cells[2,i]:=Fields[3].Value;                       // login
+             Cells[3,i]:=getUserGroupSTR(Fields[4].Value);      // группа прав
+             if InShowDisableUsers=False then begin             // состояние
+              Cells[4,i]:='Активен';
+             end
+             else begin
+              if VarToStr(Fields[3].Value)='0' then Cells[4,i]:='Активен'
+              else Cells[4,i]:='Отключен';
+             end;
+
+             Next;
+           end;
+
+           FormUsers.Caption:='Пользователи: '+IntToStr(countUsers);
+
+        end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+
+    Screen.Cursor:=crDefault;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
-
-  Screen.Cursor:=crDefault;
 end;
 
 
@@ -2073,49 +2194,55 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select count(id) from operators ');
-
-    Active:=True;
-
-    countUsers:=Fields[0].Value;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  with FormUsers.listSG_Operators do begin
-   RowCount:=1;      // типа очистка текущего списка
-   RowCount:=countUsers;
-
+  try
     with ado do begin
+      ado.Connection:=serverConnect;
 
       SQL.Clear;
-      SQL.Add('select id,sip,user_id,sip_phone from operators order by sip asc ');
+      SQL.Add('select count(id) from operators ');
 
       Active:=True;
 
-       for i:=0 to countUsers-1 do begin
-
-         Cells[0,i]:=Fields[0].Value;                           // id
-         Cells[1,i]:=getUserNameOperators(Fields[1].Value);     // Фамилия Имя
-         Cells[2,i]:=Fields[1].Value;                           // Sip
-         if Fields[3].Value<>null then Cells[3,i]:=Fields[3].Value
-         else Cells[3,i]:='null';
-         Cells[4,i]:=getUserRoleSTR( StrToInt(Fields[2].Value) );  // Группа прав
-
-         Next;
-       end;
+      countUsers:=Fields[0].Value;
     end;
+
+    with FormUsers.listSG_Operators do begin
+     RowCount:=1;      // типа очистка текущего списка
+     RowCount:=countUsers;
+
+      with ado do begin
+
+        SQL.Clear;
+        SQL.Add('select id,sip,user_id,sip_phone from operators order by sip asc ');
+
+        Active:=True;
+
+         for i:=0 to countUsers-1 do begin
+
+           Cells[0,i]:=Fields[0].Value;                           // id
+           Cells[1,i]:=getUserNameOperators(Fields[1].Value);     // Фамилия Имя
+           Cells[2,i]:=Fields[1].Value;                           // Sip
+           if Fields[3].Value<>null then Cells[3,i]:=Fields[3].Value
+           else Cells[3,i]:='null';
+           Cells[4,i]:=getUserRoleSTR( StrToInt(Fields[2].Value) );  // Группа прав
+
+           Next;
+         end;
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+   Screen.Cursor:=crDefault;
   end;
-
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
-
-  Screen.Cursor:=crDefault;
 end;
 
 
@@ -2128,26 +2255,32 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select count(id) from users where login = '+#39+InLogin+#39);
-    Active:=True;
-
-    if Fields[0].Value<>null then begin
-      if Fields[0].Value <> 0 then Result:=True
-      else Result:=False;
-    end
-    else Result:= True;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
 
+      SQL.Clear;
+      SQL.Add('select count(id) from users where login = '+#39+InLogin+#39);
+      Active:=True;
+
+      if Fields[0].Value<>null then begin
+        if Fields[0].Value <> 0 then Result:=True
+        else Result:=False;
+      end
+      else Result:= True;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 
@@ -2160,26 +2293,32 @@ begin
 
  ado:=TADOQuery.Create(nil);
  serverConnect:=createServerConnect;
- if not Assigned(serverConnect) then Exit;
+ if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+ end;
 
-  with ado do begin
-    ado.Connection:=serverConnect;
+ try
+    with ado do begin
+      ado.Connection:=serverConnect;
 
-    SQL.Clear;
-    SQL.Add('select id from users where name = '+#39+InUserName+#39 +' and familiya = '+#39+InUserFamiliya+#39);
-    Active:=True;
+      SQL.Clear;
+      SQL.Add('select id from users where name = '+#39+InUserName+#39 +' and familiya = '+#39+InUserFamiliya+#39);
+      Active:=True;
 
-    if Fields[0].Value<>null then begin
-      if Fields[0].Value <> 0 then Result:=Fields[0].Value
-      else Result:=-1;
-    end
-    else Result:= -1;
-  end;
-
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
-
+      if Fields[0].Value<>null then begin
+        if Fields[0].Value <> 0 then Result:=Fields[0].Value
+        else Result:=-1;
+      end
+      else Result:= -1;
+    end;
+ finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+ end;
 end;
 
 
@@ -2192,26 +2331,32 @@ begin
 
  ado:=TADOQuery.Create(nil);
  serverConnect:=createServerConnect;
- if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select user_id from operators where sip = '+#39+IntToStr(InSIPNumber)+#39);
-    Active:=True;
-
-    if Fields[0].Value<>null then begin
-      if Fields[0].Value <> 0 then Result:=Fields[0].Value
-      else Result:=-1;
-    end
-    else Result:= -1;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
 
+      SQL.Clear;
+      SQL.Add('select user_id from operators where sip = '+#39+IntToStr(InSIPNumber)+#39);
+      Active:=True;
+
+      if Fields[0].Value<>null then begin
+        if Fields[0].Value <> 0 then Result:=Fields[0].Value
+        else Result:=-1;
+      end
+      else Result:= -1;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 
@@ -2224,27 +2369,32 @@ begin
 
  ado:=TADOQuery.Create(nil);
  serverConnect:=createServerConnect;
- if not Assigned(serverConnect) then Exit;
+ if not Assigned(serverConnect) then begin
+   FreeAndNil(ado);
+   Exit;
+ end;
 
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
 
-  with ado do begin
-    ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select pass from users where id = '+#39+IntToStr(InUserID)+#39);
+      Active:=True;
 
-    SQL.Clear;
-    SQL.Add('select pass from users where id = '+#39+IntToStr(InUserID)+#39);
-    Active:=True;
-
-    if Fields[0].Value<>null then begin
-      if Fields[0].Value <> 0 then Result:=Fields[0].Value
-      else Result:=-1;
-    end
-    else Result:= -1;
+      if Fields[0].Value<>null then begin
+        if Fields[0].Value <> 0 then Result:=Fields[0].Value
+        else Result:=-1;
+      end
+      else Result:= -1;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
   end;
-
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
-
 end;
 
 
@@ -2257,23 +2407,29 @@ begin
 
  ado:=TADOQuery.Create(nil);
  serverConnect:=createServerConnect;
- if not Assigned(serverConnect) then Exit;
+   if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+   end;
 
-  with ado do begin
-    ado.Connection:=serverConnect;
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
 
-    SQL.Clear;
-    SQL.Add('select login from users where id = '+#39+IntToStr(InUserID)+#39);
-    Active:=True;
+      SQL.Clear;
+      SQL.Add('select login from users where id = '+#39+IntToStr(InUserID)+#39);
+      Active:=True;
 
-    if Fields[0].Value<>null then Result:=Fields[0].Value
-    else Result:= 'null';
+      if Fields[0].Value<>null then Result:=Fields[0].Value
+      else Result:= 'null';
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
   end;
-
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
-
 end;
 
 
@@ -2287,23 +2443,29 @@ begin
 
  ado:=TADOQuery.Create(nil);
  serverConnect:=createServerConnect;
- if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select status from status where id = '+#39+IntToStr(EnumStatusOperatorsToInteger(InStatus))+#39);
-    Active:=True;
-
-    if Fields[0].Value<>null then Result:=VarToStr(Fields[0].Value)
-    else Result:='неизвестен';
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
 
+      SQL.Clear;
+      SQL.Add('select status from status where id = '+#39+IntToStr(EnumStatusOperatorsToInteger(InStatus))+#39);
+      Active:=True;
+
+      if Fields[0].Value<>null then Result:=VarToStr(Fields[0].Value)
+      else Result:='неизвестен';
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 // отключение пользователя
@@ -2316,38 +2478,47 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-
-    SQL.Add('update users set disabled = ''1'' where id = '+#39+IntToStr(InUserID)+#39);
-
-    try
-        ExecSQL;
-    except
-        on E:EIdException do begin
-           CodOshibki:=e.Message;
-           Result:='ОШИБКА! '+CodOshibki;
-           FreeAndNil(ado);
-           serverConnect.Close;
-           FreeAndNil(serverConnect);
-
-           Exit;
-        end;
-    end;
-
-    // проверим пользователь принадлежит группе операторов
-    if UserIsOperator(InUserID) then begin
-      disableOperator(InUserID);
-      deleteOperator(InUserID);
-    end;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+
+      SQL.Add('update users set disabled = ''1'' where id = '+#39+IntToStr(InUserID)+#39);
+
+      try
+          ExecSQL;
+      except
+          on E:EIdException do begin
+             CodOshibki:=e.Message;
+             Result:='ОШИБКА! '+CodOshibki;
+              FreeAndNil(ado);
+              if Assigned(serverConnect) then begin
+                serverConnect.Close;
+                FreeAndNil(serverConnect);
+              end;
+
+             Exit;
+          end;
+      end;
+
+      // проверим пользователь принадлежит группе операторов
+      if UserIsOperator(InUserID) then begin
+        disableOperator(InUserID);
+        deleteOperator(InUserID);
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 
   Result:='OK';
 end;
@@ -2363,32 +2534,42 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-
-    SQL.Add('update users set disabled = ''0'' where id = '+#39+IntToStr(InUserID)+#39);
-
-    try
-        ExecSQL;
-    except
-        on E:EIdException do begin
-           CodOshibki:=e.Message;
-           Result:='ОШИБКА! '+CodOshibki;
-           FreeAndNil(ado);
-           serverConnect.Close;
-           FreeAndNil(serverConnect);
-
-           Exit;
-        end;
-    end;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+
+      SQL.Add('update users set disabled = ''0'' where id = '+#39+IntToStr(InUserID)+#39);
+
+      try
+          ExecSQL;
+      except
+          on E:EIdException do begin
+             CodOshibki:=e.Message;
+             Result:='ОШИБКА! '+CodOshibki;
+              FreeAndNil(ado);
+              if Assigned(serverConnect) then begin
+                serverConnect.Close;
+                FreeAndNil(serverConnect);
+              end;
+
+
+             Exit;
+          end;
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 
   Result:='OK';
 end;
@@ -2403,31 +2584,40 @@ var
 begin
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-
-    SQL.Add('delete from operators where user_id = '+#39+IntToStr(InUserID)+#39);
-
-    try
-        ExecSQL;
-    except
-        on E:EIdException do begin
-           CodOshibki:=e.Message;
-           FreeAndNil(ado);
-           serverConnect.Close;
-           FreeAndNil(serverConnect);
-
-           Exit;
-        end;
-    end;
-
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+
+      SQL.Add('delete from operators where user_id = '+#39+IntToStr(InUserID)+#39);
+
+      try
+          ExecSQL;
+      except
+          on E:EIdException do begin
+             CodOshibki:=e.Message;
+             FreeAndNil(ado);
+            if Assigned(serverConnect) then begin
+              serverConnect.Close;
+              FreeAndNil(serverConnect);
+            end;
+
+             Exit;
+          end;
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 
@@ -2442,61 +2632,76 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-    SQL.Add('select count(id) from users where disabled = ''0'' and role <> ''6'' ');
-
-    try
-        Active:=True;
-    except
-        on E:EIdException do begin
-           CodOshibki:=e.Message;
-           MessageBox(FormAuth.Handle,PChar('Возникла ошибка при запросе на сервер!'+#13#13+CodOshibki),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-           FreeAndNil(ado);
-           serverConnect.Close;
-           FreeAndNil(serverConnect);
-
-           KillProcess;
-        end;
-    end;
-
-    countUsers:=Fields[0].Value;
-
-    SQL.Clear;
-    SQL.Add('select familiya,name from users where disabled = ''0'' and role <> ''6'' order by familiya');
-
-    try
-        Active:=True;
-    except
-        on E:EIdException do begin
-           CodOshibki:=e.Message;
-           MessageBox(FormAuth.Handle,PChar('Возникла ошибка при запросе на сервер!'+#13#13+CodOshibki),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-           FreeAndNil(ado);
-           serverConnect.Close;
-           FreeAndNil(serverConnect);
-
-           KillProcess;
-        end;
-    end;
-
-     with FormAuth.comboxUser do begin
-
-      Clear;
-
-       for i:=0 to countUsers-1 do begin
-        Items.Add(Fields[0].Value+' '+Fields[1].Value);
-        Next;
-       end;
+  if not Assigned(serverConnect) then begin
+     MessageBox(FormAuth.Handle,PChar('Возникла ошибка при запросе на сервер!'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+     FreeAndNil(ado);
+     if Assigned(serverConnect) then begin
+       serverConnect.Close;
+       FreeAndNil(serverConnect);
      end;
+    KillProcess;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select count(id) from users where disabled = ''0'' and role <> ''6'' ');
 
+      try
+          Active:=True;
+      except
+          on E:EIdException do begin
+             CodOshibki:=e.Message;
+             MessageBox(FormAuth.Handle,PChar('Возникла ошибка при запросе на сервер!'+#13#13+CodOshibki),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+             FreeAndNil(ado);
+             if Assigned(serverConnect) then begin
+               serverConnect.Close;
+               FreeAndNil(serverConnect);
+             end;
+
+             KillProcess;
+          end;
+      end;
+
+      countUsers:=Fields[0].Value;
+
+      SQL.Clear;
+      SQL.Add('select familiya,name from users where disabled = ''0'' and role <> ''6'' order by familiya');
+
+      try
+          Active:=True;
+      except
+          on E:EIdException do begin
+             CodOshibki:=e.Message;
+             MessageBox(FormAuth.Handle,PChar('Возникла ошибка при запросе на сервер!'+#13#13+CodOshibki),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+             FreeAndNil(ado);
+             if Assigned(serverConnect) then begin
+               serverConnect.Close;
+               FreeAndNil(serverConnect);
+             end;
+
+             KillProcess;
+          end;
+      end;
+
+       with FormAuth.comboxUser do begin
+
+        Clear;
+
+         for i:=0 to countUsers-1 do begin
+          Items.Add(Fields[0].Value+' '+Fields[1].Value);
+          Next;
+         end;
+       end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 
@@ -2506,38 +2711,47 @@ var
  ado:TADOQuery;
  serverConnect:TADOConnection;
 begin
+  Result:='null';
+
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
 
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-    SQL.Add('select familiya,name from users where id = (select user_id  from logging where user_login_pc='+#39+InUser_login_pc+#39+' and pc='+#39+InUser_pc+#39+' and action='+#39+IntToStr(TLoggingToInt(eLog_enter))+#39+' order by date_time DESC limit 1) and disabled =''0'' ');
-
-    Active:=True;
-
-    // если нет в основной, то смотрим в таблице history_logging
-    if Fields[0].Value = null then begin
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
       SQL.Clear;
-      SQL.Add('select familiya,name from users where id = (select user_id  from history_logging where user_login_pc='+#39+InUser_login_pc+#39+' and pc='+#39+InUser_pc+#39+' and action='+#39+IntToStr(TLoggingToInt(eLog_enter))+#39+' order by date_time DESC limit 1) and disabled =''0'' ');
+      SQL.Add('select familiya,name from users where id = (select user_id  from logging where user_login_pc='+#39+InUser_login_pc+#39+' and pc='+#39+InUser_pc+#39+' and action='+#39+IntToStr(TLoggingToInt(eLog_enter))+#39+' order by date_time DESC limit 1) and disabled =''0'' ');
 
       Active:=True;
 
-      if Fields[0].Value<>null then Result:=Fields[0].Value+' '+Fields[1].Value
-      else Result:='null';
+      // если нет в основной, то смотрим в таблице history_logging
+      if Fields[0].Value = null then begin
+        SQL.Clear;
+        SQL.Add('select familiya,name from users where id = (select user_id  from history_logging where user_login_pc='+#39+InUser_login_pc+#39+' and pc='+#39+InUser_pc+#39+' and action='+#39+IntToStr(TLoggingToInt(eLog_enter))+#39+' order by date_time DESC limit 1) and disabled =''0'' ');
 
-    end
-    else begin
-      if Fields[0].Value<>null then Result:=Fields[0].Value+' '+Fields[1].Value
-      else Result:='null';
+        Active:=True;
+
+        if Fields[0].Value<>null then Result:=Fields[0].Value+' '+Fields[1].Value
+        else Result:='null';
+
+      end
+      else begin
+        if Fields[0].Value<>null then Result:=Fields[0].Value+' '+Fields[1].Value
+        else Result:='null';
+      end;
+
     end;
-
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
   end;
-
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
 end;
 
 
@@ -2567,32 +2781,42 @@ var
  ado:TADOQuery;
  serverConnect:TADOConnection;
 begin
+  Result:=0;
+
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-
-    case InQueue of
-       queue_5000:begin
-         SQL.Add('select queue_5000_time from settings order by id desc limit 1');
-       end;
-       queue_5050:begin
-         SQL.Add('select queue_5050_time from settings order by id desc limit 1');
-       end;
-    end;
-
-    Active:=True;
-
-    if Fields[0].Value<>null then Result:=Fields[0].Value
-    else Result:=0;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+
+      case InQueue of
+         queue_5000:begin
+           SQL.Add('select queue_5000_time from settings order by id desc limit 1');
+         end;
+         queue_5050:begin
+           SQL.Add('select queue_5050_time from settings order by id desc limit 1');
+         end;
+      end;
+
+      Active:=True;
+
+      if Fields[0].Value<>null then Result:=Fields[0].Value
+      else Result:=0;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+
 end;
 
 
@@ -2606,33 +2830,41 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-
-    SQL.Add('update users set pass = '+#39+IntToStr(InUserNewPassword)+#39+', is_need_reset_pwd= ''0'' where id = '+#39+IntToStr(InUserID)+#39);
-
-    try
-        ExecSQL;
-    except
-        on E:EIdException do begin
-           CodOshibki:=e.Message;
-           Result:='ОШИБКА! '+CodOshibki;
-           FreeAndNil(ado);
-           serverConnect.Close;
-           FreeAndNil(serverConnect);
-
-           Exit;
-        end;
-    end;
-
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+
+      SQL.Add('update users set pass = '+#39+IntToStr(InUserNewPassword)+#39+', is_need_reset_pwd= ''0'' where id = '+#39+IntToStr(InUserID)+#39);
+
+      try
+          ExecSQL;
+      except
+          on E:EIdException do begin
+             CodOshibki:=e.Message;
+             Result:='ОШИБКА! '+CodOshibki;
+             FreeAndNil(ado);
+             if Assigned(serverConnect) then begin
+               serverConnect.Close;
+               FreeAndNil(serverConnect);
+             end;
+             Exit;
+          end;
+      end;
+
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 
    Result:='OK';
 end;
@@ -2647,24 +2879,30 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select count(id) from active_session where user_id ='+#39+IntToStr(InUserID)+#39);
-
-    Active:=True;
-
-    if Fields[0].Value=0 then Result:=False
-    else Result:=True;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
- FreeAndNil(ado);
-  serverConnect.Close;
- FreeAndNil(serverConnect);
+  try
+     with ado do begin
+      ado.Connection:=serverConnect;
 
+      SQL.Clear;
+      SQL.Add('select count(id) from active_session where user_id ='+#39+IntToStr(InUserID)+#39);
+
+      Active:=True;
+
+      if Fields[0].Value=0 then Result:=False
+      else Result:=True;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 
@@ -2677,26 +2915,32 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select id from active_session where user_id ='+#39+IntToStr(InUserID)+#39);
-
-    Active:=True;
-
-    if Fields[0].Value<>null then begin
-      Result:=Fields[0].Value;
-    end;
-
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
 
+      SQL.Clear;
+      SQL.Add('select id from active_session where user_id ='+#39+IntToStr(InUserID)+#39);
+
+      Active:=True;
+
+      if Fields[0].Value<>null then begin
+        Result:=Fields[0].Value;
+      end;
+
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 // удаление активной сессии
@@ -2708,32 +2952,39 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-
-    SQL.Add('delete from active_session where id = '+#39+IntToStr(InSessionID)+#39);
-
-    try
-        ExecSQL;
-    except
-        on E:EIdException do begin
-           FreeAndNil(ado);
-           serverConnect.Close;
-           FreeAndNil(serverConnect);
-
-           Exit;
-        end;
-    end;
-
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
 
+      SQL.Add('delete from active_session where id = '+#39+IntToStr(InSessionID)+#39);
+
+      try
+          ExecSQL;
+      except
+          on E:EIdException do begin
+             FreeAndNil(ado);
+             if Assigned(serverConnect) then begin
+               serverConnect.Close;
+               FreeAndNil(serverConnect);
+             end;
+             Exit;
+          end;
+      end;
+
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 // заведение активной сессии
@@ -2741,7 +2992,6 @@ procedure createCurrentActiveSession(InUserID:Integer);
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
- CodOshibki:string;
  ip,user_pc,pc_name:string;
 begin
   Screen.Cursor:=crHourGlass;
@@ -2756,40 +3006,49 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
+  if not Assigned(serverConnect) then begin
+     Screen.Cursor:=crDefault;
+     FreeAndNil(ado);
+     Exit;
+  end;
+
 
   ip:=SharedCurrentUserLogon.GetIP;
   user_pc:=SharedCurrentUserLogon.GetUserLoginPC;
   pc_name:=SharedCurrentUserLogon.GetPC;
 
+  try
+     with ado do begin
+        ado.Connection:=serverConnect;
+        SQL.Clear;
 
-   with ado do begin
-      ado.Connection:=serverConnect;
-      SQL.Clear;
+        SQL.Add('insert into active_session (ip,user_id,user_login_pc,pc) values ('+#39+ip+#39+','
+                                                                                   +#39+IntToStr(SharedCurrentUserLogon.GetID)+#39+','
+                                                                                   +#39+user_pc+#39+','
+                                                                                   +#39+pc_name+#39+')');
 
-      SQL.Add('insert into active_session (ip,user_id,user_login_pc,pc) values ('+#39+ip+#39+','
-                                                                                 +#39+IntToStr(SharedCurrentUserLogon.GetID)+#39+','
-                                                                                 +#39+user_pc+#39+','
-                                                                                 +#39+pc_name+#39+')');
+        try
+            ExecSQL;
+        except
+            on E:EIdException do begin
+               Screen.Cursor:=crDefault;
+               FreeAndNil(ado);
+               if Assigned(serverConnect) then begin
+                  serverConnect.Close;
+                  FreeAndNil(serverConnect);
+               end;
 
-      try
-          ExecSQL;
-      except
-          on E:EIdException do begin
-             Screen.Cursor:=crDefault;
-             CodOshibki:=e.Message;
-             serverConnect.Close;
-             FreeAndNil(serverConnect);
-
-             Exit;
-          end;
-      end;
-   end;
-
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
-
+               Exit;
+            end;
+        end;
+     end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 
   Screen.Cursor:=crDefault;
 end;
@@ -2800,37 +3059,43 @@ procedure updateCurrentActiveSession(InUserID:Integer);
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
- CodOshibki:string;
 begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-
-    SQL.Add('update active_session set last_active = '+#39+getCurrentDateTimeWithTime+#39+' where user_id = '+#39+IntToStr(InUserID)+#39);
-
-    try
-        ExecSQL;
-    except
-        on E:EIdException do begin
-           CodOshibki:=e.Message;
-           FreeAndNil(ado);
-           serverConnect.Close;
-           FreeAndNil(serverConnect);
-
-           Exit;
-        end;
-    end;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
 
+      SQL.Add('update active_session set last_active = '+#39+getCurrentDateTimeWithTime+#39+' where user_id = '+#39+IntToStr(InUserID)+#39);
+
+      try
+          ExecSQL;
+      except
+          on E:EIdException do begin
+             FreeAndNil(ado);
+             if Assigned(serverConnect) then begin
+               serverConnect.Close;
+               FreeAndNil(serverConnect);
+             end;
+
+             Exit;
+          end;
+      end;
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 
@@ -2843,26 +3108,32 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-   ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select disabled from users where id = ( select user_id from operators where sip = '+#39+InSip+#39+')');
-
-    Active:=True;
-
-    if Fields[0].Value<>null then begin
-      if VarToStr(Fields[0].Value) = '0' then Result:=True
-      else Result:=False;
-    end;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+     ado.Connection:=serverConnect;
 
+      SQL.Clear;
+      SQL.Add('select disabled from users where id = ( select user_id from operators where sip = '+#39+InSip+#39+')');
+
+      Active:=True;
+
+      if Fields[0].Value<>null then begin
+        if VarToStr(Fields[0].Value) = '0' then Result:=True
+        else Result:=False;
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 
@@ -2872,56 +3143,35 @@ var
  ado:TADOQuery;
  serverConnect:TADOConnection;
 begin
+  Result:='null';
+
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select familiya,name from users where id = ( select user_id from operators where sip = '+#39+InSip+#39+') and disabled = ''0''');
-
-    Active:=True;
-
-    if Fields[0].Value<>null then Result:=Fields[0].Value+' '+Fields[1].Value
-    else Result:='null';
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
 
+      SQL.Clear;
+      SQL.Add('select familiya,name from users where id = ( select user_id from operators where sip = '+#39+InSip+#39+') and disabled = ''0''');
+
+      Active:=True;
+
+      if Fields[0].Value<>null then Result:=Fields[0].Value+' '+Fields[1].Value
+      else Result:='null';
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
-
- {
-// полчуение имени пользователя из его UserID
-function getUserFIO(InUserID:Integer):string;
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
-begin
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select familiya,name from users where id = '+#39+IntToStr(InUserID)+#39);
-
-    Active:=True;
-
-    if Fields[0].Value<>null then Result:=Fields[0].Value+' '+Fields[1].Value
-    else Result:='null';
-  end;
-
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
-
-end; }
 
 // полчуение фамилии пользователя из его UserID
 function getUserFamiliya(InUserID:Integer):string;
@@ -2929,26 +3179,34 @@ var
  ado:TADOQuery;
  serverConnect:TADOConnection;
 begin
+  Result:='null';
+
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select familiya from users where id = '+#39+IntToStr(InUserID)+#39);
-
-    Active:=True;
-
-    if Fields[0].Value<>null then Result:=Fields[0].Value
-    else Result:='null';
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
 
+      SQL.Clear;
+      SQL.Add('select familiya from users where id = '+#39+IntToStr(InUserID)+#39);
+
+      Active:=True;
+
+      if Fields[0].Value<>null then Result:=Fields[0].Value
+      else Result:='null';
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 
@@ -2958,26 +3216,34 @@ var
  ado:TADOQuery;
  serverConnect:TADOConnection;
 begin
+  Result:='null';
+
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select name from users where id = '+#39+IntToStr(InUserID)+#39);
-
-    Active:=True;
-
-    if Fields[0].Value<>null then Result:=Fields[0].Value
-    else Result:='null';
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
 
+      SQL.Clear;
+      SQL.Add('select name from users where id = '+#39+IntToStr(InUserID)+#39);
+
+      Active:=True;
+
+      if Fields[0].Value<>null then Result:=Fields[0].Value
+      else Result:='null';
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 // отобрадение панели статусы операторов
@@ -3127,28 +3393,34 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select force_closed from active_session where user_id = '+#39+IntToStr(InUserID)+#39);
-
-    Active:=True;
-
-    if Fields[0].Value<>null then begin
-      if VarToStr(Fields[0].Value) = '1' then Result:=True
-      else Result:=False;
-    end
-    else Result:=False;
-
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
 
+      SQL.Clear;
+      SQL.Add('select force_closed from active_session where user_id = '+#39+IntToStr(InUserID)+#39);
+
+      Active:=True;
+
+      if Fields[0].Value<>null then begin
+        if VarToStr(Fields[0].Value) = '1' then Result:=True
+        else Result:=False;
+      end
+      else Result:=False;
+
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 // проверка на 2ую копию дашборда
@@ -3222,29 +3494,39 @@ var
 begin
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-   with ado do begin
-      ado.Connection:=serverConnect;
-      SQL.Clear;
-      SQL.Add(InStroka);
-
-      try
-          ExecSQL;
-      except
-          on E:EIdException do begin
-             FreeAndNil(ado);
-             serverConnect.Close;
-             FreeAndNil(serverConnect);
-             Result:='ОШИБКА! Не удалось выполнить запрос'+#13#13+e.ClassName+' '+e.Message;
-             Exit;
-          end;
-      end;
+   if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
    end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+   try
+     with ado do begin
+        ado.Connection:=serverConnect;
+        SQL.Clear;
+        SQL.Add(InStroka);
+
+        try
+            ExecSQL;
+        except
+            on E:EIdException do begin
+               FreeAndNil(ado);
+               if Assigned(serverConnect) then begin
+                 serverConnect.Close;
+                 FreeAndNil(serverConnect);
+               end;
+               Result:='ОШИБКА! Не удалось выполнить запрос'+#13#13+e.ClassName+' '+e.Message;
+               Exit;
+            end;
+        end;
+     end;
+   finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+   end;
+
   Result:='OK';
 end;
 
@@ -3259,26 +3541,32 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select count(id) from remote_commands where command = '+#39+inttostr(TLoggingToInt(command)) +#39+' and user_id = '+#39+IntToStr(SharedCurrentUserLogon.GetID)+#39);
-    Active:=True;
-
-    if Fields[0].Value<>null then begin
-      if Fields[0].Value <> 0 then Result:=True
-      else Result:=False;
-    end
-    else Result:= True;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
 
+      SQL.Clear;
+      SQL.Add('select count(id) from remote_commands where command = '+#39+inttostr(TLoggingToInt(command)) +#39+' and user_id = '+#39+IntToStr(SharedCurrentUserLogon.GetID)+#39);
+      Active:=True;
+
+      if Fields[0].Value<>null then begin
+        if Fields[0].Value <> 0 then Result:=True
+        else Result:=False;
+      end
+      else Result:= True;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 
@@ -3341,46 +3629,53 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select count(queue) from operators_queue where sip = '+#39+InSipNumber+#39);
-    Active:=True;
-
-    countQueue:=Fields[0].Value;
-
-    if Active then Active:=False;
-     
-
-    case countQueue of
-      0:begin              // ни в какой очереди
-        Result:=queue_null;
-      end;
-      1: begin             // либо в 5000 либо в 5050 (надо понять в какой)
-        SQL.Clear;
-        SQL.Add('select queue from operators_queue where sip = '+#39+InSipNumber+#39);
-        Active:=True;
-
-        if Fields[0].Value<>null then begin
-          if (VarToStr(Fields[0].Value)='5000')       then Result:=queue_5000
-          else if (VarToStr(Fields[0].Value)='5050')  then Result:=queue_5050
-          else                                             Result:=queue_null;
-        end
-        else Result:=queue_null;
-
-      end;
-      2: begin            // в обоих очередях
-        Result:=queue_5000_5050;
-      end;
-    end;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+
+      SQL.Clear;
+      SQL.Add('select count(queue) from operators_queue where sip = '+#39+InSipNumber+#39);
+      Active:=True;
+
+      countQueue:=Fields[0].Value;
+
+      if Active then Active:=False;
+
+
+      case countQueue of
+        0:begin              // ни в какой очереди
+          Result:=queue_null;
+        end;
+        1: begin             // либо в 5000 либо в 5050 (надо понять в какой)
+          SQL.Clear;
+          SQL.Add('select queue from operators_queue where sip = '+#39+InSipNumber+#39);
+          Active:=True;
+
+          if Fields[0].Value<>null then begin
+            if (VarToStr(Fields[0].Value)='5000')       then Result:=queue_5000
+            else if (VarToStr(Fields[0].Value)='5050')  then Result:=queue_5050
+            else                                             Result:=queue_null;
+          end
+          else Result:=queue_null;
+
+        end;
+        2: begin            // в обоих очередях
+          Result:=queue_5000_5050;
+        end;
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 
@@ -3404,7 +3699,11 @@ begin
   // очищаем текущий статус
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
 
   try
    with ado do begin
@@ -3416,19 +3715,21 @@ begin
           ExecSQL;
       except
           on E:EIdException do begin
-
-             FreeAndNil(ado);
-             serverConnect.Close;
-             FreeAndNil(serverConnect);
-
-             Exit;
+            FreeAndNil(ado);
+            if Assigned(serverConnect) then begin
+              serverConnect.Close;
+              FreeAndNil(serverConnect);
+            end;
+            Exit;
           end;
       end;
    end;
   finally
-   FreeAndNil(ado);
-   serverConnect.Close;
-   FreeAndNil(serverConnect);
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
   end;
 end;
 
@@ -3682,30 +3983,42 @@ var
  dateNOW:TDateTime;
  diff:Integer;
 begin
+  Result:='null';
+
   // находим последнее время
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
 
   // текущий статуса из лога
   status:=TLoggingToInt(getStatusOperatorToTLogging(EnumStatusOperatorsToInteger(InOperatorStatus)));
 
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
 
-  with ado do begin
-    ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select date_time from logging where user_id = '+#39+IntToStr(InUserid)+#39+' and action = '+#39+IntToStr(status)+#39+ ' order by date_time DESC limit 1' );
+      Active:=True;
 
-    SQL.Clear;
-    SQL.Add('select date_time from logging where user_id = '+#39+IntToStr(InUserid)+#39+' and action = '+#39+IntToStr(status)+#39+ ' order by date_time DESC limit 1' );
-    Active:=True;
-
-    if Fields[0].Value<>null then curr_date:=Fields[0].Value
-    else begin
-      Result:='null';
-      FreeAndNil(ado);
+      if Fields[0].Value<>null then curr_date:=Fields[0].Value
+      else begin
+        FreeAndNil(ado);
+        if Assigned(serverConnect) then begin
+          serverConnect.Close;
+          FreeAndNil(serverConnect);
+        end;
+        Exit;
+      end;
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
       serverConnect.Close;
       FreeAndNil(serverConnect);
-
-      Exit;
     end;
   end;
 
@@ -3714,10 +4027,6 @@ begin
    dateNOW:=Now;
    diff:=Round((dateNOW - dateToBD) * 24 * 60 * 60 );
    Result:=getTimeAnsweredSecondsToString(diff);
-
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
 end;
 
 
@@ -3744,58 +4053,69 @@ var
  isGoHome,IsExit:Boolean;
  i:Integer;
 begin
+  Result:=False;
+
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
 
-  with ado do begin
-    ado.Connection:=serverConnect;
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
 
-    SQL.Clear;
-    SQL.Add('select count(action) from logging where user_id = '+#39+IntToStr(InUserid)+#39+' order by date_time DESC limit 2' );
-    Active:=True;
+      SQL.Clear;
+      SQL.Add('select count(action) from logging where user_id = '+#39+IntToStr(InUserid)+#39+' order by date_time DESC limit 2' );
+      Active:=True;
 
-    countLastStatus:=Fields[0].Value;
+      countLastStatus:=Fields[0].Value;
 
-    if countLastStatus<=1 then begin
-      FreeAndNil(ado);
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-
-      Result:=False;
-      Exit;
-    end;
-
-    // проверяем есть ли статус 11(домой) за тем 1(выход)
-    if Active then Active:=False;
-
-    isGoHome:=False;
-    IsExit:=False;
-
-    SQL.Clear;
-    SQL.Add('select action from logging where user_id = '+#39+IntToStr(InUserid)+#39+' order by date_time DESC limit 2' );
-    Active:=True;
-
-    for i:=0 to 1 do begin
-      if Fields[0].Value<>null then begin
-         // проверяем есть ли статус выход
-         if i=0 then begin
-          if VarToStr(Fields[0].Value)='1' then IsExit:=True
-          else IsExit:=False;
-         end
-         else if (i=1) then begin
-           if VarToStr(Fields[0].Value)='11' then isGoHome:=True
-          else isGoHome:=False;
-         end;
+      if countLastStatus<=1 then begin
+        FreeAndNil(ado);
+        if Assigned(serverConnect) then begin
+          serverConnect.Close;
+          FreeAndNil(serverConnect);
+        end;
+        Exit;
       end;
 
-      Next;
-    end;
+      // проверяем есть ли статус 11(домой) за тем 1(выход)
+      if Active then Active:=False;
 
+      isGoHome:=False;
+      IsExit:=False;
+
+      SQL.Clear;
+      SQL.Add('select action from logging where user_id = '+#39+IntToStr(InUserid)+#39+' order by date_time DESC limit 2' );
+      Active:=True;
+
+      for i:=0 to 1 do begin
+        if Fields[0].Value<>null then begin
+           // проверяем есть ли статус выход
+           if i=0 then begin
+            if VarToStr(Fields[0].Value)='1' then IsExit:=True
+            else IsExit:=False;
+           end
+           else if (i=1) then begin
+             if VarToStr(Fields[0].Value)='11' then isGoHome:=True
+            else isGoHome:=False;
+           end;
+        end;
+
+        Next;
+      end;
+
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
   end;
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+
 
  if IsExit and isGoHome then Result:=True
  else Result:=False;
@@ -3852,22 +4172,29 @@ var
 begin
  ado:=TADOQuery.Create(nil);
  serverConnect:=createServerConnect;
- if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select sip from operators where user_id = '+#39+IntToStr(InUserID)+#39);
-    Active:=True;
-
-    if Fields[0].Value=null then Result:=False
-    else Result:=True;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+
+      SQL.Clear;
+      SQL.Add('select sip from operators where user_id = '+#39+IntToStr(InUserID)+#39);
+      Active:=True;
+
+      if Fields[0].Value=null then Result:=False
+      else Result:=True;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 // перевод даты и времени в ненормальный вид для BD
@@ -3899,50 +4226,58 @@ var
 begin
  ado:=TADOQuery.Create(nil);
  serverConnect:=createServerConnect;
- if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select date_time,sip from operators where user_id = '+#39+IntToStr(InUserID)+#39);
-    Active:=True;
-
-    if Fields[0].Value<>null then begin
-      date_time_create:=getDateTimeToDateBD(VarToStr(Fields[0].Value));
-      sip:=Fields[1].Value;
-    end
-    else begin
-      FreeAndNil(ado);
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-
-      Exit;
-    end;
-
-    if Active then Active:=False;
-
-    SQL.Clear;
-    SQL.Add('insert into operators_disabled (date_time_create,sip,user_id) values ('+#39+date_time_create+#39+','
-                                                                                    +#39+sip+#39+','
-                                                                                    +#39+IntToStr(InUserID)+#39+')');
-
-      try
-          ExecSQL;
-      except
-          on E:EIdException do begin
-             FreeAndNil(ado);
-             serverConnect.Close;
-             FreeAndNil(serverConnect);
-
-             Exit;
-          end;
-      end;
+  if not Assigned(serverConnect) then begin
+    FreeAndNil(ado);
+    Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+
+      SQL.Clear;
+      SQL.Add('select date_time,sip from operators where user_id = '+#39+IntToStr(InUserID)+#39);
+      Active:=True;
+
+      if Fields[0].Value<>null then begin
+        date_time_create:=getDateTimeToDateBD(VarToStr(Fields[0].Value));
+        sip:=Fields[1].Value;
+      end
+      else begin
+        FreeAndNil(ado);
+        serverConnect.Close;
+        FreeAndNil(serverConnect);
+
+        Exit;
+      end;
+
+      if Active then Active:=False;
+
+      SQL.Clear;
+      SQL.Add('insert into operators_disabled (date_time_create,sip,user_id) values ('+#39+date_time_create+#39+','
+                                                                                      +#39+sip+#39+','
+                                                                                      +#39+IntToStr(InUserID)+#39+')');
+
+        try
+            ExecSQL;
+        except
+            on E:EIdException do begin
+                FreeAndNil(ado);
+                if Assigned(serverConnect) then begin
+                  serverConnect.Close;
+                  FreeAndNil(serverConnect);
+                end;
+               Exit;
+            end;
+        end;
+    end;
+  finally
+   FreeAndNil(ado);
+   if Assigned(serverConnect) then begin
+     serverConnect.Close;
+     FreeAndNil(serverConnect);
+   end;
+  end;
 end;
 
 
@@ -3954,22 +4289,29 @@ var
 begin
  ado:=TADOQuery.Create(nil);
  serverConnect:=createServerConnect;
- if not Assigned(serverConnect) then Exit;
+ if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+ end;
 
-  with ado do begin
-    ado.Connection:=serverConnect;
+ try
+    with ado do begin
+      ado.Connection:=serverConnect;
 
-    SQL.Clear;
-    SQL.Add('select count(user_id) from settings_users where user_id = '+#39+IntToStr(InUserID)+#39);
-    Active:=True;
+      SQL.Clear;
+      SQL.Add('select count(user_id) from settings_users where user_id = '+#39+IntToStr(InUserID)+#39);
+      Active:=True;
 
-    if Fields[0].Value<>0 then Result:=True
-    else Result:=False;
-  end;
-
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+      if Fields[0].Value<>0 then Result:=True
+      else Result:=False;
+    end;
+ finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+ end;
 end;
 
 
@@ -4029,40 +4371,43 @@ var
  serverConnect:TADOConnection;
 
 begin
- if not isExistSettingUsers(InUserID) then begin
-  Result:=settingUsersStatus_DISABLED;
-  Exit;
- end;
-
  Result:=settingUsersStatus_DISABLED;
+ if not isExistSettingUsers(InUserID) then Exit;
 
  ado:=TADOQuery.Create(nil);
  serverConnect:=createServerConnect;
- if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-     SQL.Clear;
-     case settings of
-      settingUsers_gohome: begin // не показывать ушедших домой
-        SQL.Add('select go_home from settings_users where user_id = '+#39+IntToStr(InUserID)+#39);
-      end;
-      settingUsers_noConfirmExit:begin // не показывать "Точно хотите выйти?"
-        SQL.Add('select no_confirmExit from settings_users where user_id = '+#39+IntToStr(InUserID)+#39);
-      end;
-     end;
-    Active:=True;
-
-    if Fields[0].Value<>null then begin
-      if VarToStr(Fields[0].Value) = '1'  then Result:=settingUsersStatus_ENABLED
-      else Result:=settingUsersStatus_DISABLED;
-    end;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+
+       SQL.Clear;
+       case settings of
+        settingUsers_gohome: begin // не показывать ушедших домой
+          SQL.Add('select go_home from settings_users where user_id = '+#39+IntToStr(InUserID)+#39);
+        end;
+        settingUsers_noConfirmExit:begin // не показывать "Точно хотите выйти?"
+          SQL.Add('select no_confirmExit from settings_users where user_id = '+#39+IntToStr(InUserID)+#39);
+        end;
+       end;
+      Active:=True;
+
+      if Fields[0].Value<>null then begin
+        if VarToStr(Fields[0].Value) = '1'  then Result:=settingUsersStatus_ENABLED
+        else Result:=settingUsersStatus_DISABLED;
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 
@@ -4092,23 +4437,30 @@ begin
 
    ado:=TADOQuery.Create(nil);
    serverConnect:=createServerConnect;
-   if not Assigned(serverConnect) then Exit;
+   if not Assigned(serverConnect) then begin
+      FreeAndNil(ado);
+      Exit;
+   end;
 
-    with ado do begin
-      ado.Connection:=serverConnect;
-      SQL.Clear;
-      SQL.Add('select action from logging where user_id = '+#39+IntToStr(InUserId)+#39+' order by date_time desc limit 1');
+   try
+      with ado do begin
+        ado.Connection:=serverConnect;
+        SQL.Clear;
+        SQL.Add('select action from logging where user_id = '+#39+IntToStr(InUserId)+#39+' order by date_time desc limit 1');
 
-      Active:=True;
+        Active:=True;
 
-      if Fields[0].Value<>null then begin
-        Result:=IntToTLogging(StrToInt(VarToStr(Fields[0].Value)));
+        if Fields[0].Value<>null then begin
+          Result:=IntToTLogging(StrToInt(VarToStr(Fields[0].Value)));
+        end;
       end;
-    end;
-
+   finally
     FreeAndNil(ado);
-    serverConnect.Close;
-    FreeAndNil(serverConnect);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+   end;
 end;
 
 
@@ -4122,8 +4474,12 @@ begin
 
    ado:=TADOQuery.Create(nil);
    serverConnect:=createServerConnect;
-   if not Assigned(serverConnect) then Exit;
+   if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+   end;
 
+   try
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
@@ -4135,10 +4491,13 @@ begin
         Result:=IntegerToEnumStatusOperators(StrToInt(VarToStr(Fields[0].Value)));
       end;
     end;
-
+   finally
     FreeAndNil(ado);
-    serverConnect.Close;
-    FreeAndNil(serverConnect);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+   end;
 end;
 
 // проверка корректности IP адреса
@@ -4186,8 +4545,12 @@ begin
 
    ado:=TADOQuery.Create(nil);
    serverConnect:=createServerConnect;
-   if not Assigned(serverConnect) then Exit;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
 
+  try
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
@@ -4196,10 +4559,13 @@ begin
       Active:=True;
       if Fields[0].Value<>0 then Result:=True;
     end;
-
+  finally
     FreeAndNil(ado);
-    serverConnect.Close;
-    FreeAndNil(serverConnect);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 
@@ -4214,8 +4580,12 @@ begin
 
    ado:=TADOQuery.Create(nil);
    serverConnect:=createServerConnect;
-   if not Assigned(serverConnect) then Exit;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
 
+  try
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
@@ -4235,10 +4605,13 @@ begin
       end;
 
     end;
-
+  finally
     FreeAndNil(ado);
-    serverConnect.Close;
-    FreeAndNil(serverConnect);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 
@@ -4262,22 +4635,27 @@ begin
 
    ado:=TADOQuery.Create(nil);
    serverConnect:=createServerConnect;
-   if not Assigned(serverConnect) then Exit;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
 
-    try
-      with ado do begin
-        ado.Connection:=serverConnect;
-        SQL.Clear;
-        SQL.Add('select count(id) from server_ik');
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select count(id) from server_ik');
 
-        Active:=True;
-        Result:=StrToInt(VarToStr(Fields[0].Value));
-      end;
-    finally
-      FreeAndNil(ado);
+      Active:=True;
+      Result:=StrToInt(VarToStr(Fields[0].Value));
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
       serverConnect.Close;
       FreeAndNil(serverConnect);
     end;
+  end;
 end;
 
 
@@ -4293,7 +4671,11 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
 
   try
     with ado do begin
@@ -4319,8 +4701,10 @@ begin
     end;
   finally
     FreeAndNil(ado);
-    serverConnect.Close;
-    FreeAndNil(serverConnect);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
   end;
 end;
 
@@ -4424,8 +4808,12 @@ begin
 
    ado:=TADOQuery.Create(nil);
    serverConnect:=createServerConnect;
-   if not Assigned(serverConnect) then Exit;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
 
+  try
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
@@ -4437,10 +4825,13 @@ begin
         if StrToInt(VarToStr(Fields[0].Value)) = 1 then Result:=True;
       end;
     end;
-
-    FreeAndNil(ado);
-    serverConnect.Close;
-    FreeAndNil(serverConnect);
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 
@@ -4543,28 +4934,35 @@ var
  ado:TADOQuery;
  serverConnect:TADOConnection;
 begin
-   Result:=False;
+ Result:=False;
 
-   ado:=TADOQuery.Create(nil);
-   serverConnect:=createServerConnect;
-   if not Assigned(serverConnect) then Exit;
+ ado:=TADOQuery.Create(nil);
+ serverConnect:=createServerConnect;
+ if not Assigned(serverConnect) then begin
+   FreeAndNil(ado);
+   Exit;
+ end;
 
-    with ado do begin
-      ado.Connection:=serverConnect;
-      SQL.Clear;
-      SQL.Add('select pc,user_login_pc,last_active from active_session where user_id = '+#39+IntToStr(InUserID)+#39+' and last_active > '+#39+GetCurrentDateTimeDec(1)+#39);
+ try
+   with ado do begin
+    ado.Connection:=serverConnect;
+    SQL.Clear;
+    SQL.Add('select pc,user_login_pc,last_active from active_session where user_id = '+#39+IntToStr(InUserID)+#39+' and last_active > '+#39+GetCurrentDateTimeDec(1)+#39);
 
-      Active:=True;
+    Active:=True;
 
-      if Fields[0].Value<>null then begin
-        Result:=True;
-        ActiveSession:=VarToStr(Fields[0].Value)+' ('+VarToStr(Fields[1].Value)+') - '+VarToStr(Fields[2].Value);
-      end;
+    if Fields[0].Value<>null then begin
+      Result:=True;
+      ActiveSession:=VarToStr(Fields[0].Value)+' ('+VarToStr(Fields[1].Value)+') - '+VarToStr(Fields[2].Value);
     end;
-
-    FreeAndNil(ado);
+  end;
+ finally
+  FreeAndNil(ado);
+  if Assigned(serverConnect) then begin
     serverConnect.Close;
     FreeAndNil(serverConnect);
+  end;
+ end;
 end;
 
 

@@ -194,7 +194,9 @@ end;
  const
  colorGood:TColor     = $0031851F;
  colorNotBad:Tcolor   = $0000D5D5;
- colorBad:TColor      = $000303E9;
+ //colorBad:TColor      = $000303E9;
+ colorBad:TColor     = $0000C8C8;
+ colorVeryBad:TColor  = $0000009B;
  var
   i:Integer;
   SL:Integer;
@@ -216,10 +218,13 @@ end;
          ST_SL.Caption:='SL: '+IntToStr(SL)+'%';
 
          case SL of
-           0..50: begin
+           0..30: begin
+              ST_SL.Font.Color:=colorVeryBad;
+           end;
+           31..59: begin
               ST_SL.Font.Color:=colorBad;
            end;
-           51..79:begin
+           60..79:begin
               ST_SL.Font.Color:=colorNotBad;
            end;
            80..100:begin
@@ -337,14 +342,20 @@ var
 begin
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
 
   // кол-во отвеченных на текущий момент
   countAnswered:=StrToInt(GetStatistics_day(stat_answered));
   if countAnswered=0 then begin
     FreeAndNil(ado);
-    serverConnect.Close;
-    FreeAndNil(serverConnect);
+    if Assigned(serverConnect) then begin
+       serverConnect.Close;
+       FreeAndNil(serverConnect);
+    end;
+
     Exit;
   end;
 
@@ -352,20 +363,28 @@ begin
   SetLength(listAnsweredBD,countAnswered);
   for i:=0 to countAnswered-1 do listAnsweredBD[i]:=TStructAnswered_list.Create;
 
-  // найдем всех
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-    SQL.Add('select id,number_queue,waiting_time,talk_time from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and answered = ''1'' and sip <>''-1'' and hash is not null');
-    Active:=True;
+  try
+    // найдем всех
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select id,number_queue,waiting_time,talk_time from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and answered = ''1'' and sip <>''-1'' and hash is not null');
+      Active:=True;
 
-    for i:=0 to countAnswered-1 do begin
-      listAnsweredBD[i].id:=StrToInt(VarToStr(Fields[0].Value));
-      listAnsweredBD[i].queue:=StrToInt(VarToStr(Fields[1].Value));
-      listAnsweredBD[i].waiting_time:=VarToStr(Fields[2].Value);
-      listAnsweredBD[i].talk_time:=VarToStr(Fields[3].Value);
+      for i:=0 to countAnswered-1 do begin
+        listAnsweredBD[i].id:=StrToInt(VarToStr(Fields[0].Value));
+        listAnsweredBD[i].queue:=StrToInt(VarToStr(Fields[1].Value));
+        listAnsweredBD[i].waiting_time:=VarToStr(Fields[2].Value);
+        listAnsweredBD[i].talk_time:=VarToStr(Fields[3].Value);
 
-     Next;
+       Next;
+      end;
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
     end;
   end;
 
@@ -388,13 +407,8 @@ begin
      end;
    end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
-
   // delete array listAnsweredBD
-  for i:= 0 to countAnswered- 1 do FreeAndNil(listAnsweredBD[i]);
-
+  for i:=0 to countAnswered-1 do FreeAndNil(listAnsweredBD[i]);
 end;
 
 end.

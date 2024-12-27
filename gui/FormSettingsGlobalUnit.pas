@@ -92,39 +92,49 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-    SQL.Clear;
-
-    if (GetFirbirdAuth(firebird_login)='null') and (GetFirbirdAuth(firebird_pwd)='null') then begin
-      SQL.Add('insert into server_ik_fb (firebird_login,firebird_pwd) values ('+#39+edtLogin_Firebird.Text+#39+','+#39+edtPassword_Firebird.Text+#39+')');
-      isNewAuth:=True;
-    end
-    else begin
-      SQL.Add('update server_ik_fb set firebird_login = '+#39+edtLogin_Firebird.Text+#39+', firebird_pwd = '+#39+edtPassword_Firebird.Text+#39);
-      isNewAuth:=False;
-    end;
-
-    try
-        ExecSQL;
-    except
-        on E:EIdException do begin
-           Screen.Cursor:=crDefault;
-           FreeAndNil(ado);
-           serverConnect.Close;
-           FreeAndNil(serverConnect);
-
-           Exit;
-        end;
-    end;
-
+  if not Assigned(serverConnect) then begin
+     Screen.Cursor:=crDefault;
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+
+      if (GetFirbirdAuth(firebird_login)='null') and (GetFirbirdAuth(firebird_pwd)='null') then begin
+        SQL.Add('insert into server_ik_fb (firebird_login,firebird_pwd) values ('+#39+edtLogin_Firebird.Text+#39+','+#39+edtPassword_Firebird.Text+#39+')');
+        isNewAuth:=True;
+      end
+      else begin
+        SQL.Add('update server_ik_fb set firebird_login = '+#39+edtLogin_Firebird.Text+#39+', firebird_pwd = '+#39+edtPassword_Firebird.Text+#39);
+        isNewAuth:=False;
+      end;
+
+      try
+          ExecSQL;
+      except
+          on E:EIdException do begin
+            Screen.Cursor:=crDefault;
+            FreeAndNil(ado);
+            if Assigned(serverConnect) then begin
+              serverConnect.Close;
+              FreeAndNil(serverConnect);
+            end;
+            Exit;
+          end;
+      end;
+
+    end;
+  finally
+   FreeAndNil(ado);
+   if Assigned(serverConnect) then begin
+     serverConnect.Close;
+     FreeAndNil(serverConnect);
+   end;
+  end;
+
   Screen.Cursor:=crDefault;
 
   if isNewAuth then MessageBox(Handle,PChar('Учетные данные подключения к Firebird сохранены'),PChar('Успех'),MB_OK+MB_ICONINFORMATION)

@@ -58,49 +58,56 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select count(id) from sip_trunks');
-    Active:=True;
-
-    countServers:=Fields[0].Value;
+  if not Assigned(serverConnect) then begin
+   Screen.Cursor:=crDefault;
+   FreeAndNil(ado);
+    Exit;
   end;
 
-  with FormTrunk.listSG_Trunks do begin
-   RowCount:=countServers;
-
+  try
     with ado do begin
+      ado.Connection:=serverConnect;
 
       SQL.Clear;
-      SQL.Add('select id,alias,username,state,is_monitoring from sip_trunks');
+      SQL.Add('select count(id) from sip_trunks');
       Active:=True;
 
-       for i:=0 to countServers-1 do begin
-          Cells[0,i]:=Fields[0].Value;
-          Cells[1,i]:=Fields[1].Value;
-          Cells[2,i]:=Fields[2].Value;
+      countServers:=Fields[0].Value;
+    end;
 
-          if Fields[3].Value<>null then Cells[3,i]:=Fields[3].Value
-          else Cells[3,i]:='опроса еще не было';
+    with FormTrunk.listSG_Trunks do begin
+     RowCount:=countServers;
 
-          if GetStatusMonitoring(StrToInt(Fields[4].Value)) = monitoring_ENABLE then Cells[4,i]:='Да'
-          else Cells[4,i]:='Нет';
+      with ado do begin
 
-          Next;
-       end;
+        SQL.Clear;
+        SQL.Add('select id,alias,username,state,is_monitoring from sip_trunks');
+        Active:=True;
+
+         for i:=0 to countServers-1 do begin
+            Cells[0,i]:=Fields[0].Value;
+            Cells[1,i]:=Fields[1].Value;
+            Cells[2,i]:=Fields[2].Value;
+
+            if Fields[3].Value<>null then Cells[3,i]:=Fields[3].Value
+            else Cells[3,i]:='опроса еще не было';
+
+            if GetStatusMonitoring(StrToInt(Fields[4].Value)) = monitoring_ENABLE then Cells[4,i]:='Да'
+            else Cells[4,i]:='Нет';
+
+            Next;
+         end;
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
     end;
   end;
 
   FormTrunk.Caption:='Активные SIP транки ('+IntToStr(countServers)+')';
-
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
-
   Screen.Cursor:=crDefault;
 end;
 

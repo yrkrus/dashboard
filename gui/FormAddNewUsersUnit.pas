@@ -155,132 +155,105 @@ begin
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
   if not Assigned(serverConnect) then begin
+    FreeAndNil(ado);
+    Screen.Cursor:=crDefault;
     _errorDescription:='Не удалось соединиться с сервером';
      Exit;
   end;
 
   isNewUserOperator:=False;
 
-  with ado do begin
-    ado.Connection:=serverConnect;
+  try
+     with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
 
-    SQL.Clear;
+      with FormAddNewUsers do begin
+       user_familiya:=edtNewFamiliya.Text;
+       if InTypeAction=user_add then user_familiya:=StringReplace(user_familiya,' ','',[rfReplaceAll]);
 
+       user_name:=edtNewName.Text;
+       if InTypeAction=user_add then user_name:=StringReplace(user_name,' ','',[rfReplaceAll]);
 
-    with FormAddNewUsers do begin
-     user_familiya:=edtNewFamiliya.Text;
-     if InTypeAction=user_add then user_familiya:=StringReplace(user_familiya,' ','',[rfReplaceAll]);
+       // логин с маленькой буквы
+       user_login:=edtNewLogin.Text;
+       user_login:=AnsiLowerCase(user_login);
+       if InTypeAction=user_add then user_login:=StringReplace(user_login,' ','',[rfReplaceAll]);
 
-     user_name:=edtNewName.Text;
-     if InTypeAction=user_add then user_name:=StringReplace(user_name,' ','',[rfReplaceAll]);
-
-     // логин с маленькой буквы
-     user_login:=edtNewLogin.Text;
-     user_login:=AnsiLowerCase(user_login);
-     if InTypeAction=user_add then user_login:=StringReplace(user_login,' ','',[rfReplaceAll]);
-
-     // пароль
-     if chkboxmyPwd.Checked then begin
-      user_pwd:=IntToStr(getHashPwd(edtPwdNew.Text));
-      isNeedResetPwd:=0; // запрос на смену пароля при входе
-     end
-     else begin
-       // запрос на смену пароля нужно только для новых сотрудников
-       if InTypeAction=user_add then begin
-         isNeedResetPwd:=1;  // запрос на смену пароля при входе
-         user_pwd:=IntToStr(getHashPwd(cDefaultUserPass));
-       end;
-     end;
-
-
-
-     // оператор\старший оператор
-     user_group:=comboxUserGroup.Items[comboxUserGroup.ItemIndex];
-     u_role:= IntToStr(getUserGroupID(user_group));
-
-     if (AnsiPos('Оператор',user_group) <> 0) or
-        (AnsiPos('оператор',user_group)<> 0) then begin
-
-       user_sip:=edtOperatorSetting_SIP_show.Text;
-       user_sip_phone:=edtOperatorSetting_Tel_show.Text;
-
-       // проверяем используется sip телефон или zoiper
-       if user_sip_phone='' then begin
-        // проверяем вдруг zoiper указан
-        if chkboxZoiper.Checked then user_sip_phone:='zoiper'
-        else user_sip_phone:='null';
+       // пароль
+       if chkboxmyPwd.Checked then begin
+        user_pwd:=IntToStr(getHashPwd(edtPwdNew.Text));
+        isNeedResetPwd:=0; // запрос на смену пароля при входе
+       end
+       else begin
+         // запрос на смену пароля нужно только для новых сотрудников
+         if InTypeAction=user_add then begin
+           isNeedResetPwd:=1;  // запрос на смену пароля при входе
+           user_pwd:=IntToStr(getHashPwd(cDefaultUserPass));
+         end;
        end;
 
-       // если не редактируеся сейчас, то это не новый оператор
-       if not currentEditUsers then isNewUserOperator:=True;
-     end;
+       // оператор\старший оператор
+       user_group:=comboxUserGroup.Items[comboxUserGroup.ItemIndex];
+       u_role:= IntToStr(getUserGroupID(user_group));
 
-      // доступ к чату
-      if chkboxAllowLocalChat.Checked then user_chat:='1'
-      else user_chat:='0';
-    end;
+       if (AnsiPos('Оператор',user_group) <> 0) or
+          (AnsiPos('оператор',user_group)<> 0) then begin
 
+         user_sip:=edtOperatorSetting_SIP_show.Text;
+         user_sip_phone:=edtOperatorSetting_Tel_show.Text;
 
-    case InTypeAction of
-      user_add:begin
-        SQL.Add('insert into users (name,familiya,role,login,pass,is_need_reset_pwd,chat) values ('+#39+user_name+#39+','
-                                                                                              +#39+user_familiya+#39+','
-                                                                                              +#39+u_role+#39+','
-                                                                                              +#39+user_login+#39+','
-                                                                                              +#39+user_pwd+#39+','
-                                                                                              +#39+IntToStr(isNeedResetPwd)+#39+','
-                                                                                              +#39+user_chat+#39+')');
+         // проверяем используется sip телефон или zoiper
+         if user_sip_phone='' then begin
+          // проверяем вдруг zoiper указан
+          if chkboxZoiper.Checked then user_sip_phone:='zoiper'
+          else user_sip_phone:='null';
+         end;
+
+         // если не редактируеся сейчас, то это не новый оператор
+         if not currentEditUsers then isNewUserOperator:=True;
+       end;
+
+        // доступ к чату
+        if chkboxAllowLocalChat.Checked then user_chat:='1'
+        else user_chat:='0';
       end;
-      user_update:begin
 
-        if FormAddNewUsers.chkboxmyPwd.Checked then begin // надо поменять пароль
 
-          SQL.Add('update users set name = '+#39+user_name+#39
-                                            +', familiya = '+#39+user_familiya+#39
-                                            +', role = '    +#39+u_role+#39
-                                            +', login = '   +#39+user_login+#39
-                                            +', pass = '    +#39+user_pwd+#39
-                                            +', chat = '    +#39+user_chat+#39
-                                            +' where id = ' +#39+IntToStr(FormAddNewUsers.currentEditUsersID)+#39);
-           //,,,login,pass,
-        end
-        else begin                                        // пароль не надо менять
-         SQL.Add('update users set name = '+#39+user_name+#39
-                                            +', familiya = '+#39+user_familiya+#39
-                                            +', role = '    +#39+u_role+#39
-                                            +', login = '   +#39+user_login+#39
-                                            +', chat = '    +#39+user_chat+#39
-                                            +' where id = ' +#39+IntToStr(FormAddNewUsers.currentEditUsersID)+#39);
+      case InTypeAction of
+        user_add:begin
+          SQL.Add('insert into users (name,familiya,role,login,pass,is_need_reset_pwd,chat) values ('+#39+user_name+#39+','
+                                                                                                +#39+user_familiya+#39+','
+                                                                                                +#39+u_role+#39+','
+                                                                                                +#39+user_login+#39+','
+                                                                                                +#39+user_pwd+#39+','
+                                                                                                +#39+IntToStr(isNeedResetPwd)+#39+','
+                                                                                                +#39+user_chat+#39+')');
+        end;
+        user_update:begin
+
+          if FormAddNewUsers.chkboxmyPwd.Checked then begin // надо поменять пароль
+
+            SQL.Add('update users set name = '+#39+user_name+#39
+                                              +', familiya = '+#39+user_familiya+#39
+                                              +', role = '    +#39+u_role+#39
+                                              +', login = '   +#39+user_login+#39
+                                              +', pass = '    +#39+user_pwd+#39
+                                              +', chat = '    +#39+user_chat+#39
+                                              +' where id = ' +#39+IntToStr(FormAddNewUsers.currentEditUsersID)+#39);
+             //,,,login,pass,
+          end
+          else begin                                        // пароль не надо менять
+           SQL.Add('update users set name = '+#39+user_name+#39
+                                              +', familiya = '+#39+user_familiya+#39
+                                              +', role = '    +#39+u_role+#39
+                                              +', login = '   +#39+user_login+#39
+                                              +', chat = '    +#39+user_chat+#39
+                                              +' where id = ' +#39+IntToStr(FormAddNewUsers.currentEditUsersID)+#39);
+          end;
         end;
       end;
-    end;
 
-    try
-        ExecSQL;
-    except
-        on E:EIdException do begin
-           Screen.Cursor:=crDefault;
-           CodOshibki:=e.Message;
-           _errorDescription:=CodOshibki;
-
-           FreeAndNil(ado);
-           serverConnect.Close;
-           FreeAndNil(serverConnect);
-
-           Exit;
-        end;
-    end;
-
-    // id пользователя
-    userID:=IntToStr(getUserID(user_login));
-
-
-    // таблица операторы
-    if isNewUserOperator then begin
-       SQL.Clear;
-       SQL.Add('insert into operators (sip,user_id,sip_phone) values ('+#39+user_sip+#39+','
-                                                                       +#39+userID+#39+','
-                                                                       +#39+user_sip_phone+#39+')');
       try
           ExecSQL;
       except
@@ -288,21 +261,53 @@ begin
              Screen.Cursor:=crDefault;
              CodOshibki:=e.Message;
              _errorDescription:=CodOshibki;
-             FreeAndNil(ado);
 
-             serverConnect.Close;
-             FreeAndNil(serverConnect);
+            FreeAndNil(ado);
+            if Assigned(serverConnect) then begin
+              serverConnect.Close;
+              FreeAndNil(serverConnect);
+            end;
 
              Exit;
           end;
       end;
+
+      // id пользователя
+      userID:=IntToStr(getUserID(user_login));
+
+
+      // таблица операторы
+      if isNewUserOperator then begin
+         SQL.Clear;
+         SQL.Add('insert into operators (sip,user_id,sip_phone) values ('+#39+user_sip+#39+','
+                                                                         +#39+userID+#39+','
+                                                                         +#39+user_sip_phone+#39+')');
+        try
+            ExecSQL;
+        except
+            on E:EIdException do begin
+               Screen.Cursor:=crDefault;
+               CodOshibki:=e.Message;
+               _errorDescription:=CodOshibki;
+                FreeAndNil(ado);
+                if Assigned(serverConnect) then begin
+                  serverConnect.Close;
+                  FreeAndNil(serverConnect);
+                end;
+
+               Exit;
+            end;
+        end;
+      end;
+
     end;
-
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
   end;
-
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
 
   Screen.Cursor:=crDefault;
 
@@ -377,59 +382,55 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-
-
-    if InUserRole = role_administrator then begin
-      if allUsers then SQL.Add('select count(id) from role where id <> ''-1'' ')
-      else SQL.Add('select count(id) from role where id <> ''-1'' and only_operators= ''1'' ');
-    end
-    else begin
-       SQL.Add('select count(id) from role where id <> ''-1'' and only_operators= ''1'' ');
-    end;
-
-
-    Active:=True;
-
-    countGroup:=Fields[0].Value;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  with FormAddNewUsers.comboxUserGroup do begin
-    Clear;
-
+  try
     with ado do begin
+      ado.Connection:=serverConnect;
       SQL.Clear;
 
       if InUserRole = role_administrator then begin
-       if allUsers then SQL.Add('select id from role where id <> ''-1''')
-       else SQL.Add('select id from role where id <> ''-1'' and only_operators= ''1'' ');
+        if allUsers then SQL.Add('select count(id) from role where id <> ''-1'' ')
+        else SQL.Add('select count(id) from role where id <> ''-1'' and only_operators= ''1'' ');
       end
-      else begin
-       SQL.Add('select id from role where id <> ''-1'' and only_operators= ''1'' ');
-      end;
-
+      else   SQL.Add('select count(id) from role where id <> ''-1'' and only_operators= ''1'' ');
 
       Active:=True;
-
-       for i:=0 to countGroup-1 do begin
-         Items.Add(getUserGroupSTR(Fields[0].Value));
-         Next;
-       end;
+      countGroup:=Fields[0].Value;
     end;
 
-    ItemIndex:= -1;
+    with FormAddNewUsers.comboxUserGroup do begin
+      Clear;
 
+      with ado do begin
+        SQL.Clear;
+
+        if InUserRole = role_administrator then begin
+         if allUsers then SQL.Add('select id from role where id <> ''-1''')
+         else SQL.Add('select id from role where id <> ''-1'' and only_operators= ''1'' ');
+        end
+        else  SQL.Add('select id from role where id <> ''-1'' and only_operators= ''1'' ');
+
+        Active:=True;
+
+         for i:=0 to countGroup-1 do begin
+           Items.Add(getUserGroupSTR(Fields[0].Value));
+           Next;
+         end;
+      end;
+
+      ItemIndex:= -1;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
   end;
-
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
-
 end;
 
  procedure showPwdEdit;

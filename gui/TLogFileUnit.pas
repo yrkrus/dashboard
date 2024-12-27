@@ -111,7 +111,7 @@ end;
 
 constructor TLoggingFile.Create(InNameLog:string; isCreateInitBlockHR:Boolean = True);
 begin
-  m_mutex:=TMutex.Create(nil, False, 'Global\TLoggingFile');
+  m_mutex:=TMutex.Create(nil, False, 'Global\TLoggingFile_'+InNameLog);
 
  // создаем навигацию
   begin

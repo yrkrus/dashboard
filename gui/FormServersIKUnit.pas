@@ -58,44 +58,51 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then Exit;
-
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select count(id) from server_ik ');
-    Active:=True;
-
-    countServers:=Fields[0].Value;
+  if not Assigned(serverConnect) then begin
+     Screen.Cursor:=crDefault;
+     FreeAndNil(ado);
+     Exit;
   end;
 
-  with FormServersIK.listSG_Servers do begin
-   RowCount:=countServers;
-
+  try
     with ado do begin
+      ado.Connection:=serverConnect;
 
       SQL.Clear;
-      SQL.Add('select id,ip,alias,address from server_ik order by ip ASC');
+      SQL.Add('select count(id) from server_ik ');
       Active:=True;
 
-       for i:=0 to countServers-1 do begin
-          Cells[0,i]:=Fields[0].Value;
-          Cells[1,i]:=Fields[1].Value;
-          Cells[2,i]:=Fields[2].Value;
-          Cells[3,i]:=Fields[3].Value;
+      countServers:=Fields[0].Value;
+    end;
 
-         Next;
-       end;
+    with FormServersIK.listSG_Servers do begin
+     RowCount:=countServers;
+
+      with ado do begin
+
+        SQL.Clear;
+        SQL.Add('select id,ip,alias,address from server_ik order by ip ASC');
+        Active:=True;
+
+         for i:=0 to countServers-1 do begin
+            Cells[0,i]:=Fields[0].Value;
+            Cells[1,i]:=Fields[1].Value;
+            Cells[2,i]:=Fields[2].Value;
+            Cells[3,i]:=Fields[3].Value;
+
+           Next;
+         end;
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
     end;
   end;
 
   FormServersIK.Caption:='Сервера Инфоклиники ('+IntToStr(countServers)+')';
-
-  FreeAndNil(ado);
-  serverConnect.Close;
-  FreeAndNil(serverConnect);
-
   Screen.Cursor:=crDefault;
 end;
 
