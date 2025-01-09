@@ -1,13 +1,14 @@
-unit ReportsUnit;
+unit FormWaitUnit;
 
 interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Samples.Gauges;
 
 type
-  TFormReports = class(TForm)
+  TFormWait = class(TForm)
+    ProgressBar: TGauge;
   private
     { Private declarations }
   public
@@ -15,7 +16,7 @@ type
   end;
 
 var
-  FormReports: TFormReports;
+  FormWait: TFormWait;
 
 implementation
 

@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ComCtrls,
   Vcl.ExtCtrls, Vcl.Grids,Data.Win.ADODB, Data.DB, IdException, Vcl.Imaging.jpeg,TUserUnit,
-  Vcl.WinXCtrls, Vcl.Imaging.pngimage;
+  Vcl.WinXCtrls, Vcl.Imaging.pngimage, System.ImageList, Vcl.ImgList;
 
 type
   TFormAuth = class(TForm)
@@ -26,6 +26,10 @@ type
     ImgNewYear: TImage;
     lblInfoError: TLabel;
     lblInfoUpdateService: TLabel;
+    lblDEBUG: TLabel;
+    ImageListIcon: TImageList;
+    lblUserAuth: TLabel;
+    lblChangeUser: TLabel;
     procedure btnCloseClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnAuthClick(Sender: TObject);
@@ -38,9 +42,15 @@ type
     procedure FormSizeWithError(InStrokaError:string);
     procedure comboxUserChange(Sender: TObject);
     procedure edtPasswordChange(Sender: TObject);
+    procedure comboxUserDrawItem(Control: TWinControl; Index: Integer;
+      Rect: TRect; State: TOwnerDrawState);
+    procedure lblChangeUserClick(Sender: TObject);
+
 
   private
     { Private declarations }
+   function showUserNameAuthForm:Boolean;   // отображение ранее входивщего пользователя в выборе вариантов пользователей
+
   public
     { Public declarations }
   end;
@@ -58,12 +68,74 @@ uses
 
 {$R *.dfm}
 
+// отображение ранее входивщего пользователя в выборе вариантов пользователей
+function TFormAuth.showUserNameAuthForm:Boolean;
+var
+ userNameFamiliya:string;
+begin
+  Result:=False;
+
+  // найдем Имя фамилию последнего успешного входа
+  userNameFamiliya:=getUserFamiliyaName_LastSuccessEnter(getCurrentUserNamePC,getComputerPCName);
+  if userNameFamiliya='null' then Exit;
+
+  // найдем нужный items
+  comboxUser.ItemIndex:=comboxUser.Items.IndexOf(userNameFamiliya);
+  comboxUser.SetFocus;
+  edtPassword.SetFocus;
+
+  Result:=True;
+
+end;
+
+
+// загрузка иконок в лист бокс для последующего отображения в combobox
+procedure LoadIconListBox;
+const
+ SIZE_ICON:Word=16;
+var
+ i:Integer;
+ pngbmp: TPngImage;
+ bmp: TBitmap;
+begin
+ // **********************************************************
+ // добавление тут + в events DrawItem самого combox
+ // **********************************************************
+
+   // изменение стиля для отображения иконок в combox
+ if not FileExists(ICON_AUTH_USER) then Exit;
+
+
+   with FormAuth do begin
+     comboxUser.Style:=csOwnerDrawFixed;
+
+     ImageListIcon.SetSize(SIZE_ICON,SIZE_ICON);
+     ImageListIcon.ColorDepth:=cd32bit;
+
+     pngbmp:=TPngImage.Create;
+     bmp:=TBitmap.Create;
+
+     pngbmp.LoadFromFile(FOLDERPATH+ICON_AUTH_USER);
+
+      // сжимаем иконку до размера 16х16
+      with bmp do begin
+       Height:=SIZE_ICON;
+       Width:=SIZE_ICON;
+       Canvas.StretchDraw(Rect(0, 0, Width, Height), pngbmp);
+      end;
+
+      ImageListIcon.Add(bmp, nil);
+
+      if pngbmp<>nil then pngbmp.Free;
+      if bmp<>nil then bmp.Free;
+   end;
+end;
 
 procedure TFormAuth.DefaultFormSize;
 const
-  WidthDefaultForm:Word=338;
+  WidthDefaultForm:Word=336;
   HeightDefaultForm:Word=251;
-  WidthDefaulPanel:Word=337;
+  WidthDefaulPanel:Word=335;
   HeightDefaultPanel:Word=249;
   btnDefaultTop:Word=192;
 begin
@@ -149,11 +221,14 @@ begin
   System.Delete(user_familiya, AnsiPos(' ',user_familiya),Length(user_familiya));
 
   // проверим есть ли уже активная сессия
-  if GetExistActiveSession(getUserID(user_name,user_familiya),activeSession) then begin
-    Screen.Cursor:=crDefault;
-    FormSizeWithError('Активна другая сессия '+#13+activeSession);
-    Exit;
+  if not DEBUG then begin
+    if GetExistActiveSession(getUserID(user_name,user_familiya),activeSession) then begin
+      Screen.Cursor:=crDefault;
+      FormSizeWithError('Активна другая сессия '+#13+activeSession);
+      Exit;
+    end;
   end;
+
 
   pwd:=getHashPwd(current_pwd);
   user_pwd:=getUserPwd(getUserID(user_name,user_familiya));
@@ -183,6 +258,12 @@ begin
 
 
   if successEnter then begin
+    if not DEBUG then begin
+      if lblInfoUpdateService.Visible then begin
+       MessageBox(HomeForm.Handle,PChar('Служба автоматического обновления не работает'+#13#13+'Обратитесь в отдел ИТ если данное сообщение будет повторяться'),PChar('Информация'),MB_OK+MB_ICONINFORMATION);
+      end;
+    end;
+
     // логирование (авторизация)
     LoggingRemote(eLog_enter);
     Screen.Cursor:=crDefault;
@@ -218,6 +299,46 @@ end;
 procedure TFormAuth.comboxUserChange(Sender: TObject);
 begin
    DefaultFormSize;
+end;
+
+procedure TFormAuth.comboxUserDrawItem(Control: TWinControl; Index: Integer;
+  Rect: TRect; State: TOwnerDrawState);
+ var
+ ComboBox: TComboBox;
+ bitmap: TBitmap;
+ IconIndex:Integer;
+begin
+  if ImageListIcon.Count<>0 then begin
+
+      IconIndex:=0;
+
+      ComboBox:=(Control as TComboBox);
+      Bitmap:= TBitmap.Create;
+      try
+        ImageListIcon.GetBitmap(IconIndex, Bitmap);
+        with ComboBox.Canvas do
+        begin
+          FillRect(Rect);
+          if Bitmap.Handle <> 0 then
+            Draw(Rect.Left + 2, Rect.Top, Bitmap);
+          Rect := Bounds(
+            Rect.Left + ComboBox.ItemHeight + 3,
+            Rect.Top,
+            Rect.Right - Rect.Left,
+            Rect.Bottom - Rect.Top
+          );
+          DrawText(
+            handle,
+            PChar(ComboBox.Items[Index]),
+            length(ComboBox.Items[index]),
+            Rect,
+            DT_VCENTER + DT_SINGLELINE
+          );
+        end;
+      finally
+        Bitmap.Free;
+      end;
+  end;
 end;
 
 procedure TFormAuth.edtPasswordChange(Sender: TObject);
@@ -267,16 +388,31 @@ procedure TFormAuth.FormShow(Sender: TObject);
 var
  i:Integer;
 begin
+  // debug node
+  if DEBUG then lblDEBUG.Visible:=True;
+
   // размер окна по умолчанию
   DefaultFormSize;
 
+  // прогрузка иконок
+  LoadIconListBox;
   createIconPassword;
 
   // прогружаем пользователей
   LoadUsersAuthForm;
 
   // отображение ранее входивщего пользователя в выборе вариантов пользователей
-  showUserNameAuthForm;
+  if showUserNameAuthForm then begin
+    comboxUser.Visible:=False;
+
+    lblUserAuth.Font.Color:=clActiveCaption;
+    lblUserAuth.Caption:=comboxUser.Text;
+    lblUserAuth.Visible:=True;
+    lblUserAuth.Top:=99;
+
+    lblChangeUser.Visible:=True;
+    //lblChangeUser.Top:=100;
+  end;
 
   // версия
   lblVersion.Caption:=getVersion(GUID_VESRION,eGUI);
@@ -302,6 +438,17 @@ begin
   img_eay_open.Visible:=False;
 
   img_eay_close.Visible:=True;
+
+end;
+
+
+
+procedure TFormAuth.lblChangeUserClick(Sender: TObject);
+begin
+  lblUserAuth.Visible:=False;
+  lblChangeUser.Visible:=False;
+
+  comboxUser.Visible:=True;
 
 end;
 

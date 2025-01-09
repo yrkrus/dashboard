@@ -356,7 +356,7 @@ begin
 
            for i:=0 to countStatus-1 do begin
              preHome.Add(VarToStr(Fields[0].Value));
-             Next;
+             ado.Next;
            end;
 
          if Active then Active:=False;
@@ -376,7 +376,7 @@ begin
               else if j=1 then begin
                 if VarToStr(Fields[0].Value)= '11' then operatorGoHome:=True;
               end;
-             Next;
+             ado.Next;
            end;
 
            if (operatorExit) and (operatorGoHome) then Result.Add(preHome[i]);
@@ -410,7 +410,7 @@ begin
 
          for i:=0 to countStatus-1 do begin
            if getCurrentQueueOperator(VarToStr(Fields[0].Value)) = queue_null then Result.Add(IntToStr(getUserID(StrToInt(VarToStr(Fields[0].Value)))));
-           Next;
+           ado.Next;
          end;
        end;
 
@@ -499,7 +499,7 @@ begin
           end;
        end;
 
-        Next;
+        ado.Next;
       end;
 
     end;
@@ -662,7 +662,7 @@ end;
                          // добавим нового оператора
                          if isSipNoExist=False then sipOperators.Add(Fields[0].Value);
                       finally
-                        Next;
+                        ado.Next;
                       end;
                     end;
                  end;
@@ -732,7 +732,7 @@ end;
                        // добавим нового оператора
                        if isSipNoExist=False then sipOperators.Add(Fields[0].Value);
                     finally
-                      Next;
+                      ado.Next;
                     end;
                   end;
                end;
@@ -837,7 +837,7 @@ end;
               if Fields[0].Value = null then listOperators[i].phone:=''
               else listOperators[i].phone:=VarToStr(Fields[0].Value);
 
-            Next;
+            ado.Next;
           end;
        end;
     end;
@@ -903,7 +903,7 @@ end;
                  if tempQueue='' then tempQueue:=VarToStr(Fields[0].Value)
                  else tempQueue:=tempQueue+' и '+VarToStr(Fields[0].Value);
               end;
-              Next;
+              ado.Next;
             end;
 
             if oldQueue<>tempQueue then listOperators[i].queue:=tempQueue;
@@ -968,7 +968,7 @@ var
           end;
        end;
 
-       Next;
+       ado.Next;
      end;
 
     end;
@@ -1032,7 +1032,7 @@ var
             end;
          end;
 
-          Next;
+          ado.Next;
      end;
 
     end;
@@ -1097,7 +1097,7 @@ var
               end;
            end;
 
-          Next;
+          ado.Next;
         end;
      end;
 
@@ -1160,7 +1160,7 @@ var
                 end;
               end;
            finally
-               Next;
+               ado.Next;
            end;
         end;
      end;
@@ -1437,7 +1437,7 @@ function TActiveSIP.GetListOperators_TalkTime(id:Integer):string;
 begin
   if m_mutex.WaitFor(INFINITE) = wrSignaled  then begin
     try
-      Result:=Self.listOperators[id].talk_time;
+      Result:=Copy(Self.listOperators[id].talk_time, 4, 5);
     finally
       m_mutex.Release;
     end;

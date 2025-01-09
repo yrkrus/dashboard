@@ -134,7 +134,7 @@ begin
            Cells[2,i]:=Fields[1].Value;  // 5000
            Cells[3,i]:=Fields[2].Value;  // 5050
 
-           Next;
+           ado.Next;
          end;
 
          FormSettingsGlobal_listIVR.Caption:='История корректировок: '+IntToStr(countList);

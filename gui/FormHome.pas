@@ -7,7 +7,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Grids, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.Menus,Data.Win.ADODB, Data.DB, Vcl.Imaging.jpeg,System.SyncObjs,
   TActiveSIPUnit,TUserUnit, Vcl.Imaging.pngimage, ShellAPI, TLogFileUnit,
-  System.Zip;
+  System.Zip, Vcl.WinXCtrls;
 
 
 type
@@ -134,10 +134,6 @@ type
     img_goHome_YES: TImage;
     img_goHome_NO: TImage;
     chkboxGoHome: TCheckBox;
-    J1: TMenuItem;
-    N7: TMenuItem;
-    N18: TMenuItem;
-    N19: TMenuItem;
     ImgNewYear: TImage;
     ST_operatorsHideCount: TStaticText;
     Button3: TButton;
@@ -171,7 +167,6 @@ type
     procedure menu_About_VersionClick(Sender: TObject);
     procedure menu_About_DebugClick(Sender: TObject);
     procedure img_statistics_IVRClick(Sender: TObject);
-    procedure img_statistics_QUEUEClick(Sender: TObject);
     procedure img_statistics_list_QUEUEClick(Sender: TObject);
     procedure img_statistics_current_QUEUEClick(Sender: TObject);
     procedure FormResize(Sender: TObject);
@@ -185,6 +180,8 @@ type
     procedure menu_ChatClick(Sender: TObject);
     procedure lblNewMessageLocalChatClick(Sender: TObject);
     procedure Button3Click(Sender: TObject);
+    procedure img_statistics_QUEUEClick(Sender: TObject);
+    procedure menu_ReportsClick(Sender: TObject);
 
 
 
@@ -239,7 +236,6 @@ type
   отчеты (хз. пока какие нужны будут)
      - вчера в это же время звонков (хз нужно ли или нет )
 
-    статистика ожидания в очереди не сбрасыаеися когда переходит на другой день!!
 
 
   не отображать в списке номера из IVR которые сбросились
@@ -248,17 +244,25 @@ type
    (не готово)      onhold не фиксируется если у помогатора
 
 
-  ======================================================
-
-  ДОБАВЛЕНО
-  -
 
 
-  ИСПРАВЛЕНО
-  -
+
+  переписать
+function disableUser(InUserID:Integer):string;
+function enableUser(InUserID:Integer):string;
+function updateUserPassword(InUserID,InUserNewPassword:Integer):string;
+function getActiveSessionUser(InUserID:Integer):Integer;
+function remoteCommand_Responce(InStroka:string):string;
+function TFormServerIKEdit.getResponseBD(InTypePanel_Server:TypeResponse_Server;InIP,InAddr,InAlias:string):string;
+function getCheckFileds:string;
+function getResponseBD(InQueue5000,InQueue5050:string; InEditTime:Boolean = False):string;
+function getDeleteList(InID:string):string;
+function TFormTrunkEdit.getResponseBD(InTypePanel_Server:TypeResponse_Server;InAlias,InLogin:string; InStatus:enumMonitoringTrunk):string;
+
+function getCheckFileds:string;
 
 
-  =======================================================
+
 }
 
 
@@ -295,7 +299,7 @@ DMUnit, FunctionUnit, FormPropushennieUnit, FormSettingsUnit, Thread_StatisticsU
   FormAuthUnit, FormActiveSessionUnit, FormRePasswordUnit, Thread_AnsweredQueueUnit,
   ReportsUnit, Thread_ACTIVESIP_updatetalkUnit, FormDEBUGUnit, FormErrorUnit, TCustomTypeUnit,
   GlobalVariables, FormUsersUnit, FormServersIKUnit, FormSettingsGlobalUnit,
-  FormTrunkUnit, TFTPUnit, TXmlUnit;
+  FormTrunkUnit, TFTPUnit, TXmlUnit, FormStatisticsChartUnit;
 
 
 {$R *.dfm}
@@ -740,6 +744,7 @@ procedure THomeForm.FormShow(Sender: TObject);
 var
  i:Integer;
 begin
+ try
   Height:=861;
 
   // отображение текущей версии  ctrl+shift+G (GUID) - от этого ID зависит актуальность еще
@@ -752,7 +757,12 @@ begin
   ClearAfterUpdate;
 
    // проверка на 2ую копию дошборда
-  CloneRun;
+  if GetCloneRun(PChar(DASHBOARD_EXE)) then begin
+    MessageBox(HomeForm.Handle,PChar('Обнаружен запуск 2ой копии дашборда'+#13#13+
+                                     'Для продолжения закройте предыдущую копию'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
+   KillProcess;
+  end;
+
 
   Screen.Cursor:=crHourGlass;
 
@@ -798,9 +808,17 @@ begin
   // пасхалки
    HappyNewYear;
 
-
   Screen.Cursor:=crDefault;
   Button1.Click;
+  except
+  on E: Exception do begin
+    MessageBox(Handle,PChar('Этой надписи никогда не должно было быть!'+#13+
+                            'Если вы ее видите возникла ошибка'+#13#13+
+                            'Код ошибки: '+E.ClassName+#13+E.Message),PChar('Неизвестная ошибка'),MB_OK+MB_ICONERROR);
+    KillProcess;
+  end;
+ end;
+
 end;
 
 procedure THomeForm.menu_UsersClick(Sender: TObject);
@@ -840,7 +858,7 @@ end;
 
 procedure THomeForm.img_statistics_QUEUEClick(Sender: TObject);
 begin
- OnDevelop;
+  FormStatisticsChart.Show;
 end;
 
 procedure THomeForm.lblCheckInfocilinikaServerAliveClick(Sender: TObject);
@@ -922,6 +940,11 @@ end;
 procedure THomeForm.menu_GlobalSettingsClick(Sender: TObject);
 begin
  FormSettingsGlobal.ShowModal;
+end;
+
+procedure THomeForm.menu_ReportsClick(Sender: TObject);
+begin
+  OpenReports;
 end;
 
 end.

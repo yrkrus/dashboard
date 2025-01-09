@@ -95,7 +95,7 @@ begin
             if GetStatusMonitoring(StrToInt(Fields[4].Value)) = monitoring_ENABLE then Cells[4,i]:='Да'
             else Cells[4,i]:='Нет';
 
-            Next;
+            ado.Next;
          end;
       end;
     end;

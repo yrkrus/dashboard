@@ -69,10 +69,8 @@ function getSelectResponse(InStroka:string):Integer;                            
 procedure LoggingRemote(InLoggingID:enumLogging);                                      // логирование действий
 function TLoggingToInt(InTLogging:enumLogging):Integer;                                 // проеобразование из TLogging в Integer
 function IntToTLogging(InLogging:Integer):enumLogging;                                  // проеобразование из Integer в TLogging
-procedure showUserNameAuthForm;                                                      // отображение ранее входивщего пользователя в выборе вариантов пользователей
 function getUserFamiliyaName_LastSuccessEnter(InUser_login_pc,
                                               InUser_pc:string):string;              // нахождение userID после успешного входа на пк
-procedure CloneRun;                                                                  // проверка на 2ую копию дашборда
 function getCountAnsweredCall(InSipOperator:string):Integer;                         // кол-во отвеченных звонков оператором
 function getCountAnsweredCallAll:Integer;                                            // кол-во отвеченных звонков всех операторов
 function createListAnsweredCall(InSipOperator:string):TStringList;                   // создвание списка со всем отвеченными звонками  sip оператора
@@ -129,6 +127,7 @@ procedure VisibleIconOperatorsGoHome(InStatus:enumHideShowGoHomeOperators;
 procedure HappyNewYear;                                                              // пасхалка с новым годом
 function GetExistAccessToLocalChat(InUserId:Integer):Boolean;                        //есть ли доступ к локальному чату
 procedure OpenLocalChat;                                                             // открытые exe локального чата
+procedure OpenReports;                                                               // открытые exe отчетов
 function EnumChannelChatIDToString(InChatID:enumChatID):string;                // enumChatID -> string
 function EnumChannelToString(InChannel:enumChannel):string;                 //enumChannel -> string
 function EnumActiveBrowserToString(InActiveBrowser:enumActiveBrowser):string;     // enumActiveBrowser -> string
@@ -401,6 +400,7 @@ begin
   case InEnumProgram of
    eGUI     :Result:='gui';
    eCHAT    :Result:='chat';
+   eREPORT  :Result:='report';
   end;
 end;
 
@@ -607,7 +607,7 @@ begin
 
    finally
       //DM.ADOConnectServer.Close;
-      TerminateProcess(OpenProcess($0001, Boolean(0), getcurrentProcessID), 0);
+      KillProcessNow;
    end;
 end;
 
@@ -1168,7 +1168,7 @@ begin
 
       for i:=0 to countTalk-1 do begin
        Result.Add(Fields[0].Value);
-       Next;
+       ado.Next;
       end;
     end;
   finally
@@ -1295,6 +1295,7 @@ var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  countVersion,i:Integer;
+ test:string;
 begin
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
@@ -1330,7 +1331,7 @@ begin
                       Lines.Add('');
                       Lines.Add('');
                      end;
-                   Next;
+                   ado.Next;
                 end;
 
                 REHistory_GUI.SelStart:=0;
@@ -1348,11 +1349,14 @@ begin
                       Lines.Add('');
                       Lines.Add('');
                      end;
-                   Next;
+                   ado.Next;
                 end;
 
                 REHistory_CHAT.SelStart:=0;
                 STInfoVersionCHAT.Caption:=getVersion(GUID_VESRION,programm);
+              end;
+              eREPORT:begin
+                // TODO написать!
               end;
            end;
         end;
@@ -1524,7 +1528,7 @@ begin
             lblIP[i].Parent:=FormServerIKCheck;
           end;
 
-          Next;
+          ado.Next;
         end;
       end;
 
@@ -1818,7 +1822,7 @@ begin
 
 
 
-          Next;
+          ado.Next;
         end;
       end;
 
@@ -2055,6 +2059,7 @@ var
  ado:TADOQuery;
  serverConnect:TADOConnection;
 begin
+  Result:='null';
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
@@ -2071,8 +2076,7 @@ begin
       SQL.Add('select sip from operators where user_id = '+#39+IntToStr(InIDUser)+#39);
       Active:=True;
 
-      if Fields[0].Value<>null then Result:=VarToStr(Fields[0].Value)
-      else Result:='null';
+      if Fields[0].Value<>null then Result:=VarToStr(Fields[0].Value);
     end;
   finally
     FreeAndNil(ado);
@@ -2162,7 +2166,7 @@ begin
               else Cells[4,i]:='Отключен';
              end;
 
-             Next;
+             ado.Next;
            end;
 
            FormUsers.Caption:='Пользователи: '+IntToStr(countUsers);
@@ -2231,7 +2235,7 @@ begin
            else Cells[3,i]:='null';
            Cells[4,i]:=getUserRoleSTR( StrToInt(Fields[2].Value) );  // Группа прав
 
-           Next;
+           ado.Next;
          end;
       end;
     end;
@@ -2691,7 +2695,7 @@ begin
 
          for i:=0 to countUsers-1 do begin
           Items.Add(Fields[0].Value+' '+Fields[1].Value);
-          Next;
+          ado.Next;
          end;
        end;
     end;
@@ -2752,26 +2756,6 @@ begin
       FreeAndNil(serverConnect);
     end;
   end;
-end;
-
-
-// отображение ранее входивщего пользователя в выборе вариантов пользователей
-procedure showUserNameAuthForm;
-var
- userNameFamiliya:string;
-begin
-  // найдем Имя фамилию последнего успешного входа
-  userNameFamiliya:=getUserFamiliyaName_LastSuccessEnter(getCurrentUserNamePC,getComputerPCName);
-  if userNameFamiliya='null' then Exit;
-
-  // найдем нужный items
-  with FormAuth do begin
-    comboxUser.ItemIndex:=comboxUser.Items.IndexOf(userNameFamiliya);
-    comboxUser.SetFocus;
-
-    edtPassword.SetFocus;
-  end;
-
 end;
 
 
@@ -3423,19 +3407,7 @@ begin
   end;
 end;
 
-// проверка на 2ую копию дашборда
-procedure CloneRun;
-var
- dashStart:Cardinal;
-begin
-  // проверка на запущенную копию
-   dashStart:= CreateMutex(nil, True, PChar(DASHBOARD_EXE));
-   if GetLastError = ERROR_ALREADY_EXISTS then
-   begin
-     MessageBox(HomeForm.Handle,PChar('Обнаружен запуск 2ой копии дашборда'+#13#13+'Для продолжения закройте предыдущую копию'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
-     KillProcess;
-   end;
-end;
+
 
 // проверка на актуальную версию
 procedure CheckCurrentVersion;
@@ -3447,7 +3419,7 @@ begin
 
   if GUID_VESRION <> remoteVersion then begin
    MessageBox(HomeForm.Handle,PChar('Текущая версия дашборда отличается от актуальной версии'+#13#13
-                                    +'Перезагрузите компьютер или перезапустите службу обновления ('+UPDATE_EXE+')'),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
+                                    +'Перезагрузите компьютер или перезапустите службу обновления ('+UPDATE_SERVICES+')'),PChar('Текущая версия устарела'),MB_OK+MB_ICONINFORMATION);
    KillProcess;
   end;
 
@@ -4104,7 +4076,7 @@ begin
            end;
         end;
 
-        Next;
+        ado.Next;
       end;
 
     end;
@@ -4694,7 +4666,7 @@ begin
         Active:=True;
         for i:=0 to countID-1 do begin
            Result.Add(VarToStr(Fields[0].Value));
-           Next;
+           ado.Next;
         end;
       end;
 
@@ -4839,7 +4811,7 @@ end;
 procedure OpenLocalChat;
 begin
  if not SharedCurrentUserLogon.GetIsAccessLocalChat then begin
-    MessageBox(HomeForm.Handle,PChar('У Вас нет доступа к локальному чату'),PChar('Доступ отсутствует'),MB_OK+MB_ICONINFORMATION);
+    MessageBox(HomeForm.Handle,PChar('Отсутствует доступ к локальному чату'),PChar('Отсутствует доступ'),MB_OK+MB_ICONINFORMATION);
     Exit;
  end;
 
@@ -4851,6 +4823,22 @@ begin
   ShellExecute(HomeForm.Handle, 'Open', PChar(CHAT_EXE),PChar(CHAT_PARAM+' '+IntToStr(SharedCurrentUserLogon.GetID)),nil,SW_SHOW);
 end;
 
+
+// открытые exe отчетов
+procedure OpenReports;
+begin
+ if not SharedCurrentUserLogon.GetIsAccessReports then begin
+    MessageBox(HomeForm.Handle,PChar('Отсутствует доступ к отчетам'),PChar('Отсутствует доступ'),MB_OK+MB_ICONINFORMATION);
+    Exit;
+ end;
+
+  if not FileExists(REPORTS_EXE) then begin
+    MessageBox(HomeForm.Handle,PChar('Не удается найти файл '+REPORTS_EXE),PChar('Файл не найден'),MB_OK+MB_ICONERROR);
+    Exit;
+  end;
+
+  ShellExecute(HomeForm.Handle, 'Open', PChar(REPORTS_EXE),PChar(REPORTS_PARAM+' '+IntToStr(SharedCurrentUserLogon.GetID)),nil,SW_SHOW);
+end;
 
 // enumChatID -> string
 function EnumChannelChatIDToString(InChatID:enumChatID):string;

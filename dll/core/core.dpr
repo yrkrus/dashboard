@@ -125,6 +125,41 @@ begin
 end;
 
 
+// есть ли доступ у пользователя к отчетам
+function GetUserAccessReports(InUserID:Integer):Boolean;stdcall;export;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+  Result:=False;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+
+      SQL.Clear;
+      SQL.Add('select reports from users where id = '+#39+IntToStr(InUserID)+#39);
+
+      Active:=True;
+      if StrToInt(VarToStr(Fields[0].Value)) = 1  then  Result:=True;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
 // текущая версия дашборда (БД)
 function GetRemoteVersionDashboard:PChar; stdcall;export;
 var
@@ -159,8 +194,25 @@ begin
   end;
 end;
 
+ // проверка на копию exe
+function GetCloneRun(InExeName:Pchar):Boolean; stdcall; export;
+var
+ m_mutex:Cardinal;
+begin
+  Result:=False;
+  // проверка на запущенную копию
+   m_mutex:= CreateMutex(nil, True, PChar(InExeName));
+   if GetLastError = ERROR_ALREADY_EXISTS then Result:=True;
+end;
 
-function GetUserNameFIO(InUserID:Integer):PChar; export;
+
+ //принудительное завершение работы
+procedure KillProcessNow; stdcall; export;
+begin
+  TerminateProcess(OpenProcess($0001, Boolean(0), getcurrentProcessID), 0);
+end;
+
+function GetUserNameFIO(InUserID:Integer):PChar; stdcall; export;
 begin
   Result:=PChar(GetUserFIO(InUserID));
 end;
@@ -281,7 +333,10 @@ exports
   GetCopyright,
   GetUserNameFIO,
   GetUserAccessLocalChat,
+  GetUserAccessReports,
   GetRemoteVersionDashboard,
+  GetCloneRun,
+  KillProcessNow,
   GetCurrentStartDateTime,
   GetCurrentDateTimeDec,
   GetCurrentTime,

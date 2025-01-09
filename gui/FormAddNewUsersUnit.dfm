@@ -141,7 +141,7 @@ object FormAddNewUsers: TFormAddNewUsers
     Width = 230
     Height = 24
     PasswordChar = '*'
-    TabOrder = 8
+    TabOrder = 9
   end
   object chkboxmyPwd: TCheckBox
     Left = 18
@@ -158,7 +158,7 @@ object FormAddNewUsers: TFormAddNewUsers
     Width = 230
     Height = 24
     PasswordChar = '*'
-    TabOrder = 10
+    TabOrder = 11
   end
   object edtNewLogin: TEdit
     Left = 15
@@ -251,7 +251,7 @@ object FormAddNewUsers: TFormAddNewUsers
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 9
+    TabOrder = 10
     WordWrap = True
     OnClick = btnAddNewUserClick
   end
@@ -265,9 +265,9 @@ object FormAddNewUsers: TFormAddNewUsers
     OnClick = chkboxManualLoginClick
   end
   object chkboxAllowLocalChat: TCheckBox
-    Left = 286
+    Left = 301
     Top = 191
-    Width = 130
+    Width = 123
     Height = 17
     Caption = #1083#1086#1082#1072#1083#1100#1085#1099#1081' '#1095#1072#1090
     Font.Charset = RUSSIAN_CHARSET
@@ -341,5 +341,19 @@ object FormAddNewUsers: TFormAddNewUsers
       TabOrder = 2
       OnClick = chkboxZoiperClick
     end
+  end
+  object chkboxAllowReports: TCheckBox
+    Left = 429
+    Top = 191
+    Width = 75
+    Height = 17
+    Caption = #1086#1090#1095#1077#1090#1099
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = [fsBold]
+    ParentFont = False
+    TabOrder = 8
   end
 end

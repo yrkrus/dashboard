@@ -214,7 +214,7 @@ begin
 
   if ParamCount = 0 then begin
    MessageBox(Handle,PChar('Локальный чат можно запустить только из дашборда'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
-   KillProcess;
+   KillProcessNow;
   end;
 
   for i:= 1 to ParamCount do
@@ -230,7 +230,7 @@ begin
       else
       begin
         MessageBox(Handle,PChar('Слишком много параметров'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
-        KillProcess;
+        KillProcessNow;
       end;
     end;
   end;
@@ -349,13 +349,17 @@ end;
 
 procedure TFormHome.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  KillProcess;
+  KillProcessNow;
 end;
 
 procedure TFormHome.FormCreate(Sender: TObject);
 begin
   // проверка на запуска 2ой копи
-  CloneRun;
+  if GetCloneRun(PChar(CHAT_EXE)) then begin
+    MessageBox(Handle,PChar('Обнаружен запуск 2ой копии чата'+#13#13+
+                            'Для продолжения закройте предыдущую копию'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
+   KillProcessNow;
+  end;
 
   ProcessCommandLineParams(DEBUG);
 end;

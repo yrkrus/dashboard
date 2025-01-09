@@ -5717,6 +5717,7 @@ object FormAbout: TFormAbout
     object sheetGUI: TTabSheet
       Caption = #1044#1072#1096#1073#1086#1088#1076' '#1076#1083#1103' '#1082#1086#1083#1083#1094#1077#1085#1090#1088#1072
       ExplicitLeft = 0
+      ExplicitTop = 0
       ExplicitWidth = 479
       ExplicitHeight = 359
       object Panel1: TPanel
@@ -5745,10 +5746,6 @@ object FormAbout: TFormAbout
           ScrollBars = ssVertical
           TabOrder = 0
           Zoom = 100
-          ExplicitLeft = -44
-          ExplicitTop = -21
-          ExplicitWidth = 591
-          ExplicitHeight = 356
         end
       end
       object STInfoVersionGUI: TStaticText
@@ -5773,6 +5770,8 @@ object FormAbout: TFormAbout
     object sheetCHAT: TTabSheet
       Caption = #1051#1086#1082#1072#1083#1100#1085#1099#1081' '#1095#1072#1090
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
       ExplicitWidth = 479
       ExplicitHeight = 359
       object Panel2: TPanel

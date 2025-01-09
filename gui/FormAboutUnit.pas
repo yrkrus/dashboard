@@ -27,6 +27,7 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure TimerStartPashalka1Timer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure ShowVersion;
   private
   procedure SetRandomFontColor(lbl: TLabel);
     { Private declarations }
@@ -45,6 +46,13 @@ uses
   FunctionUnit, GlobalVariables, TCustomTypeUnit;
 
 {$R *.dfm}
+
+procedure TFormAbout.ShowVersion;
+begin
+  showVersionAbout(eGUI);
+  showVersionAbout(eCHAT);
+  showVersionAbout(eREPORT);
+end;
 
 procedure TFormAbout.SetRandomFontColor(lbl: TLabel);
 var
@@ -74,8 +82,7 @@ begin
   Pashalka:=0;
 
   // отображение истории версий
-  showVersionAbout(eGUI);
-  showVersionAbout(eCHAT);
+  ShowVersion;
 
   lblDevelop.Caption:=GetCopyright;
 

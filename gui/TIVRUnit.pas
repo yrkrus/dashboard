@@ -373,7 +373,7 @@ end;
                  (Fields[2].Value = null) or
                  (Fields[3].Value = null)
               then begin
-               Next;
+               ado.Next;
                Continue;
               end;
 
@@ -410,7 +410,7 @@ end;
               end;
 
             finally
-               Next;
+               ado.Next;
             end;
           end;
        end else begin

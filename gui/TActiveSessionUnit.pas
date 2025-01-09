@@ -239,7 +239,7 @@ begin
         end
         else listActiveSession[i].isQueue:=False;
 
-        Next;
+        ado.Next;
       end;
     end;
   finally

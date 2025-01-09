@@ -210,7 +210,7 @@ end;
                 listActiveQueue[i].queue:=VarToStr(Fields[3].Value);
               end;
             finally
-               Next;
+               ado.Next;
             end;
           end;
        end;

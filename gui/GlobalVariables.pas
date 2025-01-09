@@ -16,11 +16,14 @@ uses
   TIVRUnit;
 
 var
-  // текущая директория откуда запускаем chat.exe
+   // режим разработки
+  DEBUG:Boolean = true;
+
+  // текущая директория откуда запускаем *.exe
   FOLDERPATH:string;
 
   // Текущая версия GUID   ctrl+shift+G (GUID)
-  GUID_VESRION    :string = 'DC0B7341';
+  GUID_VESRION    :string = 'DC0B7340';
 
   // exe родителя
   DASHBOARD_EXE    :string = 'dashboard.exe';
@@ -32,10 +35,17 @@ var
   CHAT_EXE         :string = 'chat.exe';
   CHAT_PARAM       :string = '--USER_ID';
 
+  // отчеты
+  REPORTS_EXE         :string = 'report.exe';
+  REPORTS_PARAM       :string = '--USER_ID';
+
   // служба обновления
   UPDATE_EXE        : string = 'update.exe';
   UPDATE_SERVICES   : string = 'update_dashboard';
   UPDATE_BAT        : string = 'update.bat'; // обновлялка
+
+  // иконка авторизации
+  ICON_AUTH_USER    : string = 'user_icon_auth.png';
 
   // список с текущими активными операторами
   SharedActiveSipOperators: TActiveSIP;
@@ -56,20 +66,23 @@ var
   // --- core.dll ---
  type
   p_TADOConnection = Pointer; // Указатель на TADOConnection
-  function createServerConnect: p_TADOConnection; stdcall;    external 'core.dll';       // Создание подключения к серверу
-  function GetCopyright:Pchar;                   stdcall;    external 'core.dll';       // copyright
-  function GetUserNameFIO(InUserID:Integer):PChar;   stdcall;     external 'core.dll';       // полчуение имени пользователя из его UserID
-  function GetUserAccessLocalChat(InUserID:Integer):Boolean;   stdcall;     external 'core.dll';       // есть ли доступ у пользователя к локальному чату
-  function GetCurrentDateTimeDec(DecMinutes:Integer):PChar; overload;  stdcall; external 'core.dll';       // текущее начала дня минус -DecMinutes
-  function GetCurrentStartDateTime:PChar; overload;  stdcall; external 'core.dll';       // текущее начала дня с минутами 00:00:00
-  function GetCurrentTime:PChar; stdcall; external 'core.dll';       // текущее время
-  function GetLocalChatNameFolder:PChar; stdcall; external 'core.dll';       // // папка с локальным чатом
-  function GetExtensionLog:PChar; stdcall; external 'core.dll';        // папка с локальным чатом
-  function GetLogNameFolder:PChar; stdcall; external 'core.dll';       // папка с логом
-  function GetUpdateNameFolder:PChar; stdcall; external 'core.dll';       // папка с update (обновленияем)
-  function GetRemoteVersionDashboard:PChar; stdcall;external 'core.dll';        // текущая версия дашборда (БД)
-  function KillTask(ExeFileName:string):integer;  stdcall; external 'core.dll';        // функция остановки exe
-  function GetTask(ExeFileName:string):Boolean;  stdcall; external 'core.dll';         // проверка запущен ли процесс
+  function createServerConnect: p_TADOConnection;             stdcall;  external 'core.dll';       // Создание подключения к серверу
+  function GetCopyright:Pchar;                                stdcall;  external 'core.dll';       // copyright
+  function GetUserNameFIO(InUserID:Integer):PChar;            stdcall;  external 'core.dll';       // полчуение имени пользователя из его UserID
+  function GetUserAccessLocalChat(InUserID:Integer):Boolean;  stdcall;  external 'core.dll';       // есть ли доступ у пользователя к локальному чату
+  function GetUserAccessReports(InUserID:Integer):Boolean;    stdcall;  external 'core.dll';       // есть ли доступ у пользователя к отчетам
+  function GetCurrentDateTimeDec(DecMinutes:Integer):PChar;   overload; stdcall; external 'core.dll';       // текущее начала дня минус -DecMinutes
+  function GetCurrentStartDateTime:PChar;                     overload; stdcall; external 'core.dll';       // текущее начала дня с минутами 00:00:00
+  function GetCurrentTime:PChar;                              stdcall;  external 'core.dll';       // текущее время
+  function GetLocalChatNameFolder:PChar;                      stdcall;  external 'core.dll';       // папка с локальным чатом
+  function GetExtensionLog:PChar;                             stdcall;  external 'core.dll';       // папка с локальным чатом
+  function GetLogNameFolder:PChar;                            stdcall;  external 'core.dll';       // папка с логом
+  function GetUpdateNameFolder:PChar;                         stdcall;  external 'core.dll';       // папка с update (обновленияем)
+  function GetRemoteVersionDashboard:PChar;                   stdcall;  external 'core.dll';       // текущая версия дашборда (БД)
+  function KillTask(ExeFileName:string):integer;              stdcall;  external 'core.dll';       // функция остановки exe
+  procedure KillProcessNow;                                   stdcall;  external 'core.dll';       // немедленное звершение работы
+  function GetTask(ExeFileName:string):Boolean;               stdcall;  external 'core.dll';       // проверка запущен ли процесс
+  function GetCloneRun(InExeName:Pchar):Boolean;              stdcall;  external 'core.dll';       // проверка на 2ую запущенную копию
 
 
   // --- connect_to_server.dll ---
@@ -92,7 +105,6 @@ initialization  // Инициализация
   SharedActiveSipOperators := TActiveSIP.Create;
   SharedIVR := TIVR.Create;
 
-  //SharedLoggingFile := TLoggingFile.Create;
 
 finalization
   // Освобождение памяти

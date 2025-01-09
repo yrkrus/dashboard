@@ -141,7 +141,8 @@ interface
 
   type  // тип программы
   enumProrgamm = ( eGUI,
-                   eCHAT
+                   eCHAT,
+                   eREPORT
                    );
 
   type  // какой браузер сейчас активен основной или дополнительный  !TODO эти же типы есть еще и в chat.exe

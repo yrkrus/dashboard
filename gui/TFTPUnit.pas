@@ -34,6 +34,7 @@ uses
 
     procedure DownloadFile(InFileNameDownload:string); // скачать файл
     function isDownloadedFile(InFileNameDownload:string):Boolean; // успешно ли скачан файд
+    function isConnect:Boolean;       // успешно ли подключились к ftp
 
   private
     m_ftp             :TIdFTP;   // сам ftp
@@ -203,6 +204,12 @@ end;
 function TFTP.isDownloadedFile(InFileNameDownload:string):Boolean;
 begin
   Result:=Self.isDownloaded;
+end;
+
+// успешно ли подключились к ftp
+function TFTP.isConnect:Boolean;
+begin
+   Result:=Self.isConnected;
 end;
 
 // enumExtensionFTP -> string

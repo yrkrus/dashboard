@@ -394,6 +394,10 @@ object FormHome: TFormHome
       object sheet_0: TTabSheet
         Caption = 'sheet_0'
         ImageIndex = 1
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object chat_0_master: TWebBrowser
           Left = 0
           Top = 0
@@ -434,6 +438,10 @@ object FormHome: TFormHome
       object sheet_2: TTabSheet
         Caption = 'sheet_2'
         ImageIndex = 2
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object chat_2_slave: TWebBrowser
           Left = 0
           Top = 0
@@ -474,6 +482,10 @@ object FormHome: TFormHome
       object sheet_3: TTabSheet
         Caption = 'sheet_3'
         ImageIndex = 3
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object chat_3_master: TWebBrowser
           Left = 0
           Top = 0
@@ -514,6 +526,10 @@ object FormHome: TFormHome
       object sheet_4: TTabSheet
         Caption = 'sheet_4'
         ImageIndex = 4
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object chat_4_slave: TWebBrowser
           Left = 0
           Top = 0
@@ -554,6 +570,10 @@ object FormHome: TFormHome
       object sheet_5: TTabSheet
         Caption = 'sheet_5'
         ImageIndex = 5
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object chat_5_master: TWebBrowser
           Left = 0
           Top = 0
@@ -594,6 +614,10 @@ object FormHome: TFormHome
       object sheet_6: TTabSheet
         Caption = 'sheet_6'
         ImageIndex = 6
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object chat_6_slave: TWebBrowser
           Left = 0
           Top = 0
@@ -634,6 +658,10 @@ object FormHome: TFormHome
       object sheet_7: TTabSheet
         Caption = 'sheet_7'
         ImageIndex = 7
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object chat_7_master: TWebBrowser
           Left = 0
           Top = 0
@@ -674,6 +702,10 @@ object FormHome: TFormHome
       object sheet_8: TTabSheet
         Caption = 'sheet_8'
         ImageIndex = 8
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object chat_8_slave: TWebBrowser
           Left = 0
           Top = 0
@@ -714,6 +746,10 @@ object FormHome: TFormHome
       object sheet_9: TTabSheet
         Caption = 'sheet_9'
         ImageIndex = 9
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object chat_9_master: TWebBrowser
           Left = 0
           Top = 0
@@ -754,6 +790,10 @@ object FormHome: TFormHome
       object sheet_1: TTabSheet
         Caption = 'sheet_1'
         ImageIndex = 10
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object chat_1_master: TWebBrowser
           Left = 0
           Top = 0

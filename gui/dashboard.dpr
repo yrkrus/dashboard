@@ -51,7 +51,8 @@ uses
   TXmlUnit in 'TXmlUnit.pas',
   Thread_ChatUnit in 'Thread_ChatUnit.pas',
   TLogFileUnit in 'TLogFileUnit.pas',
-  TFTPUnit in 'TFTPUnit.pas';
+  TFTPUnit in 'TFTPUnit.pas',
+  FormStatisticsChartUnit in 'FormStatisticsChartUnit.pas' {FormStatisticsChart};
 
 {$R *.res}
 
@@ -89,5 +90,6 @@ begin
   Application.CreateForm(TFormTrunk, FormTrunk);
   Application.CreateForm(TFormTrunkEdit, FormTrunkEdit);
   Application.CreateForm(TFormGlobalSettingCheckFirebirdConnect, FormGlobalSettingCheckFirebirdConnect);
+  Application.CreateForm(TFormStatisticsChart, FormStatisticsChart);
   Application.Run;
 end.

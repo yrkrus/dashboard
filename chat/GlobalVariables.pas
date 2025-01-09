@@ -19,6 +19,7 @@ var
  // режим разработки
   DEBUG:Boolean = false;
 
+  CHAT_EXE         :string = 'chat.exe';
 
   // текущая директория откуда запускаем chat.exe
   FOLDERPATH:string;
@@ -52,15 +53,17 @@ var
   // --- core.dll ---
   type
   p_TADOConnection = Pointer; // Указатель на TADOConnection
-  function createServerConnect: p_TADOConnection;     stdcall;    external 'core.dll';     // Создание подключения к серверу
-  function GetCopyright:Pchar;                       stdcall;    external 'core.dll';     // copyright
-  function GetUserNameFIO(InUserID:Integer):PChar;    stdcall;    external 'core.dll'; // полчуение имени пользователя из его UserID
-  function GetUserAccessLocalChat(InUserID:Integer):Boolean;   stdcall;     external 'core.dll';       // есть ли доступ у пользователя к локальному чату
-  function GetCurrentDateTimeDec(DecMinutes:Integer):PChar; overload;  stdcall; external 'core.dll';       // текущее начала дня минус -DecMinutes
-  function GetCurrentStartDateTime:PChar; overload;  stdcall; external 'core.dll';       // текущее начала дня с минутами 00:00:00
-  function GetCurrentTime:PChar; stdcall; external 'core.dll';       // текущее время  yyyymmdd
-  function GetLocalChatNameFolder:PChar; stdcall; external 'core.dll';       // // папка с локальным чатом
-  function GetExtensionLog:PChar; stdcall; external 'core.dll';       // // папка с локальным чатом
+  function createServerConnect: p_TADOConnection;             stdcall;    external 'core.dll';          // Создание подключения к серверу
+  function GetCopyright:Pchar;                                stdcall;    external 'core.dll';          // copyright
+  function GetUserNameFIO(InUserID:Integer):PChar;            stdcall;    external 'core.dll';          // полчуение имени пользователя из его UserID
+  function GetUserAccessLocalChat(InUserID:Integer):Boolean;  stdcall;    external 'core.dll';          // есть ли доступ у пользователя к локальному чату
+  function GetCurrentDateTimeDec(DecMinutes:Integer):PChar;   overload;   stdcall; external 'core.dll'; // текущее начала дня минус -DecMinutes
+  function GetCurrentStartDateTime:PChar;                     overload;   stdcall; external 'core.dll'; // текущее начала дня с минутами 00:00:00
+  function GetCurrentTime:PChar;                              stdcall;    external 'core.dll';          // текущее время  yyyymmdd
+  function GetLocalChatNameFolder:PChar;                      stdcall;    external 'core.dll';          // папка с локальным чатом
+  function GetExtensionLog:PChar;                             stdcall;    external 'core.dll';          // расширение чата
+  function GetCloneRun(InExeName:Pchar):Boolean;              stdcall;    external 'core.dll';          // проверка на 2ую запущенную копию
+  procedure KillProcessNow;                                   stdcall;    external 'core.dll';          // немедленное звершение работы
 
   // --- connect_to_server.dll ---
   function GetFTPServerAddress:string;   stdcall;   external 'connect_to_server.dll'; // адрес ftp

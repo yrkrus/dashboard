@@ -10,6 +10,7 @@ const
  // exe родителя
  DASHBOARD_EXE    :string = 'dashboard.exe';
  CHAT_EXE         :string = 'chat.exe';
+ REPORTS_EXE      :string = 'report.exe';
  UPDATE_EXE       :string = 'update.exe';
 
  UPDATE_BAT       :string = 'update.bat';
@@ -28,7 +29,6 @@ var
  type
   p_TADOConnection = Pointer; // Указатель на TADOConnection
   function createServerConnect: p_TADOConnection; stdcall;    external 'core.dll';       // Создание подключения к серверу
-
   function GetCurrentDateTimeDec(DecMinutes:Integer):PChar; overload;  stdcall; external 'core.dll';       // текущее начала дня минус -DecMinutes
   function GetCurrentStartDateTime:PChar; overload;  stdcall; external 'core.dll';       // текущее начала дня с минутами 00:00:00
   function GetCurrentTime:PChar; stdcall; external 'core.dll';       // текущее время

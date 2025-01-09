@@ -70,6 +70,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
       function GetRePassword                 :Boolean;    // получить текущий re_password
       function GetIsOperator                 :Boolean;    // текущий пользователь в роли оператора?
       function GetIsAccessLocalChat          :Boolean;    // текущий пользователь есть доступ к локальному чату
+      function GetIsAccessReports            :Boolean;    // текущий пользователь есть доступ к отчетам
 
       function GetAccess(Menu:enumAccessList):enumAccessStatus; // получение данных о том какие параметры могут быть открыты на доступе у пользователя
 
@@ -84,9 +85,12 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
 
       isOperator                              : Boolean;   // пользователь оператор или нет
       isAccessLocalChat                       : Boolean;   // есть ли доступ в локальному чату
+      isAccessReports                         : Boolean;   // есть ли доступ к отчетам
+
 
       function GetRoleIsOperator(InRole:enumRole):Boolean;     // проверка роль пользователя это операторская роль
-      function GetAccessLocalChat(InUserID:integer):Boolean; // проверка есть ли доступ в локальному чату
+      function GetAccessLocalChat(InUserID:integer):Boolean; // проверка есть ли доступ к локальному чату
+      function GetAccessReports(InUserID:integer):Boolean; // проверка есть ли доступ к отчетам
 
       end;
  // class TUser END
@@ -248,6 +252,43 @@ begin
 end;
 
 
+ // проверка есть ли доступ к отчетам
+ function TUser.GetAccessReports(InUserID:integer):Boolean;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+   Result:=False;
+
+   ado:=TADOQuery.Create(nil);
+   serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select reports from users where id = '+#39+IntToStr(InUserId)+#39);
+
+      Active:=True;
+
+      if Fields[0].Value<>null then begin
+        if StrToInt(VarToStr(Fields[0].Value)) = 1 then Result:=True;
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+
  procedure TUser.UpdateParams(InParams:TUserList);
  begin
    with Self.Params do begin
@@ -271,6 +312,8 @@ end;
    // проверка есть ли досутп к локальному чату
    Self.isAccessLocalChat:=GetAccessLocalChat(InParams.id);
 
+   // проверка есть ли досутп к отчетам
+   Self.isAccessReports:=GetAccessReports(InParams.id);
  end;
 
  function TUser.GetID:Integer;
@@ -323,6 +366,12 @@ end;
  begin
   Result:=Self.isAccessLocalChat;
  end;
+
+ function TUser.GetIsAccessReports:Boolean;
+ begin
+  Result:=Self.isAccessReports;
+ end;
+
 
  function TUser.GetAccess(Menu:enumAccessList):enumAccessStatus;
  begin

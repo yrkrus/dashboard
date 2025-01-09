@@ -32,6 +32,7 @@ type
     lblOperatorSetting_Tel_show: TLabel;
     edtOperatorSetting_Tel_show: TEdit;
     chkboxZoiper: TCheckBox;
+    chkboxAllowReports: TCheckBox;
     procedure chkboxmyPwdClick(Sender: TObject);
     procedure comboxUserGroupChange(Sender: TObject);
     procedure btnAddNewUserClick(Sender: TObject);
@@ -138,7 +139,8 @@ var
  user_group,
  user_sip,
  user_sip_phone,
- user_chat:string;
+ user_chat,
+ user_reports:string;
 
  u_role:string;
 
@@ -217,18 +219,24 @@ begin
         // доступ к чату
         if chkboxAllowLocalChat.Checked then user_chat:='1'
         else user_chat:='0';
+
+        // доступ к отчетам
+        if chkboxAllowReports.Checked then user_reports:='1'
+        else user_reports:='0';
+
       end;
 
 
       case InTypeAction of
         user_add:begin
-          SQL.Add('insert into users (name,familiya,role,login,pass,is_need_reset_pwd,chat) values ('+#39+user_name+#39+','
-                                                                                                +#39+user_familiya+#39+','
-                                                                                                +#39+u_role+#39+','
-                                                                                                +#39+user_login+#39+','
-                                                                                                +#39+user_pwd+#39+','
-                                                                                                +#39+IntToStr(isNeedResetPwd)+#39+','
-                                                                                                +#39+user_chat+#39+')');
+          SQL.Add('insert into users (name,familiya,role,login,pass,is_need_reset_pwd,chat,reports) values ('+#39+user_name+#39+','
+                                                                                                             +#39+user_familiya+#39+','
+                                                                                                             +#39+u_role+#39+','
+                                                                                                             +#39+user_login+#39+','
+                                                                                                             +#39+user_pwd+#39+','
+                                                                                                             +#39+IntToStr(isNeedResetPwd)+#39+','
+                                                                                                             +#39+user_chat+#39+','
+                                                                                                             +#39+user_reports+#39+')');
         end;
         user_update:begin
 
@@ -240,6 +248,7 @@ begin
                                               +', login = '   +#39+user_login+#39
                                               +', pass = '    +#39+user_pwd+#39
                                               +', chat = '    +#39+user_chat+#39
+                                              +', reports = ' +#39+user_reports+#39
                                               +' where id = ' +#39+IntToStr(FormAddNewUsers.currentEditUsersID)+#39);
              //,,,login,pass,
           end
@@ -249,6 +258,7 @@ begin
                                               +', role = '    +#39+u_role+#39
                                               +', login = '   +#39+user_login+#39
                                               +', chat = '    +#39+user_chat+#39
+                                              +', reports = ' +#39+user_reports+#39
                                               +' where id = ' +#39+IntToStr(FormAddNewUsers.currentEditUsersID)+#39);
           end;
         end;
@@ -320,7 +330,7 @@ procedure showSettingOperatorSIP(IsVisible:Boolean);
 const
  //cLeft:Word                 = 286;
  cTopPanelOperators:Word    = 54;
- cTopChatDefault:Word       = 191;
+ cTopChatReportsDefault:Word       = 191;
 begin
   with FormAddNewUsers do begin
      if IsVisible then begin  // для операторских групп
@@ -332,7 +342,10 @@ begin
        chkboxZoiper.Checked:=False;
 
         // локальный чат
-        chkboxAllowLocalChat.Top:=cTopChatDefault;
+        chkboxAllowLocalChat.Top:=cTopChatReportsDefault;
+
+        // отчеты
+        chkboxAllowReports.Top:=cTopChatReportsDefault;
 
         if comboxUserGroup.Text='Оператор (без дашборда)' then begin
           lblOperatorSetting_Tel_show.Enabled:=False;
@@ -343,6 +356,7 @@ begin
           chkboxZoiper.Enabled:=False;
 
           chkboxAllowLocalChat.Enabled:=False;
+          chkboxAllowReports.Enabled:=False;
         end
         else begin
           lblOperatorSetting_Tel_show.Enabled:=True;
@@ -353,6 +367,7 @@ begin
           chkboxZoiper.Enabled:=True;
 
           chkboxAllowLocalChat.Enabled:=True;
+          chkboxAllowReports.Enabled:=True;
         end;
 
         if not currentEditUsers then edtOperatorSetting_SIP_show.Text:='';
@@ -362,6 +377,7 @@ begin
       PanelOperators.Visible:=False;
 
       chkboxAllowLocalChat.Top:=cTopPanelOperators;
+      chkboxAllowReports.Top:=cTopPanelOperators;
 
       edtOperatorSetting_SIP_show.Text:='';
       edtOperatorSetting_Tel_show.Text:='';
@@ -418,7 +434,7 @@ begin
 
          for i:=0 to countGroup-1 do begin
            Items.Add(getUserGroupSTR(Fields[0].Value));
-           Next;
+           ado.Next;
          end;
       end;
 
@@ -671,6 +687,9 @@ begin
       // локальный чат
       chkboxAllowLocalChat.Checked:=GetUserAccessLocalChat(currentEditUsersID);
 
+     // отчеты
+      chkboxAllowReports.Checked:=GetUserAccessReports(currentEditUsersID);
+
        // отобразим скрвтые поля
        comboxUserGroup.OnChange(comboxUserGroup);
 
@@ -807,8 +826,6 @@ begin
 end;
 
 
-
-
 procedure TFormAddNewUsers.edtNewLoginChange(Sender: TObject);
 begin
   // чтобы потом проверить измелись ли данные по логину
@@ -827,6 +844,7 @@ begin
   showSettingOperatorSIP(False);
 
   chkboxAllowLocalChat.Checked:=False;
+  chkboxAllowReports.Checked:=False;
 
   // на всякий случай что уже не редактируется ничего
   currentEditUsers:=False;

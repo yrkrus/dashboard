@@ -377,7 +377,7 @@ begin
         listAnsweredBD[i].waiting_time:=VarToStr(Fields[2].Value);
         listAnsweredBD[i].talk_time:=VarToStr(Fields[3].Value);
 
-       Next;
+       ado.Next;
       end;
     end;
   finally

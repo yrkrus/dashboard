@@ -90,7 +90,7 @@ begin
             Cells[2,i]:=Fields[2].Value;
             Cells[3,i]:=Fields[3].Value;
 
-           Next;
+           ado.Next;
          end;
       end;
     end;

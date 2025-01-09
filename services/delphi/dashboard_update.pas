@@ -210,12 +210,13 @@ begin
      Add('echo                  upgrade '+p_XML.GetCurrentVersion+' to '+p_XML.GetRemoteVersion);
      Add('echo                    started after 10 sec ...');
      Add('echo.');
-     Add('ping -n 10 localhost>Nul');
+     Add('ping -n 5 localhost>Nul');
      Add('::');
 
       // закрываем exe
      Add('taskkill /F /IM '+DASHBOARD_EXE);
      Add('taskkill /F /IM '+CHAT_EXE);
+     Add('taskkill /F /IM '+REPORTS_EXE);
      Add('::');
 
      // закрываем обновл€лку
@@ -288,6 +289,13 @@ begin
 
 
   ftpClient:=TFTP.Create('update','update',eDownload);
+  if not ftpClient.isConnect then begin
+   log.Save('Ќе удаетс€ подключитьс€ к ftp серверу ', IS_ERROR);
+   log.Save('—ледующа€ попытка проверки версии через 1 мин');
+   TimerMonitoring.Interval:=cTIMER_ERROR;
+   Exit;
+  end;
+
   ftpClient.DownloadFile(remoteVersion+'.zip');
 
   // успешно скачали запуск обновлени€

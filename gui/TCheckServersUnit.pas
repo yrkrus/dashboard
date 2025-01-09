@@ -246,7 +246,7 @@ begin
            listServers[i].alias:=VarToStr(Fields[3].Value);
            listServers[i].countErrors:=0;
 
-           Next;
+           ado.Next;
          end;
       end;
     end;

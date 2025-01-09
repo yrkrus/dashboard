@@ -3,9 +3,10 @@
   Top = 0
   BorderIcons = []
   BorderStyle = bsNone
+  BorderWidth = 1
   Caption = #1040#1074#1090#1086#1088#1080#1079#1072#1094#1080#1103
-  ClientHeight = 276
-  ClientWidth = 338
+  ClientHeight = 274
+  ClientWidth = 334
   Color = clWindow
   DefaultMonitor = dmPrimary
   Font.Charset = RUSSIAN_CHARSET
@@ -262,7 +263,7 @@
     end
     object ImageLogo: TImage
       Left = 88
-      Top = 27
+      Top = 30
       Width = 157
       Height = 38
       Enabled = False
@@ -426,7 +427,7 @@
     end
     object ImgNewYear: TImage
       Left = 198
-      Top = 7
+      Top = 10
       Width = 55
       Height = 55
       ParentShowHint = False
@@ -5494,6 +5495,60 @@
       ParentFont = False
       Visible = False
     end
+    object lblDEBUG: TLabel
+      Left = 257
+      Top = 5
+      Width = 72
+      Height = 13
+      Caption = 'DEBUG MODE'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clRed
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
+      Visible = False
+    end
+    object lblUserAuth: TLabel
+      Left = 23
+      Top = 77
+      Width = 299
+      Height = 16
+      Alignment = taCenter
+      AutoSize = False
+      Caption = 'lblUserAuth'
+      Color = clWindow
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clBlue
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentColor = False
+      ParentFont = False
+      Transparent = True
+      Visible = False
+    end
+    object lblChangeUser: TLabel
+      Left = 123
+      Top = 79
+      Width = 58
+      Height = 13
+      Cursor = crHandPoint
+      Hint = #1042#1099#1073#1088#1072#1090#1100' '#1076#1088#1091#1075#1086#1075#1086' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1103
+      Caption = '('#1089#1084#1077#1085#1080#1090#1100')'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clSilver
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
+      Visible = False
+      OnClick = lblChangeUserClick
+    end
     object edtPassword: TEdit
       Left = 23
       Top = 149
@@ -5524,6 +5579,7 @@
       ParentFont = False
       TabOrder = 0
       OnChange = comboxUserChange
+      OnDrawItem = comboxUserDrawItem
     end
     object Button1: TButton
       Left = 370
@@ -5709,5 +5765,10 @@
       WordWrap = True
       OnClick = btnCloseClick
     end
+  end
+  object ImageListIcon: TImageList
+    Masked = False
+    Left = 389
+    Top = 26
   end
 end
