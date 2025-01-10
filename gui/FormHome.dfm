@@ -2,7 +2,7 @@ object HomeForm: THomeForm
   Left = 0
   Top = 0
   Caption = #1044#1072#1096#1073#1086#1088#1076' '#1050#1086#1083#1083#1062#1077#1085#1090#1088#1072
-  ClientHeight = 801
+  ClientHeight = 802
   ClientWidth = 1384
   Color = clWindow
   DefaultMonitor = dmDesktop
@@ -20,7 +20,7 @@ object HomeForm: THomeForm
   OnShow = FormShow
   DesignSize = (
     1384
-    801)
+    802)
   PixelsPerInch = 96
   TextHeight = 15
   object Label5: TLabel
@@ -455,7 +455,7 @@ object HomeForm: THomeForm
   end
   object ImageLogo: TImage
     Left = 1207
-    Top = 714
+    Top = 715
     Width = 157
     Height = 37
     Anchors = [akRight, akBottom]
@@ -617,7 +617,6 @@ object HomeForm: THomeForm
       0480338009155ECBE1BF87F4CD74EA96BA1E8F6DA9302A6EE2B28D26208C1CB8
       19E471D7A514500685A68D6BA7AC62DEDEDE011870823882EC0E773018E9B980
       27D4804D5AA28A00FFD9}
-    ExplicitTop = 715
   end
   object Label11: TLabel
     Left = 10
@@ -769,7 +768,7 @@ object HomeForm: THomeForm
   end
   object ImgNewYear: TImage
     Left = 1319
-    Top = 694
+    Top = 695
     Width = 55
     Height = 55
     Anchors = [akRight, akBottom]
@@ -5802,10 +5801,11 @@ object HomeForm: THomeForm
     ShowHint = False
     Stretch = True
     Visible = False
+    ExplicitTop = 694
   end
   object lblNewMessageLocalChat: TLabel
     Left = 1132
-    Top = 760
+    Top = 761
     Width = 243
     Height = 16
     Cursor = crHandPoint
@@ -5825,6 +5825,7 @@ object HomeForm: THomeForm
     Transparent = False
     Visible = False
     OnClick = lblNewMessageLocalChatClick
+    ExplicitTop = 760
   end
   object panel_IVR: TPanel
     Left = 10
@@ -6002,7 +6003,7 @@ object HomeForm: THomeForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 780
+    Top = 781
     Width = 1384
     Height = 21
     Panels = <

@@ -41,7 +41,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
       name                                  : string;   // имя
       familiya                              : string;   // фамилия
       id                                    : Integer;  // id в БД
-      group_role                            : enumRole;   //  права
+      group_role                            : enumRole; //  права
       login                                 : string;
       re_password                           : Boolean;  // необходимо сменить пароль
       acive_session_id                      : Integer;  // id активной сессии
@@ -123,7 +123,7 @@ uses
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
- test:string;
+ //test:string;
 begin
 
  ado:=TADOQuery.Create(nil);

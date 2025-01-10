@@ -354,7 +354,6 @@ begin
 
    with HomeForm.lblNewMessageLocalChat do begin
      Visible:=True;
-
      Caption:='Новые сообщения в общем чате ('+IntToStr(countNewMessage)+')';
    end;
 end;

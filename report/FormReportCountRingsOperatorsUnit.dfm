@@ -4,7 +4,7 @@ object FormReportCountRingsOperators: TFormReportCountRingsOperators
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1072' '#1086#1090#1095#1077#1090#1072
-  ClientHeight = 397
+  ClientHeight = 420
   ClientWidth = 307
   Color = clWindow
   DefaultMonitor = dmDesktop
@@ -23,7 +23,7 @@ object FormReportCountRingsOperators: TFormReportCountRingsOperators
     Left = 8
     Top = 8
     Width = 289
-    Height = 57
+    Height = 76
     Caption = ' '#1055#1077#1088#1080#1086#1076' '
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -32,14 +32,14 @@ object FormReportCountRingsOperators: TFormReportCountRingsOperators
     Font.Style = []
     ParentFont = False
     TabOrder = 0
-    object Label1: TLabel
+    object lblS: TLabel
       Left = 13
       Top = 24
       Width = 6
       Height = 16
       Caption = 'c'
     end
-    object Label2: TLabel
+    object lblPo: TLabel
       Left = 144
       Top = 24
       Width = 14
@@ -64,10 +64,19 @@ object FormReportCountRingsOperators: TFormReportCountRingsOperators
       Time = 45655.862194363430000000
       TabOrder = 1
     end
+    object chkboxOnlyCurrentDay: TCheckBox
+      Left = 13
+      Top = 52
+      Width = 150
+      Height = 17
+      Caption = #1090#1086#1083#1100#1082#1086' '#1090#1077#1082#1091#1097#1080#1081' '#1076#1077#1085#1100
+      TabOrder = 2
+      OnClick = chkboxOnlyCurrentDayClick
+    end
   end
   object chkboxShowOperators: TCheckBox
     Left = 10
-    Top = 71
+    Top = 90
     Width = 287
     Height = 17
     Caption = #1042#1099#1073#1088#1072#1090#1100' '#1086#1087#1077#1088#1072#1090#1086#1088#1086#1074
@@ -82,7 +91,7 @@ object FormReportCountRingsOperators: TFormReportCountRingsOperators
   end
   object btnGenerate: TBitBtn
     Left = 10
-    Top = 344
+    Top = 363
     Width = 287
     Height = 47
     Caption = '&'#1057#1092#1086#1088#1084#1080#1088#1086#1074#1072#1090#1100
@@ -167,7 +176,7 @@ object FormReportCountRingsOperators: TFormReportCountRingsOperators
   end
   object PanelOperators: TPanel
     Left = 8
-    Top = 94
+    Top = 111
     Width = 292
     Height = 244
     BevelOuter = bvNone
@@ -219,6 +228,7 @@ object FormReportCountRingsOperators: TFormReportCountRingsOperators
       Font.Style = []
       ParentFont = False
       TabOrder = 1
+      Visible = False
       OnClick = chkboxUvolennieClick
     end
   end

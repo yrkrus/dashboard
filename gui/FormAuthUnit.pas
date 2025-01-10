@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ComCtrls,
   Vcl.ExtCtrls, Vcl.Grids,Data.Win.ADODB, Data.DB, IdException, Vcl.Imaging.jpeg,TUserUnit,
-  Vcl.WinXCtrls, Vcl.Imaging.pngimage, System.ImageList, Vcl.ImgList;
+  Vcl.WinXCtrls, Vcl.Imaging.pngimage, System.ImageList, Vcl.ImgList,TCustomTypeUnit;
 
 type
   TFormAuth = class(TForm)
@@ -45,11 +45,16 @@ type
     procedure comboxUserDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
     procedure lblChangeUserClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
 
 
   private
     { Private declarations }
+   usersListAdminRole:TStringList; // список с пользаками которые имеют админ права
+
    function showUserNameAuthForm:Boolean;   // отображение ранее входивщего пользователя в выборе вариантов пользователей
+   function GetRoleUser(InIDCombBox:Integer):enumRole;
+   procedure LoadIconListBox;    // загрузка иконок в лист бокс для последующего отображения в combobox
 
   public
     { Public declarations }
@@ -64,9 +69,36 @@ var
 implementation
 
 uses
-  FunctionUnit, DMUnit, FormHome, FormWaitUnit, TTranslirtUnit, TCustomTypeUnit, GlobalVariables;
+  FunctionUnit, DMUnit, FormHome, FormWaitUnit, TTranslirtUnit, GlobalVariables;
 
 {$R *.dfm}
+
+
+
+function TFormAuth.GetRoleUser(InIDCombBox:Integer):enumRole;
+var
+  userName,userFamiliya:string;
+  i:Integer;
+begin
+  Result:=role_operator_no_dash; // default
+
+  userName:=comboxUser.Items[InIDCombBox];
+  System.Delete(userName,1,AnsiPos(' ',userName));
+
+  userFamiliya:=comboxUser.Items[InIDCombBox];
+  System.Delete(userFamiliya, AnsiPos(' ',userFamiliya),Length(userFamiliya));
+
+  if usersListAdminRole.Count=0 then Exit;
+
+  for i:=0 to usersListAdminRole.Count-1 do begin
+   if userFamiliya+' '+userName =usersListAdminRole[i] then begin
+     Result:=role_administrator;
+     Exit;
+   end;
+  end;
+
+end;
+
 
 // отображение ранее входивщего пользователя в выборе вариантов пользователей
 function TFormAuth.showUserNameAuthForm:Boolean;
@@ -90,7 +122,7 @@ end;
 
 
 // загрузка иконок в лист бокс для последующего отображения в combobox
-procedure LoadIconListBox;
+procedure TFormAuth.LoadIconListBox;
 const
  SIZE_ICON:Word=16;
 var
@@ -98,12 +130,16 @@ var
  pngbmp: TPngImage;
  bmp: TBitmap;
 begin
+ // найдем список с польазками с админ правами
+  usersListAdminRole:=GetListAdminRole;
+
+
  // **********************************************************
  // добавление тут + в events DrawItem самого combox
  // **********************************************************
 
    // изменение стиля для отображения иконок в combox
- if not FileExists(ICON_AUTH_USER) then Exit;
+ if (not FileExists(ICON_AUTH_USER)) and (not FileExists(ICON_AUTH_USER))  then Exit;
 
 
    with FormAuth do begin
@@ -125,6 +161,18 @@ begin
       end;
 
       ImageListIcon.Add(bmp, nil);
+
+      // подгрузим еще одну иконку
+      pngbmp.LoadFromFile(FOLDERPATH+ICON_AUTH_USER_ADMIN);
+      // сжимаем иконку до размера 16х16
+      with bmp do begin
+       Height:=SIZE_ICON;
+       Width:=SIZE_ICON;
+       Canvas.StretchDraw(Rect(0, 0, Width, Height), pngbmp);
+      end;
+      ImageListIcon.Add(bmp, nil);
+
+     // ShowMessage(IntToStr(ImageListIcon.Count)) ;
 
       if pngbmp<>nil then pngbmp.Free;
       if bmp<>nil then bmp.Free;
@@ -307,10 +355,13 @@ procedure TFormAuth.comboxUserDrawItem(Control: TWinControl; Index: Integer;
  ComboBox: TComboBox;
  bitmap: TBitmap;
  IconIndex:Integer;
+
 begin
   if ImageListIcon.Count<>0 then begin
 
-      IconIndex:=0;
+      // проверка роли пользвоателя
+      if GetRoleUser(Index)=role_administrator then IconIndex:=1
+      else IconIndex:=0;
 
       ComboBox:=(Control as TComboBox);
       Bitmap:= TBitmap.Create;
@@ -338,6 +389,7 @@ begin
       finally
         Bitmap.Free;
       end;
+
   end;
 end;
 
@@ -377,6 +429,11 @@ begin
      img_eay_close.Left := 270;
      img_eay_close.Top := -2;
   end;
+end;
+
+procedure TFormAuth.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  if Assigned(usersListAdminRole) then FreeAndNil(usersListAdminRole);
 end;
 
 procedure TFormAuth.FormCreate(Sender: TObject);

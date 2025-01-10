@@ -328,6 +328,33 @@ function GetTask(ExeFileName: string): Boolean;stdcall;export;
  end;
 
 
+ // перевод даты и времени в ненормальный вид для BD
+function GetDateTimeToDateBD(InDateTime:string):PChar;stdcall;export;
+var
+ Timetmp,Datetmp:string;
+begin
+ Timetmp:=InDateTime;
+ System.Delete(Timetmp,1,AnsiPos(' ',Timetmp));
+
+ Datetmp:=InDateTime;
+ System.Delete(Datetmp,AnsiPos(' ',Datetmp),Length(Datetmp));
+ Datetmp:=Copy(Datetmp,7,4)+'-'+Copy(Datetmp,4,2)+'-'+Copy(Datetmp,1,2);
+
+ Result:=PChar(Datetmp+' '+Timetmp);
+end;
+
+ // перевод даты и времени в ненормальный вид для BD
+function GetDateToDateBD(InDateTime:string):PChar;stdcall;export;
+var
+ Datetmp:string;
+begin
+ Datetmp:=InDateTime;
+ System.Delete(Datetmp,AnsiPos(' ',Datetmp),Length(Datetmp));
+ Datetmp:=Copy(Datetmp,7,4)+'-'+Copy(Datetmp,4,2)+'-'+Copy(Datetmp,1,2);
+
+ Result:=PChar(Datetmp);
+end;
+
 exports
   createServerConnect,
   GetCopyright,
@@ -345,7 +372,9 @@ exports
   GetLogNameFolder,
   GetUpdateNameFolder,
   KillTask,
-  GetTask;
+  GetTask,
+  GetDateTimeToDateBD,
+  GetDateToDateBD;
 
 begin
 end.

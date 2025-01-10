@@ -69,7 +69,7 @@ begin
 
        SQL.Add('insert into settings (queue_5000_time,queue_5050_time,date_time) values ('+#39+InQueue5000+#39
                                                                                               +','+#39+InQueue5050+#39
-                                                                                              +','+#39+getDateTimeToDateBD(DateToStr(FormSettingsGlobal_addIVR.DateQueue.Date)+' '+TimeToStr(FormSettingsGlobal_addIVR.TimeQueue.Time))+#39+')');
+                                                                                              +','+#39+GetDateTimeToDateBD(DateToStr(FormSettingsGlobal_addIVR.DateQueue.Date)+' '+TimeToStr(FormSettingsGlobal_addIVR.TimeQueue.Time))+#39+')');
       end;
 
       try

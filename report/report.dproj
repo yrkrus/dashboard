@@ -151,6 +151,7 @@
         </DCCReference>
         <DCCReference Include="include\TAbstractReportUnit.pas"/>
         <DCCReference Include="classes\TReportCountOperatorsUnit.pas"/>
+        <DCCReference Include="classes\TQueueHistoryUnit.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

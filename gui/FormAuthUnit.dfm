@@ -16,6 +16,7 @@
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
+  OnClose = FormClose
   OnCreate = FormCreate
   OnShow = FormShow
   PixelsPerInch = 96
@@ -5684,7 +5685,7 @@
       Width = 124
       Height = 40
       Hint = #1042#1099#1093#1086#1076
-      Caption = '&'#1054#1090#1084#1077#1085#1072
+      Caption = '&'#1047#1072#1082#1088#1099#1090#1100
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
       Font.Height = -13

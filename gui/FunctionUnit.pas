@@ -97,7 +97,6 @@ function getUserFamiliya(InUserID:Integer):string;                              
 function getUserNameBD(InUserID:Integer):string;                                     // полчуение имени пользователя из его UserID
 function UserIsOperator(InUserID:Integer):Boolean;                                  // проверка userID принадлежит оператору или нет TRUE - оператор
 procedure disableOperator(InUserId:Integer);                                         // отключение оператора и перенос его в таблицу operators_disable
-function getDateTimeToDateBD(InDateTime:string):string;                              // перевод даты и времени в ненормальный вид для BD
 function enableUser(InUserID:Integer):string;                                        // включение пользователя
 function getOperatorAccessDashboard(InSip:string):Boolean;                           // нахождение статуса доступен ли дашбор орератору или нет
 function isExistSettingUsers(InUserID:Integer):Boolean;                              // проверка существу.т ли индивидуальные настрокий пользователч true - существуют настроки
@@ -137,6 +136,7 @@ function IntegerToEnumStatusOperators(InStatusId:Integer):enumStatusOperators;  
 function EnumStatusOperatorsToInteger(InStatus:enumStatusOperators):Integer;        // enumStatusOperators -> integer
 function getStatusOperator(InUserId:Integer):enumStatusOperators;                  // текущий стаус оператора из таблицы operators
 procedure ClearAfterUpdate;                                                       //  очистка от всего что осталось после обновления
+function GetListAdminRole:TStringList;                                           // получение списка пользвоателй с ролью администратор
 
 
 
@@ -4169,21 +4169,6 @@ begin
   end;
 end;
 
-// перевод даты и времени в ненормальный вид для BD
-function getDateTimeToDateBD(InDateTime:string):string;
-var
- Timetmp,Datetmp:string;
-begin
- Timetmp:=InDateTime;
- System.Delete(Timetmp,1,AnsiPos(' ',Timetmp));
-
- Datetmp:=InDateTime;
- System.Delete(Datetmp,AnsiPos(' ',Datetmp),Length(Datetmp));
- Datetmp:=Copy(Datetmp,7,4)+'-'+Copy(Datetmp,4,2)+'-'+Copy(Datetmp,1,2);
-
- Result:=Datetmp+' '+Timetmp;
-end;
-
 
 // отключение оператора и перенос его в таблицу operators_disable
 procedure disableOperator(InUserId:Integer);
@@ -4212,7 +4197,7 @@ begin
       Active:=True;
 
       if Fields[0].Value<>null then begin
-        date_time_create:=getDateTimeToDateBD(VarToStr(Fields[0].Value));
+        date_time_create:=GetDateTimeToDateBD(VarToStr(Fields[0].Value));
         sip:=Fields[1].Value;
       end
       else begin
@@ -4820,7 +4805,7 @@ begin
     Exit;
   end;
 
-  ShellExecute(HomeForm.Handle, 'Open', PChar(CHAT_EXE),PChar(CHAT_PARAM+' '+IntToStr(SharedCurrentUserLogon.GetID)),nil,SW_SHOW);
+  ShellExecute(HomeForm.Handle, 'Open', PChar(CHAT_EXE),PChar(USER_ID_PARAM+' '+IntToStr(SharedCurrentUserLogon.GetID)),nil,SW_SHOW);
 end;
 
 
@@ -4837,7 +4822,7 @@ begin
     Exit;
   end;
 
-  ShellExecute(HomeForm.Handle, 'Open', PChar(REPORTS_EXE),PChar(REPORTS_PARAM+' '+IntToStr(SharedCurrentUserLogon.GetID)),nil,SW_SHOW);
+  ShellExecute(HomeForm.Handle, 'Open', PChar(REPORTS_EXE),PChar(USER_ID_PARAM+' '+IntToStr(SharedCurrentUserLogon.GetID)),nil,SW_SHOW);
 end;
 
 // enumChatID -> string
@@ -4970,6 +4955,63 @@ begin
   if DirectoryExists(folderUpdate) then  TDirectory.Delete(folderUpdate, True);
 
   if FileExists(FOLDERPATH+UPDATE_BAT) then DeleteFile(FOLDERPATH+UPDATE_BAT);
+end;
+
+
+// получение списка пользвоателй с ролью администратор
+function GetListAdminRole:TStringList;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ countUsers:Integer;
+ i:Integer;
+begin
+ Result:=TStringList.Create;
+
+ ado:=TADOQuery.Create(nil);
+ serverConnect:=createServerConnect;
+ if not Assigned(serverConnect) then begin
+   FreeAndNil(ado);
+   Exit;
+ end;
+
+ try
+  with ado do begin
+    ado.Connection:=serverConnect;
+    SQL.Clear;
+    SQL.Add('select count(id) from users where role = '+#39+IntToStr(GetRoleID(TRoleToStr(role_administrator)))+#39+' and disabled = ''0'' ');
+
+    Active:=True;
+    countUsers:=Fields[0].Value;
+
+    if countUsers=0 then begin
+      FreeAndNil(ado);
+      if Assigned(serverConnect) then begin
+        serverConnect.Close;
+        FreeAndNil(serverConnect);
+      end;
+      Exit;
+    end;
+
+    if Active then Active:=False;
+
+    SQL.Clear;
+    SQL.Add('select familiya,name from users where role = '+#39+IntToStr(GetRoleID(TRoleToStr(role_administrator)))+#39+' and disabled = ''0'' ');
+
+    Active:=True;
+
+    for i:=0 to countUsers-1 do begin
+      Result.Add(Fields[0].Value+' '+Fields[1].Value);
+      ado.Next;
+    end;
+  end;
+ finally
+  FreeAndNil(ado);
+  if Assigned(serverConnect) then begin
+    serverConnect.Close;
+    FreeAndNil(serverConnect);
+  end;
+ end;
 end;
 
 end.

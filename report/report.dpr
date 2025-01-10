@@ -8,7 +8,8 @@ uses
   FormReportCountRingsOperatorsUnit in 'FormReportCountRingsOperatorsUnit.pas' {FormReportCountRingsOperators},
   FormWaitUnit in 'FormWaitUnit.pas' {FormWait},
   TAbstractReportUnit in 'include\TAbstractReportUnit.pas',
-  TReportCountOperatorsUnit in 'classes\TReportCountOperatorsUnit.pas';
+  TReportCountOperatorsUnit in 'classes\TReportCountOperatorsUnit.pas',
+  TQueueHistoryUnit in 'classes\TQueueHistoryUnit.pas';
 
 {$R *.res}
 

@@ -32,6 +32,8 @@ var
   // внутренн€€ ошибка
   INTERNAL_ERROR          :Boolean =  False;
 
+  // разделитель
+  DELIMITER               :string = ' | ';
 
 
   // загрузка DLL
@@ -49,6 +51,8 @@ var
   function GetCloneRun(InExeName:Pchar):Boolean;              stdcall;  external 'core.dll';          // проверка на 2ую запущенную копию
   function KillTask(ExeFileName:string):integer;              stdcall;  external 'core.dll';       // функци€ остановки exe
   function GetTask(ExeFileName:string):Boolean;               stdcall;  external 'core.dll';       // проверка запущен ли процесс
+  function GetDateToDateBD(InDateTime:string):PChar;          stdcall;  external 'core.dll';       // перевод даты и времени в ненормальный вид дл€ BD
+
 
 
    // --- connect_to_server.dll ---

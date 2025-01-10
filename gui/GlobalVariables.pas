@@ -33,11 +33,11 @@ var
 
   // чат
   CHAT_EXE         :string = 'chat.exe';
-  CHAT_PARAM       :string = '--USER_ID';
-
   // отчеты
-  REPORTS_EXE         :string = 'report.exe';
-  REPORTS_PARAM       :string = '--USER_ID';
+  REPORTS_EXE      :string = 'report.exe';
+
+  USER_ID_PARAM    :string = '--USER_ID';
+
 
   // служба обновления
   UPDATE_EXE        : string = 'update.exe';
@@ -45,7 +45,8 @@ var
   UPDATE_BAT        : string = 'update.bat'; // обновлялка
 
   // иконка авторизации
-  ICON_AUTH_USER    : string = 'user_icon_auth.png';
+  ICON_AUTH_USER          : string = 'user_icon_auth.png';
+  ICON_AUTH_USER_ADMIN    : string = 'user_icon_auth_admin.png';
 
   // список с текущими активными операторами
   SharedActiveSipOperators: TActiveSIP;
@@ -83,6 +84,7 @@ var
   procedure KillProcessNow;                                   stdcall;  external 'core.dll';       // немедленное звершение работы
   function GetTask(ExeFileName:string):Boolean;               stdcall;  external 'core.dll';       // проверка запущен ли процесс
   function GetCloneRun(InExeName:Pchar):Boolean;              stdcall;  external 'core.dll';       // проверка на 2ую запущенную копию
+  function GetDateTimeToDateBD(InDateTime:string):PChar;      stdcall;  external 'core.dll';       // перевод даты и времени в ненормальный вид для BD
 
 
   // --- connect_to_server.dll ---

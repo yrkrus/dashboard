@@ -27,16 +27,37 @@ uses
       TAbstractReport = class
 
       public
-      m_excel :OleVariant;
-      m_sheet :OleVariant;
+      constructor Create;                                 overload;
+      constructor Create(InDateStart,InDateStop:TDate);   overload;
 
-
-      constructor Create;
       destructor Destroy;                 override;
+
+      procedure ShowProgress;          // показ статус бара
+      procedure CloseProgress;         // закрываем статус бар
+      procedure SetProgressStatusText(InText:string); // установка текста статуса
+      procedure SetProgressBar(InProgress:Integer);   // установка прогресс бара
+
+      procedure ShowExcel; // отображение окна excel
+
+      function GetDateStart:string;
+      function GetDateStop:string;
+
+      protected
+      m_excel           :OleVariant;
+      m_sheet           :OleVariant;
+      isESC             :Boolean;    // отмена формирования отчета
+
+      function GetAbout:Boolean;    // нажали отмену генерации
 
 
       private
+      m_dateStart       :TDate;      // дата начала
+      m_dateStop        :TDate;      // дата окончания
+      isExistDataExcel  :Boolean;    // есть ли данные для отображения
 
+
+
+      procedure InitExcel; // инициализация excel
 
       end;
    // class TAbstractReport END
@@ -44,33 +65,25 @@ uses
 implementation
 
 uses
-  GlobalVariables, FormHomeUnit;
+  GlobalVariables, FunctionUnit;
 
 
 
 constructor TAbstractReport.Create;
 begin
   inherited Create;
+  InitExcel;
+end;
 
-   try
-      m_excel:=CreateOleObject('Excel.Application');
-    except
-      on E: Exception do
-      begin
-       MessageBox(0,PChar('Ошибка при создании объекта Excel: ' + E.Message),PChar('Ошибка конструктора'),MB_OK+MB_ICONERROR);
-       Exit; // Выход из конструктора при ошибке
-      end;
-   end;
 
-  m_excel.displayAlerts:=False;
-  m_excel.workbooks.add;
-  m_excel.Visible:=True;  // debug потом закоментировать
+constructor TAbstractReport.Create(InDateStart,InDateStop:TDate);
+begin
+  inherited Create;
 
-  // название имени
-  m_excel.workbooks[1].worksheets[1].name:='Отчет';
+  m_dateStart:=InDateStart;
+  m_dateStop:=InDateStop;
 
-  // активная страница
-  m_sheet:=m_excel.workbooks[1].worksheets[1];
+  InitExcel;
 end;
 
 
@@ -87,5 +100,87 @@ begin
   inherited Destroy;
 end;
 
+
+procedure TAbstractReport.InitExcel;
+begin
+  try
+      m_excel:=CreateOleObject('Excel.Application');
+  except
+      on E: Exception do
+      begin
+       MessageBox(0,PChar('Ошибка при создании объекта Excel'+#13#13+ E.Message),PChar('Ошибка конструктора TAbstractReport'),MB_OK+MB_ICONERROR);
+       Exit; // Выход из конструктора при ошибке
+      end;
+   end;
+
+  m_excel.displayAlerts:=False;
+  m_excel.workbooks.add;
+  // m_excel.Visible:=True;  // debug потом закоментировать
+
+  // название имени
+  m_excel.workbooks[1].worksheets[1].name:='Отчет';
+
+  // активная страница
+  m_sheet:=m_excel.workbooks[1].worksheets[1];
+
+  // пока данных нет для отображения
+  isExistDataExcel:=False;
+
+  // отмена формирования отчета
+  isESC:=False;
+end;
+
+
+procedure TAbstractReport.ShowProgress;
+begin
+  ShowProgressBar;
+end;
+
+procedure TAbstractReport.CloseProgress;
+begin
+  CloseProgressBar;
+end;
+
+// установка текста статуса
+procedure TAbstractReport.SetProgressStatusText(InText:string);
+begin
+  SetStatusProgressBarText(InText);
+end;
+
+// установка прогресс бара
+procedure TAbstractReport.SetProgressBar(InProgress:Integer);
+begin
+  SetStatusProgressBar(InProgress);
+end;
+
+// отображение окна excel
+procedure TAbstractReport.ShowExcel;
+begin
+  if isESC then begin
+    MessageBox(0,PChar('Отменено'),PChar('Отмена'),MB_OK+MB_ICONSTOP);
+    Exit;
+  end;
+
+ if Self.isExistDataExcel then m_excel.Visible:=True
+ else MessageBox(0,PChar('Данные за указанный период отсутствуют'),PChar('Данных нет'),MB_OK+MB_ICONINFORMATION);
+end;
+
+
+function TAbstractReport.GetDateStart:string;
+begin
+  Result:=DateToStr(Self.m_dateStart);
+end;
+
+function TAbstractReport.GetDateStop:string;
+begin
+  Result:=DateToStr(Self.m_dateStop);
+end;
+
+// нажали отмену генерации
+function TAbstractReport.GetAbout:Boolean;
+begin
+  isESC:=GetAboutGenerateReport;
+  Result:=isESC;
+end;
 
 end.

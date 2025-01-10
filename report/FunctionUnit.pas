@@ -17,12 +17,17 @@ uses
                        var _stopDate:TDateTimePicker;
                        var _errorDescriptions:string):Boolean;
   function isExistExcel(var _errorDescriptions:string):Boolean;              // проверка установлен ли excel
+  procedure ShowProgressBar;                                                 // показываем прогресс бар
+  procedure CloseProgressBar;                                                // закрываем прогресс бар
+  procedure SetStatusProgressBarText(InText:string);                         // установка текста статуса прогресс бара
+  procedure SetStatusProgressBar(InProgress:Integer);                        // установка статуса прогресс бара
+  function GetAboutGenerateReport:Boolean;                                   // отмена генерации отчета
 
 
 implementation
 
 uses
- FormHomeUnit, GlobalVariables;
+ FormHomeUnit, GlobalVariables, FormWaitUnit;
 
 // создание Copyright
 procedure createCopyright;
@@ -171,5 +176,44 @@ begin
     end;
   end;
 end;
+
+// показываем прогресс бар
+procedure ShowProgressBar;
+begin
+  with FormWait do begin
+   ProgressBar.Progress:=0;
+   ProgressStatusText.Caption:='Статус: ';
+   Show;
+  end;
+end;
+
+// закрываем прогресс бар
+procedure CloseProgressBar;
+begin
+  if FormWait.Showing then FormWait.Close;
+end;
+
+// установка текста статуса прогресс бара
+procedure SetStatusProgressBarText(InText:string);
+begin
+  FormWait.ProgressStatusText.Caption:='Статус: '+InText;
+  Application.ProcessMessages;
+end;
+
+
+// установка статуса прогресс бара
+procedure SetStatusProgressBar(InProgress:Integer);
+begin
+  FormWait.ProgressBar.Progress:=InProgress;
+  Application.ProcessMessages;
+end;
+
+
+// отмена генерации отчета
+function GetAboutGenerateReport:Boolean;
+begin
+  Result:=FormWait.isAboutGenerate;
+end;
+
 
 end.

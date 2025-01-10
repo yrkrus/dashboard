@@ -11,8 +11,8 @@ type
   TFormReportCountRingsOperators = class(TForm)
     GroupBox1: TGroupBox;
     dateStart: TDateTimePicker;
-    Label1: TLabel;
-    Label2: TLabel;
+    lblS: TLabel;
+    lblPo: TLabel;
     dateStop: TDateTimePicker;
     chkboxShowOperators: TCheckBox;
     btnGenerate: TBitBtn;
@@ -21,33 +21,38 @@ type
     listOperators: TCheckListBox;
     chkboxShowAll: TCheckBox;
     chkboxUvolennie: TCheckBox;
+    chkboxOnlyCurrentDay: TCheckBox;
     procedure FormShow(Sender: TObject);
     procedure chkboxShowOperatorsClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure chkboxShowAllClick(Sender: TObject);
     procedure chkboxUvolennieClick(Sender: TObject);
     procedure btnGenerateClick(Sender: TObject);
+    procedure chkboxOnlyCurrentDayClick(Sender: TObject);
   private
     { Private declarations }
     procedure FormDefault;
     procedure FormShowOperators;
     procedure FormCenter;
-
     procedure LoadingListOperators(InShowDisableUsers:Boolean = False); // прогрузка операторов в список
+
+    procedure FinalizationClose;
+    function GetCheckValue(var _errorDescription:string):Boolean;  // проверка значений
+    procedure AllCheckedListOperatorsSip;   // на случай если не выбрали параметр "выбрать операторов"
 
   public
     { Public declarations }
   end;
 
 const
-  ShowOperatorsHeight:Word  = 425;
+  ShowOperatorsHeight:Word  = 448;
   ShowOperatorsWidth:Word   = 313;
   ShowOperatorsLeft:Word    = 8;
-  ShowOperatorsTop:Word     = 344;
+  ShowOperatorsTop:Word     = 367;
 
-  HideOperatorsButtonTop:Word   = 96;
+  HideOperatorsButtonTop:Word   = 119;
   HideOperatorsWidth:Word       = 312;
-  HideOperatorsHeight:Word      = 181;
+  HideOperatorsHeight:Word      = 204;
 
 var
   FormReportCountRingsOperators: TFormReportCountRingsOperators;
@@ -59,6 +64,54 @@ uses
 
 {$R *.dfm}
 
+
+function TFormReportCountRingsOperators.GetCheckValue(var _errorDescription: string):Boolean;
+var
+ i:Integer;
+begin
+  Result:=True;
+  _errorDescription:='';
+
+  // проверим есть ли параметр текущий день
+  if not chkboxOnlyCurrentDay.Checked then begin
+    // проверим есть ли в проимежутке дат текущий день
+    if (dateStop.Date >= Trunc(Now)  ) then begin
+     _errorDescription:='¬ промежутке дат стоит текущий день, дл€ отображени€ данных по текущему дню надо поставить параметр "только текущий день"';
+     Result:=False;
+     Exit;
+    end;
+  end;
+
+  // проверим не забыли ли споставить галки
+  if chkboxShowOperators.Checked then begin
+    for i:=0 to listOperators.Items.Count-1 do begin
+      if listOperators.Checked[i] then begin
+         Exit;
+      end;
+    end;
+    _errorDescription:='”становлен параметр "¬ыбрать операторов", но не один не выбран';
+    Result:=False;
+  end;
+end;
+
+// на случай если не выбрали параметр "выбрать операторов"
+procedure TFormReportCountRingsOperators.AllCheckedListOperatorsSip;
+var
+ i:Integer;
+begin
+  for i:=0 to listOperators.Count-1 do begin
+    if not listOperators.Checked[i] then listOperators.Checked[i]:=True;
+  end;
+end;
+
+
+procedure TFormReportCountRingsOperators.FinalizationClose;
+begin
+ chkboxShowOperators.Checked:=False;
+ chkboxUvolennie.Checked:=False;
+ chkboxShowAll.Checked:=False;
+ chkboxOnlyCurrentDay.Checked:=False;
+end;
 
 // прогрузка текущих пользователей
 procedure TFormReportCountRingsOperators.LoadingListOperators(InShowDisableUsers:Boolean = False);
@@ -83,7 +136,6 @@ begin
       ado.Connection:=serverConnect;
       SQL.Clear;
 
-
       begin
         only_operators_roleID:=GetOnlyOperatorsRoleID;
         for i:=0 to only_operators_roleID.Count-1 do begin
@@ -101,9 +153,7 @@ begin
       countUsers:=Fields[0].Value;
     end;
 
-
     listOperators.Clear;
-
 
       with ado do begin
         SQL.Clear;
@@ -115,25 +165,9 @@ begin
         Active:=True;
 
          for i:=0 to countUsers-1 do begin
-           listOperators.Items.Add(getUserSIP(Fields[2].Value)+' | '+ Fields[0].Value+' '+Fields[1].Value);
-
-          { Cells[0,i]:=Fields[0].Value;                       // id
-           Cells[1,i]:=Fields[1].Value+ ' '+Fields[2].Value;  // фамили€ + им€
-           Cells[2,i]:=Fields[3].Value;                       // login
-           Cells[3,i]:=getUserGroupSTR(Fields[4].Value);      // группа прав
-           if InShowDisableUsers=False then begin             // состо€ние
-            Cells[4,i]:='јктивен';
-           end
-           else begin
-            if VarToStr(Fields[3].Value)='0' then Cells[4,i]:='јктивен'
-            else Cells[4,i]:='ќтключен';
-           end;  }
-
+           listOperators.Items.Add(getUserSIP(Fields[2].Value)+DELIMITER+ Fields[0].Value+' '+Fields[1].Value);
            ado.Next;
          end;
-
-        // FormUsers.Caption:='ѕользователи: '+IntToStr(countUsers);
-
       end;
 
   finally
@@ -145,37 +179,33 @@ begin
 
     Screen.Cursor:=crDefault;
   end;
-
 end;
 
 procedure TFormReportCountRingsOperators.FormCenter;
 begin
-  Left := (Screen.Width - Width) div 2;
-  Top := (Screen.Height - Height) div 2;
+  Left:=(Screen.Width - Width) div 2;
+  Top:=(Screen.Height - Height) div 2;
 end;
 
 
 procedure TFormReportCountRingsOperators.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
- chkboxShowOperators.Checked:=False;
- chkboxUvolennie.Checked:=False;
- chkboxShowAll.Checked:=False;
+ FinalizationClose;
 end;
 
 procedure TFormReportCountRingsOperators.FormShowOperators;
 begin
+  // подгружаем операторов
+  LoadingListOperators;
+
   PanelOperators.Visible:=True;
   btnGenerate.Top:=ShowOperatorsTop;
   Width:=ShowOperatorsWidth;
   Height:=ShowOperatorsHeight;
 
-  // подгружаем операторов
-  LoadingListOperators;
-
   // центрируем окно
   FormCenter;
-
 end;
 
 
@@ -195,15 +225,70 @@ end;
 procedure TFormReportCountRingsOperators.btnGenerateClick(Sender: TObject);
 var
  report:TReportCountOperators;
+ error:string;
+ onlyCurrentDay:Boolean;
 begin
+  onlyCurrentDay:=False;
+
   if DEBUG then begin
     while (GetTask('EXCEL.EXE')) do KillTask('EXCEL.EXE');
   end;
 
-  //FormWait.ShowModal;
+  // проверка
+  if not GetCheckValue(error) then begin
+    MessageBox(Handle,PChar(error),PChar('ќшибка'),MB_OK+MB_ICONERROR);
+    Exit;
+  end;
 
-  report:=TReportCountOperators.Create('ќтчет по количеству звонков операторами',dateStart.Date,dateStop.Date);
-  report.m_excel:='';
+  // показ только текщего дн€
+  if chkboxOnlyCurrentDay.Checked then onlyCurrentDay:=True;
+
+
+  // создаем отчет
+  report:=TReportCountOperators.Create('ќтчет по количеству звонков операторами',dateStart,dateStop,onlyCurrentDay);
+  report.ShowProgress; //показываем прогресс бар
+  report.SetProgressStatusText('«агрузка данных с сервера ...');
+
+  // на случай если не выбрали парметр "выбрать операторов"
+  if not chkboxShowOperators.Checked then begin
+   LoadingListOperators;
+   AllCheckedListOperatorsSip;
+  end;
+
+
+  report.CreateReportExcel(listOperators);
+
+  report.ShowExcel;       // ототбражаем данные
+  report.CloseProgress;   // закрываем прогресс бар
+end;
+
+procedure TFormReportCountRingsOperators.chkboxOnlyCurrentDayClick(
+  Sender: TObject);
+var
+ _errorDescription:string;
+begin
+  if chkboxOnlyCurrentDay.Checked then begin
+    lblS.Enabled:=False;
+    dateStart.Enabled:=False;
+    lblPo.Enabled:=False;
+    dateStop.Enabled:=False;
+
+    dateStart.Date:=Now;
+    dateStop.Date:=Now;
+
+  end
+  else begin
+    lblS.Enabled:=True;
+    dateStart.Enabled:=True;
+    lblPo.Enabled:=True;
+    dateStop.Enabled:=True;
+
+    // устанавливаем даты
+      if not SetFindDate(dateStart,dateStop,_errorDescription) then begin
+        MessageBox(Handle,PChar(_errorDescription),PChar('ќшибка'),MB_OK+MB_ICONERROR);
+        Exit;
+      end;
+  end;
 end;
 
 procedure TFormReportCountRingsOperators.chkboxShowAllClick(Sender: TObject);
@@ -211,9 +296,7 @@ var
  i:Integer;
 begin
   if chkboxShowAll.Checked then begin
-   for i:=0 to listOperators.Count-1 do begin
-     if not listOperators.Checked[i] then listOperators.Checked[i]:=True;
-   end;
+   AllCheckedListOperatorsSip;
   end
   else begin
    for i:=0 to listOperators.Count-1 do begin
