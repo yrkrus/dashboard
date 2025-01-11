@@ -194,8 +194,7 @@ end;
  const
  colorGood:TColor     = $0031851F;
  colorNotBad:Tcolor   = $0000D5D5;
- //colorBad:TColor      = $000303E9;
- colorBad:TColor     = $0000C8C8;
+ colorBad:TColor      = $0000C8C8;
  colorVeryBad:TColor  = $0000009B;
  var
   i:Integer;
@@ -388,8 +387,8 @@ begin
     end;
   end;
 
-  time_queue5000:=getIVRTimeQueue(queue_5000);
-  time_queue5050:=getIVRTimeQueue(queue_5050);
+  time_queue5000:=GetIVRTimeQueue(queue_5000);
+  time_queue5050:=GetIVRTimeQueue(queue_5050);
 
   // проверяем теперь есть ли такие id в памяти
    for i:=0 to countAnswered-1 do begin
@@ -398,8 +397,8 @@ begin
        // добавляем в память
        // найдем разницу во времени когда поговорили и сколько ждали - время от IVR
        case listAnsweredBD[i].queue of
-        5000: curr_time:=getTimeAnsweredToSeconds(listAnsweredBD[i].waiting_time) - getTimeAnsweredToSeconds(listAnsweredBD[i].talk_time) - time_queue5000;
-        5050: curr_time:=getTimeAnsweredToSeconds(listAnsweredBD[i].waiting_time) - getTimeAnsweredToSeconds(listAnsweredBD[i].talk_time) - time_queue5050;
+        5000: curr_time:=GetTimeAnsweredToSeconds(listAnsweredBD[i].waiting_time) - GetTimeAnsweredToSeconds(listAnsweredBD[i].talk_time) - time_queue5000;
+        5050: curr_time:=GetTimeAnsweredToSeconds(listAnsweredBD[i].waiting_time) - GetTimeAnsweredToSeconds(listAnsweredBD[i].talk_time) - time_queue5050;
        end;
 
        if curr_time<=0 then curr_time:=0;

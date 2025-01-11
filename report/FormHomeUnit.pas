@@ -28,6 +28,9 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure lblReportCountRingsOperatorsClick(Sender: TObject);
+    procedure lblReportCountRingsOperatorsMouseLeave(Sender: TObject);
+    procedure lblReportCountRingsOperatorsMouseMove(Sender: TObject;
+      Shift: TShiftState; X, Y: Integer);
   private
     { Private declarations }
   public
@@ -78,6 +81,17 @@ end;
 procedure TFormHome.lblReportCountRingsOperatorsClick(Sender: TObject);
 begin
   FormReportCountRingsOperators.ShowModal;
+end;
+
+procedure TFormHome.lblReportCountRingsOperatorsMouseLeave(Sender: TObject);
+begin
+  lblReportCountRingsOperators.Font.Style:=[fsBold];
+end;
+
+procedure TFormHome.lblReportCountRingsOperatorsMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  lblReportCountRingsOperators.Font.Style:=[fsUnderline,fsBold];
 end;
 
 procedure TFormHome.ProcessCommandLineParams(DEBUG:Boolean);

@@ -601,7 +601,7 @@ end;
               if UserEditFields_sipDefault <> edtOperatorSetting_SIP_show.Text then begin
                 if isExistSipActiveOperator(edtOperatorSetting_SIP_show.Text) then begin
                   _errorDescription:='SIP номер '+edtOperatorSetting_SIP_show.Text+' уже существует'+#13#13+
-                                     'для добавления такого SIP необходимо сначало отключить пользователя '+getUserNameOperators(edtOperatorSetting_SIP_show.Text);
+                                     'для добавления такого SIP необходимо сначало отключить пользователя '+GetUserNameOperators(edtOperatorSetting_SIP_show.Text);
                   Exit;
                 end;
               end;
@@ -611,7 +611,7 @@ end;
 
             if isExistSipActiveOperator(edtOperatorSetting_SIP_show.Text) then begin
               _errorDescription:='SIP номер '+edtOperatorSetting_SIP_show.Text+' уже существует'+#13#13+
-                                 'для добавления такого SIP необходимо сначало отключить пользователя '+getUserNameOperators(edtOperatorSetting_SIP_show.Text);
+                                 'для добавления такого SIP необходимо сначало отключить пользователя '+GetUserNameOperators(edtOperatorSetting_SIP_show.Text);
               Exit;
             end;
           end;

@@ -58,8 +58,8 @@ interface
    }
 
   type   // отображение \ сркытие окна запроса на сервер
-  enumShow_wait = (  open,
-                  close );
+  enumShow_wait = ( open,
+                    close );
 
   type
    enumLogging = (  eLog_unknown              = -1,        // не известный статус
@@ -135,15 +135,15 @@ interface
 
   type   // тип показывать\скрывать ушедших домой операторов
    enumHideShowGoHomeOperators = (  goHome_Hide,   // скрывать
-                                 goHome_Show    // показывать
-                               );
+                                    goHome_Show    // показывать
+                                 );
 
 
   type  // тип программы
   enumProrgamm = ( eGUI,
                    eCHAT,
                    eREPORT
-                   );
+                 );
 
   type  // какой браузер сейчас активен основной или дополнительный  !TODO эти же типы есть еще и в chat.exe
    enumActiveBrowser = (  eMaster = 0,

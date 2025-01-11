@@ -35,7 +35,8 @@ uses
       procedure ShowProgress;          // показ статус бара
       procedure CloseProgress;         // закрываем статус бар
       procedure SetProgressStatusText(InText:string); // установка текста статуса
-      procedure SetProgressBar(InProgress:Integer);   // установка прогресс бара
+      procedure SetProgressBar(InProgress:Integer); overload;   // установка прогресс бара
+      procedure SetProgressBar(InProgress:double);  overload;   // установка прогресс бара
 
       procedure ShowExcel; // отображение окна excel
 
@@ -46,6 +47,7 @@ uses
       m_excel           :OleVariant;
       m_sheet           :OleVariant;
       isESC             :Boolean;    // отмена формирования отчета
+      isExistDataExcel  :Boolean;    // есть ли данные для отображения
 
       function GetAbout:Boolean;    // нажали отмену генерации
 
@@ -53,7 +55,7 @@ uses
       private
       m_dateStart       :TDate;      // дата начала
       m_dateStop        :TDate;      // дата окончания
-      isExistDataExcel  :Boolean;    // есть ли данные для отображения
+
 
 
 
@@ -147,17 +149,23 @@ begin
   SetStatusProgressBarText(InText);
 end;
 
-// установка прогресс бара
+// установка прогресс бара (integer)
 procedure TAbstractReport.SetProgressBar(InProgress:Integer);
 begin
   SetStatusProgressBar(InProgress);
+end;
+
+// установка прогресс бара (double)
+procedure TAbstractReport.SetProgressBar(InProgress:double);
+begin
+ SetStatusProgressBar(InProgress);
 end;
 
 // отображение окна excel
 procedure TAbstractReport.ShowExcel;
 begin
   if isESC then begin
-    MessageBox(0,PChar('Отменено'),PChar('Отмена'),MB_OK+MB_ICONSTOP);
+    MessageBox(0,PChar('Создание отчета отменено'),PChar('Отменено'),MB_OK+MB_ICONSTOP);
     Exit;
   end;
 

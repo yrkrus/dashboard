@@ -45,6 +45,8 @@ object FormHome: TFormHome
       Font.Style = [fsBold]
       ParentFont = False
       OnClick = lblReportCountRingsOperatorsClick
+      OnMouseMove = lblReportCountRingsOperatorsMouseMove
+      OnMouseLeave = lblReportCountRingsOperatorsMouseLeave
     end
     object STDEBUG: TStaticText
       Left = 312

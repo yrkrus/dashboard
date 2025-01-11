@@ -9,7 +9,8 @@ uses
   FormWaitUnit in 'FormWaitUnit.pas' {FormWait},
   TAbstractReportUnit in 'include\TAbstractReportUnit.pas',
   TReportCountOperatorsUnit in 'classes\TReportCountOperatorsUnit.pas',
-  TQueueHistoryUnit in 'classes\TQueueHistoryUnit.pas';
+  TQueueHistoryUnit in 'classes\TQueueHistoryUnit.pas',
+  TCustomTypeUnit in '..\gui\TCustomTypeUnit.pas';
 
 {$R *.res}
 

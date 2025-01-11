@@ -570,7 +570,7 @@ end;
              // переведем в общее кол-во секунд
              countAll:=0;
              for j:=0 to listOperators[i].list_talk_time_all.Count-1  do begin
-               curr_seconds:=getTimeAnsweredToSeconds(listOperators[i].list_talk_time_all[j]);
+               curr_seconds:=GetTimeAnsweredToSeconds(listOperators[i].list_talk_time_all[j]);
 
                if countAll=0 then countAll:=curr_seconds
                else countAll:=countAll+curr_seconds;
@@ -770,7 +770,7 @@ end;
                 for j:=0 to Length(listOperators)-1 do begin
                   if listOperators[j].sip_number='' then begin
                     listOperators[j].sip_number:=sipOperators[i];
-                    listOperators[j].operator_name:=getUserNameOperators(sipOperators[i]);
+                    listOperators[j].operator_name:=GetUserNameOperators(sipOperators[i]);
 
                     // проверим доступ оператора к дашборду
                     listOperators[j].access_dashboard:=getOperatorAccessDashboard(sipOperators[i]);

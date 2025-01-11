@@ -20,7 +20,8 @@ uses
   procedure ShowProgressBar;                                                 // показываем прогресс бар
   procedure CloseProgressBar;                                                // закрываем прогресс бар
   procedure SetStatusProgressBarText(InText:string);                         // установка текста статуса прогресс бара
-  procedure SetStatusProgressBar(InProgress:Integer);                        // установка статуса прогресс бара
+  procedure SetStatusProgressBar(InProgress:Integer);  overload;             // установка статуса прогресс бара
+  procedure SetStatusProgressBar(InProgress:Double);   overload;             // установка статуса прогресс бара
   function GetAboutGenerateReport:Boolean;                                   // отмена генерации отчета
 
 
@@ -207,6 +208,19 @@ begin
   FormWait.ProgressBar.Progress:=InProgress;
   Application.ProcessMessages;
 end;
+
+
+// установка статуса прогресс бара
+procedure SetStatusProgressBar(InProgress:double);
+var
+ value:integer;
+begin
+  value:=Trunc(InProgress);
+
+  FormWait.ProgressBar.Progress:=value;
+  Application.ProcessMessages;
+end;
+
 
 
 // отмена генерации отчета

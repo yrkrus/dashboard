@@ -45,19 +45,15 @@ procedure LoadUsersAuthForm;                                                    
 function getUserPwd(InUserID:Integer):Integer;                                       // полчуение userPwd из userID
 function getUserLogin(InUserID:Integer):string;                                      // полчуение userLogin из userID
 function getUserRoleSTR(InUserID:Integer):string;                                    // отображение роли пользвоателя
-function getIVRTimeQueue(InQueue:enumQueueCurrent):Integer;                             // время которое необходимо отнимать от текущего звонка в очереди
 function correctTimeQueue(InQueue:enumQueueCurrent;InTime:string):string;               // правильноt отображение времени в очереди
-function StrToTQueue(InQueueSTR:string):enumQueueCurrent;                               // конвертер из string в TQueue
 function getUserRePassword(InUserID:Integer):Boolean;                                // необходимо ли поменять пароль при входе
 function updateUserPassword(InUserID,InUserNewPassword:Integer):string;              // обновление пароля пользователя
-function TQueueToStr(InQueueSTR:enumQueueCurrent):string;                               // конвертер из TQueue в string
 function getLocalIP: string;                                                         // функция получения локального IP
 procedure createCurrentActiveSession(InUserID:Integer);                              // заведение активной сессии
 function isExistCurrentActiveSession(InUserID:Integer):Boolean;                      // сущуствует ли акивная сессия
 procedure deleteActiveSession(InSessionID:Integer);                                  // удаление активной сессии
 function getActiveSessionUser(InUserID:Integer):Integer;                             // доставание ID активной сессии пользователя
 function isExistSipActiveOperator(InSip:string):Boolean;                             // проверка заведен ли уже ранее оператор под таким sip номером и он активен
-function getUserNameOperators(InSip:string):string;                                  // полчуение имени пользователя из его SIP номера
 procedure accessRights(var p_TUser: TUser);                                          // права доступа
 function getCurrentUserNamePC:string;                                                // получение имени залогиненого пользователя
 function getComputerPCName: string;                                                  // функция получения имени ПК
@@ -74,8 +70,6 @@ function getUserFamiliyaName_LastSuccessEnter(InUser_login_pc,
 function getCountAnsweredCall(InSipOperator:string):Integer;                         // кол-во отвеченных звонков оператором
 function getCountAnsweredCallAll:Integer;                                            // кол-во отвеченных звонков всех операторов
 function createListAnsweredCall(InSipOperator:string):TStringList;                   // создвание списка со всем отвеченными звонками  sip оператора
-function getTimeAnsweredToSeconds(InTimeAnswered:string):Integer;                    // перевод времени разговора оператора типа 00:00:00 в секунды
-function getTimeAnsweredSecondsToString(InSecondAnswered:Integer):string;            // перевод времени разговора оператора типа из секунд в 00:00:00
 procedure remoteCommand_addQueue(command:enumLogging);                                  // удаленная команда (добавление в очередь)
 procedure showWait(Status:enumShow_wait);                                               // отображение\сркытие окна запроса на сервер
 function remoteCommand_Responce(InStroka:string):string;                             // отправка запроса на добавление удаленной команды
@@ -605,6 +599,17 @@ begin
        if countKillExe>10 then Break;
      end;
 
+     // закрываем report_exe если открыт
+     countKillExe:=0;
+     while GetTask(PChar(REPORT_EXE)) do begin
+       KillTask(PChar(REPORT_EXE));
+
+       // на случай если не удасться закрыть дочерний exe
+       Sleep(500);
+       Inc(countKillExe);
+       if countKillExe>10 then Break;
+     end;
+
    finally
       //DM.ADOConnectServer.Close;
       KillProcessNow;
@@ -698,11 +703,11 @@ begin
   case InQueueType of
 
     answered: begin    // отвеченные
-      select_response:='select count(phone) from queue where number_queue = '+#39+TQueueToStr(InQueueNumber)+#39
+      select_response:='select count(phone) from queue where number_queue = '+#39+TQueueToString(InQueueNumber)+#39
                                                                              +' and answered = ''1'' and sip <>''-1'' and hash is not null and date_time > '+#39+GetCurrentStartDateTime+#39;
     end;
     no_answered: begin  // не отвеченные
-      select_response:='select count(phone) from queue where number_queue = '+#39+TQueueToStr(InQueueNumber)+#39
+      select_response:='select count(phone) from queue where number_queue = '+#39+TQueueToString(InQueueNumber)+#39
                                                                              +' and fail = ''1'' and date_time > '+#39+GetCurrentStartDateTime+#39;
     end;
     no_answered_return: begin  // не отвеченные + вернувшиеся
@@ -714,15 +719,15 @@ begin
                                                                                     +IntToStr(InQueueNumber)+#39+' and fail = ''1'' and date_time > '+#39
                                                                                     +GetCurrentStartDateTime+#39+'))) as temp'; }
 
-      select_response:='select count(distinct(phone)) from queue where number_queue='+#39+TQueueToStr(InQueueNumber)+#39+
+      select_response:='select count(distinct(phone)) from queue where number_queue='+#39+TQueueToString(InQueueNumber)+#39+
                                                                 ' and fail =''1'' and date_time >'+#39+GetCurrentStartDateTime+#39+
-                                                                ' and phone not in (select phone from queue where number_queue ='+#39+TQueueToStr(InQueueNumber)+#39+
+                                                                ' and phone not in (select phone from queue where number_queue ='+#39+TQueueToString(InQueueNumber)+#39+
                                                                 ' and answered  = ''1'' and date_time > +'#39+GetCurrentStartDateTime+#39+')';
 
 
     end;
     all_answered:begin  // всего отвеченных
-      select_response:='select count(phone) from queue where number_queue = '+#39+TQueueToStr(InQueueNumber)+#39
+      select_response:='select count(phone) from queue where number_queue = '+#39+TQueueToString(InQueueNumber)+#39
                                                                              +' and date_time > '+#39+GetCurrentStartDateTime+#39;
     end;
   end;
@@ -746,7 +751,7 @@ all_queue:string;
 
 begin
   resultat:='null';
-  all_queue:=#39+TQueueToStr(queue_5000)+#39+','+#39+TQueueToStr(queue_5050)+#39;
+  all_queue:=#39+TQueueToString(queue_5000)+#39+','+#39+TQueueToString(queue_5050)+#39;
 
  with HomeForm do begin
     case inStatDay of
@@ -999,81 +1004,18 @@ begin
  end;
 end;
 
-
-// конвертер из string в TQueue
-function StrToTQueue(InQueueSTR:string):enumQueueCurrent;
-begin
-  if InQueueSTR = '5000' then Result:=queue_5000;
-  if InQueueSTR = '5050' then Result:=queue_5050;
-end;
-
-
-// конвертер из TQueue в string
-function TQueueToStr(InQueueSTR:enumQueueCurrent):string;
-begin
-  case InQueueSTR of
-    queue_5000: Result:='5000';
-    queue_5050: Result:='5050';
-  end;
-end;
-
 // правильное отображение времени в очереди
 function correctTimeQueue(InQueue:enumQueueCurrent;InTime:string):string;
 var
  correctTime,delta_time:Integer;
 begin
   // найдем корректно время для нужной очереди
-  delta_time:=getIVRTimeQueue(InQueue);
+  delta_time:=GetIVRTimeQueue(InQueue);
   // переведем время в секунлы
   correctTime:=getTimeAnsweredToSeconds(InTime)-delta_time;
 
-  Result:=getTimeAnsweredSecondsToString(correctTime);
+  Result:=GetTimeAnsweredSecondsToString(correctTime);
 end;
-
-
-// перевод времени разговора оператора типа из секунд в 00:00:00
-function getTimeAnsweredSecondsToString(InSecondAnswered:Integer):string;
-const
-  SecPerDay = 86400;
-  SecPerHour = 3600;
-  SecPerMinute = 60;
-var
- ss, mm, hh: word;
- hour,min,sec:string;
-begin
-
-  hh := (InSecondAnswered mod SecPerDay) div SecPerHour;
-  mm := ((InSecondAnswered mod SecPerDay) mod SecPerHour) div SecPerMinute;
-  ss := ((InSecondAnswered mod SecPerDay) mod SecPerHour) mod SecPerMinute;
-
-
-  if hh<=9 then hour:='0'+IntToStr(hh)
-  else hour:=IntToStr(hh);
-  if mm<=9 then min:='0'+IntToStr(mm)
-  else min:=IntToStr(mm);
-  if ss<=9 then sec:='0'+IntToStr(ss)
-  else sec:=IntToStr(ss);
-
-  Result:=hour+':'+min+':'+sec;
-end;
-
-
-// перевод времени разговора оператора типа 00:00:00 в секунды
-function getTimeAnsweredToSeconds(InTimeAnswered:string):Integer;
- const
-  SecPerDay = 86400;
-  SecPerHour = 3600;
-  SecPerMinute = 60;
- var
- tmp_time:TTime;
- curr_time:Integer;
-begin
-  tmp_time:=StrToDateTime(InTimeAnswered);
-  curr_time:=HourOf(tmp_time) * 3600 + MinuteOf(tmp_time) * 60 + SecondOf(tmp_time);
-
-  Result:=curr_time;
-end;
-
 
 // кол-во отвеченных звонков оператором
  function getCountAnsweredCall(InSipOperator:string):Integer;
@@ -1206,7 +1148,7 @@ begin
   listCount:=0;
 
   // отображение только очереди 5000 и 5050
-  list_queue:=#39+TQueueToStr(queue_5000)+#39+','+#39+TQueueToStr(queue_5050)+#39;
+  list_queue:=#39+TQueueToString(queue_5000)+#39+','+#39+TQueueToString(queue_5050)+#39;
 
 
    with DM.ADOQuerySelect_Propushennie do begin
@@ -1237,7 +1179,7 @@ begin
               Cells[0,i+1]:=Fields[0].Value;
 
               // подправим время ожидания
-              Cells[1,i+1]:=correctTimeQueue(StrToTQueue(Fields[3].Value),Fields[1].Value);
+              Cells[1,i+1]:=correctTimeQueue(StringToTQueue(Fields[3].Value),Fields[1].Value);
 
               Cells[2,i+1]:=Fields[2].Value;
               Cells[3,i+1]:=Fields[3].Value;
@@ -1356,7 +1298,21 @@ begin
                 STInfoVersionCHAT.Caption:=getVersion(GUID_VESRION,programm);
               end;
               eREPORT:begin
-                // TODO написать!
+                REHistory_REPORT.Clear;
+
+                for i:=0 to countVersion-1 do begin
+                     with REHistory_REPORT do begin
+                      Lines.Add('версия '+VarToStr(Fields[1].Value) + ' ('+VarToStr(Fields[0].Value)+')');
+                      Lines.Add(Fields[2].Value);
+                      Lines.Add('');
+                      Lines.Add('');
+                      Lines.Add('');
+                     end;
+                   ado.Next;
+                end;
+
+                REHistory_REPORT.SelStart:=0;
+                STInfoVersionREPORT.Caption:=getVersion(GUID_VESRION,programm);
               end;
            end;
         end;
@@ -2229,7 +2185,7 @@ begin
          for i:=0 to countUsers-1 do begin
 
            Cells[0,i]:=Fields[0].Value;                           // id
-           Cells[1,i]:=getUserNameOperators(Fields[1].Value);     // Фамилия Имя
+           Cells[1,i]:=GetUserNameOperators(Fields[1].Value);     // Фамилия Имя
            Cells[2,i]:=Fields[1].Value;                           // Sip
            if Fields[3].Value<>null then Cells[3,i]:=Fields[3].Value
            else Cells[3,i]:='null';
@@ -2758,52 +2714,6 @@ begin
   end;
 end;
 
-
-// время которое необходимо отнимать от текущего звонка в очереди
-function getIVRTimeQueue(InQueue:enumQueueCurrent):Integer;
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
-begin
-  Result:=0;
-
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
-  end;
-
-  try
-    with ado do begin
-      ado.Connection:=serverConnect;
-      SQL.Clear;
-
-      case InQueue of
-         queue_5000:begin
-           SQL.Add('select queue_5000_time from settings order by id desc limit 1');
-         end;
-         queue_5050:begin
-           SQL.Add('select queue_5050_time from settings order by id desc limit 1');
-         end;
-      end;
-
-      Active:=True;
-
-      if Fields[0].Value<>null then Result:=Fields[0].Value
-      else Result:=0;
-    end;
-  finally
-    FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
-  end;
-
-end;
-
-
 // обновление пароля пользователя
 function updateUserPassword(InUserID,InUserNewPassword:Integer):string;
 var
@@ -3120,42 +3030,6 @@ begin
   end;
 end;
 
-
-// полчуение имени пользователя из его SIP номера
-function getUserNameOperators(InSip:string):string;
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
-begin
-  Result:='null';
-
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
-  end;
-
-  try
-    with ado do begin
-      ado.Connection:=serverConnect;
-
-      SQL.Clear;
-      SQL.Add('select familiya,name from users where id = ( select user_id from operators where sip = '+#39+InSip+#39+') and disabled = ''0''');
-
-      Active:=True;
-
-      if Fields[0].Value<>null then Result:=Fields[0].Value+' '+Fields[1].Value
-      else Result:='null';
-    end;
-  finally
-   FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
-  end;
-end;
 
 // полчуение фамилии пользователя из его UserID
 function getUserFamiliya(InUserID:Integer):string;
@@ -3998,7 +3872,7 @@ begin
    dateToBD:=StrToDateTime(curr_date);
    dateNOW:=Now;
    diff:=Round((dateNOW - dateToBD) * 24 * 60 * 60 );
-   Result:=getTimeAnsweredSecondsToString(diff);
+   Result:=GetTimeAnsweredSecondsToString(diff);
 end;
 
 
@@ -4013,7 +3887,7 @@ begin
    dateToBD:=StrToDateTime(InStartTimeonHold);
    dateNOW:=Now;
    diff:=Round((dateNOW - dateToBD) * 24 * 60 * 60 );
-   Result:=getTimeAnsweredSecondsToString(diff);
+   Result:=GetTimeAnsweredSecondsToString(diff);
 end;
 
 // проверка оператор ушел домой или нет
@@ -4817,12 +4691,12 @@ begin
     Exit;
  end;
 
-  if not FileExists(REPORTS_EXE) then begin
-    MessageBox(HomeForm.Handle,PChar('Не удается найти файл '+REPORTS_EXE),PChar('Файл не найден'),MB_OK+MB_ICONERROR);
+  if not FileExists(REPORT_EXE) then begin
+    MessageBox(HomeForm.Handle,PChar('Не удается найти файл '+REPORT_EXE),PChar('Файл не найден'),MB_OK+MB_ICONERROR);
     Exit;
   end;
 
-  ShellExecute(HomeForm.Handle, 'Open', PChar(REPORTS_EXE),PChar(USER_ID_PARAM+' '+IntToStr(SharedCurrentUserLogon.GetID)),nil,SW_SHOW);
+  ShellExecute(HomeForm.Handle, 'Open', PChar(REPORT_EXE),PChar(USER_ID_PARAM+' '+IntToStr(SharedCurrentUserLogon.GetID)),nil,SW_SHOW);
 end;
 
 // enumChatID -> string

@@ -13,7 +13,7 @@ interface
 uses
   TActiveSIPUnit, TUserUnit, Data.Win.ADODB,
   Data.DB, SysUtils, Windows, TLogFileUnit,
-  TIVRUnit;
+  TIVRUnit, TCustomTypeUnit;
 
 var
    // режим разработки
@@ -34,7 +34,7 @@ var
   // чат
   CHAT_EXE         :string = 'chat.exe';
   // отчеты
-  REPORTS_EXE      :string = 'report.exe';
+  REPORT_EXE      :string = 'report.exe';
 
   USER_ID_PARAM    :string = '--USER_ID';
 
@@ -85,6 +85,13 @@ var
   function GetTask(ExeFileName:string):Boolean;               stdcall;  external 'core.dll';       // проверка запущен ли процесс
   function GetCloneRun(InExeName:Pchar):Boolean;              stdcall;  external 'core.dll';       // проверка на 2ую запущенную копию
   function GetDateTimeToDateBD(InDateTime:string):PChar;      stdcall;  external 'core.dll';       // перевод даты и времени в ненормальный вид для BD
+  function GetTimeAnsweredToSeconds(InTimeAnswered:string):Integer; stdcall;  external 'core.dll'; // перевод времени разговора оператора типа 00:00:00 в секунды
+  function GetTimeAnsweredSecondsToString(InSecondAnswered:Integer):PChar; stdcall;  external 'core.dll'; // перевод времени разговора оператора типа из секунд в 00:00:00
+  function GetIVRTimeQueue(InQueue:enumQueueCurrent):Integer;  stdcall;  external 'core.dll';      // время которое необходимо отнимать от текущего звонка в очереди
+  function StringToTQueue(InQueueSTR:string):enumQueueCurrent; stdcall;  external 'core.dll';      // конвертер из string в TQueue
+  function TQueueToString(InQueueSTR:enumQueueCurrent):PChar;  stdcall;  external 'core.dll';      // конвертер из TQueue в string
+  function GetUserNameOperators(InSip:string):PChar;           stdcall;  external 'core.dll';      // полчуение имени пользователя из его SIP номера
+
 
 
   // --- connect_to_server.dll ---
@@ -98,7 +105,6 @@ var
 
 
 implementation
-
 
 
 initialization  // Инициализация

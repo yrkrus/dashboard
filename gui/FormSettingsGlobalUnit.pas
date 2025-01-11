@@ -159,8 +159,8 @@ end;
 procedure TFormSettingsGlobal.LoadSettings;
 begin
    // корректировка времени
-   lblQueue_5000.Caption:=IntToStr(getIVRTimeQueue(queue_5000));
-   lblQueue_5050.Caption:=IntToStr(getIVRTimeQueue(queue_5050));
+   lblQueue_5000.Caption:=IntToStr(GetIVRTimeQueue(queue_5000));
+   lblQueue_5050.Caption:=IntToStr(GetIVRTimeQueue(queue_5050));
 
    //подключение к firebird
    if (GetFirbirdAuth(firebird_login)<>'null') and (GetFirbirdAuth(firebird_pwd)<>'null') then begin

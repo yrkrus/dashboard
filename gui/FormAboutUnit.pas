@@ -22,6 +22,10 @@ type
     Panel2: TPanel;
     REHistory_CHAT: TRichEdit;
     STInfoVersionCHAT: TStaticText;
+    sheetREPORT: TTabSheet;
+    STInfoVersionREPORT: TStaticText;
+    Panel3: TPanel;
+    REHistory_REPORT: TRichEdit;
     procedure FormShow(Sender: TObject);
     procedure imgAboutClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);

@@ -182,6 +182,9 @@ type
     procedure Button3Click(Sender: TObject);
     procedure img_statistics_QUEUEClick(Sender: TObject);
     procedure menu_ReportsClick(Sender: TObject);
+    procedure lblNewMessageLocalChatMouseLeave(Sender: TObject);
+    procedure lblNewMessageLocalChatMouseMove(Sender: TObject;
+      Shift: TShiftState; X, Y: Integer);
 
 
 
@@ -870,6 +873,17 @@ procedure THomeForm.lblNewMessageLocalChatClick(Sender: TObject);
 begin
   lblNewMessageLocalChat.Visible:=False;
   OpenLocalChat;
+end;
+
+procedure THomeForm.lblNewMessageLocalChatMouseLeave(Sender: TObject);
+begin
+   lblNewMessageLocalChat.Font.Style:=[fsBold];
+end;
+
+procedure THomeForm.lblNewMessageLocalChatMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  lblNewMessageLocalChat.Font.Style:=[fsUnderline,fsBold];
 end;
 
 procedure THomeForm.listSG_ACTIVESIPDrawCell(Sender: TObject; ACol,

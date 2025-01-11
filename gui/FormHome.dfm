@@ -5825,6 +5825,8 @@ object HomeForm: THomeForm
     Transparent = False
     Visible = False
     OnClick = lblNewMessageLocalChatClick
+    OnMouseMove = lblNewMessageLocalChatMouseMove
+    OnMouseLeave = lblNewMessageLocalChatMouseLeave
     ExplicitTop = 760
   end
   object panel_IVR: TPanel

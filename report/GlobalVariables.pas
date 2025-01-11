@@ -11,7 +11,7 @@ unit GlobalVariables;
 interface
 
 uses
-  SysUtils, Windows;
+  SysUtils, Windows,TCustomTypeUnit;
 
 
 
@@ -43,15 +43,21 @@ var
   function createServerConnect: p_TADOConnection;             stdcall;    external 'core.dll';        // Создание подключения к серверу
   function GetCopyright:Pchar;                                stdcall;    external 'core.dll';        // copyright
   function GetUserNameFIO(InUserID:Integer):PChar;            stdcall;    external 'core.dll';        // полчуение имени пользователя из его UserID
-  function GetUserAccessReports(InUserID:Integer):Boolean;    stdcall;     external 'core.dll';       // есть ли доступ у пользователя к отчетам
-  function GetCurrentDateTimeDec(DecMinutes:Integer):PChar;   overload;  stdcall; external 'core.dll';// текущее начала дня минус -DecMinutes
-  function GetCurrentStartDateTime:PChar;                     overload;  stdcall; external 'core.dll';// текущее начала дня с минутами 00:00:00
-  function GetCurrentTime:PChar;                              stdcall; external 'core.dll';           // текущее время  yyyymmdd
-  procedure KillProcessNow;                                   stdcall;  external 'core.dll';          // немедленное звершение работы
-  function GetCloneRun(InExeName:Pchar):Boolean;              stdcall;  external 'core.dll';          // проверка на 2ую запущенную копию
-  function KillTask(ExeFileName:string):integer;              stdcall;  external 'core.dll';       // функция остановки exe
-  function GetTask(ExeFileName:string):Boolean;               stdcall;  external 'core.dll';       // проверка запущен ли процесс
-  function GetDateToDateBD(InDateTime:string):PChar;          stdcall;  external 'core.dll';       // перевод даты и времени в ненормальный вид для BD
+  function GetUserAccessReports(InUserID:Integer):Boolean;    stdcall;    external 'core.dll';       // есть ли доступ у пользователя к отчетам
+  function GetCurrentDateTimeDec(DecMinutes:Integer):PChar;   overload;   stdcall; external 'core.dll';// текущее начала дня минус -DecMinutes
+  function GetCurrentStartDateTime:PChar;                     overload;   stdcall; external 'core.dll';// текущее начала дня с минутами 00:00:00
+  function GetCurrentTime:PChar;                              stdcall;    external 'core.dll';           // текущее время  yyyymmdd
+  procedure KillProcessNow;                                   stdcall;    external 'core.dll';          // немедленное звершение работы
+  function GetCloneRun(InExeName:Pchar):Boolean;              stdcall;    external 'core.dll';          // проверка на 2ую запущенную копию
+  function KillTask(ExeFileName:string):integer;              stdcall;    external 'core.dll';          // функция остановки exe
+  function GetTask(ExeFileName:string):Boolean;               stdcall;    external 'core.dll';          // проверка запущен ли процесс
+  function GetDateToDateBD(InDateTime:string):PChar;          stdcall;    external 'core.dll';          // перевод даты и времени в ненормальный вид для BD
+  function GetTimeAnsweredToSeconds(InTimeAnswered:string):Integer; stdcall;  external 'core.dll';    // перевод времени разговора оператора типа 00:00:00 в секунды
+  function GetTimeAnsweredSecondsToString(InSecondAnswered:Integer):PChar; stdcall;  external 'core.dll'; // перевод времени разговора оператора типа из секунд в 00:00:00
+  function GetIVRTimeQueue(InQueue:enumQueueCurrent):Integer;  stdcall;  external 'core.dll';    // время которое необходимо отнимать от текущего звонка в очереди
+  function StringToTQueue(InQueueSTR:string):enumQueueCurrent; stdcall;  external 'core.dll';      // конвертер из string в TQueue
+  function TQueueToString(InQueueSTR:enumQueueCurrent):PChar;  stdcall;  external 'core.dll';      // конвертер из TQueue в string
+  function GetUserNameOperators(InSip:string):PChar;           stdcall;  external 'core.dll';      // полчуение имени пользователя из его SIP номера
 
 
 
@@ -60,12 +66,6 @@ var
 
 
 implementation
-
-
-uses
-  FormHomeUnit;
-
-
 
 
 initialization  // Инициализация

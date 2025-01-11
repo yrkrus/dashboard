@@ -234,9 +234,9 @@ begin
     // ===== Œ¡Ÿ≈≈ ¬–≈Ãﬂ –¿«√Œ¬Œ–¿ =====
     begin
      if  p_ActiveSipOperators.GetListOperators_TalkTimeAll(i) = 0 then ListItem.SubItems.Add('00:00:00 | 00:00:00')
-     else ListItem.SubItems.Add(getTimeAnsweredSecondsToString(p_ActiveSipOperators.GetListOperators_TalkTimeAvg(i))
+     else ListItem.SubItems.Add(GetTimeAnsweredSecondsToString(p_ActiveSipOperators.GetListOperators_TalkTimeAvg(i))
                                 +' | '
-                                +getTimeAnsweredSecondsToString(p_ActiveSipOperators.GetListOperators_TalkTimeAll(i)));
+                                +GetTimeAnsweredSecondsToString(p_ActiveSipOperators.GetListOperators_TalkTimeAll(i)));
 
     end;
   end;
@@ -394,9 +394,9 @@ begin
       // ===== Œ¡Ÿ≈≈ ¬–≈Ãﬂ –¿«√Œ¬Œ–¿ =====
       begin
        if  p_ActiveSipOperators.GetListOperators_TalkTimeAll(i) = 0 then ListItem.SubItems[6]:='00:00:00 | 00:00:00'
-       else ListItem.SubItems[6]:=getTimeAnsweredSecondsToString(p_ActiveSipOperators.GetListOperators_TalkTimeAvg(i))
+       else ListItem.SubItems[6]:=GetTimeAnsweredSecondsToString(p_ActiveSipOperators.GetListOperators_TalkTimeAvg(i))
                                   +' | '
-                                  +getTimeAnsweredSecondsToString(p_ActiveSipOperators.GetListOperators_TalkTimeAll(i));
+                                  +GetTimeAnsweredSecondsToString(p_ActiveSipOperators.GetListOperators_TalkTimeAll(i));
 
       end;
     end;

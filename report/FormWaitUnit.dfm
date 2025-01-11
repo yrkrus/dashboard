@@ -28,11 +28,10 @@ object FormWait: TFormWait
     ForeColor = clGradientInactiveCaption
     Progress = 50
     ShowText = False
-    ExplicitWidth = 795
-    ExplicitHeight = 33
+    ExplicitLeft = -1
   end
   object ProgressStatusText: TStaticText
-    Left = 6
+    Left = 33
     Top = 7
     Width = 51
     Height = 17
@@ -45,15 +44,14 @@ object FormWait: TFormWait
     Font.Style = [fsBold]
     ParentColor = False
     ParentFont = False
-    TabOrder = 0
+    TabOrder = 1
   end
   object STEsc: TStaticText
-    Left = 441
+    Left = 442
     Top = 7
     Width = 70
-    Height = 17
+    Height = 16
     Cursor = crHandPoint
-    Hint = #1054#1090#1084#1077#1085#1080#1090#1100' '#1092#1086#1088#1084#1080#1088#1086#1074#1072#1085#1080#1077' '#1086#1090#1095#1077#1090#1072
     Caption = #1086#1090#1084#1077#1085#1072' (ESC)'
     Color = clGradientInactiveCaption
     Font.Charset = DEFAULT_CHARSET
@@ -63,9 +61,14 @@ object FormWait: TFormWait
     Font.Style = []
     ParentColor = False
     ParentFont = False
-    ParentShowHint = False
-    ShowHint = True
-    TabOrder = 1
+    TabOrder = 2
     OnClick = STEscClick
+  end
+  object ActivityIndicator: TActivityIndicator
+    Left = 4
+    Top = 2
+    Animate = True
+    IndicatorSize = aisSmall
+    IndicatorType = aitRotatingSector
   end
 end

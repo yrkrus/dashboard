@@ -10,7 +10,8 @@ uses
   Variants,
   System.DateUtils,
   Winapi.TlHelp32,
-  GlobalVariables in 'GlobalVariables.pas';
+  GlobalVariables in 'GlobalVariables.pas',
+  TCustomTypeUnit in '..\..\gui\TCustomTypeUnit.pas';
 
 {$R *.res}
 
@@ -355,6 +356,147 @@ begin
  Result:=PChar(Datetmp);
 end;
 
+// перевод времени разговора оператора типа 00:00:00 в секунды
+function GetTimeAnsweredToSeconds(InTimeAnswered:string):Integer; stdcall;export;
+ const
+  SecPerDay = 86400;
+  SecPerHour = 3600;
+  SecPerMinute = 60;
+ var
+ tmp_time:TTime;
+ curr_time:Integer;
+begin
+  tmp_time:=StrToDateTime(InTimeAnswered);
+  curr_time:=HourOf(tmp_time) * 3600 + MinuteOf(tmp_time) * 60 + SecondOf(tmp_time);
+
+  Result:=curr_time;
+end;
+
+
+// перевод времени разговора оператора типа из секунд в 00:00:00
+function GetTimeAnsweredSecondsToString(InSecondAnswered:Integer):PChar; stdcall;export;
+const
+  SecPerDay = 86400;
+  SecPerHour = 3600;
+  SecPerMinute = 60;
+var
+ ss, mm, hh: word;
+ hour,min,sec:string;
+begin
+
+  hh := (InSecondAnswered mod SecPerDay) div SecPerHour;
+  mm := ((InSecondAnswered mod SecPerDay) mod SecPerHour) div SecPerMinute;
+  ss := ((InSecondAnswered mod SecPerDay) mod SecPerHour) mod SecPerMinute;
+
+
+  if hh<=9 then hour:='0'+IntToStr(hh)
+  else hour:=IntToStr(hh);
+  if mm<=9 then min:='0'+IntToStr(mm)
+  else min:=IntToStr(mm);
+  if ss<=9 then sec:='0'+IntToStr(ss)
+  else sec:=IntToStr(ss);
+
+  Result:=PChar(hour+':'+min+':'+sec);
+end;
+
+
+// время которое необходимо отнимать от текущего звонка в очереди
+function GetIVRTimeQueue(InQueue:enumQueueCurrent):Integer; stdcall;export;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+  Result:=0;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+
+      case InQueue of
+         queue_5000:begin
+           SQL.Add('select queue_5000_time from settings order by id desc limit 1');
+         end;
+         queue_5050:begin
+           SQL.Add('select queue_5050_time from settings order by id desc limit 1');
+         end;
+      end;
+
+      Active:=True;
+
+      if Fields[0].Value<>null then Result:=Fields[0].Value
+      else Result:=0;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+
+// конвертер из string в TQueue
+function StringToTQueue(InQueueSTR:string):enumQueueCurrent; stdcall;export;
+begin
+  if InQueueSTR = '5000' then Result:=queue_5000;
+  if InQueueSTR = '5050' then Result:=queue_5050;
+end;
+
+// конвертер из TQueue в string
+function TQueueToString(InQueueSTR:enumQueueCurrent):PChar; stdcall;export;
+begin
+  case InQueueSTR of
+    queue_5000: Result:=PChar('5000');
+    queue_5050: Result:=PChar('5050');
+  end;
+end;
+
+
+
+// полчуение имени пользователя из его SIP номера
+function GetUserNameOperators(InSip:string):PChar; stdcall;export;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+  Result:=PChar('null');
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+
+      SQL.Clear;
+      SQL.Add('select familiya,name from users where id = ( select user_id from operators where sip = '+#39+InSip+#39+') and disabled = ''0''');
+
+      Active:=True;
+
+      if Fields[0].Value<>null then Result:=PChar(VarToStr(Fields[0].Value)+' '+VarToStr(Fields[1].Value));
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
 exports
   createServerConnect,
   GetCopyright,
@@ -374,7 +516,13 @@ exports
   KillTask,
   GetTask,
   GetDateTimeToDateBD,
-  GetDateToDateBD;
+  GetDateToDateBD,
+  GetTimeAnsweredToSeconds,
+  GetTimeAnsweredSecondsToString,
+  GetIVRTimeQueue,
+  StringToTQueue,
+  TQueueToString,
+  GetUserNameOperators;
 
 begin
 end.

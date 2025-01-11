@@ -80,12 +80,18 @@ uses
 
       function isExistFileLog:Boolean; overload;     // есть ли файлы логов в диреткории
       function isExistFileLog(InActiveBrowser:enumActiveBrowser):Boolean; overload;     // есть ли файлы логов в диреткории
+      procedure CreateFileLog;   // создание пустого файла логов
+
 
       function GetLastIDMessageBase:Integer;    // последнее сообщение котороое есть в базе
       function GetCountNewMessage(InLastIDMessage:Integer):Integer;    // кол-во новых сообщений
       function GetLastIDMessageFileLog(InActiveBrowser:enumActiveBrowser):Integer;    // нахождение последнего ID сообщения в логе
 
       function isExistNewMessage:Boolean;           // проверка есть ли новые сообщения
+
+
+      function IntegerToEnumActiveBrowser(ID:Integer):enumActiveBrowser;       // enumActiveBrowser -> integer
+
 
       end;
    // class TChat END
@@ -95,6 +101,9 @@ implementation
 
 uses
   GlobalVariables, FunctionUnit, FormHome;
+
+const
+      cMAX_BROWSER      :Word = 2;        // максимальное кол-во переключаемых браузеров в одном классе чата
 
 
 /////////////////////////TStructFileInfo/////////////////////////////////////
@@ -345,8 +354,7 @@ var
  countNewMessage:Integer;
 begin
   // файлов нет, нечего проверять
-  if not isExistFileLog then Exit;
-
+  if not isExistFileLog then CreateFileLog;
   if not isExistNewMessage then Exit;
 
   // есть новые сообщения надо об этом сообщить на главной форме
@@ -358,5 +366,42 @@ begin
    end;
 end;
 
+
+procedure TChat.CreateFileLog;
+var
+ EmptyFile:TfileStream;
+ i:Integer;
+begin
+  // проверка есть ли папка chat_history
+  if not DirectoryExists(m_file.m_nodeFolder) then CreateDir(Pchar(m_file.m_nodeFolder));
+
+  // проверка есть ли папка chat_history/текущая дата
+  if not DirectoryExists(m_file.m_nodeFolder+'\'+m_file.m_fileName) then CreateDir(Pchar(m_file.m_nodeFolder+'\'+m_file.m_fileName));
+
+  // проверяем есть ли папка с каналом
+  if not DirectoryExists(m_file.m_nodeFolder+'\'+m_file.m_fileName+'\'+EnumChannelChatIDToString(m_chatID)) then CreateDir(Pchar(m_file.m_nodeFolder+'\'+m_file.m_fileName+'\'+EnumChannelChatIDToString(m_chatID)));
+
+  // проверка есть ли сам файл логов
+  for i:=0 to cMAX_BROWSER-1 do begin
+    if not isExistFileLog(IntegerToEnumActiveBrowser(i)) then begin
+      try
+        EmptyFile:= TFileStream.Create(m_navigate.GetPathToLogName(IntegerToEnumActiveBrowser(i)),fmCreate);
+      finally
+        EmptyFile.Free;
+      end;
+    end;
+  end;
+end;
+
+
+// enumActiveBrowser -> integer
+function TChat.IntegerToEnumActiveBrowser(ID:Integer):enumActiveBrowser;
+begin
+  case ID of
+    0: Result:=eMaster;
+    1: Result:=eSlave;
+    2: Result:=eNone;
+  end;
+end;
 
 end.

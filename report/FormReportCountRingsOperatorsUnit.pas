@@ -72,6 +72,14 @@ begin
   Result:=True;
   _errorDescription:='';
 
+  // проверка чтобы дата начала была не больше даты окночания
+  if dateStart.Date > dateStop.Date then begin
+    _errorDescription:='Что то как то дебет с кредитом не сходится! '+#13#13+'Дата начала больше даты окончания';
+     Result:=False;
+     Exit;
+  end;
+
+
   // проверим есть ли параметр текущий день
   if not chkboxOnlyCurrentDay.Checked then begin
     // проверим есть ли в проимежутке дат текущий день
@@ -92,6 +100,7 @@ begin
     _errorDescription:='Установлен параметр "Выбрать операторов", но не один не выбран';
     Result:=False;
   end;
+
 end;
 
 // на случай если не выбрали параметр "выбрать операторов"
@@ -258,8 +267,8 @@ begin
 
   report.CreateReportExcel(listOperators);
 
-  report.ShowExcel;       // ототбражаем данные
   report.CloseProgress;   // закрываем прогресс бар
+  report.ShowExcel;       // ототбражаем данные
 end;
 
 procedure TFormReportCountRingsOperators.chkboxOnlyCurrentDayClick(
