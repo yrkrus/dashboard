@@ -10,7 +10,7 @@ const
  // exe родителя
  DASHBOARD_EXE    :string = 'dashboard.exe';
  CHAT_EXE         :string = 'chat.exe';
- REPORTS_EXE      :string = 'report.exe';
+ REPORT_EXE      :string = 'report.exe';
  UPDATE_EXE       :string = 'update.exe';
 
  UPDATE_BAT       :string = 'update.bat';

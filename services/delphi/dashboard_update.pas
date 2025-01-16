@@ -208,20 +208,20 @@ begin
      Add('::');
      Add('echo                      AutoUpdate Dashboard ');
      Add('echo                  upgrade '+p_XML.GetCurrentVersion+' to '+p_XML.GetRemoteVersion);
-     Add('echo                    started after 10 sec ...');
+     Add('echo                    started after 2 sec ...');
      Add('echo.');
-     Add('ping -n 5 localhost>Nul');
+     Add('ping -n 2 localhost>Nul');
      Add('::');
 
       // закрываем exe
      Add('taskkill /F /IM '+DASHBOARD_EXE);
      Add('taskkill /F /IM '+CHAT_EXE);
-     Add('taskkill /F /IM '+REPORTS_EXE);
+     Add('taskkill /F /IM '+REPORT_EXE);
      Add('::');
 
      // закрываем обновлялку
      Add('net stop '+SERVICE_NAME);
-
+     Add('::');
 
       // копируем новые файлы
       for i:=0 to p_listUpdate.Count-1 do begin
@@ -251,25 +251,31 @@ var
  SLFilesUpdateList:TStringList;   //  список файлов которые будем обновлять
 
 begin
- Sleep(3000);
+// Sleep(3000);
+ XML:=TXML.Create;
  log:=TLoggingFile.Create('update');
  log.Save('Проверка новой версии');
 
-  // проверяем текущую версию
-  XML:=TXML.Create;
-
   if not XML.isExistSettingsFile then begin
     log.Save('Отсутствует файл настроек '+SETTINGS_XML, IS_ERROR);
-    log.Save('Следующая попытка проверки версии через 1 мин');
+    log.Save('Следующая попытка проверки новой версии через 1 мин');
     TimerMonitoring.Interval:=cTIMER_ERROR;
     Exit;
   end;
+
+ // проверка вдруг уже в настоящий момент обновлямся
+ if XML.isUpdate then begin
+   log.Save('Обновление уже запущено, ожидание завершения процесса ... ',IS_ERROR);
+   log.Save('Следующая попытка проверки новой версии через 1 мин');
+   TimerMonitoring.Interval:=cTIMER_ERROR;
+   Exit;
+ end;
 
   // найдем текущую версию
   remoteVersion:=GetRemoteVersionDashboard;
   if remoteVersion='null' then begin
    log.Save('Не удается получить текущую версию дашборда', IS_ERROR);
-   log.Save('Следующая попытка проверки версии через 1 мин');
+   log.Save('Следующая попытка проверки новой версии через 1 мин');
    TimerMonitoring.Interval:=cTIMER_ERROR;
    Exit;
   end
@@ -280,7 +286,7 @@ begin
 
   if CompareText(XML.GetCurrentVersion, XML.GetRemoteVersion) = 0 then begin
     log.Save('Актуальная версия');
-    log.Save('Следующая попытка проверки версии через 10 мин');
+    log.Save('Следующая попытка проверки новой версии через 10 мин');
     TimerMonitoring.Interval:=cTIMER_OK;
     Exit;
   end;
@@ -291,7 +297,7 @@ begin
   ftpClient:=TFTP.Create('update','update',eDownload);
   if not ftpClient.isConnect then begin
    log.Save('Не удается подключиться к ftp серверу ', IS_ERROR);
-   log.Save('Следующая попытка проверки версии через 1 мин');
+   log.Save('Следующая попытка проверки новой версии через 1 мин');
    TimerMonitoring.Interval:=cTIMER_ERROR;
    Exit;
   end;
@@ -318,19 +324,21 @@ begin
 
     // запускаем
     if FileExists(FOLDERPATH+UPDATE_BAT) then begin
-      // обновляем инфо что обновились
-      XML.UpdateCurrentVersion(remoteVersion);
+
+      // записываем инфо что обновляемся
+      XML.isUpdate('true');
 
       ExecuteBatchFile(FOLDERPATH+UPDATE_BAT);
     end
     else begin
      log.Save('Не удалось создать дочерний процесс обновления ...', IS_ERROR);
+     log.Save('Следующая попытка проверки новой версии через 1 мин');
+     TimerMonitoring.Interval:=cTIMER_ERROR;
+     Exit;
     end;
   end;
 
-
-
-  log.Save('Следующая попытка проверки версии через 10 мин');
+  log.Save('Следующая попытка проверки новой версии через 10 мин');
   TimerMonitoring.Interval:=cTIMER_OK;
 
   if Assigned(ftpClient) then FreeAndNil(ftpClient);

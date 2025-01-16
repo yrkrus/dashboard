@@ -47,10 +47,10 @@ object FormWait: TFormWait
     TabOrder = 1
   end
   object STEsc: TStaticText
-    Left = 442
+    Left = 430
     Top = 7
-    Width = 70
-    Height = 16
+    Width = 80
+    Height = 17
     Cursor = crHandPoint
     Caption = #1086#1090#1084#1077#1085#1072' (ESC)'
     Color = clGradientInactiveCaption
@@ -58,7 +58,7 @@ object FormWait: TFormWait
     Font.Color = clWindowText
     Font.Height = -11
     Font.Name = 'Tahoma'
-    Font.Style = []
+    Font.Style = [fsBold]
     ParentColor = False
     ParentFont = False
     TabOrder = 2

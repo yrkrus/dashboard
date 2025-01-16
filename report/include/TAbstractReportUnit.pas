@@ -165,7 +165,7 @@ end;
 procedure TAbstractReport.ShowExcel;
 begin
   if isESC then begin
-    MessageBox(0,PChar('Создание отчета отменено'),PChar('Отменено'),MB_OK+MB_ICONSTOP);
+    MessageBox(0,PChar('Создание отчета отменено'),PChar('Дейстиве отменено'),MB_OK+MB_ICONSTOP);
     Exit;
   end;
 

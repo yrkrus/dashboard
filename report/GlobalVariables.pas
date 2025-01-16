@@ -17,7 +17,7 @@ uses
 
 var
  // режим разработки
-  DEBUG:Boolean = true;
+  DEBUG:Boolean = false;
 
   REPORT_EXE :string = 'report.exe';
 

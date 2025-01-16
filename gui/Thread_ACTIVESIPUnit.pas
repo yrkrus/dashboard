@@ -75,12 +75,17 @@ begin
     else Panels[1].Text:='Служба обновления: не запущена';
   end;
 
-
   // текущая версия дашборда + онлайн время
   XML:=TXML.Create(PChar(SETTINGS_XML));
   XML.UpdateLastOnline;
-  XML.Free;
 
+  if XML.isUpdate then begin
+   HomeForm.lblNewVersionDashboard.Visible:=True;
+   // подкрашиваем надпись
+   SetRandomFontColor(HomeForm.lblNewVersionDashboard);
+  end;
+
+  XML.Free;
 end;
 
 
@@ -204,7 +209,11 @@ begin
     // ===== ОТВЕЧЕНО =====
     begin
       if p_ActiveSipOperators.GetListOperators_CountTalk(i) = 0 then ListItem.SubItems.Add('0')
-      else ListItem.SubItems.Add(IntToStr(p_ActiveSipOperators.GetListOperators_CountTalk(i)));
+      else begin
+        // если обычный оператор\старший не нужно ему показывать %
+         if (SharedCurrentUserLogon.GetRole = role_operator) or (SharedCurrentUserLogon.GetRole = role_lead_operator) then ListItem.SubItems.Add(IntToStr(p_ActiveSipOperators.GetListOperators_CountTalk(i)))
+        else ListItem.SubItems.Add(IntToStr(p_ActiveSipOperators.GetListOperators_CountTalk(i))+' ('+p_ActiveSipOperators.GetListOperators_CountProcentTalk(i)+')');
+      end;
     end;
 
     // ===== НОМЕР ТЕЛЕФОНА =====
@@ -364,8 +373,13 @@ begin
       // ===== ОТВЕЧЕНО =====
       begin
         if p_ActiveSipOperators.GetListOperators_CountTalk(i) = 0 then ListItem.SubItems[2]:='0'
-        else ListItem.SubItems[2]:=IntToStr(p_ActiveSipOperators.GetListOperators_CountTalk(i));
+        else begin
+         // если обычный оператор\старший не нужно ему показывать %
+         if (SharedCurrentUserLogon.GetRole = role_operator) or (SharedCurrentUserLogon.GetRole = role_lead_operator) then ListItem.SubItems[2]:=IntToStr(p_ActiveSipOperators.GetListOperators_CountTalk(i))
+         else ListItem.SubItems[2]:=IntToStr(p_ActiveSipOperators.GetListOperators_CountTalk(i))+' ('+p_ActiveSipOperators.GetListOperators_CountProcentTalk(i)+')';
+        end;
       end;
+
 
       // ===== НОМЕР ТЕЛЕФОНА =====
       begin

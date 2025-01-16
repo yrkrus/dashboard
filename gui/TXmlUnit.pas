@@ -39,14 +39,20 @@ uses
     function GetLastOnline:TDateTime;                       // врем€ когда последний раз была запущен клиент
     function isExistSettingsFile: Boolean;                  // проверка существует ли файл с настройками
 
+    procedure isUpdate(InValue:string); overload;           // установка параметра обновлени€
+    function isUpdate:Boolean;         overload;            // текущее состо€ние (в обновлении или нет)
+
+
   private
     m_fileSettings: string;                                 // путь с файлом настроек
     m_XMLDoc: IXMLDocument;
     m_RootNode, m_ChildNode: IXMLNode;
     //m_mutex: TMutex;
+   procedure CreateDefaultFileSettings(GUIDVesrion:string); // создание первоначального файла с настройками
+   procedure checkExistNodeFields(inRootNode,InChildNode,inDefaultValue:string); // проверка существует ли новое значение
 
+   function stringToBoolean(inValue:string):Boolean;   // конвертер string->boolean
 
-    procedure CreateDefaultFileSettings(GUIDVesrion:string); // создание первоначального файла с настройками
   end;
 
 implementation
@@ -109,6 +115,47 @@ begin
 end;
 
 
+// установка параметра обновлени€
+procedure TXML.isUpdate(InValue:string);
+begin
+  // провер€ем есть ли параметр
+  checkExistNodeFields('Versions','isUpdate','InValue');
+
+   m_XMLDoc:= LoadXMLDocument(m_fileSettings);
+    try
+      m_RootNode := m_XMLDoc.DocumentElement;
+      m_ChildNode := m_RootNode.ChildNodes.FindNode('Versions').ChildNodes.FindNode('isUpdate');
+
+      if Assigned(m_ChildNode) then
+      begin
+        m_ChildNode.Text :=InValue;
+        m_XMLDoc.SaveToFile(m_fileSettings);
+      end;
+    finally
+     m_XMLDoc := nil;
+    end;
+end;
+
+// текущее состо€ние (в обновлении или нет)
+function TXML.isUpdate:Boolean;
+begin
+  Result:=False;
+
+  m_XMLDoc:= LoadXMLDocument(m_fileSettings);
+
+  try
+    m_RootNode := m_XMLDoc.DocumentElement;
+    m_ChildNode := m_RootNode.ChildNodes.FindNode('Versions').ChildNodes.FindNode('isUpdate');
+
+    if Assigned(m_ChildNode) then
+    begin
+      Result:= stringToBoolean(m_ChildNode.Text);
+    end;
+  finally
+    m_XMLDoc := nil;
+  end;
+end;
+
 procedure TXML.CreateDefaultFileSettings(GUIDVesrion:string);
 begin
  // if m_mutex.WaitFor(INFINITE)=wrSignaled then
@@ -128,6 +175,9 @@ begin
       // ƒобавл€ем узел <Remote> внутрь <Versions>
       m_ChildNode.AddChild('Remote').Text := 'null';
 
+      // ƒобавл€ем узел <isUpdate> внутрь <Versions>
+      m_ChildNode.AddChild('isUpdate').Text := 'false';
+
 
       // ƒобавл€ем узел <LastOnline>
       m_RootNode.AddChild('LastOnline'); // ƒобавл€ем LastOnline на тот же уровень, что и Versions
@@ -142,6 +192,35 @@ begin
  // end;
 end;
 
+// проверка существует ли новое значение
+procedure TXML.checkExistNodeFields(inRootNode,InChildNode,inDefaultValue:string);
+begin
+ m_XMLDoc := LoadXMLDocument(m_fileSettings);
+  try
+    m_RootNode := m_XMLDoc.DocumentElement;
+
+    // ѕровер€ем наличие узла 'isUpdate'
+    m_ChildNode := m_RootNode.ChildNodes.FindNode(inRootNode).ChildNodes.FindNode(InChildNode);
+
+    // ≈сли узел 'isUpdate' не найден, создаем его
+    if not Assigned(m_ChildNode) then
+    begin
+      m_ChildNode := m_RootNode.ChildNodes.FindNode(inRootNode).AddChild(InChildNode);
+      m_ChildNode.Text := inDefaultValue; // ”станавливаем значение по умолчанию
+
+      m_XMLDoc.SaveToFile(m_fileSettings);
+    end;
+  finally
+    m_XMLDoc := nil;
+  end;
+end;
+
+// конвертер string->boolean
+function TXML.stringToBoolean(inValue:string):Boolean;
+begin
+ if (inValue='true') or (inValue='True') or (inValue='TRUE') then Result:=True
+ else Result:=False;
+end;
 
 procedure TXML.UpdateCurrentVersion(GUIDVesrion:string);
 begin

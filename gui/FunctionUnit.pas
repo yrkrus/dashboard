@@ -24,6 +24,7 @@ procedure updatePropushennie;                                                   
 procedure createThreadDashboard;                                                     // создание потоков
 function getVersion(GUID:string; programm:enumProrgamm):string;                      // отображение текущей версии
 procedure showVersionAbout(programm:enumProrgamm);                                   // отображение истории вресий
+function GetVersionAbout(programm:enumProrgamm; inGUID:string):string;               // отображение истории вресий дашбоарда (только текущая версия)
 function Ping(InIp:string):Boolean;                                                  // проверка ping
 procedure createCheckServersInfoclinika;                                             // создание списка с серверами
 function StrToTRole(InRole:string):enumRole;                                         // string -> TRole
@@ -131,6 +132,8 @@ function EnumStatusOperatorsToInteger(InStatus:enumStatusOperators):Integer;    
 function getStatusOperator(InUserId:Integer):enumStatusOperators;                  // текущий стаус оператора из таблицы operators
 procedure ClearAfterUpdate;                                                       //  очистка от всего что осталось после обновления
 function GetListAdminRole:TStringList;                                           // получение списка пользвоателй с ролью администратор
+procedure SetRandomFontColor(var p_label: TLabel);                                // изменение цвета надписи
+procedure ShowInfoNewVersionAfterUpdate(InGUID:string);                          // показ информации о новой версии
 
 
 
@@ -142,51 +145,6 @@ uses
   FormErrorUnit, FormWaitUnit, Thread_AnsweredQueueUnit, FormUsersUnit, TTranslirtUnit,
   Thread_ACTIVESIP_updatetalkUnit, Thread_ACTIVESIP_updatePhoneTalkUnit, Thread_ACTIVESIP_countTalkUnit,
   Thread_ACTIVESIP_QueueUnit, FormActiveSessionUnit, TIVRUnit, FormOperatorStatusUnit, TXmlUnit, TOnlineChat, Thread_ChatUnit;
-
-
-
-// создвание подключения к серверу
-{function createServerConnect:TADOConnection;
-begin
-  Result:=TADOConnection.Create(nil);
-
-  with Result do begin
-    DefaultDatabase:=GetServerAddress;
-    Provider:='MSDASQL.1';
-    ConnectionString:='Provider='+Provider+
-                      ';Password='+GetServerPassword+
-                      ';Persist Security Info=True;User ID='+GetServerUser+
-                      ';Extended Properties="Driver=MySQL ODBC 5.3 Unicode Driver;SERVER='+GetServerAddress+
-                      ';UID='+GetServerUser+
-                      ';PWD='+GetServerPassword+
-                      ';DATABASE='+DefaultDatabase+
-                      ';PORT=3306;COLUMN_SIZE_S32=1";Initial Catalog='+DefaultDatabase;
-
-    LoginPrompt:=False;  // без запроса на вывод логин\парля
-
-   try
-     Connected:=True;
-     Open;
-     CONNECT_BD_ERROR:=False;
-     if FormError.Showing then FormError.Close;
-
-   except on E:Exception do
-      begin
-       Connected:=False;
-       CONNECT_BD_ERROR:=True;
-
-       with FormError do begin
-         lblErrorInfo.Caption:='Возникла ошибка при подключении к серверу...'+#13#13+DateTimeToStr(Now)+' '+ e.ClassName+#13+e.Message;
-
-         if not FormError.Showing then ShowModal;
-       end;
-
-      end;
-   end;
-  end;
-end; }
-
-
 
 
 
@@ -883,10 +841,10 @@ procedure clearList_SIP(InWidth:Integer);
  //cWidth_default           :Word = 1017;
  cProcentWidth_operator   :Word = 29;
  cProcentWidth_status     :Word = 15;
- cProcentWidth_responce   :Word = 7;
- cProcentWidth_phone      :Word = 12;
+ cProcentWidth_responce   :Word = 10;
+ cProcentWidth_phone      :Word = 10;
  cProcentWidth_talk       :Word = 12;
- cProcentWidth_queue      :Word = 11;
+ cProcentWidth_queue      :Word = 9;
  cProcentWidth_time       :Word = 14;
 begin
  with HomeForm do begin
@@ -929,7 +887,7 @@ begin
 
       with ListViewSIP.Columns.Add do
       begin
-        Caption:='Номер телефона';
+        Caption:='Номер';
         Width:=Round((InWidth*cProcentWidth_phone)/100);
         Alignment:=taCenter;
       end;
@@ -1010,7 +968,14 @@ var
  correctTime,delta_time:Integer;
 begin
   // найдем корректно время для нужной очереди
-  delta_time:=GetIVRTimeQueue(InQueue);
+  try
+    delta_time:=GetIVRTimeQueue(InQueue);
+  except
+    delta_time:=-1;
+    Result:='null';
+    Exit;
+  end;
+
   // переведем время в секунлы
   correctTime:=getTimeAnsweredToSeconds(InTime)-delta_time;
 
@@ -1174,12 +1139,11 @@ begin
              Break;
             end;
 
-
-             with FormPropushennie.listSG_Propushennie do begin
+            with FormPropushennie.listSG_Propushennie do begin
               Cells[0,i+1]:=Fields[0].Value;
 
               // подправим время ожидания
-              Cells[1,i+1]:=correctTimeQueue(StringToTQueue(Fields[3].Value),Fields[1].Value);
+             // TODO переделать!!! т.к. correctTimeQueue в случае ошибка выдает 'null'  Cells[1,i+1]:=correctTimeQueue(StringToTQueue(Fields[3].Value),Fields[1].Value);
 
               Cells[2,i+1]:=Fields[2].Value;
               Cells[3,i+1]:=Fields[3].Value;
@@ -1316,6 +1280,38 @@ begin
               end;
            end;
         end;
+     end;
+   finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+   end;
+end;
+
+
+// отображение истории вресий дашбоарда (только текущая версия)
+function GetVersionAbout(programm:enumProrgamm; inGUID:string):string;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+   try
+     with ado do begin
+        ado.Connection:=serverConnect;
+        SQL.Clear;
+        SQL.Add('select date_update,version,update_text from version_update where programm = '+#39+EnumProgrammToStr(programm)+#39+' and guid = '+#39+inGUID+#39+' order by date_update DESC');
+        Active:=True;
+
+        Result:=VarToStr(Fields[2].Value);
      end;
    finally
     FreeAndNil(ado);
@@ -3293,9 +3289,12 @@ begin
 
   if GUID_VESRION <> remoteVersion then begin
    MessageBox(HomeForm.Handle,PChar('Текущая версия дашборда отличается от актуальной версии'+#13#13
-                                    +'Перезагрузите компьютер или перезапустите службу обновления ('+UPDATE_SERVICES+')'),PChar('Текущая версия устарела'),MB_OK+MB_ICONINFORMATION);
+                                    +'Перезагрузите компьютер или перезапустите службу обновления ('+UPDATE_SERVICES+')'+#13#13#13
+                                    +'Имя ПК: '+getComputerPCName),PChar('Текущая версия устарела'),MB_OK+MB_ICONINFORMATION);
    KillProcess;
   end;
+
+  // TODO сюда  потом команду на немедленное обновление версии!!!
 
   // запишем текущую версию дашборда
   begin
@@ -4823,12 +4822,24 @@ end;
 procedure ClearAfterUpdate;
 var
  folderUpdate:string;
+ XML:TXML;
 begin
    folderUpdate:=FOLDERPATH+GetUpdateNameFolder;
   // удаляем сначало всю директорию
-  if DirectoryExists(folderUpdate) then  TDirectory.Delete(folderUpdate, True);
+  if DirectoryExists(folderUpdate) then TDirectory.Delete(folderUpdate, True);
 
-  if FileExists(FOLDERPATH+UPDATE_BAT) then DeleteFile(FOLDERPATH+UPDATE_BAT);
+  if FileExists(FOLDERPATH+UPDATE_BAT) then begin
+   // если есть файл с автообновлением значит было запущено обновление и нужно изменить версию
+    DeleteFile(FOLDERPATH+UPDATE_BAT);
+
+    XML:=TXML.Create;
+    XML.isUpdate('false');
+    XML.UpdateCurrentVersion(PChar(GUID_VESRION));
+    XML.Free;
+
+    // показывем инфо о новой версии
+    ShowInfoNewVersionAfterUpdate(GUID_VESRION);
+  end;
 end;
 
 
@@ -4886,6 +4897,24 @@ begin
     FreeAndNil(serverConnect);
   end;
  end;
+end;
+
+
+procedure SetRandomFontColor(var p_label: TLabel);
+var
+  RandomColor: TColor;
+begin
+  // Генерируем случайные значения для RGB
+  RandomColor := RGB(Random(256), Random(256), Random(256));
+
+  // Устанавливаем случайный цвет шрифта для метки
+  p_label.Font.Color := RandomColor;
+end;
+
+// показ информации о новой версии
+procedure ShowInfoNewVersionAfterUpdate(InGUID:string);
+begin
+  MessageBox(0,PChar(GetVersionAbout(eGUI,InGUID)),PChar('Информация о новой версии'),MB_OK+MB_ICONINFORMATION);
 end;
 
 end.

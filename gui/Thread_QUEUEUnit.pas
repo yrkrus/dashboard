@@ -91,14 +91,14 @@ begin
           ListItem.SubItems.Add(p_listQueue.listActiveQueue[i].phone); // номер телефона
 
           correct_time:=correctTimeQueue(StringToTQueue(p_listQueue.listActiveQueue[i].waiting_time_start),p_listQueue.listActiveQueue[i].waiting_time_start);
-          ListItem.SubItems.Add(correct_time); // Время ожидания
+          if correct_time<>'null' then ListItem.SubItems.Add(correct_time); // Время ожидания
 
           ListItem.SubItems.Add(p_listQueue.listActiveQueue[i].queue); // очередь
         end
         else
         begin
           correct_time:=correctTimeQueue(StringToTQueue(p_listQueue.listActiveQueue[i].waiting_time_start),p_listQueue.listActiveQueue[i].waiting_time_start);
-          existingItem.SubItems[1] := correct_time; // Время ожидания
+          if correct_time<>'null' then existingItem.SubItems[1] := correct_time; // Время ожидания
         end;
       end;
 

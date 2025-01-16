@@ -33,7 +33,6 @@ type
     procedure FormCreate(Sender: TObject);
     procedure ShowVersion;
   private
-  procedure SetRandomFontColor(lbl: TLabel);
     { Private declarations }
   public
     { Public declarations }
@@ -57,18 +56,6 @@ begin
   showVersionAbout(eCHAT);
   showVersionAbout(eREPORT);
 end;
-
-procedure TFormAbout.SetRandomFontColor(lbl: TLabel);
-var
-  RandomColor: TColor;
-begin
-  // Генерируем случайные значения для RGB
-  RandomColor := RGB(Random(256), Random(256), Random(256));
-
-  // Устанавливаем случайный цвет шрифта для метки
-  lbl.Font.Color := RandomColor;
-end;
-
 
 procedure TFormAbout.FormClose(Sender: TObject; var Action: TCloseAction);
 begin

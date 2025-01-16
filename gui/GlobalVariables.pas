@@ -23,20 +23,20 @@ var
   FOLDERPATH:string;
 
   // Текущая версия GUID   ctrl+shift+G (GUID)
-  GUID_VESRION    :string = 'DC0B7340';
+  GUID_VESRION      :string = '1A833C73';
 
   // exe родителя
-  DASHBOARD_EXE    :string = 'dashboard.exe';
+  DASHBOARD_EXE     :string = 'dashboard.exe';
 
   // файл с настройками
-  SETTINGS_XML    :string = 'settings.xml';
+  SETTINGS_XML      :string = 'settings.xml';
 
   // чат
-  CHAT_EXE         :string = 'chat.exe';
+  CHAT_EXE          :string = 'chat.exe';
   // отчеты
-  REPORT_EXE      :string = 'report.exe';
+  REPORT_EXE        :string = 'report.exe';
 
-  USER_ID_PARAM    :string = '--USER_ID';
+  USER_ID_PARAM     :string = '--USER_ID';
 
 
   // служба обновления

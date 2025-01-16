@@ -335,7 +335,7 @@ end;
   end;
 
   try
-      with ado do begin
+    with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
       SQL.Add('select count(phone) from ivr where to_queue=''0'' and date_time > '+#39+GetCurrentDateTimeDec(cTimeResponse)+#39);

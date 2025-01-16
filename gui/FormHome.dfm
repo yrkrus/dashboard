@@ -452,6 +452,8 @@ object HomeForm: THomeForm
     ParentShowHint = False
     ShowHint = True
     OnClick = lblCheckInfocilinikaServerAliveClick
+    OnMouseMove = lblCheckInfocilinikaServerAliveMouseMove
+    OnMouseLeave = lblCheckInfocilinikaServerAliveMouseLeave
   end
   object ImageLogo: TImage
     Left = 1207
@@ -5828,6 +5830,31 @@ object HomeForm: THomeForm
     OnMouseMove = lblNewMessageLocalChatMouseMove
     OnMouseLeave = lblNewMessageLocalChatMouseLeave
     ExplicitTop = 760
+  end
+  object lblNewVersionDashboard: TLabel
+    Left = 356
+    Top = 759
+    Width = 299
+    Height = 16
+    Cursor = crHandPoint
+    Hint = #1044#1086#1089#1090#1091#1087#1085#1072#1103' '#1085#1086#1074#1072#1103' '#1074#1077#1088#1089#1080#1103
+    Anchors = [akRight, akBottom]
+    Caption = #1053#1086#1074#1072#1103' '#1074#1077#1088#1089#1080#1103' '#1076#1072#1096#1073#1086#1088#1076#1072' '#1075#1086#1090#1086#1074#1072' '#1082' '#1091#1089#1090#1072#1085#1086#1074#1082#1077
+    Color = clWindow
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clNavy
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
+    ParentShowHint = False
+    ShowHint = True
+    Transparent = False
+    Visible = False
+    OnClick = lblNewVersionDashboardClick
+    OnMouseMove = lblNewMessageLocalChatMouseMove
+    OnMouseLeave = lblNewMessageLocalChatMouseLeave
   end
   object panel_IVR: TPanel
     Left = 10

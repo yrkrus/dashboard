@@ -139,6 +139,7 @@ type
     Button3: TButton;
     menu_Chat: TMenuItem;
     lblNewMessageLocalChat: TLabel;
+    lblNewVersionDashboard: TLabel;
     procedure Button1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -185,6 +186,10 @@ type
     procedure lblNewMessageLocalChatMouseLeave(Sender: TObject);
     procedure lblNewMessageLocalChatMouseMove(Sender: TObject;
       Shift: TShiftState; X, Y: Integer);
+    procedure lblCheckInfocilinikaServerAliveMouseMove(Sender: TObject;
+      Shift: TShiftState; X, Y: Integer);
+    procedure lblCheckInfocilinikaServerAliveMouseLeave(Sender: TObject);
+    procedure lblNewVersionDashboardClick(Sender: TObject);
 
 
 
@@ -869,6 +874,17 @@ begin
   FormServerIKCheck.Show;
 end;
 
+procedure THomeForm.lblCheckInfocilinikaServerAliveMouseLeave(Sender: TObject);
+begin
+  lblCheckInfocilinikaServerAlive.Font.Style:=[fsBold];
+end;
+
+procedure THomeForm.lblCheckInfocilinikaServerAliveMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+begin
+ lblCheckInfocilinikaServerAlive.Font.Style:=[fsUnderline,fsBold];
+end;
+
 procedure THomeForm.lblNewMessageLocalChatClick(Sender: TObject);
 begin
   lblNewMessageLocalChat.Visible:=False;
@@ -884,6 +900,11 @@ procedure THomeForm.lblNewMessageLocalChatMouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
 begin
   lblNewMessageLocalChat.Font.Style:=[fsUnderline,fsBold];
+end;
+
+procedure THomeForm.lblNewVersionDashboardClick(Sender: TObject);
+begin
+  MessageBox(Handle,PChar('Дашборд обновляется автоматически'+#13#13+'Закройте окно дашборда и подождите около 30 сек'),PChar('Информация'),MB_OK+MB_ICONINFORMATION);
 end;
 
 procedure THomeForm.listSG_ACTIVESIPDrawCell(Sender: TObject; ACol,

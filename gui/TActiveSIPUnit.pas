@@ -41,6 +41,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       user_id                                : Integer;       // ID пользака в БД users
       sip_number                             : string;        // номер оператора
       count_talk                             : integer;       // кол-во отвеченных вызовов
+      count_procent                          : Double;        // % отвеченных звонков от общего кол-ва звонков
       phone                                  : string;        // номер телефона
       talk_time                              : string;        // время разговора
       queue                                  : string;        // какая очередь
@@ -81,7 +82,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       countSIpOperatorsHide                  : Word;
 
       listOperators                          : array of TStructSIP;   // список с операторами
-
+      countAllTalkCalls                      : Integer; // общее кол-во отвеченных звонков
 
       procedure Clear;                       // очистка от всех значений
       function GetListOperatorsGoHome:TStringList;    // список операторов которые ушли домой
@@ -139,6 +140,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       function GetListOperators_IsOnHold(id:Integer):Boolean;        // listOperators.isOnHold
       function GetListOperators_OnHoldStartTime(id:Integer):string;  // listOperators.onHoldStartTime
       function GetListOperators_CountTalk(id:Integer):Integer;       // listOperators.count_talk
+      function GetListOperators_CountProcentTalk(id:Integer):string; // listOperators.count_procent
       function GetListOperators_TalkTimeAll(id:Integer):Integer;     // listOperators.list_talk_time_all
       function GetListOperators_TalkTimeAvg(id:Integer):Integer;     // listOperators.list_talk_time_avf
       function GetListOperators_OnlineHide(id:Integer):Boolean;      // listOperators.online.hide
@@ -197,6 +199,7 @@ uses
  begin
    Self.sip_number:='';
    Self.count_talk:=0;
+   Self.count_procent:=0;
    Self.phone:='';
    Self.talk_time:='';
    Self.queue:='';
@@ -227,6 +230,7 @@ uses
 
    countActiveCalls:=0;   // кол-во активных звонков
    countFreeOperators:=0; // кол-во свободных операторов
+   countAllTalkCalls:=0;       // общее кол-во отвеченных звонков операторами
 
    // генерация листа с актиыными операторами
    sipOperators:=TStringList.Create;
@@ -295,6 +299,7 @@ uses
          end;
          Self.sipOperators.Clear;
          Self.countSipOperators:=0;
+         Self.countAllTalkCalls:=0;
       finally
         m_mutex.Release;
       end;
@@ -792,15 +797,34 @@ end;
   i:Integer;
   oldCount:Integer;
   newCount:Integer;
+  isUpdateProcent:Boolean;
+  procentCount:Double;
  begin
    if getCountSipOperators=0 then Exit;
 
    for i:=0 to Length(listOperators)-1 do begin
       if listOperators[i].sip_number<>'' then begin
+        isUpdateProcent:=False;
+
+         // кол-во звонков
          oldCount:=listOperators[i].count_talk;
          newCount:=getCountAnsweredCall(listOperators[i].sip_number);
+         if newCount=0 then Exit;
 
-         if oldCount<>newCount then listOperators[i].count_talk:=newCount;
+
+        if oldCount<>newCount then begin
+          isUpdateProcent:=True;
+          listOperators[i].count_talk:=newCount;
+        end;
+
+        if isUpdateProcent then begin
+          // % от общего кол-ва звонков
+          countAllTalkCalls:=getCountAnsweredCallAll;
+          if countAllTalkCalls>0 then begin
+            procentCount:=listOperators[i].count_talk * 100 / countAllTalkCalls;
+            listOperators[i].count_procent:=procentCount;
+          end;
+        end;
       end;
    end;
  end;
@@ -1483,6 +1507,21 @@ begin
   if m_mutex.WaitFor(INFINITE) = wrSignaled  then begin
     try
       Result:=Self.listOperators[id].count_talk;
+    finally
+      m_mutex.Release;
+    end;
+  end;
+end;
+
+function TActiveSIP.GetListOperators_CountProcentTalk(id:Integer):string;
+var
+ tmp:string;
+begin
+  if m_mutex.WaitFor(INFINITE) = wrSignaled  then begin
+    try
+      tmp:=FormatFloat('0.0',Self.listOperators[id].count_procent);
+      tmp:=StringReplace(tmp,',','.',[rfReplaceAll]);
+      Result:=tmp+'%';
     finally
       m_mutex.Release;
     end;
