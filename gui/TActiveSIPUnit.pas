@@ -542,11 +542,8 @@ end;
        ST_operatorsHideCount.Visible:=True;
       end
       else ST_operatorsHideCount.Visible:=False; // т.к. нет скрытых, то и отображать эту надпись не нужно
-
-
-
-
-     end else ST_operatorsHideCount.Visible:=False;
+     end
+     else ST_operatorsHideCount.Visible:=False;
    end;
  end;
 
@@ -585,7 +582,7 @@ end;
              listOperators[i].talk_time_all:=countAll;
 
              // среднее время разговора
-             listOperators[i].talk_time_avg:=Round(countAll/listOperators[i].list_talk_time_all.Count-1);
+             if listOperators[i].list_talk_time_all.Count-1 > 0 then listOperators[i].talk_time_avg:=Round(countAll/listOperators[i].list_talk_time_all.Count-1);
           end
         end;
 

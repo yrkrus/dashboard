@@ -180,7 +180,6 @@ type
     procedure img_goHome_NOClick(Sender: TObject);
     procedure menu_ChatClick(Sender: TObject);
     procedure lblNewMessageLocalChatClick(Sender: TObject);
-    procedure Button3Click(Sender: TObject);
     procedure img_statistics_QUEUEClick(Sender: TObject);
     procedure menu_ReportsClick(Sender: TObject);
     procedure lblNewMessageLocalChatMouseLeave(Sender: TObject);
@@ -570,81 +569,6 @@ begin
    Bat.SaveToFile(FOLDERPATH+'update.bat');
 end;
 
-
-procedure THomeForm.Button3Click(Sender: TObject);
-var
- XML:TXML;
- ftpClient:TFTP;
- log:TLoggingFile;
- remoteVersion:string;
- SLFilesUpdateList:TStringList;   //  список файлов которые будем обновлять
-
-begin
- log:=TLoggingFile.Create('update');
- log.Save('Проверка новой версии');
-
-  // проверяем текущую версию
-  XML:=TXML.Create;
-
-  if not XML.isExistSettingsFile then begin
-    log.Save('Отсутствует файл настроек '+SETTINGS_XML, IS_ERROR);
-    log.Save('Следующая попытка проверки версии через 1 мин');
-    //TimerMonitoring.Interval:=cTIMER_ERROR;
-    Exit;
-  end;
-
-  // найдем текущую версию
-  remoteVersion:=GetRemoteVersionDashboard;
-  if remoteVersion='null' then begin
-   log.Save('Не удается получить текущую версию дашборда', IS_ERROR);
-   log.Save('Следующая попытка проверки версии через 1 мин');
-  // TimerMonitoring.Interval:=cTIMER_ERROR;
-   Exit;
-  end
-  else begin
-    // запишем текущую удаленную версию
-    XML.UpdateRemoteVersion(remoteVersion);
-  end;
-
-{  if CompareText(XML.GetCurrentVersion, XML.GetRemoteVersion) = 0 then begin
-    log.Save('Актуальная версия');
-    log.Save('Следующая попытка проверки версии через 10 мин');
-   // TimerMonitoring.Interval:=cTIMER_OK;
-    Exit;
-  end;   }
-
-  log.Save('Обнаружена новая версия: <b>'+remoteVersion+'</b>');
-
-
-  ftpClient:=TFTP.Create('update','update',eDownload);
-  ftpClient.DownloadFile(remoteVersion+'.zip');
-
-  // успешно скачали запуск обновления
-  if ftpClient.isDownloadedFile(remoteVersion+'.zip') then begin
-   log.Save('Установка новой версии: <b>'+remoteVersion+'</b>');
-
-  { while GetTask(DASHBOARD_EXE) do begin
-    log.Save('Запущен родительский процесс: <b>'+DASHBOARD_EXE+'</b>. Ожидание закрытия процесса ...');
-    Sleep(cTIMER_ERROR);
-   end; }
-
-   SLFilesUpdateList:=TStringList.Create;
-
-   // распаковываем
-   UnPack(remoteVersion+'.zip', log, SLFilesUpdateList);
-
-   // создаем cmd
-    CreateCMD(XML,SLFilesUpdateList);
-  end;
-
-
-
-  log.Save('Следующая попытка проверки версии через 10 мин');
- // TimerMonitoring.Interval:=cTIMER_OK;
-
-  if Assigned(ftpClient) then FreeAndNil(ftpClient);
-  if Assigned(XML) then FreeAndNil(XML);
-end;
 
 procedure THomeForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 var

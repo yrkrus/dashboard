@@ -29,12 +29,14 @@ uses
  type
   TFTP = class
   public
-    constructor Create(InLogName,InRootFolder:string; InMode:enumModeFTP); overload;
+    constructor Create(InLogName,InRootFolder:string; InMode:enumModeFTP; InFolderDownloaded:string); overload;
     destructor Destroy; override;
 
     procedure DownloadFile(InFileNameDownload:string); // скачать файл
     function isDownloadedFile(InFileNameDownload:string):Boolean; // успешно ли скачан файд
     function isConnect:Boolean;       // успешно ли подключились к ftp
+
+    function GetError:string;   // текущая ошибка
 
   private
     m_ftp             :TIdFTP;   // сам ftp
@@ -50,14 +52,17 @@ uses
     m_mode            :enumModeFTP; // режим работы
     m_sizeFile        :Int64;
 
-    m_folderUpdate    :string;      // путь до папки с update
+    m_folderDownloaded :string;      // путь до папки куда будем скачивать
 
     m_ErrorDownloadCRC: Word; // кол-во ошибок скачки файла
+
+    m_errorDesriptions:string;    // текущая внутренная ошибка
+
 
     function enumExtensionFTPToString(enumTypes:enumExtensionFTP):string;  // enumExtensionFTP -> string
     function isExistFileToFTP(InFileName:string):Boolean;     // есть ли файл на сервере в папке
     function GetFileSize(InStroka:string):Int64;  // поиск размер файла на ftp
-    procedure CreateFolderDownload;  // создаем папку обновлением
+    procedure CreateFolderDownload(InFolderName:string);  // создаем папку куда будем скачивать все
     function CheckDownloadFile(InFileNameDownload:string):Boolean;   // проверка весь ли файл скачался
 
   end;
@@ -70,7 +75,7 @@ implementation
 
 { TFTPSettings }
 
- constructor TFTP.Create(InLogName,InRootFolder:string; InMode:enumModeFTP);
+ constructor TFTP.Create(InLogName,InRootFolder:string; InMode:enumModeFTP; InFolderDownloaded:string);
  var
   error_message:string;
  begin
@@ -78,6 +83,8 @@ implementation
    m_log:=TLoggingFile.Create(InLogName,False);
    m_ftp:=TIdFTP.Create(nil);
    m_listFilesFTP:=TStringList.Create;
+   m_folderDownloaded:=InFolderDownloaded;
+   m_errorDesriptions:='';
 
    m_mode:=InMode;
    m_sizeFile:=0; // размер файле
@@ -94,6 +101,7 @@ implementation
 
    if not Assigned(m_ftp) then begin
      m_log.Save('Не удалось создать процесс ftp',IS_ERROR);
+     m_errorDesriptions:='Не удалось создать процесс ftp';
      Exit;
    end;
 
@@ -120,6 +128,7 @@ implementation
      except
         on E: Exception do begin
           error_message:=E.Message;
+          m_errorDesriptions:=error_message;
           isConnected:=False;
         end;
     end;
@@ -127,6 +136,7 @@ implementation
 
     if not isConnected then begin
      m_log.Save('Не удалось подключиться к серверу: '+'<b>'+m_host+'</b> | '+error_message,IS_ERROR);
+     m_errorDesriptions:='Не удалось подключиться к серверу: '+m_host;
      Exit;
     end
     else begin
@@ -153,31 +163,43 @@ procedure TFTP.DownloadFile(InFileNameDownload:string);
 var
  isErrorDownload:Boolean;
 begin
+  isErrorDownload:=False;
+
   m_log.Save('Скачивание файла: '+'<b>'+InFileNameDownload+'</b>');
 
   if not isConnected then begin
    m_log.Save('Подключение к серверу '+'<b>'+m_host+'</b> не установлено',IS_ERROR);
+   m_errorDesriptions:='Подключение к серверу '+m_host+' не установлено';
    Exit;
   end;
 
   if not isExistFileToFTP(InFileNameDownload) then begin
    m_log.Save('На сервере отсутствует файл: '+'<b>'+InFileNameDownload+'</b>',IS_ERROR);
+   m_errorDesriptions:='На сервере отсутствует файл: '+InFileNameDownload;
    Exit;
   end;
 
-  if m_sizeFile=0 then m_log.Save('Не удается получить размер файла',IS_ERROR)
-  else m_log.Save('Размер файла: '+'<b>'+InFileNameDownload+' ('+IntToStr(m_sizeFile)+' байт)</b>');
+  if m_sizeFile=0 then begin
+     m_log.Save('Не удается получить размер файла <b>'+InFileNameDownload+'</b>',IS_ERROR);
+     m_errorDesriptions:='Не удается получить размер файла '+InFileNameDownload;
+     isErrorDownload:=True;
+     Exit;
+  end;
+
+
+  m_log.Save('Размер файла: '+'<b>'+InFileNameDownload+' ('+IntToStr(m_sizeFile)+' байт)</b>');
 
   // скачиваем
   begin
    // инициализация папки + создание
-   CreateFolderDownload;
+   CreateFolderDownload(m_folderDownloaded);
 
    try
-     m_ftp.Get(InFileNameDownload,m_folderUpdate+'\'+InFileNameDownload,True);
+     m_ftp.Get(InFileNameDownload,m_folderDownloaded+'\'+InFileNameDownload,True);
    except
     on E: Exception do begin
        m_log.Save('При скачивании файла <b>'+InFileNameDownload+'</b> возникла ошибка | '+E.Message,IS_ERROR);
+       m_errorDesriptions:='При скачивании файла '+InFileNameDownload+' возникла ошибка | '+E.Message;
        isErrorDownload:=True;
     end;
    end;
@@ -190,9 +212,11 @@ begin
     Inc(m_ErrorDownloadCRC);
     m_log.Save('CRC хэш файла <b>'+InFileNameDownload+'</b> не соответствтует. Перекачиваем заново, попытка #'+IntToStr(m_ErrorDownloadCRC),IS_ERROR);
 
+
     if m_ErrorDownloadCRC < cMAX_CRC_ERROR then DownloadFile(InFileNameDownload)
     else begin
      m_log.Save('Превышено кол-во попыток скачивания',IS_ERROR);
+     m_errorDesriptions:='Превышено кол-во попыток скачивания';
      Exit
     end;
   end;
@@ -203,13 +227,21 @@ end;
 // успешно ли скачан файд
 function TFTP.isDownloadedFile(InFileNameDownload:string):Boolean;
 begin
-  Result:=Self.isDownloaded;
+  Result:=CheckDownloadFile(InFileNameDownload);
+
+ // Result:=Self.isDownloaded;
 end;
 
 // успешно ли подключились к ftp
 function TFTP.isConnect:Boolean;
 begin
    Result:=Self.isConnected;
+end;
+
+ // текущая ошибка
+function TFTP.GetError:string;
+begin
+   Result:=Self.m_errorDesriptions;
 end;
 
 // enumExtensionFTP -> string
@@ -293,15 +325,15 @@ begin
 end;
 
  // создаем папку обновлением
-procedure TFTP.CreateFolderDownload;
+procedure TFTP.CreateFolderDownload(InFolderName:string);
 begin
-  m_folderUpdate:=FOLDERPATH+GetUpdateNameFolder;
+  m_folderDownloaded:=FOLDERPATH+InFolderName;
   // удаляем сначало всю директорию
-  if DirectoryExists(m_folderUpdate) then  TDirectory.Delete(m_folderUpdate, True);
+  if DirectoryExists(m_folderDownloaded) then  TDirectory.Delete(m_folderDownloaded, True);
 
 
-  // проверка есть ли папка update
-  if not DirectoryExists(m_folderUpdate) then CreateDir(Pchar(m_folderUpdate));
+  // проверка есть ли папка
+  if not DirectoryExists(m_folderDownloaded) then CreateDir(Pchar(m_folderDownloaded));
 end;
 
 // проверка весь ли файл скачался
@@ -313,9 +345,9 @@ begin
   Result:=False;
   isDownloaded:=False; // успешно ли скачали файл
 
-  if not FileExists(m_folderUpdate+'\'+InFileNameDownload) then Exit;
+  if not FileExists(m_folderDownloaded+'\'+InFileNameDownload) then Exit;
 
-  FileStream := TFileStream.Create(Pchar(m_folderUpdate+'\'+InFileNameDownload), fmOpenRead or fmShareDenyWrite);
+  FileStream := TFileStream.Create(Pchar(m_folderDownloaded+'\'+InFileNameDownload), fmOpenRead or fmShareDenyWrite);
   try
     sizefile:= FileStream.Size; // Получаем размер файла
   finally

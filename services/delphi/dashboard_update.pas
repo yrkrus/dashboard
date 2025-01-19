@@ -294,7 +294,7 @@ begin
   log.Save('Обнаружена новая версия: <b>'+remoteVersion+'</b>');
 
 
-  ftpClient:=TFTP.Create('update','update',eDownload);
+  ftpClient:=TFTP.Create('update','update',eDownload,GetUpdateNameFolder);
   if not ftpClient.isConnect then begin
    log.Save('Не удается подключиться к ftp серверу ', IS_ERROR);
    log.Save('Следующая попытка проверки новой версии через 1 мин');

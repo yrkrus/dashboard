@@ -10,13 +10,23 @@ const
  // exe родителя
  DASHBOARD_EXE    :string = 'dashboard.exe';
  CHAT_EXE         :string = 'chat.exe';
- REPORT_EXE      :string = 'report.exe';
+ REPORT_EXE       :string = 'report.exe';
  UPDATE_EXE       :string = 'update.exe';
 
  UPDATE_BAT       :string = 'update.bat';
 
  // файл с настройками
- SETTINGS_XML    :string = 'settings.xml';
+ SETTINGS_XML     :string = 'settings.xml';
+
+ //  mysql connector
+ CONNECTOR_INSTALL_X32    :string ='mysql-connector-odbc-5.3.2-win32.msi';
+ CONNECTOR_INSTALL_X64    :string ='mysql-connector-odbc-5.3.2-win64.msi';
+
+ // папка для скачивания
+ FOLDER_INSTALL   :string = 'install';
+
+ // папка установки
+ INSTALL_DASHBOARD :string = 'C:\Program Files\dashboard';
 
  // параметр для лога что есть ошибка
  IS_ERROR:Boolean = True;

@@ -199,10 +199,10 @@ begin
   try
     m_RootNode := m_XMLDoc.DocumentElement;
 
-    // Проверяем наличие узла 'isUpdate'
+    // Проверяем наличие узла 'InChildNode'
     m_ChildNode := m_RootNode.ChildNodes.FindNode(inRootNode).ChildNodes.FindNode(InChildNode);
 
-    // Если узел 'isUpdate' не найден, создаем его
+    // Если узел 'InChildNode' не найден, создаем его
     if not Assigned(m_ChildNode) then
     begin
       m_ChildNode := m_RootNode.ChildNodes.FindNode(inRootNode).AddChild(InChildNode);
