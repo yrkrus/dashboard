@@ -60,8 +60,7 @@ var
   function GetUserNameOperators(InSip:string):PChar;           stdcall;  external 'core.dll';      // полчуение имени пользовател€ из его SIP номера
 
 
-
-   // --- connect_to_server.dll ---
+  // --- connect_to_server.dll ---
   // Ќ≈ »—ѕќЋ№«”≈“—я!
 
 

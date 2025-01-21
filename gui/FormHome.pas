@@ -7,7 +7,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Grids, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.Menus,Data.Win.ADODB, Data.DB, Vcl.Imaging.jpeg,System.SyncObjs,
   TActiveSIPUnit,TUserUnit, Vcl.Imaging.pngimage, ShellAPI, TLogFileUnit,
-  System.Zip, Vcl.WinXCtrls;
+  System.Zip, Vcl.WinXCtrls, Vcl.Samples.Gauges;
 
 
 type
@@ -68,15 +68,6 @@ type
     img_statistics_QUEUE: TImage;
     ListViewIVR: TListView;
     ListViewQueue: TListView;
-    PanelWaitingQueue: TPanel;
-    Label12: TLabel;
-    Label14: TLabel;
-    Label15: TLabel;
-    Label16: TLabel;
-    lblStatistics_Answered30: TLabel;
-    lblStatistics_Answered60: TLabel;
-    lblStatistics_Answered120: TLabel;
-    lblStatistics_Answered121: TLabel;
     Panel_SIP: TPanel;
     ListViewSIP: TListView;
     img_statistics_IVR: TImage;
@@ -140,6 +131,26 @@ type
     menu_Chat: TMenuItem;
     lblNewMessageLocalChat: TLabel;
     lblNewVersionDashboard: TLabel;
+    PanelStatisticsQueue_Numbers: TPanel;
+    PanelStatisticsQueue_Graph: TPanel;
+    Label12: TLabel;
+    lblStatistics_Answered30: TLabel;
+    Label14: TLabel;
+    lblStatistics_Answered60: TLabel;
+    Label15: TLabel;
+    lblStatistics_Answered120: TLabel;
+    Label16: TLabel;
+    lblStatistics_Answered121: TLabel;
+    StatisticsQueue_Answered30_Graph: TGauge;
+    StatisticsQueue_Answered60_Graph: TGauge;
+    StatisticsQueue_Answered120_Graph: TGauge;
+    StatisticsQueue_Answered121_Graph: TGauge;
+    lblStatistics_Answered30_Graph: TLabel;
+    lblStatistics_Answered60_Graph: TLabel;
+    lblStatistics_Answered120_Graph: TLabel;
+    lblStatistics_Answered121_Graph: TLabel;
+    img_StatisticsQueue_Graph: TImage;
+    img_StatisticsQueue_Numbers: TImage;
     procedure Button1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -189,6 +200,8 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure lblCheckInfocilinikaServerAliveMouseLeave(Sender: TObject);
     procedure lblNewVersionDashboardClick(Sender: TObject);
+    procedure img_StatisticsQueue_GraphClick(Sender: TObject);
+    procedure img_StatisticsQueue_NumbersClick(Sender: TObject);
 
 
 
@@ -215,65 +228,8 @@ type
 
   end;
 
-    {
-    FTP для будущих обновлений!!!
-
-
-
-    там в корне будут zip создаваться с версиями
-
-    }
-
-   ///   asterisk -rx "queue add member Local/НОМЕР_ОПЕРАОРА@from-queue/n to НОМЕР_ОЧЕРЕДИ penalty 0 as НОМЕР_ОПЕРАТОРА state_interface hint:НОМЕР_ОПЕРАТОРА@ext-local"
-  ///    asterisk -rx "queue remove member Local/НОМЕР_ОПЕРАОРА@from-queue/n from НОМЕР_ОЧЕРЕДИ"
-
-{
-что запланировано в доработку
-
-  регистрация\разрегистрация в sip телефоне через дашборд
-  отчет позвонившие впервые
-
-  !! НУЖЕН для операторов которые без дашборда, + писать в БД когда звонок идет
-  новый статус придумал отображать... "звонок" - т.е. сейчас на данный номер поступает звонок из очереди.. потом можно будет проверить в холостую ли в очереди сидят которые находятся не в цов
-
-
-  разграничение прав доступа
-  удаление из очереди, если забыли выйти из нее
-  сделать чтобы при уделенном закрытии если оператор был в очнереди выкидывать его из очнереди
-  отчеты (хз. пока какие нужны будут)
-     - вчера в это же время звонков (хз нужно ли или нет )
-
-
-
-  не отображать в списке номера из IVR которые сбросились
-
-    (не готово) при активной галке не опказывать омой операторы новые не появляются
-   (не готово)      onhold не фиксируется если у помогатора
-
-
-
-
-
-  переписать
-function disableUser(InUserID:Integer):string;
-function enableUser(InUserID:Integer):string;
-function updateUserPassword(InUserID,InUserNewPassword:Integer):string;
-function getActiveSessionUser(InUserID:Integer):Integer;
-function remoteCommand_Responce(InStroka:string):string;
-function TFormServerIKEdit.getResponseBD(InTypePanel_Server:TypeResponse_Server;InIP,InAddr,InAlias:string):string;
-function getCheckFileds:string;
-function getResponseBD(InQueue5000,InQueue5050:string; InEditTime:Boolean = False):string;
-function getDeleteList(InID:string):string;
-function TFormTrunkEdit.getResponseBD(InTypePanel_Server:TypeResponse_Server;InAlias,InLogin:string; InStatus:enumMonitoringTrunk):string;
-
-function getCheckFileds:string;
-
-
-
-}
-
-
-
+  ///   asterisk -rx "queue add member Local/НОМЕР_ОПЕРАОРА@from-queue/n to НОМЕР_ОЧЕРЕДИ penalty 0 as НОМЕР_ОПЕРАТОРА state_interface hint:НОМЕР_ОПЕРАТОРА@ext-local"
+  ///   asterisk -rx "queue remove member Local/НОМЕР_ОПЕРАОРА@from-queue/n from НОМЕР_ОЧЕРЕДИ"
 
 
 var
@@ -489,6 +445,7 @@ end;
 
 
 
+
 // распаковывем zip архив
 procedure UnPack(InFileName:string; var p_Log:TLoggingFile; var p_listUpdate:TStringList);
 var
@@ -677,7 +634,8 @@ var
  i:Integer;
 begin
  try
-  Height:=861;
+  Height:=877; //1011
+  ClientWidth:=1410;
 
   // отображение текущей версии  ctrl+shift+G (GUID) - от этого ID зависит актуальность еще
   Caption:=Caption+' '+getVersion(GUID_VESRION,eGUI) + ' | '+'('+GUID_VESRION+')';
@@ -766,6 +724,16 @@ end;
 procedure THomeForm.img_goHome_YESClick(Sender: TObject);
 begin
   VisibleIconOperatorsGoHome(goHome_Hide, True);
+end;
+
+procedure THomeForm.img_StatisticsQueue_GraphClick(Sender: TObject);
+begin
+ ShowStatisticsCallsDay(eGraph, True);
+end;
+
+procedure THomeForm.img_StatisticsQueue_NumbersClick(Sender: TObject);
+begin
+  ShowStatisticsCallsDay(eNumbers, True);
 end;
 
 procedure THomeForm.img_goHome_NOClick(Sender: TObject);

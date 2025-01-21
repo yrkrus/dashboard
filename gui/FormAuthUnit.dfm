@@ -5598,7 +5598,7 @@
       Width = 122
       Height = 40
       Hint = #1040#1074#1090#1086#1088#1080#1079#1086#1074#1072#1090#1100#1089#1103' '#1074' '#1076#1072#1096#1073#1086#1088#1076#1077
-      Caption = '&'#1042#1086#1081#1090#1080
+      Caption = '&'#1042#1086#1081#1090#1080#13#10'(ENTER)'
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
@@ -5685,7 +5685,7 @@
       Width = 124
       Height = 40
       Hint = #1042#1099#1093#1086#1076
-      Caption = '&'#1047#1072#1082#1088#1099#1090#1100
+      Caption = '&'#1047#1072#1082#1088#1099#1090#1100#13#10'(ESC)'
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
       Font.Height = -13

@@ -804,9 +804,9 @@ end;
         isUpdateProcent:=False;
 
          // кол-во звонков
-         oldCount:=listOperators[i].count_talk;
-         newCount:=getCountAnsweredCall(listOperators[i].sip_number);
-         if newCount=0 then Exit;
+       oldCount:=listOperators[i].count_talk;
+       newCount:=getCountAnsweredCall(listOperators[i].sip_number);
+       if newCount=0 then Continue;
 
 
         if oldCount<>newCount then begin

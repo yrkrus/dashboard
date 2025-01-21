@@ -134,7 +134,8 @@ procedure ClearAfterUpdate;                                                     
 function GetListAdminRole:TStringList;                                           // получение списка пользвоателй с ролью администратор
 procedure SetRandomFontColor(var p_label: TLabel);                                // изменение цвета надписи
 procedure ShowInfoNewVersionAfterUpdate(InGUID:string);                          // показ информации о новой версии
-
+procedure ShowStatisticsCallsDay(InTypeStatisticsCalls: enumStatisticsCalls;    // отображение статистики ожидание в очереди за текущий день
+                                 InClick:Boolean = False);
 
 
 implementation
@@ -845,7 +846,7 @@ procedure clearList_SIP(InWidth:Integer);
  cProcentWidth_phone      :Word = 10;
  cProcentWidth_talk       :Word = 12;
  cProcentWidth_queue      :Word = 9;
- cProcentWidth_time       :Word = 14;
+ cProcentWidth_time       :Word = 15;
 begin
  with HomeForm do begin
    Panel_SIP.Width:=InWidth;
@@ -4175,7 +4176,8 @@ begin
                                                                          +#39+IntToStr(SettingUsersStatusToInt(status))+#39+')';
       end;
     end;
-    settingUsers_noConfirmExit: begin
+    settingUsers_noConfirmExit: begin  // не показывать окно "точно хотите выйти из дашборда?"
+
       // проверяем есть ли уже запись
       if isExistSettingUsers(InUserID) then begin
         response:='update settings_users set no_confirmExit = '+#39+IntToStr(SettingUsersStatusToInt(status))+#39+' where user_id = '+#39+IntToStr(InUserID)+#39;
@@ -4183,6 +4185,17 @@ begin
       end
       else begin
         response:='insert into settings_users (user_id,no_confirmExit) values ('+#39+IntToStr(InUserID) +#39+','
+                                                                         +#39+IntToStr(SettingUsersStatusToInt(status))+#39+')';
+      end;
+    end;
+    settingUsers_showStatisticsQueueDay:begin  // какой тип графика отображать в модуле "сатистика ожидания в очереди" 0-цифры | 1 - график
+      // проверяем есть ли уже запись
+      if isExistSettingUsers(InUserID) then begin
+        response:='update settings_users set statistics_queue_day = '+#39+IntToStr(SettingUsersStatusToInt(status))+#39+' where user_id = '+#39+IntToStr(InUserID)+#39;
+
+      end
+      else begin
+        response:='insert into settings_users (user_id,statistics_queue_day) values ('+#39+IntToStr(InUserID) +#39+','
                                                                          +#39+IntToStr(SettingUsersStatusToInt(status))+#39+')';
       end;
     end;
@@ -4223,6 +4236,9 @@ begin
         settingUsers_noConfirmExit:begin // не показывать "Точно хотите выйти?"
           SQL.Add('select no_confirmExit from settings_users where user_id = '+#39+IntToStr(InUserID)+#39);
         end;
+        settingUsers_showStatisticsQueueDay:begin  // какой тип графика отображать в модуле "сатистика ожидания в очереди" 0-цифры | 1 - график
+          SQL.Add('select statistics_queue_day from settings_users where user_id = '+#39+IntToStr(InUserID)+#39);
+        end;
        end;
       Active:=True;
 
@@ -4246,12 +4262,24 @@ procedure LoadIndividualSettingUser(InUserId:Integer);
 begin
   with HomeForm do begin
     // не показывать ушедших домой
-    if getStatusIndividualSettingsUser(InUserId,settingUsers_gohome) = settingUsersStatus_ENABLED then
     begin
-       VisibleIconOperatorsGoHome(goHome_Hide);
-       chkboxGoHome.Checked:=True;
-    end
-    else  VisibleIconOperatorsGoHome(goHome_Show);
+      if getStatusIndividualSettingsUser(InUserId,settingUsers_gohome) = settingUsersStatus_ENABLED then
+      begin
+         VisibleIconOperatorsGoHome(goHome_Hide);
+         chkboxGoHome.Checked:=True;
+      end
+      else  VisibleIconOperatorsGoHome(goHome_Show);
+    end;
+
+
+    // какой тип графика отображать в модуле "сатистика ожидания в очереди"  0- цифры | 1 - график
+    begin
+     if getStatusIndividualSettingsUser(InUserId,settingUsers_showStatisticsQueueDay) = settingUsersStatus_DISABLED then
+     begin
+      ShowStatisticsCallsDay(eNumbers);
+     end
+     else ShowStatisticsCallsDay(eGraph);
+    end;
 
   end;
 end;
@@ -4915,6 +4943,40 @@ end;
 procedure ShowInfoNewVersionAfterUpdate(InGUID:string);
 begin
   MessageBox(0,PChar(GetVersionAbout(eGUI,InGUID)),PChar('Информация о новой версии'),MB_OK+MB_ICONINFORMATION);
+end;
+
+// отображение статистики ожидание в очереди за текущий день
+procedure ShowStatisticsCallsDay(InTypeStatisticsCalls: enumStatisticsCalls; InClick:Boolean = False);
+begin
+  with HomeForm do begin
+     case InTypeStatisticsCalls of
+       eNumbers: begin
+        if InClick then begin
+          // сохраняем текущий выбор
+         saveIndividualSettingUser(SharedCurrentUserLogon.GetID,settingUsers_showStatisticsQueueDay,settingUsersStatus_DISABLED);
+        end;
+
+        PanelStatisticsQueue_Numbers.Visible:=True;
+        PanelStatisticsQueue_Graph.Visible:=False;
+
+        img_StatisticsQueue_Graph.Visible:=True;
+        img_StatisticsQueue_Numbers.Visible:=False;
+       end;
+       eGraph: begin
+        if InClick then begin
+         // сохраняем текущий выбор
+         saveIndividualSettingUser(SharedCurrentUserLogon.GetID,settingUsers_showStatisticsQueueDay,settingUsersStatus_ENABLED);
+
+        end;
+
+        PanelStatisticsQueue_Numbers.Visible:=False;
+        PanelStatisticsQueue_Graph.Visible:=True;
+
+        img_StatisticsQueue_Graph.Visible:=False;
+        img_StatisticsQueue_Numbers.Visible:=True;
+       end;
+     end;
+  end;
 end;
 
 end.

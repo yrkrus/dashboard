@@ -48,7 +48,7 @@ uses
 
       procedure GenerateExcel;  // формирование данных в excel
 
-      function FindFIO(InSipOperator:Integer):string;  // поиск фио оператора
+      function FindFIO(InSipOperator:Integer;InCurrentDate:TDate):string;  // поиск фио оператора
 
       end;
    // class TReportCountOperators END
@@ -192,7 +192,7 @@ begin
            m_queue[i].date_time:=StrToDateTime(Fields[4].Value);
            m_queue[i].sip:=StrToInt(Fields[5].Value);
            m_queue[i].talk_time:=Fields[6].Value;
-           m_queue[i].userFIO:=FindFIO(m_queue[i].sip);
+           m_queue[i].userFIO:=FindFIO(m_queue[i].sip,m_queue[i].date_time);
 
            ado.Next;
 
@@ -216,11 +216,16 @@ end;
 
 
 // поиск фио оператора
-function TReportCountOperators.FindFIO(InSipOperator:Integer):string;
+function TReportCountOperators.FindFIO(InSipOperator:Integer;InCurrentDate:TDate):string;
 var
  i:Integer;
  isFinded:Boolean; // найдено фио
 begin
+
+  // TODO сделать !!! проверяем это уволенный сотрудник или нет
+
+
+
   isFinded:=False;
 
   for i:=0 to countQueue-1 do begin

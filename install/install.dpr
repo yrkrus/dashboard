@@ -405,6 +405,11 @@ begin
       end;
     end;
 
+    // останавливаем служюу на всякий случай
+    Command:='net stop '+SERVICE_NAME;
+    ExecuteCommand(Command);
+
+
     Writeln('');
     Writeln('');
     SetConsoleColor(FOREGROUND_BLUE or FOREGROUND_INTENSITY);

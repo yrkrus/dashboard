@@ -12,7 +12,9 @@ unit TAnsweredQueueUnit;
 
 interface
 
-uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants, Graphics, TCustomTypeUnit;
+uses  System.Classes, Data.Win.ADODB, Data.DB,
+      System.SysUtils, Variants, Graphics, TCustomTypeUnit,
+      Vcl.Forms;
 
 
    // class TStructAnswered_list
@@ -47,6 +49,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants, Graphic
 
       procedure updateCount;                                // обновление кол-ва найденных звонков
       procedure Clear;                                      // очистка от всех данных
+
       end;
  // class TStructAnswered END
 
@@ -71,8 +74,12 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants, Graphic
       procedure Clear;                                                  // очитска от всех текущих данных
 
       private
+      m_maxAnsweredTime                   :Integer;     // (время) максимальное время ожидания в очереди
+      m_maxAnsweredID                     :Integer;    // (id по БД) ID этого звонка
+
       function isExistAnsweredId(id:Integer): Boolean;                  // есть ли такой id в памяти
       procedure addAnswered(id,answered_time:Integer);                  // добавление в память
+      procedure FindMaxAnsweredTime;                  // нахождене максимального времени ожидания в очереди
 
       end;
  // class TAnsweredQueue END
@@ -138,6 +145,8 @@ end;
    end;
 
    Self.updateAnsweredNow:=False;
+   Self.m_maxAnsweredTime:=0;
+   Self.m_maxAnsweredID:=0;
  end;
 
 
@@ -164,14 +173,28 @@ end;
     for i:=0 to cGLOBAL_ListAnswered-1 do list[i].clear;
     Self.updateAnsweredNow:=False;
 
+    Self.m_maxAnsweredTime:=0;
+    Self.m_maxAnsweredID:=0;
+
     with HomeForm do begin
        ST_SL.Caption:='SL: 100%';
        ST_SL.Font.Color:=colorGood;
 
+       // текстовое отображение
        lblStatistics_Answered30.Caption:='0';
        lblStatistics_Answered60.Caption:='0';
        lblStatistics_Answered120.Caption:='0';
        lblStatistics_Answered121.Caption:='0';
+
+       // графическое отображение
+       StatisticsQueue_Answered30_Graph.Progress:=0;
+       StatisticsQueue_Answered60_Graph.Progress:=0;
+       StatisticsQueue_Answered120_Graph.Progress:=0;
+       StatisticsQueue_Answered121_Graph.Progress:=0;
+       lblStatistics_Answered30_Graph.Caption:='0';
+       lblStatistics_Answered60_Graph.Caption:='0';
+       lblStatistics_Answered120_Graph.Caption:='0';
+       lblStatistics_Answered121_Graph.Caption:='0';
     end;
  end;
 
@@ -196,6 +219,8 @@ end;
  colorNotBad:Tcolor   = $0000D5D5;
  colorBad:TColor      = $0000C8C8;
  colorVeryBad:TColor  = $0000009B;
+ colorGraph:TColor    = clTeal;
+ MINIMAL_LINE_GRAPH_SHOWING:Word = 3; // минимальная линия на графике которая видна
  var
   i:Integer;
   SL:Integer;
@@ -211,6 +236,15 @@ end;
      case i of
        0: begin
          lblStatistics_Answered30.Caption:=IntToStr(list[i].count) + ' ('+resultat+'%)';
+
+         // график
+         begin
+           lblStatistics_Answered30_Graph.Caption:=IntToStr(list[i].count)+#13+ ' ('+resultat+'%)';
+           StatisticsQueue_Answered30_Graph.ForeColor:=colorGraph;
+
+           if Round(procent)< MINIMAL_LINE_GRAPH_SHOWING then procent:=MINIMAL_LINE_GRAPH_SHOWING;
+           StatisticsQueue_Answered30_Graph.Progress:=Round(procent);
+         end;
 
          SL:=Round(list[i].count / getCountAllAnswered * 100);
          // считаем SL
@@ -233,12 +267,54 @@ end;
 
 
        end;
-       1: lblStatistics_Answered60.Caption:=IntToStr(list[i].count)  + ' ('+resultat+'%)';
-       2: lblStatistics_Answered120.Caption:=IntToStr(list[i].count) + ' ('+resultat+'%)';
-       3: lblStatistics_Answered121.Caption:=IntToStr(list[i].count) + ' ('+resultat+'%)';
+       1: begin
+         lblStatistics_Answered60.Caption:=IntToStr(list[i].count)  + ' ('+resultat+'%)';
+
+         // график
+         begin
+           lblStatistics_Answered60_Graph.Caption:=IntToStr(list[i].count)+#13+ ' ('+resultat+'%)';
+           StatisticsQueue_Answered60_Graph.ForeColor:=colorGraph;
+           if Round(procent)< MINIMAL_LINE_GRAPH_SHOWING  then procent:=MINIMAL_LINE_GRAPH_SHOWING;
+           StatisticsQueue_Answered60_Graph.Progress:=Round(procent);
+         end;
+       end;
+       2: begin
+         lblStatistics_Answered120.Caption:=IntToStr(list[i].count) + ' ('+resultat+'%)';
+
+          // график
+         begin
+           lblStatistics_Answered120_Graph.Caption:=IntToStr(list[i].count)+#13+ ' ('+resultat+'%)';
+           StatisticsQueue_Answered120_Graph.ForeColor:=colorGraph;
+           if Round(procent)< MINIMAL_LINE_GRAPH_SHOWING  then procent:=MINIMAL_LINE_GRAPH_SHOWING;
+           StatisticsQueue_Answered120_Graph.Progress:=Round(procent);
+         end;
+       end;
+       3: begin
+        lblStatistics_Answered121.Caption:=IntToStr(list[i].count) + ' ('+resultat+'%)';
+
+          // график
+         begin
+           lblStatistics_Answered121_Graph.Caption:=IntToStr(list[i].count)+#13+ ' ('+resultat+'%)';
+           StatisticsQueue_Answered121_Graph.ForeColor:=colorGraph;
+           if Round(procent)< MINIMAL_LINE_GRAPH_SHOWING  then procent:=MINIMAL_LINE_GRAPH_SHOWING;
+           StatisticsQueue_Answered121_Graph.Progress:=Round(procent);
+         end;
+
+         // максимальное время ожидания в очереди (будет типа пасхалка)
+         begin
+           FindMaxAnsweredTime;
+           if m_maxAnsweredTime<>0 then begin
+             lblStatistics_Answered121_Graph.Hint:='          от 120 сек и более'+#13+
+                                                   'самый упорный ждал в очереди: '+GetTimeAnsweredSecondsToString(m_maxAnsweredTime);
+
+           end;
+         end;
+
+       end;
      end;
     end;
    end;
+   Application.ProcessMessages;
  end;
 
  procedure TAnsweredQueue.addAnswered(id,answered_time:Integer);
@@ -264,6 +340,22 @@ end;
      list[3].list_answered_time.Add(IntToStr(answered_time));
      list[3].updateCount; // обновим кол-во звонков
     end;
+   end;
+ end;
+
+ // нахождене максимального времени ожидания в очереди
+ procedure TAnsweredQueue.FindMaxAnsweredTime;
+ var
+  i:Integer;
+ begin
+   if list[3].count = 0 then Exit;
+
+   for i:=0 to list[3].count-1 do begin
+     if StrToInt(list[3].list_answered_time[i]) > m_maxAnsweredTime then
+     begin
+      m_maxAnsweredTime:= StrToInt(list[3].list_answered_time[i]);
+      m_maxAnsweredID:= StrToInt(list[3].list_id[i]);
+     end;
    end;
  end;
 

@@ -40,9 +40,10 @@ interface
 
 
   type  // тип сохранения индивидуальных настроек пользователя
-    enumSettingUsers = (  settingUsers_gohome,         // не показывать ушедших домой
-                          settingUsers_noConfirmExit   // не показывать окно "точно хотите выйти из дашборда?"
-                        );
+    enumSettingUsers = (  settingUsers_gohome,                  // не показывать ушедших домой
+                          settingUsers_noConfirmExit,           // не показывать окно "точно хотите выйти из дашборда?"
+                          settingUsers_showStatisticsQueueDay   // какой тип графика отображать в модуле "сатистика ожидания в очереди" 0-цифры | 1 - график
+                            );
 
   type  // тип включение\отключение индивидуальных пользовательских настроек
     enumSettingUsersStatus = (settingUsersStatus_ENABLED = 1,  // включить
@@ -192,6 +193,9 @@ interface
                 );
 
 
+  type  // режим показа ститистика по звонкам за день
+  enumStatisticsCalls = (eNumbers,  // цифры
+                         eGraph);   // график
 
 implementation
 

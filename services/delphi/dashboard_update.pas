@@ -257,7 +257,7 @@ begin
  log.Save('Проверка новой версии');
 
   if not XML.isExistSettingsFile then begin
-    log.Save('Отсутствует файл настроек '+SETTINGS_XML, IS_ERROR);
+    log.Save('Отсутствует файл настроек '+SETTINGS_XML+', чтобы он появился необходимо запустить '+DASHBOARD_EXE, IS_ERROR);
     log.Save('Следующая попытка проверки новой версии через 1 мин');
     TimerMonitoring.Interval:=cTIMER_ERROR;
     Exit;
