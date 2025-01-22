@@ -113,8 +113,8 @@
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
-        <VerInfo_Build>62</VerInfo_Build>
-        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.62;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Build>64</VerInfo_Build>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.64;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
@@ -147,11 +147,11 @@
         <DCCReference Include="GlobalVariables.pas"/>
         <DCCReference Include="Functions.pas"/>
         <DCCReference Include="Thread_Users.pas"/>
-        <DCCReference Include="TOnlineUsersUint.pas"/>
-        <DCCReference Include="TOnlineChatUnit.pas"/>
-        <DCCReference Include="TSendMessageUnit.pas"/>
         <DCCReference Include="Thread_MessageMain.pas"/>
         <DCCReference Include="CustomTypeUnit.pas"/>
+        <DCCReference Include="..\custom_class\TSendMessageUnit.pas"/>
+        <DCCReference Include="..\custom_class\TOnlineUsersUint.pas"/>
+        <DCCReference Include="..\custom_class\TOnlineChatUnit.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

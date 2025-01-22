@@ -149,10 +149,10 @@
             <Form>FormWait</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="include\TAbstractReportUnit.pas"/>
-        <DCCReference Include="classes\TReportCountOperatorsUnit.pas"/>
-        <DCCReference Include="classes\TQueueHistoryUnit.pas"/>
-        <DCCReference Include="..\gui\TCustomTypeUnit.pas"/>
+        <DCCReference Include="..\custom_class\TAbstractReportUnit.pas"/>
+        <DCCReference Include="..\custom_class\TCustomTypeUnit.pas"/>
+        <DCCReference Include="..\custom_class\TQueueHistoryUnit.pas"/>
+        <DCCReference Include="..\custom_class\TReportCountOperatorsUnit.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

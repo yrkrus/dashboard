@@ -17,9 +17,9 @@ uses
   Registry,
   System.Zip,
   GlobalVariables in '..\services\delphi\GlobalVariables.pas',
-  TFTPUnit in '..\gui\TFTPUnit.pas',
-  TLogFileUnit in '..\gui\TLogFileUnit.pas',
-  TCustomTypeUnit in '..\gui\TCustomTypeUnit.pas';
+  TCustomTypeUnit in '..\custom_class\TCustomTypeUnit.pas',
+  TFTPUnit in '..\custom_class\TFTPUnit.pas',
+  TLogFileUnit in '..\custom_class\TLogFileUnit.pas';
 
 const
  cSLEEP_ERRROR:Cardinal = 9000000;  //  такое большое значение т.к. чтобы в вечный sleep ушел

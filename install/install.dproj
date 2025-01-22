@@ -168,8 +168,8 @@
         <VerInfo_Locale>1033</VerInfo_Locale>
         <Manifest_File>(None)</Manifest_File>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
-        <VerInfo_Build>25</VerInfo_Build>
-        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=2.0.0.25;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Build>26</VerInfo_Build>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=2.0.0.26;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <VerInfo_MajorVer>2</VerInfo_MajorVer>
     </PropertyGroup>
     <ItemGroup>
@@ -177,9 +177,9 @@
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
         <DCCReference Include="..\services\delphi\GlobalVariables.pas"/>
-        <DCCReference Include="..\gui\TFTPUnit.pas"/>
-        <DCCReference Include="..\gui\TLogFileUnit.pas"/>
-        <DCCReference Include="..\gui\TCustomTypeUnit.pas"/>
+        <DCCReference Include="..\custom_class\TCustomTypeUnit.pas"/>
+        <DCCReference Include="..\custom_class\TFTPUnit.pas"/>
+        <DCCReference Include="..\custom_class\TLogFileUnit.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -223,9 +223,9 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="Win64\Debug\install.rsm" Configuration="Debug" Class="DebugSymbols">
+                <DeployFile LocalName="Win64\Release\install.exe" Configuration="Release" Class="ProjectOutput">
                     <Platform Name="Win64">
-                        <RemoteName>install.rsm</RemoteName>
+                        <RemoteName>install.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>

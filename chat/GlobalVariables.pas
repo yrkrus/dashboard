@@ -17,7 +17,7 @@ uses
 
 var
  // режим разработки
-  DEBUG:Boolean = false;
+  DEBUG:Boolean = true;
 
   CHAT_EXE         :string = 'chat.exe';
 

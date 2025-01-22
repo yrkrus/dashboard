@@ -7,10 +7,10 @@ uses
   FunctionUnit in 'FunctionUnit.pas',
   FormReportCountRingsOperatorsUnit in 'FormReportCountRingsOperatorsUnit.pas' {FormReportCountRingsOperators},
   FormWaitUnit in 'FormWaitUnit.pas' {FormWait},
-  TAbstractReportUnit in 'include\TAbstractReportUnit.pas',
-  TReportCountOperatorsUnit in 'classes\TReportCountOperatorsUnit.pas',
-  TQueueHistoryUnit in 'classes\TQueueHistoryUnit.pas',
-  TCustomTypeUnit in '..\gui\TCustomTypeUnit.pas';
+  TAbstractReportUnit in '..\custom_class\TAbstractReportUnit.pas',
+  TCustomTypeUnit in '..\custom_class\TCustomTypeUnit.pas',
+  TQueueHistoryUnit in '..\custom_class\TQueueHistoryUnit.pas',
+  TReportCountOperatorsUnit in '..\custom_class\TReportCountOperatorsUnit.pas';
 
 {$R *.res}
 

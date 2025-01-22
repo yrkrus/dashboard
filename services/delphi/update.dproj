@@ -172,8 +172,8 @@
         <VerInfo_Locale>1033</VerInfo_Locale>
         <Icon_MainIcon>ico\cloudrefresh_icon-icons.com_54403.ico</Icon_MainIcon>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
-        <VerInfo_Build>21</VerInfo_Build>
-        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.3.0.21;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=0.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Build>22</VerInfo_Build>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.3.0.22;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=0.0.0.0;Comments=</VerInfo_Keys>
         <VerInfo_MinorVer>3</VerInfo_MinorVer>
     </PropertyGroup>
     <ItemGroup>
@@ -185,12 +185,10 @@
             <DesignClass>TService</DesignClass>
         </DCCReference>
         <DCCReference Include="GlobalVariables.pas"/>
-        <DCCReference Include="..\..\gui\TXmlUnit.pas"/>
-        <DCCReference Include="..\..\gui\TLogFileUnit.pas">
-            <Form>$R *.RES</Form>
-        </DCCReference>
-        <DCCReference Include="..\..\gui\TFTPUnit.pas"/>
-        <DCCReference Include="..\..\gui\TCustomTypeUnit.pas"/>
+        <DCCReference Include="..\..\custom_class\TCustomTypeUnit.pas"/>
+        <DCCReference Include="..\..\custom_class\TFTPUnit.pas"/>
+        <DCCReference Include="..\..\custom_class\TLogFileUnit.pas"/>
+        <DCCReference Include="..\..\custom_class\TXmlUnit.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -219,6 +217,12 @@
                 </Excluded_Packages>
             </Delphi.Personality>
             <Deployment Version="3">
+                <DeployFile LocalName="Win64\Release\update.exe" Configuration="Release" Class="ProjectOutput">
+                    <Platform Name="Win64">
+                        <RemoteName>update.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="Win64\Debug\update.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win64">
                         <RemoteName>update.exe</RemoteName>
@@ -228,12 +232,6 @@
                 <DeployFile LocalName="Win32\Debug\update.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>update.exe</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="Win64\Debug\update.rsm" Configuration="Debug" Class="DebugSymbols">
-                    <Platform Name="Win64">
-                        <RemoteName>update.rsm</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
