@@ -30,6 +30,7 @@ type
     ImageListIcon: TImageList;
     lblUserAuth: TLabel;
     lblChangeUser: TLabel;
+    TimerNotRunUpdate: TTimer;
     procedure btnCloseClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnAuthClick(Sender: TObject);
@@ -46,6 +47,7 @@ type
       Rect: TRect; State: TOwnerDrawState);
     procedure lblChangeUserClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure TimerNotRunUpdateTimer(Sender: TObject);
 
 
   private
@@ -120,6 +122,12 @@ begin
 
 end;
 
+
+procedure TFormAuth.TimerNotRunUpdateTimer(Sender: TObject);
+begin
+   if not lblInfoUpdateService.Visible then lblInfoUpdateService.Visible:=True
+   else lblInfoUpdateService.Visible:=False;
+end;
 
 // загрузка иконок в лист бокс для последующего отображения в combobox
 procedure TFormAuth.LoadIconListBox;
@@ -434,6 +442,7 @@ end;
 procedure TFormAuth.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   if Assigned(usersListAdminRole) then FreeAndNil(usersListAdminRole);
+  if TimerNotRunUpdate.Enabled then TimerNotRunUpdate.Enabled:=False;
 end;
 
 procedure TFormAuth.FormCreate(Sender: TObject);
@@ -446,7 +455,15 @@ var
  i:Integer;
 begin
   // debug node
+ begin
   if DEBUG then lblDEBUG.Visible:=True;
+  // проверка запущена ли служба обновления
+   if not DEBUG  then begin
+     if not GetStatusUpdateService then begin
+       TimerNotRunUpdate.Enabled:=True;
+     end;
+   end;
+ end;
 
   // размер окна по умолчанию
   DefaultFormSize;
@@ -476,9 +493,6 @@ begin
 
   // пасхалки
   HappyNewYear;
-
-  // проверка запущена ли служба обновления
-  if not GetStatusUpdateService then lblInfoUpdateService.Visible:=True;
 end;
 
 procedure TFormAuth.img_eay_closeClick(Sender: TObject);
@@ -502,6 +516,8 @@ end;
 
 procedure TFormAuth.lblChangeUserClick(Sender: TObject);
 begin
+  edtPassword.Text:='';
+
   lblUserAuth.Visible:=False;
   lblChangeUser.Visible:=False;
 

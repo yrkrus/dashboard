@@ -1,8 +1,8 @@
-/////////////////////////////////////////////////////////////////////////////////
+п»ї/////////////////////////////////////////////////////////////////////////////////
 ///                                                                           ///
 ///                                                                           ///
-///      Класс для описания подсчета кол-ва отвеченных звонков из очереди     ///
-///                     с разбивкой по времени ответа                         ///
+///      РљР»Р°СЃСЃ РґР»СЏ РѕРїРёСЃР°РЅРёСЏ РїРѕРґСЃС‡РµС‚Р° РєРѕР»-РІР° РѕС‚РІРµС‡РµРЅРЅС‹С… Р·РІРѕРЅРєРѕРІ РёР· РѕС‡РµСЂРµРґРё     ///
+///                     СЃ СЂР°Р·Р±РёРІРєРѕР№ РїРѕ РІСЂРµРјРµРЅРё РѕС‚РІРµС‚Р°                         ///
 ///                                                                           ///
 ///                                                                           ///
 ///                                                                           ///
@@ -14,7 +14,7 @@ interface
 
 uses  System.Classes, Data.Win.ADODB, Data.DB,
       System.SysUtils, Variants, Graphics, TCustomTypeUnit,
-      Vcl.Forms;
+      Vcl.Forms, StdCtrls; 
 
 
    // class TStructAnswered_list
@@ -22,7 +22,7 @@ uses  System.Classes, Data.Win.ADODB, Data.DB,
       TStructAnswered_list = class
       public
       id                                     :Integer;
-      queue                                  :Integer;
+      queue                                  :enumQueueCurrent;
       waiting_time                           :string;
       talk_time                              :string;
 
@@ -39,16 +39,16 @@ uses  System.Classes, Data.Win.ADODB, Data.DB,
   type
       TStructAnswered = class
       public
-      count                                 : Integer;      // кол-во отвеченных
-      list_id                               : TStringList;  // список с ID просмотренными
-      list_answered_time                    : TStringList;  // список с отвеченными звонками
-
+      count                                 : Integer;      // РєРѕР»-РІРѕ РѕС‚РІРµС‡РµРЅРЅС‹С…
+      list_id                               : TStringList;  // СЃРїРёСЃРѕРє СЃ ID РїСЂРѕСЃРјРѕС‚СЂРµРЅРЅС‹РјРё
+      list_answered_time                    : TStringList;  // СЃРїРёСЃРѕРє СЃ РѕС‚РІРµС‡РµРЅРЅС‹РјРё Р·РІРѕРЅРєР°РјРё       
 
       constructor Create;                     overload;
       destructor Destroy;                     override;
 
-      procedure updateCount;                                // обновление кол-ва найденных звонков
-      procedure Clear;                                      // очистка от всех данных
+      procedure updateCount;                                // РѕР±РЅРѕРІР»РµРЅРёРµ РєРѕР»-РІР° РЅР°Р№РґРµРЅРЅС‹С… Р·РІРѕРЅРєРѕРІ
+      procedure Clear;                                      // РѕС‡РёСЃС‚РєР° РѕС‚ РІСЃРµС… РґР°РЅРЅС‹С…
+      function GetProcent(InNewProcent:Double):string;     // РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїСЂРѕС†РµРЅС‚Р° + в†‘ в†“ РІ Р·Р°РёРІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‚РѕРіРѕ РєР°РєРѕР№ СЂРµР·СѓР»СЊС‚Р°С‚ РїРѕ РїСЂРѕС†РµРЅС‚Р°Рј
 
       end;
  // class TStructAnswered END
@@ -59,34 +59,35 @@ uses  System.Classes, Data.Win.ADODB, Data.DB,
   type
       TAnsweredQueue = class
       public
-      list                                  : array of TStructAnswered; // список
-      updateAnsweredNow                     : Boolean;                  // нужно ли обновить весь свписок
+      list                                  : array of TStructAnswered; // СЃРїРёСЃРѕРє
+      updateAnsweredNow                     : Boolean;                  // РЅСѓР¶РЅРѕ Р»Рё РѕР±РЅРѕРІРёС‚СЊ РІРµСЃСЊ СЃРІРїРёСЃРѕРє
 
-      function getCountAllAnswered          : Integer;                  // всего отвечено
-      function isExistNewAnswered           : Boolean;                  // есть ли новые отвеченные по БД
-      function getCountMaxAnswered          : Integer;                  // максимальное время ожидания
+      function getCountAllAnswered          : Integer;                  // РІСЃРµРіРѕ РѕС‚РІРµС‡РµРЅРѕ
+      function isExistNewAnswered           : Boolean;                  // РµСЃС‚СЊ Р»Рё РЅРѕРІС‹Рµ РѕС‚РІРµС‡РµРЅРЅС‹Рµ РїРѕ Р‘Р”
+      function getCountMaxAnswered          : Integer;                  // РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ РІСЂРµРјСЏ РѕР¶РёРґР°РЅРёСЏ
 
       constructor Create;                     overload;
       destructor  Destroy;                    overload;
 
-      procedure updateAnswered;                                         // обновление отвеченных
-      procedure showAnswered;                                           // показываем кол-во
-      procedure Clear;                                                  // очитска от всех текущих данных
+      procedure updateAnswered;                                         // РѕР±РЅРѕРІР»РµРЅРёРµ РѕС‚РІРµС‡РµРЅРЅС‹С…
+      procedure showAnswered;                                           // РїРѕРєР°Р·С‹РІР°РµРј РєРѕР»-РІРѕ
+      procedure Clear;                                                  // РѕС‡РёС‚СЃРєР° РѕС‚ РІСЃРµС… С‚РµРєСѓС‰РёС… РґР°РЅРЅС‹С…
 
       private
-      m_maxAnsweredTime                   :Integer;     // (время) максимальное время ожидания в очереди
-      m_maxAnsweredID                     :Integer;    // (id по БД) ID этого звонка
+      m_maxAnsweredTime                   :Integer;     // (РІСЂРµРјСЏ) РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ РІСЂРµРјСЏ РѕР¶РёРґР°РЅРёСЏ РІ РѕС‡РµСЂРµРґРё
+      m_maxAnsweredID                     :Integer;    // (id РїРѕ Р‘Р”) ID СЌС‚РѕРіРѕ Р·РІРѕРЅРєР°
 
-      function isExistAnsweredId(id:Integer): Boolean;                  // есть ли такой id в памяти
-      procedure addAnswered(id,answered_time:Integer);                  // добавление в память
-      procedure FindMaxAnsweredTime;                  // нахождене максимального времени ожидания в очереди
+      function isExistAnsweredId(id:Integer): Boolean;                  // РµСЃС‚СЊ Р»Рё С‚Р°РєРѕР№ id РІ РїР°РјСЏС‚Рё
+      procedure addAnswered(id,answered_time:Integer);                  // РґРѕР±Р°РІР»РµРЅРёРµ РІ РїР°РјСЏС‚СЊ
+      procedure FindMaxAnsweredTime;                  // РЅР°С…РѕР¶РґРµРЅРµ РјР°РєСЃРёРјР°Р»СЊРЅРѕРіРѕ РІСЂРµРјРµРЅРё РѕР¶РёРґР°РЅРёСЏ РІ РѕС‡РµСЂРµРґРё
 
+     
       end;
  // class TAnsweredQueue END
 
 
 const
-   cGLOBAL_ListAnswered: Word   = 4;    // константа для массива из TStructAnswered
+   cGLOBAL_ListAnswered: Word   = 4;    // РєРѕРЅСЃС‚Р°РЅС‚Р° РґР»СЏ РјР°СЃСЃРёРІР° РёР· TStructAnswered
 
 implementation
 
@@ -98,7 +99,7 @@ uses
  begin
     inherited;
     id:=0;
-    queue:=0;
+    queue:=queue_null;
  end;
 
 
@@ -106,16 +107,16 @@ uses
  begin
    inherited;
 
-   count:=0;
-   list_answered_time:=TStringList.Create;
-   list_id:=TStringList.Create;
+   Self.count:=0;
+   Self.list_answered_time:=TStringList.Create;
+   Self.list_id:=TStringList.Create;
  end;
 
 destructor TStructAnswered.Destroy;
 begin
-  list_id.Free; // Освобождение TStringList
-  list_answered_time.Free; // Освобождение TStringList
-  inherited Destroy; // Вызов деструктора родительского класса
+  list_id.Free; // РћСЃРІРѕР±РѕР¶РґРµРЅРёРµ TStringList
+  list_answered_time.Free; // РћСЃРІРѕР±РѕР¶РґРµРЅРёРµ TStringList
+  inherited Destroy; // Р’С‹Р·РѕРІ РґРµСЃС‚СЂСѓРєС‚РѕСЂР° СЂРѕРґРёС‚РµР»СЊСЃРєРѕРіРѕ РєР»Р°СЃСЃР°
 end;
 
 
@@ -125,6 +126,26 @@ end;
    Self.list_id.Clear;
    Self.list_answered_time.Clear;
  end;
+
+
+// РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РїСЂРѕС†РµРЅС‚Р° + в†‘ в†“ РІ Р·Р°РёРІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‚РѕРіРѕ РєР°РєРѕР№ СЂРµР·СѓР»СЊС‚Р°С‚ РїРѕ РїСЂРѕС†РµРЅС‚Р°Рј
+function TStructAnswered.GetProcent(InNewProcent:Double):string;
+var
+   new_procent:string;
+begin
+ // Result:='';
+
+  new_procent:=FormatFloat('0.0',InNewProcent);
+  new_procent:=StringReplace(new_procent,',','.',[rfReplaceAll]);
+
+  // СѓР±РµСЂРµРј Р»РёС€РЅРёР№ .0 СЂСѓСЃС‚СЊ Р±СѓРґРµС‚ С†РµР»РѕРІРµ С‡РёСЃР»Рѕ
+  if AnsiPos('.0',new_procent)<>0 then begin
+   System.Delete(new_procent,AnsiPos('.',new_procent), Length(new_procent));
+  end;
+
+  Result:=new_procent;     
+end;
+
 
 procedure TStructAnswered.updateCount;
 begin
@@ -138,7 +159,7 @@ end;
  begin
    inherited;
 
-   // создаем list
+   // СЃРѕР·РґР°РµРј list
    begin
      SetLength(list,cGLOBAL_ListAnswered);
      for i:=0 to cGLOBAL_ListAnswered-1 do list[i]:=TStructAnswered.Create;
@@ -154,13 +175,13 @@ destructor TAnsweredQueue.Destroy;
 var
   i: Integer;
 begin
-  // Освобождение каждого элемента массива
-  for i:=Low(list) to High(list) do list[i].Free; // Освобождаем каждый объект TStructAnswered
+  // РћСЃРІРѕР±РѕР¶РґРµРЅРёРµ РєР°Р¶РґРѕРіРѕ СЌР»РµРјРµРЅС‚Р° РјР°СЃСЃРёРІР°
+  for i:=Low(list) to High(list) do list[i].Free; // РћСЃРІРѕР±РѕР¶РґР°РµРј РєР°Р¶РґС‹Р№ РѕР±СЉРµРєС‚ TStructAnswered
 
-  // Очистка массива
-  SetLength(list, 0); // Убираем ссылки на объекты
+  // РћС‡РёСЃС‚РєР° РјР°СЃСЃРёРІР°
+  SetLength(list, 0); // РЈР±РёСЂР°РµРј СЃСЃС‹Р»РєРё РЅР° РѕР±СЉРµРєС‚С‹
 
-  inherited Destroy; // Вызов деструктора родительского класса
+  inherited Destroy; // Р’С‹Р·РѕРІ РґРµСЃС‚СЂСѓРєС‚РѕСЂР° СЂРѕРґРёС‚РµР»СЊСЃРєРѕРіРѕ РєР»Р°СЃСЃР°
 end;
 
 
@@ -180,13 +201,13 @@ end;
        ST_SL.Caption:='SL: 100%';
        ST_SL.Font.Color:=colorGood;
 
-       // текстовое отображение
+       // С‚РµРєСЃС‚РѕРІРѕРµ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ
        lblStatistics_Answered30.Caption:='0';
        lblStatistics_Answered60.Caption:='0';
        lblStatistics_Answered120.Caption:='0';
        lblStatistics_Answered121.Caption:='0';
 
-       // графическое отображение
+       // РіСЂР°С„РёС‡РµСЃРєРѕРµ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ
        StatisticsQueue_Answered30_Graph.Progress:=0;
        StatisticsQueue_Answered60_Graph.Progress:=0;
        StatisticsQueue_Answered120_Graph.Progress:=0;
@@ -219,27 +240,25 @@ end;
  colorNotBad:Tcolor   = $0000D5D5;
  colorBad:TColor      = $0000C8C8;
  colorVeryBad:TColor  = $0000009B;
- colorGraph:TColor    = clTeal;
- MINIMAL_LINE_GRAPH_SHOWING:Word = 3; // минимальная линия на графике которая видна
+ colorGraph:TColor    = clTeal;   
+ MINIMAL_LINE_GRAPH_SHOWING:Word = 3; // РјРёРЅРёРјР°Р»СЊРЅР°СЏ Р»РёРЅРёСЏ РЅР° РіСЂР°С„РёРєРµ РєРѕС‚РѕСЂР°СЏ РІРёРґРЅР°
  var
   i:Integer;
   SL:Integer;
-  procent:Double;
-  resultat:string;
+  procent:Double;   
  begin
    for i:=0 to cGLOBAL_ListAnswered-1 do begin
     with HomeForm do begin
       procent:=list[i].count * 100 / getCountAllAnswered;
-      resultat:=FormatFloat('0.0',procent);
-      resultat:=StringReplace(resultat,',','.',[rfReplaceAll]);
 
      case i of
        0: begin
-         lblStatistics_Answered30.Caption:=IntToStr(list[i].count) + ' ('+resultat+'%)';
+         lblStatistics_Answered30.Caption:=IntToStr(list[i].count) + ' ('+list[i].GetProcent(procent)+'%)';
+         
 
-         // график
+         // РіСЂР°С„РёРє
          begin
-           lblStatistics_Answered30_Graph.Caption:=IntToStr(list[i].count)+#13+ ' ('+resultat+'%)';
+           lblStatistics_Answered30_Graph.Caption:=IntToStr(list[i].count)+#13+ ' ('+list[i].GetProcent(procent)+'%)';
            StatisticsQueue_Answered30_Graph.ForeColor:=colorGraph;
 
            if Round(procent)< MINIMAL_LINE_GRAPH_SHOWING then procent:=MINIMAL_LINE_GRAPH_SHOWING;
@@ -247,7 +266,7 @@ end;
          end;
 
          SL:=Round(list[i].count / getCountAllAnswered * 100);
-         // считаем SL
+         // СЃС‡РёС‚Р°РµРј SL
          ST_SL.Caption:='SL: '+IntToStr(SL)+'%';
 
          case SL of
@@ -263,53 +282,53 @@ end;
            80..100:begin
               ST_SL.Font.Color:=colorGood;
            end;
-         end;
-
-
+         end;     
+        
        end;
        1: begin
-         lblStatistics_Answered60.Caption:=IntToStr(list[i].count)  + ' ('+resultat+'%)';
+         lblStatistics_Answered60.Caption:=IntToStr(list[i].count)  + ' ('+list[i].GetProcent(procent)+'%)';
 
-         // график
+         // РіСЂР°С„РёРє
          begin
-           lblStatistics_Answered60_Graph.Caption:=IntToStr(list[i].count)+#13+ ' ('+resultat+'%)';
+           lblStatistics_Answered60_Graph.Caption:=IntToStr(list[i].count)+#13+ ' ('+list[i].GetProcent(procent)+'%)';
            StatisticsQueue_Answered60_Graph.ForeColor:=colorGraph;
            if Round(procent)< MINIMAL_LINE_GRAPH_SHOWING  then procent:=MINIMAL_LINE_GRAPH_SHOWING;
            StatisticsQueue_Answered60_Graph.Progress:=Round(procent);
-         end;
+         end; 
+         
        end;
        2: begin
-         lblStatistics_Answered120.Caption:=IntToStr(list[i].count) + ' ('+resultat+'%)';
+         lblStatistics_Answered120.Caption:=IntToStr(list[i].count) + ' ('+list[i].GetProcent(procent)+'%)';
 
-          // график
+          // РіСЂР°С„РёРє
          begin
-           lblStatistics_Answered120_Graph.Caption:=IntToStr(list[i].count)+#13+ ' ('+resultat+'%)';
+           lblStatistics_Answered120_Graph.Caption:=IntToStr(list[i].count)+#13+ ' ('+list[i].GetProcent(procent)+'%)';
            StatisticsQueue_Answered120_Graph.ForeColor:=colorGraph;
            if Round(procent)< MINIMAL_LINE_GRAPH_SHOWING  then procent:=MINIMAL_LINE_GRAPH_SHOWING;
            StatisticsQueue_Answered120_Graph.Progress:=Round(procent);
-         end;
+         end;         
        end;
        3: begin
-        lblStatistics_Answered121.Caption:=IntToStr(list[i].count) + ' ('+resultat+'%)';
+        lblStatistics_Answered121.Caption:=IntToStr(list[i].count) + ' ('+list[i].GetProcent(procent)+'%)';
 
-          // график
+          // РіСЂР°С„РёРє
          begin
-           lblStatistics_Answered121_Graph.Caption:=IntToStr(list[i].count)+#13+ ' ('+resultat+'%)';
+           lblStatistics_Answered121_Graph.Caption:=IntToStr(list[i].count)+#13+ ' ('+list[i].GetProcent(procent)+'%)';
            StatisticsQueue_Answered121_Graph.ForeColor:=colorGraph;
            if Round(procent)< MINIMAL_LINE_GRAPH_SHOWING  then procent:=MINIMAL_LINE_GRAPH_SHOWING;
            StatisticsQueue_Answered121_Graph.Progress:=Round(procent);
          end;
 
-         // максимальное время ожидания в очереди (будет типа пасхалка)
+         // РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ РІСЂРµРјСЏ РѕР¶РёРґР°РЅРёСЏ РІ РѕС‡РµСЂРµРґРё (Р±СѓРґРµС‚ С‚РёРїР° РїР°СЃС…Р°Р»РєР°)
          begin
            FindMaxAnsweredTime;
            if m_maxAnsweredTime<>0 then begin
-             lblStatistics_Answered121_Graph.Hint:='          от 120 сек и более'+#13+
-                                                   'самый упорный ждал в очереди: '+GetTimeAnsweredSecondsToString(m_maxAnsweredTime);
+             lblStatistics_Answered121_Graph.Hint:='          РѕС‚ 120 СЃРµРє Рё Р±РѕР»РµРµ'+#13+
+                                                   'СЃР°РјС‹Р№ СѓРїРѕСЂРЅС‹Р№ Р¶РґР°Р» РІ РѕС‡РµСЂРµРґРё: '+GetTimeAnsweredSecondsToString(m_maxAnsweredTime);
 
            end;
-         end;
-
+         end; 
+         
        end;
      end;
     end;
@@ -323,27 +342,27 @@ end;
     0..30:begin
       list[0].list_id.Add(IntToStr(id));
       list[0].list_answered_time.Add(IntToStr(answered_time));
-      list[0].updateCount; // обновим кол-во звонков
+      list[0].updateCount; // РѕР±РЅРѕРІРёРј РєРѕР»-РІРѕ Р·РІРѕРЅРєРѕРІ
     end;
     31..60:begin
       list[1].list_id.Add(IntToStr(id));
       list[1].list_answered_time.Add(IntToStr(answered_time));
-      list[1].updateCount; // обновим кол-во звонков
+      list[1].updateCount; // РѕР±РЅРѕРІРёРј РєРѕР»-РІРѕ Р·РІРѕРЅРєРѕРІ
     end;
     61..120:begin
       list[2].list_id.Add(IntToStr(id));
       list[2].list_answered_time.Add(IntToStr(answered_time));
-      list[2].updateCount; // обновим кол-во звонков
+      list[2].updateCount; // РѕР±РЅРѕРІРёРј РєРѕР»-РІРѕ Р·РІРѕРЅРєРѕРІ
     end;
     else begin
      list[3].list_id.Add(IntToStr(id));
      list[3].list_answered_time.Add(IntToStr(answered_time));
-     list[3].updateCount; // обновим кол-во звонков
+     list[3].updateCount; // РѕР±РЅРѕРІРёРј РєРѕР»-РІРѕ Р·РІРѕРЅРєРѕРІ
     end;
    end;
  end;
 
- // нахождене максимального времени ожидания в очереди
+ // РЅР°С…РѕР¶РґРµРЅРµ РјР°РєСЃРёРјР°Р»СЊРЅРѕРіРѕ РІСЂРµРјРµРЅРё РѕР¶РёРґР°РЅРёСЏ РІ РѕС‡РµСЂРµРґРё
  procedure TAnsweredQueue.FindMaxAnsweredTime;
  var
   i:Integer;
@@ -359,6 +378,8 @@ end;
    end;
  end;
 
+
+ 
 
  function TAnsweredQueue.getCountAllAnswered;
  var
@@ -386,7 +407,7 @@ begin
    Exit;
   end;
 
-  // сверяемся с текущим кол-вом
+  // СЃРІРµСЂСЏРµРјСЃСЏ СЃ С‚РµРєСѓС‰РёРј РєРѕР»-РІРѕРј
   if getCountAllAnswered<>countAllAnswered then Result:=True
   else Result:=False;
 end;
@@ -417,7 +438,7 @@ end;
 
 
 
-// обновление отвеченных звонков
+// РѕР±РЅРѕРІР»РµРЅРёРµ РѕС‚РІРµС‡РµРЅРЅС‹С… Р·РІРѕРЅРєРѕРІ
 procedure TAnsweredQueue.updateAnswered;
 var
  i,j:Integer;
@@ -438,7 +459,7 @@ begin
      Exit;
   end;
 
-  // кол-во отвеченных на текущий момент
+  // РєРѕР»-РІРѕ РѕС‚РІРµС‡РµРЅРЅС‹С… РЅР° С‚РµРєСѓС‰РёР№ РјРѕРјРµРЅС‚
   countAnswered:=StrToInt(GetStatistics_day(stat_answered));
   if countAnswered=0 then begin
     FreeAndNil(ado);
@@ -450,12 +471,12 @@ begin
     Exit;
   end;
 
-  // динамический массив с будущими данными
+  // РґРёРЅР°РјРёС‡РµСЃРєРёР№ РјР°СЃСЃРёРІ СЃ Р±СѓРґСѓС‰РёРјРё РґР°РЅРЅС‹РјРё
   SetLength(listAnsweredBD,countAnswered);
   for i:=0 to countAnswered-1 do listAnsweredBD[i]:=TStructAnswered_list.Create;
 
   try
-    // найдем всех
+    // РЅР°Р№РґРµРј РІСЃРµС…
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
@@ -464,7 +485,7 @@ begin
 
       for i:=0 to countAnswered-1 do begin
         listAnsweredBD[i].id:=StrToInt(VarToStr(Fields[0].Value));
-        listAnsweredBD[i].queue:=StrToInt(VarToStr(Fields[1].Value));
+        listAnsweredBD[i].queue:=StringToTQueue(VarToStr(Fields[1].Value));
         listAnsweredBD[i].waiting_time:=VarToStr(Fields[2].Value);
         listAnsweredBD[i].talk_time:=VarToStr(Fields[3].Value);
 
@@ -482,15 +503,15 @@ begin
   time_queue5000:=GetIVRTimeQueue(queue_5000);
   time_queue5050:=GetIVRTimeQueue(queue_5050);
 
-  // проверяем теперь есть ли такие id в памяти
+  // РїСЂРѕРІРµСЂСЏРµРј С‚РµРїРµСЂСЊ РµСЃС‚СЊ Р»Рё С‚Р°РєРёРµ id РІ РїР°РјСЏС‚Рё
    for i:=0 to countAnswered-1 do begin
      if not isExistAnsweredId(listAnsweredBD[i].id) then begin
        curr_time:=0;
-       // добавляем в память
-       // найдем разницу во времени когда поговорили и сколько ждали - время от IVR
+       // РґРѕР±Р°РІР»СЏРµРј РІ РїР°РјСЏС‚СЊ
+       // РЅР°Р№РґРµРј СЂР°Р·РЅРёС†Сѓ РІРѕ РІСЂРµРјРµРЅРё РєРѕРіРґР° РїРѕРіРѕРІРѕСЂРёР»Рё Рё СЃРєРѕР»СЊРєРѕ Р¶РґР°Р»Рё - РІСЂРµРјСЏ РѕС‚ IVR
        case listAnsweredBD[i].queue of
-        5000: curr_time:=GetTimeAnsweredToSeconds(listAnsweredBD[i].waiting_time) - GetTimeAnsweredToSeconds(listAnsweredBD[i].talk_time) - time_queue5000;
-        5050: curr_time:=GetTimeAnsweredToSeconds(listAnsweredBD[i].waiting_time) - GetTimeAnsweredToSeconds(listAnsweredBD[i].talk_time) - time_queue5050;
+        queue_5000: curr_time:=GetTimeAnsweredToSeconds(listAnsweredBD[i].waiting_time) - GetTimeAnsweredToSeconds(listAnsweredBD[i].talk_time) - time_queue5000;
+        queue_5050: curr_time:=GetTimeAnsweredToSeconds(listAnsweredBD[i].waiting_time) - GetTimeAnsweredToSeconds(listAnsweredBD[i].talk_time) - time_queue5050;
        end;
 
        if curr_time<=0 then curr_time:=0;

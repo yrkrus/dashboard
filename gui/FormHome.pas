@@ -75,13 +75,6 @@ type
     ST_SL: TStaticText;
     STlist_ACTIVESIP_NO_Rings: TStaticText;
     popMenu_ActionOperators: TPopupMenu;
-    B1: TMenuItem;
-    N3: TMenuItem;
-    B2: TMenuItem;
-    N4: TMenuItem;
-    N5: TMenuItem;
-    N6: TMenuItem;
-    N8: TMenuItem;
     N9: TMenuItem;
     N10: TMenuItem;
     N51: TMenuItem;
@@ -90,11 +83,9 @@ type
     N54: TMenuItem;
     N55: TMenuItem;
     N56: TMenuItem;
-    N11: TMenuItem;
     N12: TMenuItem;
     N13: TMenuItem;
     N14: TMenuItem;
-    N15: TMenuItem;
     menu_Users: TMenuItem;
     menu_ServersIK: TMenuItem;
     menu_SIPtrunk: TMenuItem;
@@ -151,6 +142,7 @@ type
     lblStatistics_Answered121_Graph: TLabel;
     img_StatisticsQueue_Graph: TImage;
     img_StatisticsQueue_Numbers: TImage;
+    Label25: TLabel;
     procedure Button1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -634,7 +626,7 @@ var
  i:Integer;
 begin
  try
-  Height:=877; //1011
+  Height:=900; //1011
   ClientWidth:=1410;
 
   // отображение текущей версии  ctrl+shift+G (GUID) - от этого ID зависит актуальность еще

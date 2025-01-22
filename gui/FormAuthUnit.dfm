@@ -29,9 +29,6 @@
     BevelInner = bvRaised
     BevelOuter = bvLowered
     TabOrder = 0
-    DesignSize = (
-      337
-      275)
     object Пользователь: TLabel
       Left = 23
       Top = 77
@@ -5480,19 +5477,18 @@
       WordWrap = True
     end
     object lblInfoUpdateService: TLabel
-      Left = 23
-      Top = 259
+      Left = 16
+      Top = 63
       Width = 299
       Height = 15
       Alignment = taCenter
-      Anchors = [akRight, akBottom]
       AutoSize = False
       Caption = 'C'#1083#1091#1078#1073#1072' '#1086#1073#1085#1086#1074#1083#1077#1085#1080#1103' '#1085#1077' '#1079#1072#1087#1091#1097#1077#1085#1072'!'
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clRed
       Font.Height = -11
       Font.Name = 'Tahoma'
-      Font.Style = []
+      Font.Style = [fsBold]
       ParentFont = False
       Visible = False
     end
@@ -5771,5 +5767,11 @@
     Masked = False
     Left = 389
     Top = 26
+  end
+  object TimerNotRunUpdate: TTimer
+    Enabled = False
+    OnTimer = TimerNotRunUpdateTimer
+    Left = 32
+    Top = 24
   end
 end

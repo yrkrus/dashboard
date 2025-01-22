@@ -2,7 +2,7 @@ object HomeForm: THomeForm
   Left = 0
   Top = 0
   Caption = #1044#1072#1096#1073#1086#1088#1076' '#1050#1086#1083#1083#1062#1077#1085#1090#1088#1072
-  ClientHeight = 819
+  ClientHeight = 842
   ClientWidth = 1394
   Color = clWindow
   DefaultMonitor = dmDesktop
@@ -20,7 +20,7 @@ object HomeForm: THomeForm
   OnShow = FormShow
   DesignSize = (
     1394
-    819)
+    842)
   PixelsPerInch = 96
   TextHeight = 15
   object Label5: TLabel
@@ -457,7 +457,7 @@ object HomeForm: THomeForm
   end
   object ImageLogo: TImage
     Left = 1217
-    Top = 732
+    Top = 755
     Width = 157
     Height = 37
     Anchors = [akRight, akBottom]
@@ -772,7 +772,7 @@ object HomeForm: THomeForm
   end
   object ImgNewYear: TImage
     Left = 1329
-    Top = 712
+    Top = 735
     Width = 55
     Height = 55
     Anchors = [akRight, akBottom]
@@ -5810,7 +5810,7 @@ object HomeForm: THomeForm
   end
   object lblNewMessageLocalChat: TLabel
     Left = 1142
-    Top = 778
+    Top = 801
     Width = 243
     Height = 16
     Cursor = crHandPoint
@@ -5837,7 +5837,7 @@ object HomeForm: THomeForm
   end
   object lblNewVersionDashboard: TLabel
     Left = 366
-    Top = 776
+    Top = 799
     Width = 299
     Height = 16
     Cursor = crHandPoint
@@ -5941,6 +5941,26 @@ object HomeForm: THomeForm
     ShowHint = True
     Transparent = True
     OnClick = img_StatisticsQueue_NumbersClick
+  end
+  object Label25: TLabel
+    Left = 9
+    Top = 793
+    Width = 335
+    Height = 22
+    Alignment = taCenter
+    AutoSize = False
+    Caption = #1055#1088#1086#1075#1085#1086#1079' '#1079#1074#1086#1085#1082#1086#1074' '#1085#1072' '#1089#1077#1075#1086#1076#1085#1103': '#1074' '#1088#1072#1079#1088#1072#1073#1086#1090#1082#1077
+    Color = clGradientInactiveCaption
+    Enabled = False
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
+    Transparent = False
+    Layout = tlCenter
   end
   object panel_IVR: TPanel
     Left = 10
@@ -6118,7 +6138,7 @@ object HomeForm: THomeForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 798
+    Top = 821
     Width = 1394
     Height = 21
     Panels = <
@@ -6396,8 +6416,10 @@ object HomeForm: THomeForm
       RowSelect = True
       ParentDoubleBuffered = False
       ParentFont = False
+      PopupMenu = popMenu_ActionOperators
       TabOrder = 2
       ViewStyle = vsReport
+      ExplicitHeight = 532
     end
     object ST_SL: TStaticText
       Left = 910
@@ -6462,14 +6484,14 @@ object HomeForm: THomeForm
   end
   object PanelStatus: TPanel
     Left = 408
-    Top = 611
+    Top = 628
     Width = 912
     Height = 120
     BevelOuter = bvNone
     TabOrder = 9
     object PanelStatusIN: TPanel
-      Left = 0
-      Top = 8
+      Left = 4
+      Top = 7
       Width = 900
       Height = 110
       BevelInner = bvLowered
@@ -6743,8 +6765,8 @@ object HomeForm: THomeForm
       end
     end
     object ST_StatusPanel: TStaticText
-      Left = 341
-      Top = -1
+      Left = 345
+      Top = -2
       Width = 193
       Height = 20
       Alignment = taCenter
@@ -6760,8 +6782,8 @@ object HomeForm: THomeForm
       TabOrder = 0
     end
     object ST_StatusPanelWindow: TStaticText
-      Left = 770
-      Top = 0
+      Left = 774
+      Top = -1
       Width = 122
       Height = 19
       Cursor = crHandPoint
@@ -6813,7 +6835,7 @@ object HomeForm: THomeForm
     BevelOuter = bvNone
     TabOrder = 7
     object Label12: TLabel
-      Left = 29
+      Left = 15
       Top = 8
       Width = 142
       Height = 19
@@ -6830,9 +6852,9 @@ object HomeForm: THomeForm
       WordWrap = True
     end
     object lblStatistics_Answered30: TLabel
-      Left = 177
+      Left = 157
       Top = 8
-      Width = 100
+      Width = 158
       Height = 19
       Alignment = taCenter
       AutoSize = False
@@ -6847,7 +6869,7 @@ object HomeForm: THomeForm
       WordWrap = True
     end
     object Label14: TLabel
-      Left = 29
+      Left = 15
       Top = 27
       Width = 142
       Height = 19
@@ -6864,9 +6886,9 @@ object HomeForm: THomeForm
       WordWrap = True
     end
     object lblStatistics_Answered60: TLabel
-      Left = 177
+      Left = 157
       Top = 27
-      Width = 100
+      Width = 158
       Height = 19
       Alignment = taCenter
       AutoSize = False
@@ -6881,7 +6903,7 @@ object HomeForm: THomeForm
       WordWrap = True
     end
     object Label15: TLabel
-      Left = 29
+      Left = 15
       Top = 46
       Width = 142
       Height = 19
@@ -6898,9 +6920,9 @@ object HomeForm: THomeForm
       WordWrap = True
     end
     object lblStatistics_Answered120: TLabel
-      Left = 177
+      Left = 157
       Top = 46
-      Width = 100
+      Width = 158
       Height = 19
       Alignment = taCenter
       AutoSize = False
@@ -6915,7 +6937,7 @@ object HomeForm: THomeForm
       WordWrap = True
     end
     object Label16: TLabel
-      Left = 29
+      Left = 15
       Top = 65
       Width = 142
       Height = 19
@@ -6932,9 +6954,9 @@ object HomeForm: THomeForm
       WordWrap = True
     end
     object lblStatistics_Answered121: TLabel
-      Left = 177
+      Left = 157
       Top = 65
-      Width = 100
+      Width = 158
       Height = 19
       Alignment = taCenter
       AutoSize = False
@@ -6957,9 +6979,9 @@ object HomeForm: THomeForm
     BevelOuter = bvNone
     TabOrder = 8
     object StatisticsQueue_Answered30_Graph: TGauge
-      Left = 7
+      Left = 5
       Top = 7
-      Width = 65
+      Width = 78
       Height = 82
       ParentCustomHint = False
       BorderStyle = bsNone
@@ -6971,9 +6993,9 @@ object HomeForm: THomeForm
       ShowText = False
     end
     object StatisticsQueue_Answered60_Graph: TGauge
-      Left = 87
+      Left = 85
       Top = 7
-      Width = 65
+      Width = 78
       Height = 82
       ParentCustomHint = False
       BorderStyle = bsNone
@@ -6985,9 +7007,9 @@ object HomeForm: THomeForm
       ShowText = False
     end
     object StatisticsQueue_Answered120_Graph: TGauge
-      Left = 171
+      Left = 169
       Top = 7
-      Width = 65
+      Width = 78
       Height = 82
       ParentCustomHint = False
       BorderStyle = bsNone
@@ -6999,9 +7021,9 @@ object HomeForm: THomeForm
       ShowText = False
     end
     object StatisticsQueue_Answered121_Graph: TGauge
-      Left = 256
+      Left = 254
       Top = 7
-      Width = 65
+      Width = 78
       Height = 82
       ParentCustomHint = False
       BorderStyle = bsNone
@@ -7013,9 +7035,9 @@ object HomeForm: THomeForm
       ShowText = False
     end
     object lblStatistics_Answered30_Graph: TLabel
-      Left = 6
+      Left = 5
       Top = 7
-      Width = 66
+      Width = 78
       Height = 83
       Hint = #1076#1086' 30 '#1089#1077#1082'  '
       Alignment = taCenter
@@ -7023,7 +7045,7 @@ object HomeForm: THomeForm
       Caption = '0'
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
-      Font.Height = -13
+      Font.Height = -12
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
@@ -7033,9 +7055,9 @@ object HomeForm: THomeForm
       WordWrap = True
     end
     object lblStatistics_Answered60_Graph: TLabel
-      Left = 87
+      Left = 85
       Top = 7
-      Width = 66
+      Width = 78
       Height = 83
       Hint = #1086#1090' 30 '#1076#1086' 60 '#1089#1077#1082'  '
       Alignment = taCenter
@@ -7043,7 +7065,7 @@ object HomeForm: THomeForm
       Caption = '0'
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
-      Font.Height = -13
+      Font.Height = -12
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
@@ -7053,9 +7075,9 @@ object HomeForm: THomeForm
       WordWrap = True
     end
     object lblStatistics_Answered120_Graph: TLabel
-      Left = 171
+      Left = 169
       Top = 7
-      Width = 66
+      Width = 78
       Height = 83
       Hint = #1086#1090' 60 '#1076#1086' 120 '#1089#1077#1082'  '
       Alignment = taCenter
@@ -7063,7 +7085,7 @@ object HomeForm: THomeForm
       Caption = '0'
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
-      Font.Height = -13
+      Font.Height = -12
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
@@ -7073,9 +7095,9 @@ object HomeForm: THomeForm
       WordWrap = True
     end
     object lblStatistics_Answered121_Graph: TLabel
-      Left = 256
+      Left = 254
       Top = 7
-      Width = 66
+      Width = 78
       Height = 83
       Hint = #1086#1090' 120 '#1089#1077#1082' '#1080' '#1073#1086#1083#1077#1077
       Alignment = taCenter
@@ -7083,7 +7105,7 @@ object HomeForm: THomeForm
       Caption = '0'
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
-      Font.Height = -13
+      Font.Height = -12
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
@@ -7907,66 +7929,37 @@ object HomeForm: THomeForm
   object popMenu_ActionOperators: TPopupMenu
     Left = 592
     Top = 65528
-    object B1: TMenuItem
-      Caption = #1048#1085#1092#1086#1088#1084#1072#1094#1080#1103' '#1087#1086' '#1079#1074#1086#1085#1082#1091' ('#1074' '#1088#1072#1079#1088#1072#1073#1086#1090#1082#1077')'
-      Enabled = False
-      object N3: TMenuItem
-        Caption = #1048#1089#1090#1086#1088#1080#1103' '#1079#1074#1086#1085#1082#1072' IVR'
+    object N9: TMenuItem
+      Caption = #1059#1073#1088#1072#1090#1100' '#1080#1079' '#1086#1095#1077#1088#1077#1076#1080
+      object N51: TMenuItem
+        Caption = '5000'
       end
-      object B2: TMenuItem
-        Caption = #1048#1089#1090#1086#1088#1080#1103' '#1079#1074#1086#1085#1082#1072' '#1074' '#1054#1095#1077#1088#1077#1076#1080
+      object N52: TMenuItem
+        Caption = '5050'
       end
-      object N15: TMenuItem
-        Caption = #1048#1089#1090#1086#1088#1080#1103' '#1079#1074#1086#1085#1082#1086#1074' '#1074' '#1050#1086#1083#1083#1062#1077#1085#1090#1088
-      end
-      object N4: TMenuItem
-        Caption = '-'
-      end
-      object N5: TMenuItem
-        Caption = #1042#1088#1077#1084#1103' '#1086#1078#1080#1076#1072#1085#1080#1103' '#1074' '#1054#1095#1077#1088#1077#1076#1080
+      object N53: TMenuItem
+        Caption = '5000 '#1080' 5050'
       end
     end
-    object N6: TMenuItem
-      Caption = '-'
+    object N10: TMenuItem
+      Caption = #1044#1086#1073#1072#1074#1080#1090#1100' '#1074' '#1086#1095#1077#1088#1077#1076#1100
+      object N54: TMenuItem
+        Caption = '5000'
+      end
+      object N55: TMenuItem
+        Caption = '5050'
+      end
+      object N56: TMenuItem
+        Caption = '5000 '#1080' 5050'
+      end
     end
-    object N8: TMenuItem
-      Caption = #1054#1087#1077#1088#1072#1090#1086#1088' ('#1074' '#1088#1072#1079#1088#1072#1073#1086#1090#1082#1077')'
-      Enabled = False
-      object N9: TMenuItem
-        Caption = #1059#1073#1088#1072#1090#1100' '#1080#1079' '#1086#1095#1077#1088#1077#1076#1080
-        object N51: TMenuItem
-          Caption = '5000'
-        end
-        object N52: TMenuItem
-          Caption = '5050'
-        end
-        object N53: TMenuItem
-          Caption = '5000 '#1080' 5050'
-        end
+    object N12: TMenuItem
+      Caption = #1058#1077#1082#1091#1097#1080#1077' '#1087#1086#1082#1072#1079#1072#1090#1077#1083#1080
+      object N13: TMenuItem
+        Caption = #1058#1077#1082#1091#1097#1080#1081' '#1076#1077#1085#1100
       end
-      object N10: TMenuItem
-        Caption = #1044#1086#1073#1072#1074#1080#1090#1100' '#1074' '#1086#1095#1077#1088#1077#1076#1100
-        object N54: TMenuItem
-          Caption = '5000'
-        end
-        object N55: TMenuItem
-          Caption = '5050'
-        end
-        object N56: TMenuItem
-          Caption = '5000 '#1080' 5050'
-        end
-      end
-      object N11: TMenuItem
-        Caption = '-'
-      end
-      object N12: TMenuItem
-        Caption = #1058#1077#1082#1091#1097#1080#1077' '#1087#1086#1082#1072#1079#1072#1090#1077#1083#1080
-        object N13: TMenuItem
-          Caption = #1058#1077#1082#1091#1097#1080#1081' '#1076#1077#1085#1100
-        end
-        object N14: TMenuItem
-          Caption = #1058#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
-        end
+      object N14: TMenuItem
+        Caption = #1058#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
       end
     end
   end
