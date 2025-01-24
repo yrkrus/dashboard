@@ -172,10 +172,6 @@
         <DCCReference Include="FormSettingsUnit.pas">
             <Form>FormSettings</Form>
         </DCCReference>
-        <DCCReference Include="Thread_StatisticsUnit.pas"/>
-        <DCCReference Include="Thread_IVRUnit.pas"/>
-        <DCCReference Include="Thread_QUEUEUnit.pas"/>
-        <DCCReference Include="Thread_ACTIVESIPUnit.pas"/>
         <DCCReference Include="FormAboutUnit.pas">
             <Form>FormAbout</Form>
         </DCCReference>
@@ -185,7 +181,6 @@
         <DCCReference Include="FormServerIKCheckUnit.pas">
             <Form>FormServerIKCheck</Form>
         </DCCReference>
-        <DCCReference Include="Thread_CHECKSERVERSUnit.pas"/>
         <DCCReference Include="FormAuthUnit.pas">
             <Form>FormAuth</Form>
         </DCCReference>
@@ -204,7 +199,6 @@
         <DCCReference Include="FormWaitUnit.pas">
             <Form>FormWait</Form>
         </DCCReference>
-        <DCCReference Include="Thread_AnsweredQueueUnit.pas"/>
         <DCCReference Include="ReportsUnit.pas">
             <Form>FormReports</Form>
         </DCCReference>
@@ -217,13 +211,9 @@
         <DCCReference Include="FormServerIKEditUnit.pas">
             <Form>FormServerIKEdit</Form>
         </DCCReference>
-        <DCCReference Include="Thread_ACTIVESIP_updatetalkUnit.pas"/>
         <DCCReference Include="FormDEBUGUnit.pas">
             <Form>FormDEBUG</Form>
         </DCCReference>
-        <DCCReference Include="Thread_ACTIVESIP_updatePhoneTalkUnit.pas"/>
-        <DCCReference Include="Thread_ACTIVESIP_countTalkUnit.pas"/>
-        <DCCReference Include="Thread_ACTIVESIP_QueueUnit.pas"/>
         <DCCReference Include="FormSettingsGlobalUnit.pas">
             <Form>FormSettingsGlobal</Form>
         </DCCReference>
@@ -245,7 +235,6 @@
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="GlobalVariables.pas"/>
-        <DCCReference Include="Thread_ChatUnit.pas"/>
         <DCCReference Include="FormStatisticsChartUnit.pas">
             <Form>FormStatisticsChart</Form>
             <FormType>dfm</FormType>
@@ -257,12 +246,25 @@
         <DCCReference Include="..\custom_class\TCustomTypeUnit.pas"/>
         <DCCReference Include="..\custom_class\TFTPUnit.pas"/>
         <DCCReference Include="..\custom_class\TIVRUnit.pas"/>
+        <DCCReference Include="..\custom_class\TForecastCallsUnit.pas"/>
         <DCCReference Include="..\custom_class\TLogFileUnit.pas"/>
         <DCCReference Include="..\custom_class\TOnlineChat.pas"/>
         <DCCReference Include="..\custom_class\TQueueUnit.pas"/>
         <DCCReference Include="..\custom_class\TTranslirtUnit.pas"/>
         <DCCReference Include="..\custom_class\TUserUnit.pas"/>
         <DCCReference Include="..\custom_class\TXmlUnit.pas"/>
+        <DCCReference Include="Thread\Thread_ACTIVESIP_countTalkUnit.pas"/>
+        <DCCReference Include="Thread\Thread_ACTIVESIP_QueueUnit.pas"/>
+        <DCCReference Include="Thread\Thread_ACTIVESIP_updatePhoneTalkUnit.pas"/>
+        <DCCReference Include="Thread\Thread_ACTIVESIP_updatetalkUnit.pas"/>
+        <DCCReference Include="Thread\Thread_ACTIVESIPUnit.pas"/>
+        <DCCReference Include="Thread\Thread_AnsweredQueueUnit.pas"/>
+        <DCCReference Include="Thread\Thread_ChatUnit.pas"/>
+        <DCCReference Include="Thread\Thread_CHECKSERVERSUnit.pas"/>
+        <DCCReference Include="Thread\Thread_IVRUnit.pas"/>
+        <DCCReference Include="Thread\Thread_QUEUEUnit.pas"/>
+        <DCCReference Include="Thread\Thread_StatisticsUnit.pas"/>
+        <DCCReference Include="Thread\Thread_ForecastUnit.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

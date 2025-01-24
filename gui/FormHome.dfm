@@ -2,7 +2,7 @@ object HomeForm: THomeForm
   Left = 0
   Top = 0
   Caption = #1044#1072#1096#1073#1086#1088#1076' '#1050#1086#1083#1083#1062#1077#1085#1090#1088#1072
-  ClientHeight = 842
+  ClientHeight = 839
   ClientWidth = 1394
   Color = clWindow
   DefaultMonitor = dmDesktop
@@ -20,7 +20,7 @@ object HomeForm: THomeForm
   OnShow = FormShow
   DesignSize = (
     1394
-    842)
+    839)
   PixelsPerInch = 96
   TextHeight = 15
   object Label5: TLabel
@@ -457,7 +457,7 @@ object HomeForm: THomeForm
   end
   object ImageLogo: TImage
     Left = 1217
-    Top = 755
+    Top = 752
     Width = 157
     Height = 37
     Anchors = [akRight, akBottom]
@@ -772,7 +772,7 @@ object HomeForm: THomeForm
   end
   object ImgNewYear: TImage
     Left = 1329
-    Top = 735
+    Top = 732
     Width = 55
     Height = 55
     Anchors = [akRight, akBottom]
@@ -5810,7 +5810,7 @@ object HomeForm: THomeForm
   end
   object lblNewMessageLocalChat: TLabel
     Left = 1142
-    Top = 801
+    Top = 798
     Width = 243
     Height = 16
     Cursor = crHandPoint
@@ -5837,7 +5837,7 @@ object HomeForm: THomeForm
   end
   object lblNewVersionDashboard: TLabel
     Left = 366
-    Top = 799
+    Top = 798
     Width = 299
     Height = 16
     Cursor = crHandPoint
@@ -5859,8 +5859,7 @@ object HomeForm: THomeForm
     OnClick = lblNewVersionDashboardClick
     OnMouseMove = lblNewMessageLocalChatMouseMove
     OnMouseLeave = lblNewMessageLocalChatMouseLeave
-    ExplicitLeft = 356
-    ExplicitTop = 759
+    ExplicitTop = 797
   end
   object img_StatisticsQueue_Graph: TImage
     Left = 16
@@ -5949,9 +5948,8 @@ object HomeForm: THomeForm
     Height = 22
     Alignment = taCenter
     AutoSize = False
-    Caption = #1055#1088#1086#1075#1085#1086#1079' '#1079#1074#1086#1085#1082#1086#1074' '#1085#1072' '#1089#1077#1075#1086#1076#1085#1103': '#1074' '#1088#1072#1079#1088#1072#1073#1086#1090#1082#1077
+    Caption = #1055#1088#1086#1075#1085#1086#1079' '#1079#1074#1086#1085#1082#1086#1074' '#1085#1072' '#1089#1077#1075#1086#1076#1085#1103':             '
     Color = clGradientInactiveCaption
-    Enabled = False
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
@@ -6138,7 +6136,7 @@ object HomeForm: THomeForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 821
+    Top = 818
     Width = 1394
     Height = 21
     Panels = <
@@ -6169,8 +6167,7 @@ object HomeForm: THomeForm
         Text = 'developer by     '
         Width = 150
       end>
-    ExplicitTop = 961
-    ExplicitWidth = 1410
+    ExplicitTop = 797
   end
   object Button1: TButton
     Left = 300
@@ -6190,8 +6187,7 @@ object HomeForm: THomeForm
     Anchors = [akRight]
     BevelOuter = bvNone
     TabOrder = 3
-    ExplicitLeft = 1243
-    ExplicitTop = 17
+    ExplicitTop = 12
     object imgRight: TImage
       Left = 136
       Top = 0
@@ -6395,6 +6391,63 @@ object HomeForm: THomeForm
       Transparent = True
       OnClick = img_goHome_NOClick
     end
+    object img_SL_History_Graph: TImage
+      Left = 993
+      Top = 5
+      Width = 19
+      Height = 15
+      Cursor = crHandPoint
+      Hint = #1043#1088#1072#1092#1080#1082' SL ('#1074' '#1088#1072#1079#1088#1072#1073#1086#1090#1082#1077')'
+      Anchors = [akTop]
+      ParentShowHint = False
+      Picture.Data = {
+        07544269746D617036050000424D360500000000000036040000280000001000
+        0000100000000100080000000000000100007412000074120000000100000000
+        000000000000000080000080000000808000800000008000800080800000C0C0
+        C000C0DCC000F0CAA6000020400000206000002080000020A0000020C0000020
+        E00000400000004020000040400000406000004080000040A0000040C0000040
+        E00000600000006020000060400000606000006080000060A0000060C0000060
+        E00000800000008020000080400000806000008080000080A0000080C0000080
+        E00000A0000000A0200000A0400000A0600000A0800000A0A00000A0C00000A0
+        E00000C0000000C0200000C0400000C0600000C0800000C0A00000C0C00000C0
+        E00000E0000000E0200000E0400000E0600000E0800000E0A00000E0C00000E0
+        E00040000000400020004000400040006000400080004000A0004000C0004000
+        E00040200000402020004020400040206000402080004020A0004020C0004020
+        E00040400000404020004040400040406000404080004040A0004040C0004040
+        E00040600000406020004060400040606000406080004060A0004060C0004060
+        E00040800000408020004080400040806000408080004080A0004080C0004080
+        E00040A0000040A0200040A0400040A0600040A0800040A0A00040A0C00040A0
+        E00040C0000040C0200040C0400040C0600040C0800040C0A00040C0C00040C0
+        E00040E0000040E0200040E0400040E0600040E0800040E0A00040E0C00040E0
+        E00080000000800020008000400080006000800080008000A0008000C0008000
+        E00080200000802020008020400080206000802080008020A0008020C0008020
+        E00080400000804020008040400080406000804080008040A0008040C0008040
+        E00080600000806020008060400080606000806080008060A0008060C0008060
+        E00080800000808020008080400080806000808080008080A0008080C0008080
+        E00080A0000080A0200080A0400080A0600080A0800080A0A00080A0C00080A0
+        E00080C0000080C0200080C0400080C0600080C0800080C0A00080C0C00080C0
+        E00080E0000080E0200080E0400080E0600080E0800080E0A00080E0C00080E0
+        E000C0000000C0002000C0004000C0006000C0008000C000A000C000C000C000
+        E000C0200000C0202000C0204000C0206000C0208000C020A000C020C000C020
+        E000C0400000C0402000C0404000C0406000C0408000C040A000C040C000C040
+        E000C0600000C0602000C0604000C0606000C0608000C060A000C060C000C060
+        E000C0800000C0802000C0804000C0806000C0808000C080A000C080C000C080
+        E000C0A00000C0A02000C0A04000C0A06000C0A08000C0A0A000C0A0C000C0A0
+        E000C0C00000C0C02000C0C04000C0C06000C0C08000C0C0A000F0FBFF00A4A0
+        A000808080000000FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFF
+        FF00FF0752000000000000000000000000520700000000000000000000000000
+        005252009BF6FFFFFFFFFFFFFFFFFFFFFFFF0000F6FFFFFFFFFFFFFFFFFFFFFF
+        FFFF0000FFFFFFFFFFFFFFFFFFFFFFFFFFFF0000FF0700A4FFFFFFFFFFFFFFFF
+        FFFF0000FF080000A4FFFFFFFFFFFFFFFFFF0000FFFF070000A4F6A452F7FFFF
+        FFFF0000FFFFFF070000000000009BFFFFFF0000FFFFFFFF07000052F700009B
+        F6070000FFFFFFFFFFFFF6FFFF07000000000000FFFFFFFFFFFFFFFFFFFFF700
+        00000000FFFFFFFFFFFFFFFFFFFF9B0000000000FFFFFFFFFFFFFFFFFFFF08F7
+        F7080000FFFFFFFFFFFFFFFFFFFFFFFFFFFF5252FFFFFFFFFFFFFFFFFFFFFFFF
+        FFFF}
+      ShowHint = True
+      Transparent = True
+      OnClick = img_SL_History_GraphClick
+    end
     object ListViewSIP: TListView
       Left = 0
       Top = 26
@@ -6405,7 +6458,7 @@ object HomeForm: THomeForm
       BevelOuter = bvNone
       BorderStyle = bsNone
       Columns = <>
-      DoubleBuffered = False
+      DoubleBuffered = True
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
@@ -6416,13 +6469,11 @@ object HomeForm: THomeForm
       RowSelect = True
       ParentDoubleBuffered = False
       ParentFont = False
-      PopupMenu = popMenu_ActionOperators
       TabOrder = 2
       ViewStyle = vsReport
-      ExplicitHeight = 532
     end
     object ST_SL: TStaticText
-      Left = 910
+      Left = 888
       Top = 3
       Width = 101
       Height = 20
@@ -6438,6 +6489,8 @@ object HomeForm: THomeForm
       Font.Style = [fsBold]
       ParentColor = False
       ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
       TabOrder = 0
       Transparent = False
     end
@@ -6491,7 +6544,7 @@ object HomeForm: THomeForm
     TabOrder = 9
     object PanelStatusIN: TPanel
       Left = 4
-      Top = 7
+      Top = 6
       Width = 900
       Height = 110
       BevelInner = bvLowered
@@ -6826,6 +6879,7 @@ object HomeForm: THomeForm
     Caption = 'Button3'
     TabOrder = 1
     Visible = False
+    OnClick = Button3Click
   end
   object PanelStatisticsQueue_Numbers: TPanel
     Left = 9
@@ -7114,6 +7168,26 @@ object HomeForm: THomeForm
       Layout = tlCenter
       WordWrap = True
     end
+  end
+  object STForecastCount: TStaticText
+    Left = 256
+    Top = 796
+    Width = 81
+    Height = 16
+    AutoSize = False
+    BiDiMode = bdLeftToRight
+    Color = clGradientInactiveCaption
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clGreen
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = [fsBold]
+    ParentBiDiMode = False
+    ParentColor = False
+    ParentFont = False
+    ParentShowHint = False
+    ShowHint = False
+    TabOrder = 10
   end
   object Timer_Thread_Start: TTimer
     Enabled = False
@@ -7951,15 +8025,6 @@ object HomeForm: THomeForm
       end
       object N56: TMenuItem
         Caption = '5000 '#1080' 5050'
-      end
-    end
-    object N12: TMenuItem
-      Caption = #1058#1077#1082#1091#1097#1080#1077' '#1087#1086#1082#1072#1079#1072#1090#1077#1083#1080
-      object N13: TMenuItem
-        Caption = #1058#1077#1082#1091#1097#1080#1081' '#1076#1077#1085#1100
-      end
-      object N14: TMenuItem
-        Caption = #1058#1077#1082#1091#1097#1080#1081' '#1084#1077#1089#1103#1094
       end
     end
   end

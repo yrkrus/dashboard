@@ -10,7 +10,15 @@ unit TIVRUnit;
 
 interface
 
-uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants, Graphics, System.SyncObjs, IdException, System.DateUtils;
+uses  System.Classes,
+      Data.Win.ADODB,
+      Data.DB,
+      System.SysUtils,
+      Variants,
+      Graphics,
+      System.SyncObjs,
+      IdException,
+      System.DateUtils;
 
   // class TIVRStruct
  type

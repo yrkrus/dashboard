@@ -3,7 +3,14 @@ unit Thread_QUEUEUnit;
 interface
 
 uses
-  System.Classes,SysUtils, ActiveX, TQueueUnit, Vcl.StdCtrls, Vcl.Controls, Vcl.ComCtrls, TLogFileUnit;
+    System.Classes,
+    SysUtils,
+    ActiveX,
+    TQueueUnit,
+    Vcl.StdCtrls,
+    Vcl.Controls,
+    Vcl.ComCtrls,
+    TLogFileUnit;
 
 type
   Thread_QUEUE = class(TThread)
@@ -23,7 +30,11 @@ type
 implementation
 
 uses
-  FunctionUnit, FormHome, FormDEBUGUnit,GlobalVariables,TCustomTypeUnit;
+  FunctionUnit,
+  FormHome,
+  FormDEBUGUnit,
+  GlobalVariables,
+  TCustomTypeUnit;
 
 
 { Thread_QUEUE }

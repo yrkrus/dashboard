@@ -17,13 +17,20 @@ uses
   XMLDoc,
   XMLIntf,
   GlobalVariables,
-  IdFTP, IdComponent,
-  IdBaseComponent, IdCustomTCPServer,
-  IdTCPConnection, IdTCPClient,IdFTPList, IdFTPCommon,
-  IdAllFTPListParsers,   IdExplicitTLSClientServerBase,
-  TlHelp32, TLogFileUnit,TCustomTypeUnit, System.IOUtils;
-
-
+  IdFTP,
+  IdComponent,
+  IdBaseComponent,
+  IdCustomTCPServer,
+  IdTCPConnection,
+  IdTCPClient,
+  IdFTPList,
+  IdFTPCommon,
+  IdAllFTPListParsers,
+  IdExplicitTLSClientServerBase,
+  TlHelp32,
+  TLogFileUnit,
+  TCustomTypeUnit,
+  System.IOUtils;
 
 
  type

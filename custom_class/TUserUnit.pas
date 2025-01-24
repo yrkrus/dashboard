@@ -10,8 +10,15 @@ unit TUserUnit;
 
 interface
 
-uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
-     Graphics, System.SyncObjs, IdException, TCustomTypeUnit;
+uses  System.Classes,
+      Data.Win.ADODB,
+      Data.DB,
+      System.SysUtils,
+      Variants,
+      Graphics,
+      System.SyncObjs,
+      IdException,
+      TCustomTypeUnit;
 
 
 

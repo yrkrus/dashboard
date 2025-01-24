@@ -2,13 +2,53 @@ unit FunctionUnit;
 
 interface
 
-  uses  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Registry, IniFiles, TlHelp32, IdBaseComponent, IdComponent,ShellAPI, StdCtrls, ComCtrls,
-  ExtCtrls,WinSock,Math,IdHashCRC,Nb30,IdMessage,StrUtils,WinSvc,System.Win.ComObj, IdSMTP, IdText,
-  IdSSL, IdSSLOpenSSL,IdAttachmentFile,DMUnit, FormHome, Data.Win.ADODB, Data.DB, IdIcmpClient,IdException, System.DateUtils,
-  FIBDatabase, pFIBDatabase, TCustomTypeUnit,TUserUnit, Vcl.Menus, GlobalVariables,TActiveSIPUnit,
-  System.IOUtils;
-
+  uses
+    Windows,
+    Messages,
+    SysUtils,
+    Variants,
+    Classes,
+    Graphics,
+    Controls,
+    Forms,
+    Dialogs,
+    Registry,
+    IniFiles,
+    TlHelp32,
+    IdBaseComponent,
+    IdComponent,
+    ShellAPI,
+    StdCtrls,
+    ComCtrls,
+    ExtCtrls,
+    WinSock,
+    Math,
+    IdHashCRC,
+    Nb30,
+    IdMessage,
+    StrUtils,
+    WinSvc,
+    System.Win.ComObj,
+    IdSMTP,
+    IdText,
+    IdSSL,
+    IdSSLOpenSSL,
+    IdAttachmentFile,
+    DMUnit,
+    FormHome,
+    Data.Win.ADODB,
+    Data.DB,
+    IdIcmpClient,
+    IdException,
+    System.DateUtils,
+    FIBDatabase,
+    pFIBDatabase,
+    TCustomTypeUnit,
+    TUserUnit,
+    Vcl.Menus,
+    GlobalVariables,
+    TActiveSIPUnit,
+    System.IOUtils;
 
 
 
@@ -141,11 +181,32 @@ procedure ShowStatisticsCallsDay(InTypeStatisticsCalls: enumStatisticsCalls;    
 implementation
 
 uses
-  FormPropushennieUnit, Thread_StatisticsUnit, Thread_IVRUnit, Thread_QUEUEUnit, Thread_ACTIVESIPUnit,
-  FormAboutUnit, FormServerIKCheckUnit, Thread_CHECKSERVERSUnit, FormSettingsUnit, FormAuthUnit,
-  FormErrorUnit, FormWaitUnit, Thread_AnsweredQueueUnit, FormUsersUnit, TTranslirtUnit,
-  Thread_ACTIVESIP_updatetalkUnit, Thread_ACTIVESIP_updatePhoneTalkUnit, Thread_ACTIVESIP_countTalkUnit,
-  Thread_ACTIVESIP_QueueUnit, FormActiveSessionUnit, TIVRUnit, FormOperatorStatusUnit, TXmlUnit, TOnlineChat, Thread_ChatUnit;
+  FormPropushennieUnit,
+  Thread_StatisticsUnit,
+  Thread_IVRUnit,
+  Thread_QUEUEUnit,
+  Thread_ACTIVESIPUnit,
+  FormAboutUnit,
+  FormServerIKCheckUnit,
+  Thread_CHECKSERVERSUnit,
+  FormSettingsUnit,
+  FormAuthUnit,
+  FormErrorUnit,
+  FormWaitUnit,
+  Thread_AnsweredQueueUnit,
+  FormUsersUnit,
+  TTranslirtUnit,
+  Thread_ACTIVESIP_updatetalkUnit,
+  Thread_ACTIVESIP_updatePhoneTalkUnit,
+  Thread_ACTIVESIP_countTalkUnit,
+  Thread_ACTIVESIP_QueueUnit,
+  FormActiveSessionUnit,
+  TIVRUnit,
+  FormOperatorStatusUnit,
+  TXmlUnit,
+  TOnlineChat,
+  Thread_ChatUnit,
+  Thread_ForecastUnit;
 
 
 
@@ -498,7 +559,7 @@ begin
     else UpdateAnsweredStop:=True;
 
     // OnlineChat
-     if ONLINECHAT_thread=nil then
+    if ONLINECHAT_thread=nil then
     begin
      FreeAndNil(ONLINECHAT_thread);
      ONLINECHAT_thread:=Thread_Chat.Create(True);
@@ -507,6 +568,16 @@ begin
     end
     else UpdateOnlineChatStop:=True;
 
+
+    // Forecast
+    if FORECAST_thread=nil then
+    begin
+     FreeAndNil(FORECAST_thread);
+     FORECAST_thread:=Thread_Forecast.Create(True);
+     FORECAST_thread.Priority:=tpNormal;
+     UpdateForecast:=True;
+    end
+    else UpdateForecast:=True;
 
     // запуск потоков
     Statistics_thread.Resume;
@@ -520,6 +591,7 @@ begin
     CHECKSERVERS_thread.Resume;
     ANSWEREDQUEUE_thread.Resume;
     if SharedCurrentUserLogon.GetIsAccessLocalChat then ONLINECHAT_thread.Resume;
+    FORECAST_thread.Resume;
   end;
 end;
 

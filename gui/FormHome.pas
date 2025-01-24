@@ -83,9 +83,6 @@ type
     N54: TMenuItem;
     N55: TMenuItem;
     N56: TMenuItem;
-    N12: TMenuItem;
-    N13: TMenuItem;
-    N14: TMenuItem;
     menu_Users: TMenuItem;
     menu_ServersIK: TMenuItem;
     menu_SIPtrunk: TMenuItem;
@@ -143,6 +140,8 @@ type
     img_StatisticsQueue_Graph: TImage;
     img_StatisticsQueue_Numbers: TImage;
     Label25: TLabel;
+    STForecastCount: TStaticText;
+    img_SL_History_Graph: TImage;
     procedure Button1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -194,6 +193,11 @@ type
     procedure lblNewVersionDashboardClick(Sender: TObject);
     procedure img_StatisticsQueue_GraphClick(Sender: TObject);
     procedure img_StatisticsQueue_NumbersClick(Sender: TObject);
+    procedure img_SL_History_GraphClick(Sender: TObject);
+    procedure ListViewSIPData(Sender: TCustomListView;
+  ItemIndex: Integer; var ItemData: Pointer);
+    procedure Button3Click(Sender: TObject);
+
 
 
 
@@ -217,6 +221,7 @@ type
   CHECKSERVERS_thread:TThread;
   ANSWEREDQUEUE_thread:TThread;
   ONLINECHAT_thread:TThread;
+  FORECAST_thread:TThread;
 
   end;
 
@@ -240,6 +245,7 @@ var
   UpdateCHECKSERVERSSTOP:Boolean;                          // остановка обновления CHECKSERVERSSTOP
   UpdateAnsweredStop:Boolean;                              // остановка обновления AnsweredQueue
   UpdateOnlineChatStop:Boolean;                            // остановка обновления OnlineChat
+  UpdateForecast:Boolean;                                  // остановка обновления Forecast
 
  const
   // Размер панели "Статусы операторов"
@@ -249,19 +255,41 @@ var
 implementation
 
 uses
-DMUnit, FunctionUnit, FormPropushennieUnit, FormSettingsUnit, Thread_StatisticsUnit,
-  Thread_IVRUnit, Thread_QUEUEUnit, FormAboutUnit, FormOperatorStatusUnit, FormServerIKCheckUnit,
-  FormAuthUnit, FormActiveSessionUnit, FormRePasswordUnit, Thread_AnsweredQueueUnit,
-  ReportsUnit, Thread_ACTIVESIP_updatetalkUnit, FormDEBUGUnit, FormErrorUnit, TCustomTypeUnit,
-  GlobalVariables, FormUsersUnit, FormServersIKUnit, FormSettingsGlobalUnit,
-  FormTrunkUnit, TFTPUnit, TXmlUnit, FormStatisticsChartUnit;
+    DMUnit,
+    FunctionUnit,
+    FormPropushennieUnit,
+    FormSettingsUnit,
+    Thread_StatisticsUnit,
+    Thread_IVRUnit,
+    Thread_QUEUEUnit,
+    FormAboutUnit,
+    FormOperatorStatusUnit,
+    FormServerIKCheckUnit,
+    FormAuthUnit,
+    FormActiveSessionUnit,
+    FormRePasswordUnit,
+    Thread_AnsweredQueueUnit,
+    ReportsUnit,
+    Thread_ACTIVESIP_updatetalkUnit,
+    FormDEBUGUnit,
+    FormErrorUnit,
+    TCustomTypeUnit,
+    GlobalVariables,
+    FormUsersUnit,
+    FormServersIKUnit,
+    FormSettingsGlobalUnit,
+    FormTrunkUnit,
+    TFTPUnit,
+    TXmlUnit,
+    FormStatisticsChartUnit,
+    TForecastCallsUnit;
 
 
 {$R *.dfm}
 
 procedure OnDevelop;
 begin
-  MessageBox(HomeForm.Handle,PChar('Данный функционал в разработке!'+#13#13+'Релиз в 2025г'),PChar('В разработке'),MB_OK+MB_ICONINFORMATION);
+  MessageBox(HomeForm.Handle,PChar('Данный функционал в разработке!'),PChar('В разработке'),MB_OK+MB_ICONINFORMATION);
 end;
 
 
@@ -436,7 +464,13 @@ begin
 end;
 
 
-
+procedure THomeForm.Button3Click(Sender: TObject);
+var
+ test:TForecastCalls;
+begin
+  test:=TForecastCalls.Create;
+  test.ShowForecastCount(STForecastCount);
+end;
 
 // распаковывем zip архив
 procedure UnPack(InFileName:string; var p_Log:TLoggingFile; var p_listUpdate:TStringList);
@@ -718,6 +752,11 @@ begin
   VisibleIconOperatorsGoHome(goHome_Hide, True);
 end;
 
+procedure THomeForm.img_SL_History_GraphClick(Sender: TObject);
+begin
+  OnDevelop;
+end;
+
 procedure THomeForm.img_StatisticsQueue_GraphClick(Sender: TObject);
 begin
  ShowStatisticsCallsDay(eGraph, True);
@@ -803,6 +842,16 @@ begin
       listSG_ACTIVESIP.Canvas.TextOut(Rect.Left, Rect.Top, listSG_ACTIVESIP.Cells[ACol, ARow]);
    end; }
 end;
+
+
+
+
+procedure THomeForm.ListViewSIPData(Sender: TCustomListView;
+  ItemIndex: Integer; var ItemData: Pointer);
+begin
+  ItemData := Pointer(ItemIndex);
+end;
+
 
 
 procedure THomeForm.menu_About_DebugClick(Sender: TObject);

@@ -11,7 +11,9 @@ unit TTranslirtUnit;
 
 interface
 
-uses System.Classes, System.SysUtils, Variants;
+uses  System.Classes,
+      System.SysUtils,
+      Variants;
 
 
  // class TRule

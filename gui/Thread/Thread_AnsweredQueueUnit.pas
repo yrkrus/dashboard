@@ -39,7 +39,7 @@ begin
    with p_AnsweredQueue do begin
       if StrToInt(GetStatistics_day(stat_summa))<>0 then begin
           if updateAnsweredNow then begin
-             clear;
+             Clear;
           end;
 
           if isExistNewAnswered then begin
@@ -49,7 +49,7 @@ begin
       end
       else begin
          updateAnsweredNow:=True;
-         clear;
+         Clear;
       end;
    end;
   end;

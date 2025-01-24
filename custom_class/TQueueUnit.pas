@@ -10,7 +10,14 @@ unit TQueueUnit;
 
 interface
 
-uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants, Graphics, System.SyncObjs, IdException;
+uses  System.Classes,
+      Data.Win.ADODB,
+      Data.DB,
+      System.SysUtils,
+      Variants,
+      Graphics,
+      System.SyncObjs,
+      IdException;
 
   // class TQueueStruct
  type

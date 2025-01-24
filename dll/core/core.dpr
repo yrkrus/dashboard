@@ -344,7 +344,7 @@ begin
  Result:=PChar(Datetmp+' '+Timetmp);
 end;
 
- // перевод даты и времени в ненормальный вид для BD
+ // перевод даты в ненормальный вид для BD
 function GetDateToDateBD(InDateTime:string):PChar;stdcall;export;
 var
  Datetmp:string;

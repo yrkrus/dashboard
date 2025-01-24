@@ -18,10 +18,10 @@ object FormStatisticsChart: TFormStatisticsChart
   PixelsPerInch = 96
   TextHeight = 13
   object OrderHistoryChart: TChart
-    Left = 132
-    Top = 128
-    Width = 685
-    Height = 385
+    Left = 0
+    Top = 0
+    Width = 1029
+    Height = 591
     AllowPanning = pmNone
     BackImage.Inside = True
     Legend.Visible = False
@@ -71,10 +71,14 @@ object FormStatisticsChart: TFormStatisticsChart
     View3DOptions.Orthogonal = False
     Zoom.Allow = False
     Zoom.Pen.Visible = False
-    Align = alCustom
+    Align = alClient
     BevelOuter = bvNone
     Color = clWindow
     TabOrder = 0
+    ExplicitLeft = 132
+    ExplicitTop = 128
+    ExplicitWidth = 685
+    ExplicitHeight = 385
     DefaultCanvas = 'TGDIPlusCanvas'
     PrintMargins = (
       15

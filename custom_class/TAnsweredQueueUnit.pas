@@ -12,9 +12,15 @@ unit TAnsweredQueueUnit;
 
 interface
 
-uses  System.Classes, Data.Win.ADODB, Data.DB,
-      System.SysUtils, Variants, Graphics, TCustomTypeUnit,
-      Vcl.Forms, StdCtrls; 
+uses  System.Classes,
+      Data.Win.ADODB,
+      Data.DB,
+      System.SysUtils,
+      Variants,
+      Graphics,
+      TCustomTypeUnit,
+      Vcl.Forms,
+      StdCtrls;
 
 
    // class TStructAnswered_list
@@ -48,7 +54,7 @@ uses  System.Classes, Data.Win.ADODB, Data.DB,
 
       procedure updateCount;                                // обновление кол-ва найденных звонков
       procedure Clear;                                      // очистка от всех данных
-      function GetProcent(InNewProcent:Double):string;     // отображение процента + ↑ ↓ в заивисимости от того какой результат по процентам
+
 
       end;
  // class TStructAnswered END
@@ -75,13 +81,16 @@ uses  System.Classes, Data.Win.ADODB, Data.DB,
 
       private
       m_maxAnsweredTime                   :Integer;     // (время) максимальное время ожидания в очереди
-      m_maxAnsweredID                     :Integer;    // (id по БД) ID этого звонка
+      m_maxAnsweredID                     :Integer;     // (id по БД) ID этого звонка
+      SL                                  :Double;      // текущее значение SL = 0.0   ↑↓
 
       function isExistAnsweredId(id:Integer): Boolean;                  // есть ли такой id в памяти
       procedure addAnswered(id,answered_time:Integer);                  // добавление в память
       procedure FindMaxAnsweredTime;                  // нахождене максимального времени ожидания в очереди
+      procedure ShowSL(InNewSL:Double);               // отображение нового SL
+      function GetProcent(InNewProcent:Double; isShowDelimiter:Boolean = true):string; overload;     // отображение процента в заивисимости от того какой результат по процентам
 
-     
+
       end;
  // class TAnsweredQueue END
 
@@ -106,7 +115,6 @@ uses
  constructor TStructAnswered.Create;
  begin
    inherited;
-
    Self.count:=0;
    Self.list_answered_time:=TStringList.Create;
    Self.list_id:=TStringList.Create;
@@ -114,9 +122,9 @@ uses
 
 destructor TStructAnswered.Destroy;
 begin
-  list_id.Free; // Освобождение TStringList
-  list_answered_time.Free; // Освобождение TStringList
-  inherited Destroy; // Вызов деструктора родительского класса
+  list_id.Free;             // Освобождение TStringList
+  list_answered_time.Free;  // Освобождение TStringList
+  inherited Destroy;        // Вызов деструктора родительского класса
 end;
 
 
@@ -127,24 +135,6 @@ end;
    Self.list_answered_time.Clear;
  end;
 
-
-// отображение процента + ↑ ↓ в заивисимости от того какой результат по процентам
-function TStructAnswered.GetProcent(InNewProcent:Double):string;
-var
-   new_procent:string;
-begin
- // Result:='';
-
-  new_procent:=FormatFloat('0.0',InNewProcent);
-  new_procent:=StringReplace(new_procent,',','.',[rfReplaceAll]);
-
-  // уберем лишний .0 русть будет целове число
-  if AnsiPos('.0',new_procent)<>0 then begin
-   System.Delete(new_procent,AnsiPos('.',new_procent), Length(new_procent));
-  end;
-
-  Result:=new_procent;     
-end;
 
 
 procedure TStructAnswered.updateCount;
@@ -166,6 +156,7 @@ end;
    end;
 
    Self.updateAnsweredNow:=False;
+   Self.SL:=100; // default
    Self.m_maxAnsweredTime:=0;
    Self.m_maxAnsweredID:=0;
  end;
@@ -196,9 +187,10 @@ end;
 
     Self.m_maxAnsweredTime:=0;
     Self.m_maxAnsweredID:=0;
+    Self.SL:=100;
 
     with HomeForm do begin
-       ST_SL.Caption:='SL: 100%';
+       ST_SL.Caption:='SL: '+GetProcent(SL,False)+'%';
        ST_SL.Font.Color:=colorGood;
 
        // текстовое отображение
@@ -236,16 +228,11 @@ end;
 
  procedure TAnsweredQueue.showAnswered;
  const
- colorGood:TColor     = $0031851F;
- colorNotBad:Tcolor   = $0000D5D5;
- colorBad:TColor      = $0000C8C8;
- colorVeryBad:TColor  = $0000009B;
- colorGraph:TColor    = clTeal;   
+ colorGraph:TColor    = clTeal;
  MINIMAL_LINE_GRAPH_SHOWING:Word = 3; // минимальная линия на графике которая видна
  var
   i:Integer;
-  SL:Integer;
-  procent:Double;   
+  procent:Double;
  begin
    for i:=0 to cGLOBAL_ListAnswered-1 do begin
     with HomeForm do begin
@@ -253,44 +240,27 @@ end;
 
      case i of
        0: begin
-         lblStatistics_Answered30.Caption:=IntToStr(list[i].count) + ' ('+list[i].GetProcent(procent)+'%)';
+         lblStatistics_Answered30.Caption:=IntToStr(list[i].count) + ' ('+GetProcent(procent)+'%)';
          
 
          // график
          begin
-           lblStatistics_Answered30_Graph.Caption:=IntToStr(list[i].count)+#13+ ' ('+list[i].GetProcent(procent)+'%)';
+           lblStatistics_Answered30_Graph.Caption:=IntToStr(list[i].count)+#13+ ' ('+GetProcent(procent)+'%)';
            StatisticsQueue_Answered30_Graph.ForeColor:=colorGraph;
 
            if Round(procent)< MINIMAL_LINE_GRAPH_SHOWING then procent:=MINIMAL_LINE_GRAPH_SHOWING;
            StatisticsQueue_Answered30_Graph.Progress:=Round(procent);
          end;
 
-         SL:=Round(list[i].count / getCountAllAnswered * 100);
-         // считаем SL
-         ST_SL.Caption:='SL: '+IntToStr(SL)+'%';
-
-         case SL of
-           0..30: begin
-              ST_SL.Font.Color:=colorVeryBad;
-           end;
-           31..59: begin
-              ST_SL.Font.Color:=colorBad;
-           end;
-           60..79:begin
-              ST_SL.Font.Color:=colorNotBad;
-           end;
-           80..100:begin
-              ST_SL.Font.Color:=colorGood;
-           end;
-         end;     
-        
+         // отображаем  новый SL
+         ShowSL(procent);  // old value = list[i].count / getCountAllAnswered * 100
        end;
        1: begin
-         lblStatistics_Answered60.Caption:=IntToStr(list[i].count)  + ' ('+list[i].GetProcent(procent)+'%)';
+         lblStatistics_Answered60.Caption:=IntToStr(list[i].count)  + ' ('+GetProcent(procent)+'%)';
 
          // график
          begin
-           lblStatistics_Answered60_Graph.Caption:=IntToStr(list[i].count)+#13+ ' ('+list[i].GetProcent(procent)+'%)';
+           lblStatistics_Answered60_Graph.Caption:=IntToStr(list[i].count)+#13+ ' ('+GetProcent(procent)+'%)';
            StatisticsQueue_Answered60_Graph.ForeColor:=colorGraph;
            if Round(procent)< MINIMAL_LINE_GRAPH_SHOWING  then procent:=MINIMAL_LINE_GRAPH_SHOWING;
            StatisticsQueue_Answered60_Graph.Progress:=Round(procent);
@@ -298,22 +268,22 @@ end;
          
        end;
        2: begin
-         lblStatistics_Answered120.Caption:=IntToStr(list[i].count) + ' ('+list[i].GetProcent(procent)+'%)';
+         lblStatistics_Answered120.Caption:=IntToStr(list[i].count) + ' ('+GetProcent(procent)+'%)';
 
           // график
          begin
-           lblStatistics_Answered120_Graph.Caption:=IntToStr(list[i].count)+#13+ ' ('+list[i].GetProcent(procent)+'%)';
+           lblStatistics_Answered120_Graph.Caption:=IntToStr(list[i].count)+#13+ ' ('+GetProcent(procent)+'%)';
            StatisticsQueue_Answered120_Graph.ForeColor:=colorGraph;
            if Round(procent)< MINIMAL_LINE_GRAPH_SHOWING  then procent:=MINIMAL_LINE_GRAPH_SHOWING;
            StatisticsQueue_Answered120_Graph.Progress:=Round(procent);
          end;         
        end;
        3: begin
-        lblStatistics_Answered121.Caption:=IntToStr(list[i].count) + ' ('+list[i].GetProcent(procent)+'%)';
+        lblStatistics_Answered121.Caption:=IntToStr(list[i].count) + ' ('+GetProcent(procent)+'%)';
 
           // график
          begin
-           lblStatistics_Answered121_Graph.Caption:=IntToStr(list[i].count)+#13+ ' ('+list[i].GetProcent(procent)+'%)';
+           lblStatistics_Answered121_Graph.Caption:=IntToStr(list[i].count)+#13+ ' ('+GetProcent(procent)+'%)';
            StatisticsQueue_Answered121_Graph.ForeColor:=colorGraph;
            if Round(procent)< MINIMAL_LINE_GRAPH_SHOWING  then procent:=MINIMAL_LINE_GRAPH_SHOWING;
            StatisticsQueue_Answered121_Graph.Progress:=Round(procent);
@@ -379,7 +349,69 @@ end;
  end;
 
 
- 
+// отображение нового SL
+procedure TAnsweredQueue.ShowSL(InNewSL:Double);
+const
+ colorGood:TColor     = $0031851F;
+ colorNotBad:Tcolor   = $0000D5D5;
+ colorBad:TColor      = $0000C8C8;
+ colorVeryBad:TColor  = $0000009B;
+ slUP:string          = '↑';
+ slDOWN:string        = '↓';
+
+var
+ currentStatusSL:string;
+begin
+
+  if InNewSL<>SL then begin
+    if InNewSL>SL then currentStatusSL:=slUP
+    else currentStatusSL:=slDOWN;
+  end;
+
+  SL:=InNewSL;
+
+  // считаем SL
+   with HomeForm do begin
+     ST_SL.Caption:='SL: ' + currentStatusSL + GetProcent(SL,False)+'%';
+
+     case Round(SL) of
+       0..30: begin
+          ST_SL.Font.Color:=colorVeryBad;
+       end;
+       31..59: begin
+          ST_SL.Font.Color:=colorBad;
+       end;
+       60..79:begin
+          ST_SL.Font.Color:=colorNotBad;
+       end;
+       80..100:begin
+          ST_SL.Font.Color:=colorGood;
+       end;
+     end;
+
+     ST_SL.Hint:='Текущий SL = '+GetProcent(SL);
+   end;
+end;
+
+// отображение процента в заивисимости от того какой результат по процентам
+function TAnsweredQueue.GetProcent(InNewProcent:Double; isShowDelimiter:Boolean = true):string;
+var
+   new_procent:string;
+begin
+
+  if isShowDelimiter then new_procent:=FormatFloat('0.0',InNewProcent)
+  else new_procent:=FormatFloat('0',InNewProcent);
+
+  new_procent:=StringReplace(new_procent,',','.',[rfReplaceAll]);
+
+  // уберем лишний .0 русть будет целове число
+  if AnsiPos('.0',new_procent)<>0 then begin
+   System.Delete(new_procent,AnsiPos('.',new_procent), Length(new_procent));
+  end;
+
+  Result:=new_procent;
+end;
+
 
  function TAnsweredQueue.getCountAllAnswered;
  var
