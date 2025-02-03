@@ -148,11 +148,10 @@
         <Icon_MainIcon>ico\diagram09.ico</Icon_MainIcon>
         <UWP_DelphiLogo44>C:\Users\home0\Desktop\DASHBOARD\develop\gui\ico\diagram09(1).png</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>C:\Users\home0\Desktop\DASHBOARD\develop\gui\ico\diagram09.png</UWP_DelphiLogo150>
-        <VerInfo_MinorVer>14</VerInfo_MinorVer>
-        <VerInfo_Keys>CompanyName=Petrov Yuri;FileDescription=Дашборд коллцентра;FileVersion=1.14.1.23;InternalName=;LegalCopyright=Petrov Yuri;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Дашборд коллцентра;ProductVersion=0.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_MinorVer>15</VerInfo_MinorVer>
+        <VerInfo_Keys>CompanyName=Petrov Yuri;FileDescription=Дашборд коллцентра;FileVersion=1.15.0.24;InternalName=;LegalCopyright=Petrov Yuri;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Дашборд коллцентра;ProductVersion=0.0.0.0;Comments=</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
-        <VerInfo_Build>23</VerInfo_Build>
-        <VerInfo_Release>1</VerInfo_Release>
+        <VerInfo_Build>24</VerInfo_Build>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -265,6 +264,8 @@
         <DCCReference Include="Thread\Thread_QUEUEUnit.pas"/>
         <DCCReference Include="Thread\Thread_StatisticsUnit.pas"/>
         <DCCReference Include="Thread\Thread_ForecastUnit.pas"/>
+        <DCCReference Include="..\custom_class\TInternalProcessUnit.pas"/>
+        <DCCReference Include="Thread\Thread_InternalProcessUnit.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

@@ -20,7 +20,8 @@ uses  System.Classes,
       Graphics,
       TCustomTypeUnit,
       Vcl.Forms,
-      StdCtrls;
+      StdCtrls,
+      TLogFileUnit;
 
 
    // class TStructAnswered_list
@@ -68,6 +69,7 @@ uses  System.Classes,
       list                                  : array of TStructAnswered; // список
       updateAnsweredNow                     : Boolean;                  // нужно ли обновить весь свписок
 
+
       function getCountAllAnswered          : Integer;                  // всего отвечено
       function isExistNewAnswered           : Boolean;                  // есть ли новые отвеченные по БД
       function getCountMaxAnswered          : Integer;                  // максимальное время ожидания
@@ -79,10 +81,13 @@ uses  System.Classes,
       procedure showAnswered;                                           // показываем кол-во
       procedure Clear;                                                  // очитска от всех текущих данных
 
+
       private
-      m_maxAnsweredTime                   :Integer;     // (время) максимальное время ожидания в очереди
-      m_maxAnsweredID                     :Integer;     // (id по БД) ID этого звонка
-      SL                                  :Double;      // текущее значение SL = 0.0   ↑↓
+      m_maxAnsweredTime                   : Integer;     // (время) максимальное время ожидания в очереди
+      m_maxAnsweredID                     : Integer;     // (id по БД) ID этого звонка
+      SL                                  : Double;      // текущее значение SL = 0.0   ↑↓
+
+
 
       function isExistAnsweredId(id:Integer): Boolean;                  // есть ли такой id в памяти
       procedure addAnswered(id,answered_time:Integer);                  // добавление в память
@@ -467,7 +472,6 @@ begin
   if isExist then Result:=True
   else Result:=False;
 end;
-
 
 
 // обновление отвеченных звонков

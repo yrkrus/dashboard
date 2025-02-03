@@ -48,7 +48,9 @@ interface
     Vcl.Menus,
     GlobalVariables,
     TActiveSIPUnit,
-    System.IOUtils;
+    System.IOUtils,
+    TLogFileUnit;
+
 
 
 
@@ -66,54 +68,52 @@ function getVersion(GUID:string; programm:enumProrgamm):string;                 
 procedure showVersionAbout(programm:enumProrgamm);                                   // отображение истории вресий
 function GetVersionAbout(programm:enumProrgamm; inGUID:string):string;               // отображение истории вресий дашбоарда (только текущая версия)
 function Ping(InIp:string):Boolean;                                                  // проверка ping
-procedure createCheckServersInfoclinika;                                             // создание списка с серверами
+procedure CreateCheckServersInfoclinika;                                             // создание списка с серверами
 function StrToTRole(InRole:string):enumRole;                                         // string -> TRole
 function TRoleToStr(InRole:enumRole):string;                                         // TRole -> string
 function EnumProgrammToStr(InEnumProgram:enumProrgamm):string;                       // enumProgramm -> string
 function GetRoleID(InRole:string):Integer;                                           // получение ID TRole
-function getUserGroupSTR(InGroup:Integer):string;                                    // отображение роли пользвоателя
+function GetUserGroupSTR(InGroup:Integer):string;                                    // отображение роли пользвоателя
 function getHashPwd(inPwd: String):Integer;                                          // хэширование пароля
-function getUserGroupID(InGroup:string):Integer;                                     // отображение ID роли пользвоателя
+function GetUserGroupID(InGroup:string):Integer;                                     // отображение ID роли пользвоателя
 function getUserID(InLogin:string):Integer; overload;                                // отображение ID пользвоателя
 function getUserID(InUserName,InUserFamiliya:string):Integer; overload;              // полчуение userID из ФИО
 function getUserID(InSIPNumber:integer):Integer; overload;                           // полчуение userID из SIP номера
-procedure loadPanel_Users(InUserRole:enumRole; InShowDisableUsers:Boolean = False);     // прогрузка спика пользвоателей
-procedure loadPanel_Operators;                                                       // прогрузка спика пользвоателей (операторы)
-function getCheckLogin(inLogin:string):Boolean;                                      // существует ли login пользвоателчя
-function disableUser(InUserID:Integer):string;                                       // отключение пользователя
-procedure deleteOperator(InUserID:Integer);                                          // удаление пользователя из таблицы operators
+procedure LoadPanel_Users(InUserRole:enumRole; InShowDisableUsers:Boolean = False);  // прогрузка спика пользвоателей
+procedure LoadPanel_Operators;                                                       // прогрузка спика пользвоателей (операторы)
+function GetCheckLogin(inLogin:string):Boolean;                                      // существует ли login пользвоателчя
+function DisableUser(InUserID:Integer):string;                                       // отключение пользователя
+procedure DeleteOperator(InUserID:Integer);                                          // удаление пользователя из таблицы operators
 procedure LoadUsersAuthForm;                                                         // прогрузка пользователей в форму авторизации
 function getUserPwd(InUserID:Integer):Integer;                                       // полчуение userPwd из userID
 function getUserLogin(InUserID:Integer):string;                                      // полчуение userLogin из userID
-function getUserRoleSTR(InUserID:Integer):string;                                    // отображение роли пользвоателя
+function GetUserRoleSTR(InUserID:Integer):string;                                    // отображение роли пользвоателя
 function correctTimeQueue(InQueue:enumQueueCurrent;InTime:string):string;               // правильноt отображение времени в очереди
-function getUserRePassword(InUserID:Integer):Boolean;                                // необходимо ли поменять пароль при входе
-function updateUserPassword(InUserID,InUserNewPassword:Integer):string;              // обновление пароля пользователя
+function GetUserRePassword(InUserID:Integer):Boolean;                                // необходимо ли поменять пароль при входе
+function UpdateUserPassword(InUserID,InUserNewPassword:Integer;
+                                  var _errorDescription:string):boolean;              // обновление пароля пользователя
 function getLocalIP: string;                                                         // функция получения локального IP
-procedure createCurrentActiveSession(InUserID:Integer);                              // заведение активной сессии
+procedure CreateCurrentActiveSession(InUserID:Integer);                              // заведение активной сессии
 function isExistCurrentActiveSession(InUserID:Integer):Boolean;                      // сущуствует ли акивная сессия
-procedure deleteActiveSession(InSessionID:Integer);                                  // удаление активной сессии
-function getActiveSessionUser(InUserID:Integer):Integer;                             // доставание ID активной сессии пользователя
+procedure DeleteActiveSession(InSessionID:Integer);                                  // удаление активной сессии
+function GetActiveSessionUser(InUserID:Integer):Integer;                             // доставание ID активной сессии пользователя
 function isExistSipActiveOperator(InSip:string):Boolean;                             // проверка заведен ли уже ранее оператор под таким sip номером и он активен
 procedure accessRights(var p_TUser: TUser);                                          // права доступа
 function getCurrentUserNamePC:string;                                                // получение имени залогиненого пользователя
 function getComputerPCName: string;                                                  // функция получения имени ПК
-procedure updateCurrentActiveSession(InUserID:Integer);                              // обновление времени активной сесии пользователя
-function getCurrentDateTimeWithTime:string;                                          // текущая дата + время
 function getForceActiveSessionClosed(InUserID:Integer):Boolean;                      // проверка нужно ли закрыть активную сессию
-//function createServerConnect:TADOConnection;                                         // создвание подключения к серверу
-function getSelectResponse(InStroka:string):Integer;                                 // запрос по статичтике данных
+function GetSelectResponse(InStroka:string):Integer;                                 // запрос по статичтике данных
 procedure LoggingRemote(InLoggingID:enumLogging);                                      // логирование действий
 function TLoggingToInt(InTLogging:enumLogging):Integer;                                 // проеобразование из TLogging в Integer
 function IntToTLogging(InLogging:Integer):enumLogging;                                  // проеобразование из Integer в TLogging
-function getUserFamiliyaName_LastSuccessEnter(InUser_login_pc,
+function GetUserFamiliyaName_LastSuccessEnter(InUser_login_pc,
                                               InUser_pc:string):string;              // нахождение userID после успешного входа на пк
-function getCountAnsweredCall(InSipOperator:string):Integer;                         // кол-во отвеченных звонков оператором
-function getCountAnsweredCallAll:Integer;                                            // кол-во отвеченных звонков всех операторов
-function createListAnsweredCall(InSipOperator:string):TStringList;                   // создвание списка со всем отвеченными звонками  sip оператора
+function GetCountAnsweredCall(InSipOperator:string):Integer;                         // кол-во отвеченных звонков оператором
+function GetCountAnsweredCallAll:Integer;                                            // кол-во отвеченных звонков всех операторов
+function CreateListAnsweredCall(InSipOperator:string):TStringList;                   // создвание списка со всем отвеченными звонками  sip оператора
 procedure remoteCommand_addQueue(command:enumLogging);                                  // удаленная команда (добавление в очередь)
 procedure showWait(Status:enumShow_wait);                                               // отображение\сркытие окна запроса на сервер
-function remoteCommand_Responce(InStroka:string):string;                             // отправка запроса на добавление удаленной команды
+function remoteCommand_Responce(InStroka:string;_errorDescriptions:string):boolean;                             // отправка запроса на добавление удаленной команды
 function getUserSIP(InIDUser:integer):string;                                        // отображение SIP пользвоателя
 function isExistRemoteCommand(command:enumLogging):Boolean;                             // проверка есть ли уже такая удаленная команда на сервера
 function getStatus(InStatus:enumStatusOperators):string;                                  // полчуение имени status оператора
@@ -132,8 +132,8 @@ function getUserFamiliya(InUserID:Integer):string;                              
 function getUserNameBD(InUserID:Integer):string;                                     // полчуение имени пользователя из его UserID
 function UserIsOperator(InUserID:Integer):Boolean;                                  // проверка userID принадлежит оператору или нет TRUE - оператор
 procedure disableOperator(InUserId:Integer);                                         // отключение оператора и перенос его в таблицу operators_disable
-function enableUser(InUserID:Integer):string;                                        // включение пользователя
-function getOperatorAccessDashboard(InSip:string):Boolean;                           // нахождение статуса доступен ли дашбор орератору или нет
+function EnableUser(InUserID:Integer):string;                                        // включение пользователя
+function GetOperatorAccessDashboard(InSip:string):Boolean;                           // нахождение статуса доступен ли дашбор орератору или нет
 function isExistSettingUsers(InUserID:Integer):Boolean;                              // проверка существу.т ли индивидуальные настрокий пользователч true - существуют настроки
 procedure saveIndividualSettingUser(InUserID:Integer; settings:enumSettingUsers;
                                     status:enumSettingUsersStatus);                     // сохранение индивидульных настроек пользователя
@@ -145,7 +145,7 @@ function getIsExitOperatorCurrentGoHome(InCurrentRole:enumRole;InUserID:Integer)
 function getLastStatusOperator(InUserId:Integer):enumLogging;                           // текущий стаус оператора из таблицы logging
 procedure CheckCurrentVersion;                                                       // проверка на актуальную версию
 function getCheckIP(InIPAdtress:string):Boolean;                                     // проверка корректности IP адреса
-procedure createFormActiveSession;                                                   // создание окна активных сессий
+procedure CreateFormActiveSession;                                                   // создание окна активных сессий
 function getCheckAlias(InAlias:string):Boolean;                                      // проверка на существаование такого алиаса уже, он может быть только один!
 function GetFirbirdAuth(FBType:enumFirebirdAuth):string;                                // получение авторизационных данных при подключени к БД firebird
 function GetStatusMonitoring(status:Integer):enumMonitoringTrunk;                       // мониторится ли транк
@@ -176,6 +176,13 @@ procedure SetRandomFontColor(var p_label: TLabel);                              
 procedure ShowInfoNewVersionAfterUpdate(InGUID:string);                          // показ информации о новой версии
 procedure ShowStatisticsCallsDay(InTypeStatisticsCalls: enumStatisticsCalls;    // отображение статистики ожидание в очереди за текущий день
                                  InClick:Boolean = False);
+function isExistMySQLConnector:Boolean;                                          // установлен ли MySQL COnnector
+function EnumNeedReconnectBDToBoolean(inStatusReconnect:enumNeedReconnectBD):Boolean;  // enumNeedReconnectBD -> Boolean
+procedure ShowFormErrorMessage(const _errorMessage:string;
+                                 var p_Log:TLoggingFile;
+                                 const __METHOD_NAME__:string);                  // отрображение окна с ошибкой
+function GetNeedReconnectBase(const _errorMessage:string):enumNeedReconnectBD;    // проверка нужно ли перезапускать reconnect к базе
+                                                   // высчитывание нагрузки на CPU
 
 
 implementation
@@ -206,7 +213,7 @@ uses
   TXmlUnit,
   TOnlineChat,
   Thread_ChatUnit,
-  Thread_ForecastUnit;
+  Thread_ForecastUnit, Thread_InternalProcessUnit;
 
 
 
@@ -289,13 +296,17 @@ procedure LoggingRemote(InLoggingID:enumLogging);
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
+ error:string;
 begin
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
-    FreeAndNil(ado);
-    Exit;
+     ShowFormErrorMessage(error, SharedMainLog, 'LoggingRemote');
+     FreeAndNil(ado);
+     Exit;
   end;
+
 
 
    try
@@ -423,13 +434,17 @@ function GetRoleID(InRole:string):Integer;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
+ error:string;
 begin
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
-    FreeAndNil(ado);
-    Exit;
+     ShowFormErrorMessage(error,SharedMainLog,'GetRoleID');
+     FreeAndNil(ado);
+     Exit;
   end;
+
 
   try
     with ado do begin
@@ -454,11 +469,11 @@ procedure createThreadDashboard;
 begin
   with HomeForm do begin
      // Статисика
-    if Statistics_thread=nil then
+    if STATISTICS_thread=nil then
     begin
-     FreeAndNil(Statistics_thread);
-     Statistics_thread:=Thread_Statistics.Create(True);
-     Statistics_thread.Priority:=tpNormal;
+     FreeAndNil(STATISTICS_thread);
+     STATISTICS_thread:=Thread_Statistics.Create(True);
+     STATISTICS_thread.Priority:=tpNormal;
      UpdateStatistiscSTOP:=True;
     end
     else UpdateStatistiscSTOP:=True;
@@ -579,8 +594,19 @@ begin
     end
     else UpdateForecast:=True;
 
+
+    // InternalProcess
+    if INTERNALPROCESS_thread=nil then
+    begin
+     FreeAndNil(INTERNALPROCESS_thread);
+     INTERNALPROCESS_thread:=Thread_InternalProcess.Create(SharedCurrentUserLogon.GetID);
+     INTERNALPROCESS_thread.Priority:=tpNormal;
+     UpdateInternalProcess:=True;
+    end
+    else UpdateInternalProcess:=True;
+
     // запуск потоков
-    Statistics_thread.Resume;
+    STATISTICS_thread.Resume;
     IVR_thread.Resume;
     QUEUE_thread.Resume;
     ACTIVESIP_thread.Resume;
@@ -592,6 +618,7 @@ begin
     ANSWEREDQUEUE_thread.Resume;
     if SharedCurrentUserLogon.GetIsAccessLocalChat then ONLINECHAT_thread.Resume;
     FORECAST_thread.Resume;
+    INTERNALPROCESS_thread.Resume;
   end;
 end;
 
@@ -616,7 +643,7 @@ begin
        clearOperatorStatus;
 
        // удаление активной сессии
-       deleteActiveSession(getActiveSessionUser(SharedCurrentUserLogon.GetID));
+       DeleteActiveSession(GetActiveSessionUser(SharedCurrentUserLogon.GetID));
      end;
 
      // закрываем chat_exe если открыт
@@ -648,31 +675,6 @@ begin
 end;
 
 
-
-// текущая дата + время
-function getCurrentDateTimeWithTime:string;
-var
- tmpdate:string;
- tmp_year,tmp_month,tmp_day:string;
- times:TTime;
-begin
-  tmpdate:=DateToStr(Now);
-
-  tmp_year:=tmpdate;
-  System.Delete(tmp_year,1,6);
-
-  tmp_month:=tmpdate;
-  System.Delete(tmp_month,1,3);
-  System.Delete(tmp_month,3,Length(tmp_month));
-
-  tmp_day:=tmpdate;
-  System.Delete(tmp_day,3,Length(tmp_day));
-
-  times:=Now;
-
-  Result:=tmp_year+'-'+tmp_month+'-'+tmp_day+' '+TimeToStr(times);
-end;
-
 // получение имени залогиненого пользователя
 function getCurrentUserNamePC:string;
  const
@@ -690,18 +692,22 @@ end;
 
 
 // запрос по статичтике данных
-function getSelectResponse(InStroka:string):Integer;
+function GetSelectResponse(InStroka:string):Integer;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
+ error:string;
 begin
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
-    FreeAndNil(ado);
-    Exit;
+     ShowFormErrorMessage(error,SharedMainLog,'GetSelectResponse');
+     FreeAndNil(ado);
+     Exit;
   end;
+
 
   try
     with ado do begin
@@ -765,7 +771,7 @@ begin
 
 
 
-  Result:=IntToStr(getSelectResponse(select_response));
+  Result:=IntToStr(GetSelectResponse(select_response));
 end;
 
 
@@ -788,11 +794,11 @@ begin
     case inStatDay of
       stat_answered:begin
        select_response:='select count(phone) from queue where number_queue in ('+all_queue+') and answered = ''1'' and sip <>''-1'' and hash is not null and date_time > '+#39+GetCurrentStartDateTime+#39;
-       resultat:=IntToStr(getSelectResponse(select_response));
+       resultat:=IntToStr(GetSelectResponse(select_response));
       end;
       stat_no_answered:begin
        select_response:='select count(phone) from queue where number_queue in ('+all_queue+') and fail = ''1'' and date_time > '+#39+GetCurrentStartDateTime+#39;
-       resultat:=IntToStr(getSelectResponse(select_response));
+       resultat:=IntToStr(GetSelectResponse(select_response));
       end;
       stat_no_answered_return:begin
        select_response:='select count(distinct(phone)) from queue where number_queue in ('+all_queue+')'+
@@ -801,7 +807,7 @@ begin
                                                                 ' and answered  = ''1'' and date_time > +'#39+GetCurrentStartDateTime+#39+')';
 
 
-       resultat:=IntToStr(getSelectResponse(select_response));
+       resultat:=IntToStr(GetSelectResponse(select_response));
       end;
       stat_procent_no_answered:begin
         if lblStstistisc_Day_No_Answered.Caption='0'  then resultat:='0'
@@ -844,7 +850,7 @@ begin
       end;
       stat_summa:begin
        select_response:='select count(phone) from queue where number_queue in ('+all_queue+') and date_time > '+#39+GetCurrentStartDateTime+#39;
-       resultat:=IntToStr(getSelectResponse(select_response));
+       resultat:=IntToStr(GetSelectResponse(select_response));
       end;
     end;
  end;
@@ -1056,17 +1062,17 @@ begin
 end;
 
 // кол-во отвеченных звонков оператором
- function getCountAnsweredCall(InSipOperator:string):Integer;
+ function GetCountAnsweredCall(InSipOperator:string):Integer;
 var
   ado:TADOQuery;
   serverConnect:TADOConnection;
 begin
-   ado:=TADOQuery.Create(nil);
-   serverConnect:=createServerConnect;
-   if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
-   end;
+    ado:=TADOQuery.Create(nil);
+    serverConnect:=createServerConnect;
+    if not Assigned(serverConnect) then begin
+       FreeAndNil(ado);
+       Exit;
+    end;
 
   try
     with ado do begin
@@ -1089,17 +1095,19 @@ end;
 
 
 // кол-во отвеченных звонков всех операторов
- function getCountAnsweredCallAll:Integer;
+ function GetCountAnsweredCallAll:Integer;
 var
   ado:TADOQuery;
   serverConnect:TADOConnection;
 begin
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
+
   if not Assigned(serverConnect) then begin
-    FreeAndNil(ado);
-    Exit;
+     FreeAndNil(ado);
+     Exit;
   end;
+
 
  try
   with ado do begin
@@ -1122,7 +1130,7 @@ end;
 
 
 // создвание списка со всем отвеченными звонками  sip оператора
-function createListAnsweredCall(InSipOperator:string):TStringList;
+function CreateListAnsweredCall(InSipOperator:string):TStringList;
 var
   ado:TADOQuery;
   serverConnect:TADOConnection;
@@ -1132,12 +1140,14 @@ begin
    Result:=TStringList.Create;
    ado:=TADOQuery.Create(nil);
    serverConnect:=createServerConnect;
-   if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
-   end;
+
+    if not Assigned(serverConnect) then begin
+       FreeAndNil(ado);
+       Exit;
+    end;
+
     // кол-во звонков
-    countTalk:=getCountAnsweredCall(InSipOperator);
+    countTalk:=GetCountAnsweredCall(InSipOperator);
 
   try
     with ado do begin
@@ -1237,12 +1247,15 @@ function getVersion(GUID:string; programm:enumProrgamm):string;
 var
  ado:TADOQuery;
  serverConnect: TADOConnection;
+ error:string;
 begin
   Result:='null';
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error,SharedMainLog,'getVersion');
      FreeAndNil(ado);
      Exit;
   end;
@@ -1264,7 +1277,6 @@ begin
       FreeAndNil(serverConnect);
     end;
   end;
-
 end;
 
 
@@ -1274,14 +1286,17 @@ var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  countVersion,i:Integer;
- test:string;
+ error:string;
 begin
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error,SharedMainLog,'showVersionAbout');
      FreeAndNil(ado);
      Exit;
   end;
+
 
    try
      with ado do begin
@@ -1369,13 +1384,17 @@ function GetVersionAbout(programm:enumProrgamm; inGUID:string):string;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
+ error:string;
 begin
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error,SharedMainLog,'GetVersionAbout');
      FreeAndNil(ado);
      Exit;
   end;
+
 
    try
      with ado do begin
@@ -1419,7 +1438,7 @@ end;
 
 
 // создание списка с серверами
-procedure createCheckServersInfoclinika;
+procedure CreateCheckServersInfoclinika;
 const
 cTOPSTART=35;
 var
@@ -1433,14 +1452,18 @@ var
  lblAddressServer:  array of TLabel;
  lblIP:             array of TLabel;
  nameIP:string;
+ error:string;
 begin
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error,SharedMainLog,'CreateCheckServersInfoclinika');
      FreeAndNil(ado);
      Exit;
   end;
+
 
   try
    with ado do begin
@@ -1570,7 +1593,7 @@ begin
 end;
 
 // создание окна активных сессий
-procedure createFormActiveSession;
+procedure CreateFormActiveSession;
 const
 cTOPSTART=28;
 var
@@ -1591,14 +1614,18 @@ var
  btnCLOSE_QUEUE:    array of TButton;
 
  nameID:string;
+ error:string;
 begin
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error,SharedMainLog,'CreateFormActiveSession');
      FreeAndNil(ado);
      Exit;
   end;
+
 
   try
   with ado do begin
@@ -1865,18 +1892,22 @@ end;
 
 
 // отображение роли пользвоателя
-function getUserGroupSTR(InGroup:Integer):string;
+function GetUserGroupSTR(InGroup:Integer):string;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
+ error:string;
 begin
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error,SharedMainLog,'GetUserGroupSTR');
      FreeAndNil(ado);
      Exit;
   end;
+
 
   try
     with ado do begin
@@ -1900,18 +1931,22 @@ end;
 
 
 // отображение роли пользвоателя
-function getUserRoleSTR(InUserID:Integer):string;
+function GetUserRoleSTR(InUserID:Integer):string;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
+ error:string;
 begin
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error,SharedMainLog,'GetUserRoleSTR');
      FreeAndNil(ado);
      Exit;
   end;
+
 
   try
     with ado do begin
@@ -1935,7 +1970,7 @@ end;
 
 
 // нахождение статуса доступен ли дашбор орератору или нет
-function getOperatorAccessDashboard(InSip:string):Boolean;
+function GetOperatorAccessDashboard(InSip:string):Boolean;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -1943,10 +1978,12 @@ begin
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
+
   if not Assigned(serverConnect) then begin
      FreeAndNil(ado);
      Exit;
   end;
+
 
   try
     with ado do begin
@@ -1973,18 +2010,22 @@ end;
 
 
 // необходимо ли поменять пароль при входе
-function getUserRePassword(InUserID:Integer):Boolean;
+function GetUserRePassword(InUserID:Integer):Boolean;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
+ error:string;
 begin
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error,SharedMainLog,'GetUserRePassword');
      FreeAndNil(ado);
      Exit;
   end;
+
 
   try
     with ado do begin
@@ -2009,18 +2050,22 @@ end;
 
 
 // отображение ID роли пользвоателя
-function getUserGroupID(InGroup:string):Integer;
+function GetUserGroupID(InGroup:string):Integer;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
+ error:string;
 begin
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error,SharedMainLog,'GetUserGroupID');
      FreeAndNil(ado);
      Exit;
   end;
+
 
   try
     with ado do begin
@@ -2114,22 +2159,26 @@ end;
 
 
 // прогрузка спика пользвоателей
-procedure loadPanel_Users(InUserRole:enumRole; InShowDisableUsers:Boolean = False);
+procedure LoadPanel_Users(InUserRole:enumRole; InShowDisableUsers:Boolean = False);
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  countUsers,i:Integer;
  only_operators_roleID:TStringList;
  id_operators:string;
+ error:string;
 begin
   Screen.Cursor:=crHourGlass;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error,SharedMainLog,'LoadPanel_Users');
      FreeAndNil(ado);
      Exit;
   end;
+
 
   try
       with ado do begin
@@ -2213,20 +2262,24 @@ end;
 
 
 // прогрузка спика пользвоателей (операторы)
-procedure loadPanel_Operators;
+procedure LoadPanel_Operators;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  countUsers,i:Integer;
+ error:string;
 begin
   Screen.Cursor:=crHourGlass;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error,SharedMainLog,'LoadPanel_Operators');
      FreeAndNil(ado);
      Exit;
   end;
+
 
   try
     with ado do begin
@@ -2276,18 +2329,22 @@ end;
 
 
 // существует ли login пользвоателчя
-function getCheckLogin(inLogin:string):Boolean;
+function GetCheckLogin(inLogin:string):Boolean;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
+ error:string;
 begin
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error, SharedMainLog, 'GetCheckLogin');
      FreeAndNil(ado);
      Exit;
   end;
+
 
   try
     with ado do begin
@@ -2394,14 +2451,17 @@ function getUserPwd(InUserID:Integer):Integer;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
+ error:string;
 begin
 
  ado:=TADOQuery.Create(nil);
- serverConnect:=createServerConnect;
- if not Assigned(serverConnect) then begin
-   FreeAndNil(ado);
-   Exit;
- end;
+ serverConnect:=createServerConnectWithError(error);
+
+  if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error, SharedMainLog, 'getUserPwd');
+     FreeAndNil(ado);
+     Exit;
+  end;
 
   try
     with ado do begin
@@ -2432,14 +2492,18 @@ function getUserLogin(InUserID:Integer):string;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
+ error:string;
 begin
 
- ado:=TADOQuery.Create(nil);
- serverConnect:=createServerConnect;
-   if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
-   end;
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnectWithError(error);
+
+  if not Assigned(serverConnect) then begin
+   ShowFormErrorMessage(error, SharedMainLog, 'getUserLogin');
+   FreeAndNil(ado);
+   Exit;
+  end;
+
 
   try
     with ado do begin
@@ -2498,19 +2562,23 @@ begin
 end;
 
 // отключение пользователя
-function disableUser(InUserID:Integer):string;
+function DisableUser(InUserID:Integer):string;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  CodOshibki:string;
+ error:string;
 begin
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error, SharedMainLog, 'DisableUser');
      FreeAndNil(ado);
      Exit;
   end;
+
 
   try
     with ado do begin
@@ -2554,19 +2622,23 @@ end;
 
 
 // включение пользователя
-function enableUser(InUserID:Integer):string;
+function EnableUser(InUserID:Integer):string;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  CodOshibki:string;
+ error:string;
 begin
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error, SharedMainLog, 'EnableUser');
      FreeAndNil(ado);
      Exit;
   end;
+
 
   try
     with ado do begin
@@ -2605,18 +2677,22 @@ end;
 
 
 // удаление пользователя из таблицы operators
-procedure deleteOperator(InUserID:Integer);
+procedure DeleteOperator(InUserID:Integer);
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  CodOshibki:string;
+ error:string;
 begin
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error, SharedMainLog, 'DeleteOperator');
      FreeAndNil(ado);
      Exit;
   end;
+
 
   try
     with ado do begin
@@ -2657,18 +2733,16 @@ var
  serverConnect:TADOConnection;
  CodOshibki:string;
  countUsers,i:Integer;
+ error:string;
 begin
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
-     MessageBox(FormAuth.Handle,PChar('Возникла ошибка при запросе на сервер!'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+     ShowFormErrorMessage('Возникла ошибка при запросе на сервер!'+#13+error, SharedMainLog, 'LoadUsersAuthForm');
      FreeAndNil(ado);
-     if Assigned(serverConnect) then begin
-       serverConnect.Close;
-       FreeAndNil(serverConnect);
-     end;
-    KillProcess;
+     KillProcess;
   end;
 
   try
@@ -2735,19 +2809,23 @@ end;
 
 
 // нахождение userID после успешного входа на пк
-function getUserFamiliyaName_LastSuccessEnter(InUser_login_pc,InUser_pc:string):string;
+function GetUserFamiliyaName_LastSuccessEnter(InUser_login_pc,InUser_pc:string):string;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
+ error:string;
 begin
   Result:='null';
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error, SharedMainLog, 'GetUserFamiliyaName_LastSuccessEnter');
      FreeAndNil(ado);
      Exit;
   end;
+
 
   try
     with ado do begin
@@ -2784,19 +2862,24 @@ begin
 end;
 
 // обновление пароля пользователя
-function updateUserPassword(InUserID,InUserNewPassword:Integer):string;
+function UpdateUserPassword(InUserID,InUserNewPassword:Integer; var _errorDescription:string):boolean;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
- CodOshibki:string;
+ error:string;
 begin
+  Result:=False;
+  _errorDescription:='';
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error, SharedMainLog, 'UpdateUserPassword');
      FreeAndNil(ado);
      Exit;
   end;
+
 
   try
     with ado do begin
@@ -2809,8 +2892,7 @@ begin
           ExecSQL;
       except
           on E:EIdException do begin
-             CodOshibki:=e.Message;
-             Result:='ОШИБКА! '+CodOshibki;
+             _errorDescription:='ОШИБКА! '+e.Message;
              FreeAndNil(ado);
              if Assigned(serverConnect) then begin
                serverConnect.Close;
@@ -2829,7 +2911,7 @@ begin
     end;
   end;
 
-   Result:='OK';
+   Result:=True;
 end;
 
 
@@ -2838,14 +2920,18 @@ function isExistCurrentActiveSession(InUserID:Integer):Boolean;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
+ error:string;
 begin
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error, SharedMainLog, 'isExistCurrentActiveSession');
      FreeAndNil(ado);
      Exit;
   end;
+
 
   try
      with ado do begin
@@ -2870,18 +2956,22 @@ end;
 
 
 // доставание ID активной сессии пользователя
-function getActiveSessionUser(InUserID:Integer):Integer;
+function GetActiveSessionUser(InUserID:Integer):Integer;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
+ error:string;
 begin
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error, SharedMainLog, 'GetActiveSessionUser');
      FreeAndNil(ado);
      Exit;
   end;
+
 
   try
     with ado do begin
@@ -2907,18 +2997,22 @@ begin
 end;
 
 // удаление активной сессии
-procedure deleteActiveSession(InSessionID:Integer);
+procedure DeleteActiveSession(InSessionID:Integer);
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
+ error:string;
 begin
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error, SharedMainLog, 'DeleteActiveSession');
      FreeAndNil(ado);
      Exit;
   end;
+
 
   try
     with ado do begin
@@ -2951,29 +3045,33 @@ begin
 end;
 
 // заведение активной сессии
-procedure createCurrentActiveSession(InUserID:Integer);
+procedure CreateCurrentActiveSession(InUserID:Integer);
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  ip,user_pc,pc_name:string;
+ error:string;
 begin
   Screen.Cursor:=crHourGlass;
 
   //проверяем есть ли уже такая сессия
    if isExistCurrentActiveSession(InUserID) then begin
      // удаляем активную сессию
-     deleteActiveSession(getActiveSessionUser(InUserID));
+     DeleteActiveSession(GetActiveSessionUser(InUserID));
    end;
 
 
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
      Screen.Cursor:=crDefault;
+     ShowFormErrorMessage(error, SharedMainLog, 'CreateCurrentActiveSession');
      FreeAndNil(ado);
      Exit;
   end;
+
 
 
   ip:=SharedCurrentUserLogon.GetIP;
@@ -3017,64 +3115,23 @@ begin
 end;
 
 
-// обновление времени активной сесии пользователя
-procedure updateCurrentActiveSession(InUserID:Integer);
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
-begin
-
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
-  end;
-
-  try
-    with ado do begin
-      ado.Connection:=serverConnect;
-      SQL.Clear;
-
-      SQL.Add('update active_session set last_active = '+#39+getCurrentDateTimeWithTime+#39+' where user_id = '+#39+IntToStr(InUserID)+#39);
-
-      try
-          ExecSQL;
-      except
-          on E:EIdException do begin
-             FreeAndNil(ado);
-             if Assigned(serverConnect) then begin
-               serverConnect.Close;
-               FreeAndNil(serverConnect);
-             end;
-
-             Exit;
-          end;
-      end;
-    end;
-  finally
-   FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
-  end;
-end;
-
-
 // проверка заведен ли уже ранее оператор под таким sip номером и он активен
 function isExistSipActiveOperator(InSip:string):Boolean;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
+ error:string;
 begin
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error, SharedMainLog, 'isExistSipActiveOperator');
      FreeAndNil(ado);
      Exit;
   end;
+
 
   try
     with ado do begin
@@ -3105,15 +3162,19 @@ function getUserFamiliya(InUserID:Integer):string;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
+ error:string;
 begin
   Result:='null';
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error, SharedMainLog, 'getUserFamiliya');
      FreeAndNil(ado);
      Exit;
   end;
+
 
   try
     with ado do begin
@@ -3142,15 +3203,19 @@ function getUserNameBD(InUserID:Integer):string;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
+ error:string;
 begin
   Result:='null';
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error, SharedMainLog, 'getUserNameBD');
      FreeAndNil(ado);
      Exit;
   end;
+
 
   try
     with ado do begin
@@ -3357,13 +3422,21 @@ procedure CheckCurrentVersion;
 var
  remoteVersion:string;
  XML:TXML;
+ error:string;
 begin
   remoteVersion:=GetRemoteVersionDashboard;
 
   if GUID_VESRION <> remoteVersion then begin
-   MessageBox(HomeForm.Handle,PChar('Текущая версия дашборда отличается от актуальной версии'+#13#13
-                                    +'Перезагрузите компьютер или перезапустите службу обновления ('+UPDATE_SERVICES+')'+#13#13#13
-                                    +'Имя ПК: '+getComputerPCName),PChar('Текущая версия устарела'),MB_OK+MB_ICONINFORMATION);
+
+   error:='Текущая версия дашборда отличается от актуальной версии'+#13#13
+          +'Перезагрузите компьютер или перезапустите службу обновления ('+UPDATE_SERVICES+')'+#13#13
+          +'Имя ПК: '+getComputerPCName;
+
+   ShowFormErrorMessage(error,SharedMainLog,'CheckCurrentVersion');
+
+//   MessageBox(HomeForm.Handle,PChar('Текущая версия дашборда отличается от актуальной версии'+#13#13
+//                                    +'Перезагрузите компьютер или перезапустите службу обновления ('+UPDATE_SERVICES+')'+#13#13#13
+//                                    +'Имя ПК: '+getComputerPCName),PChar('Текущая версия устарела'),MB_OK+MB_ICONINFORMATION);
    KillProcess;
   end;
 
@@ -3405,17 +3478,25 @@ end;
 
 
 // отправка запроса на добавление удаленной команды
-function remoteCommand_Responce(InStroka:string):string;
+function remoteCommand_Responce(InStroka:string; _errorDescriptions:string):boolean;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
 begin
+  _errorDescriptions:='';
+  Result:=False;
+
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-   if not Assigned(serverConnect) then begin
+  serverConnect:=createServerConnectWithError(_errorDescriptions);
+
+  if not Assigned(serverConnect) then begin
+     Result:=False;
+
+    // ShowFormErrorMessage(_errorDescriptions, SharedMainLog, 'remoteCommand_Responce');
      FreeAndNil(ado);
      Exit;
-   end;
+  end;
+
 
    try
      with ado do begin
@@ -3427,12 +3508,14 @@ begin
             ExecSQL;
         except
             on E:EIdException do begin
+               Result:=False;
+
                FreeAndNil(ado);
                if Assigned(serverConnect) then begin
                  serverConnect.Close;
                  FreeAndNil(serverConnect);
                end;
-               Result:='ОШИБКА! Не удалось выполнить запрос'+#13#13+e.ClassName+' '+e.Message;
+               _errorDescriptions:='ОШИБКА! Не удалось выполнить запрос'+#13#13+e.ClassName+' '+e.Message;
                Exit;
             end;
         end;
@@ -3445,7 +3528,7 @@ begin
     end;
    end;
 
-  Result:='OK';
+  Result:=True;
 end;
 
 
@@ -3454,15 +3537,19 @@ function isExistRemoteCommand(command:enumLogging):Boolean;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
+ error:string;
 begin
   Result:=False;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error, SharedMainLog, 'isExistRemoteCommand');
      FreeAndNil(ado);
      Exit;
   end;
+
 
   try
     with ado do begin
@@ -3494,6 +3581,7 @@ var
  resultat:string;
  response:string;
  soLongWait:UInt16;
+ error:string;
 begin
   soLongWait:=0;
   showWait(open);
@@ -3505,10 +3593,9 @@ begin
                                                                                             +#39+SharedCurrentUserLogon.GetUserLoginPC+#39+','
                                                                                             +#39+SharedCurrentUserLogon.GetPC+#39+')';
   // выполняем запрос
-  resultat:=remoteCommand_Responce(response);
-  if AnsiPos('ОШИБКА!',resultat)<>0 then begin
+  if not remoteCommand_Responce(response,error) then begin
     showWait(close);
-    MessageBox(HomeForm.Handle,PChar(resultat),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    MessageBox(HomeForm.Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
   end;
 
@@ -3523,10 +3610,12 @@ begin
        response:='delete from remote_commands where sip ='+#39+getUserSIP(SharedCurrentUserLogon.GetID)+#39+
                                                          ' and command ='+#39+IntToStr(TLoggingToInt(command))+#39;
 
-    resultat:=remoteCommand_Responce(response);
-    showWait(close);
-    MessageBox(HomeForm.Handle,PChar('Команда не обработана из за внутренней ошибки'+#13#13+'Попробуйте еще раз'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-    Exit;
+    if not remoteCommand_Responce(response,error) then begin
+      showWait(close);
+      MessageBox(HomeForm.Handle,PChar('Команда не обработана из за внутренней ошибки'+#13#13+error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+      Exit;
+    end;
+
 
    end else begin
     Inc(soLongWait);
@@ -4232,6 +4321,7 @@ end;
 procedure saveIndividualSettingUser(InUserID:Integer; settings:enumSettingUsers; status:enumSettingUsersStatus);
 var
  response:string;
+ error:string;
 begin
    Screen.Cursor:=crHourGlass;
 
@@ -4274,7 +4364,11 @@ begin
    end;
 
   // выполняем запрос
-  remoteCommand_Responce(response);
+  if not remoteCommand_Responce(response,error) then begin
+    Screen.Cursor:=crDefault;
+    MessageBox(HomeForm.Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    Exit;
+  end;
 
   Screen.Cursor:=crDefault;
 end;
@@ -5050,5 +5144,101 @@ begin
      end;
   end;
 end;
+
+// установлен ли MySQL COnnector
+function isExistMySQLConnector:Boolean;
+const
+ KeyPath:string = 'SOFTWARE\MySQL AB\MySQL Connector/ODBC 5.3';
+ ValueName:string = 'Version';
+var
+  Reg:TRegistry;
+begin
+  Result:=False;
+
+  Reg:=TRegistry.Create(KEY_READ); // Создаем объект TRegistry с правами на чтение
+  try
+    Reg.RootKey := HKEY_LOCAL_MACHINE; // Устанавливаем корневой ключ
+    // Проверяем, можем ли мы открыть указанный ключ
+    if Reg.OpenKeyReadOnly(KeyPath) then
+    begin
+      // Проверяем, существует ли значение с указанным именем
+      Result := Reg.ValueExists(ValueName);
+      Reg.CloseKey; // Закрываем ключ
+    end;
+  finally
+    Reg.Free; // Освобождаем ресурсы
+  end;
+
+end;
+
+ // enumNeedReconnectBD -> Boolean
+function EnumNeedReconnectBDToBoolean(inStatusReconnect:enumNeedReconnectBD):Boolean;
+begin
+  case inStatusReconnect of
+    eNeedReconnectYES: Result:=True;
+    eNeedReconnectNO:  Result:=False;
+  end;
+end;
+
+
+// проверка нужно ли перезапускать reconnect к базе
+function GetNeedReconnectBase(const _errorMessage:string):enumNeedReconnectBD;
+begin
+  // TODO пока ищем обычным способом, потом если будут увеличаться значения то сделать через перебор значений
+
+  Result:=eNeedReconnectYES;
+
+  if AnsiPos('Диспетчер драйверов ODBC',_errorMessage)<>0 then begin
+    Result:=eNeedReconnectNO;
+    Exit;
+  end;
+
+  if AnsiPos('MySQL Connector',_errorMessage)<>0 then begin
+    Result:=eNeedReconnectNO;
+    Exit;
+  end;
+
+  if AnsiPos('Текущая версия дашборда отличается от актуальной версии',_errorMessage)<>0 then begin
+    Result:=eNeedReconnectNO;
+    Exit;
+  end;
+
+  if AnsiPos('Возникла ошибка при запросе на сервер!',_errorMessage)<>0 then begin
+    Result:=eNeedReconnectNO;
+    Exit;
+  end;
+
+end;
+
+
+// отрображение окна с ошибкой
+procedure ShowFormErrorMessage(const _errorMessage:string;
+                               var p_Log:TLoggingFile;
+                               const __METHOD_NAME__:string);
+var
+  needReconnect:enumNeedReconnectBD;
+begin
+  // записываем в Log
+  if Assigned(p_Log) then p_Log.Save(__METHOD_NAME__+': '+ _errorMessage,IS_ERROR);
+
+  // проверим нужно ли перезапускать Reconnect
+  needReconnect:=GetNeedReconnectBase(_errorMessage);
+
+  // TODO
+  {
+    есть такая ошибка ХЗ что это такое, но будем пока считать это не ошибкой
+    check the manual that corresponds to your MySQL server version for the right syntax to use near
+  }
+
+  with FormError do begin
+    if not Showing then begin
+     CreateSettings(_errorMessage,needReconnect);
+     ShowModal;
+    end;
+  end;
+end;
+
+
+
 
 end.

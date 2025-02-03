@@ -71,6 +71,7 @@ begin
   // создание класса с данными по статистике принятых звонков из очереди
   AnsweredQueue:=TAnsweredQueue.Create;
 
+
   while not Terminated do
   begin
 

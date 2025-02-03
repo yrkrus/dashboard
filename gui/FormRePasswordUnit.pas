@@ -38,9 +38,9 @@ uses
 
 procedure TFormRePassword.btnRePwdClick(Sender: TObject);
 const
- sSIZE_PWD:Word = 4;
+ cSIZE_PWD:Word = 4;
 var
-  resultat:string;
+  error:string;
   pwd:Integer;
 begin
    // проверки
@@ -60,21 +60,19 @@ begin
     end;
 
     if Length(edtPwdNew.Text)<=3 then begin
-     MessageBox(Handle,PChar('ОШИБКА! Длина пароля слишком короткая'+#13#13+'Минимальная длина пароля: '+IntToStr(sSIZE_PWD)+' символа'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+     MessageBox(Handle,PChar('ОШИБКА! Длина пароля слишком короткая'+#13#13+'Минимальная длина пароля: '+IntToStr(cSIZE_PWD)+' символа'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
      Exit;
     end;
-
 
     // меняем пароль
    pwd:=getHashPwd(edtPwdNew.Text);
 
-   resultat:=updateUserPassword(SharedCurrentUserLogon.GetID,pwd);
-
-   if AnsiPos('ОШИБКА!',resultat)<>0 then begin
-     MessageBox(Handle,PChar(resultat),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-     Exit;
+   if not updateUserPassword(SharedCurrentUserLogon.GetID,pwd, error) then begin
+    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    Exit;
    end;
 
+   MessageBox(Handle,PChar('Пароль изменен!'),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
    Close;
 end;
 

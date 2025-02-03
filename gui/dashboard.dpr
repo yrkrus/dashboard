@@ -54,7 +54,9 @@ uses
   Thread_IVRUnit in 'Thread\Thread_IVRUnit.pas',
   Thread_QUEUEUnit in 'Thread\Thread_QUEUEUnit.pas',
   Thread_StatisticsUnit in 'Thread\Thread_StatisticsUnit.pas',
-  Thread_ForecastUnit in 'Thread\Thread_ForecastUnit.pas';
+  Thread_ForecastUnit in 'Thread\Thread_ForecastUnit.pas',
+  TInternalProcessUnit in '..\custom_class\TInternalProcessUnit.pas',
+  Thread_InternalProcessUnit in 'Thread\Thread_InternalProcessUnit.pas';
 
 {$R *.res}
 

@@ -16,14 +16,15 @@ uses
   TIVRUnit, TCustomTypeUnit;
 
 var
-   // режим разработки
-  DEBUG:Boolean = true;
+  // ****************** режим разработки ******************
+                      DEBUG:Boolean = TRUE;
+  // ****************** режим разработки ******************
 
   // текущая директория откуда запускаем *.exe
-  FOLDERPATH:string;
+  FOLDERPATH        :string;
 
   // Текущая версия GUID   ctrl+shift+G (GUID)
-  GUID_VESRION      :string = '1A833C73';
+  GUID_VESRION      :string = 'EB11A1B9';
 
   // exe родителя
   DASHBOARD_EXE     :string = 'dashboard.exe';
@@ -48,26 +49,40 @@ var
   ICON_AUTH_USER          : string = 'user_icon_auth.png';
   ICON_AUTH_USER_ADMIN    : string = 'user_icon_auth_admin.png';
 
+  ///////////////////// CLASSES /////////////////////
+
+  // лог главной формы
+  SharedMainLog:TLoggingFile;
+
+  // текущий залогиненый пользователь в системе
+  SharedCurrentUserLogon: TUser;
+
   // список с текущими активными операторами
   SharedActiveSipOperators: TActiveSIP;
 
   // список с текущим IVR кто звонит на линию
   SharedIVR: TIVR;
 
+  // внутренние процессы дашборда
+ // SharedInternalProcess:TInternalProcess;
+
+ ///////////////////// CLASSES /////////////////////
+
+
   // параметр для лога что есть ошибка
   IS_ERROR:Boolean = True;
 
-  // глобальная ошибка при подкобчении к БД
+  // глобальная ошибка при подключении к БД
   CONNECT_BD_ERROR        :Boolean = False;
 
-  // текущий залогиненый пользователь в системе
-  SharedCurrentUserLogon: TUser;
+
 
   // загрузка DLL
   // --- core.dll ---
  type
   p_TADOConnection = Pointer; // Указатель на TADOConnection
-  function createServerConnect: p_TADOConnection;             stdcall;  external 'core.dll';       // Создание подключения к серверу
+  function createServerConnect: p_TADOConnection; overload;             stdcall;  external 'core.dll';       // Создание подключения к серверу
+  function createServerConnectWithError(var _errorDescriptions: string): p_TADOConnection; overload;             stdcall;  external 'core.dll';       // Создание подключения к серверу
   function GetCopyright:Pchar;                                stdcall;  external 'core.dll';       // copyright
   function GetUserNameFIO(InUserID:Integer):PChar;            stdcall;  external 'core.dll';       // полчуение имени пользователя из его UserID
   function GetUserAccessLocalChat(InUserID:Integer):Boolean;  stdcall;  external 'core.dll';       // есть ли доступ у пользователя к локальному чату
@@ -111,9 +126,9 @@ implementation
 initialization  // Инициализация
   FOLDERPATH:=ExtractFilePath(ParamStr(0));
 
-  SharedActiveSipOperators := TActiveSIP.Create;
-  SharedIVR := TIVR.Create;
-
+  SharedActiveSipOperators  := TActiveSIP.Create;
+  SharedIVR                 := TIVR.Create;
+  SharedMainLog             := TLoggingFile.Create('main');   // лог работы main формы
 
 finalization
   // Освобождение памяти

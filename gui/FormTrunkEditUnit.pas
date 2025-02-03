@@ -140,19 +140,22 @@ begin
 
 end;
 
-function TFormTrunkEdit.getResponseBD(InTypePanel_Server:TypeResponse_Server;InAlias,InLogin:string; InStatus:enumMonitoringTrunk):string;
+function TFormTrunkEdit.GetResponseBD(InTypePanel_Server:TypeResponse_Server;InAlias,InLogin:string; InStatus:enumMonitoringTrunk):string;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  CodOshibki:string;
  monitoring:Integer;
+ error:string;
 begin
   Screen.Cursor:=crHourGlass;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
      Screen.Cursor:=crDefault;
+     ShowFormErrorMessage(error, SharedMainLog, 'TFormTrunkEdit.GetResponseBD');
      FreeAndNil(ado);
      Exit;
   end;
@@ -212,19 +215,23 @@ begin
 end;
 
 // проверка вдруг сущеммтвует уже такой логин
-function getExistLogin(InLogin:string):Boolean;
+function GetExistLogin(InLogin:string):Boolean;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
+ error:string;
 begin
  Result:=False;
 
  ado:=TADOQuery.Create(nil);
- serverConnect:=createServerConnect;
- if not Assigned(serverConnect) then begin
+ serverConnect:=createServerConnectWithError(error);
+
+  if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error, SharedMainLog, 'GetExistLogin');
      FreeAndNil(ado);
      Exit;
- end;
+  end;
+
 
  try
   with ado do begin

@@ -197,7 +197,12 @@ interface
   enumStatisticsCalls = (eNumbers,  // цифры
                          eGraph);   // график
 
-implementation
+
+  type  // нужно ли переподключаться к БД в случае ошибки
+  enumNeedReconnectBD = (eNeedReconnectYES,   // да
+                         eNeedReconnectNO);   // нет
+
+ implementation
 
 
 

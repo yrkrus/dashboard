@@ -17,7 +17,7 @@ type
 
   private
    Log:TLoggingFile;
-  isCheckThreadSipOperators:Boolean; // флаг для первоначальной проверки всех активнх операторов, нужен только при старте дашборда
+   isCheckThreadSipOperators:Boolean; // флаг для первоначальной проверки всех активнх операторов, нужен только при старте дашборда
 
 
   // создание submenu
@@ -49,8 +49,6 @@ uses
 
 { Thread_ACTIVESIP }
 procedure Thread_ACTIVESIP.UpdateActiveSipOperators(var p_ActiveSipOperators:TActiveSIP);
-var
- XML:TXML;
 begin
   if not CONNECT_BD_ERROR then begin
     // проверим есть ли новые операторы
@@ -67,25 +65,6 @@ begin
     // обновим дату последнего онлайна
     p_ActiveSipOperators.updateOnline;
   end;
-
-  // обновляем время
-  with HomeForm.StatusBar do begin
-    Panels[0].Text:=DateTimeToStr(now);
-    if GetStatusUpdateService then Panels[1].Text:='Служба обновления: работает'
-    else Panels[1].Text:='Служба обновления: не запущена';
-  end;
-
-  // текущая версия дашборда + онлайн время
-  XML:=TXML.Create(PChar(SETTINGS_XML));
-  XML.UpdateLastOnline;
-
-  if XML.isUpdate then begin
-   HomeForm.lblNewVersionDashboard.Visible:=True;
-   // подкрашиваем надпись
-   SetRandomFontColor(HomeForm.lblNewVersionDashboard);
-  end;
-
-  XML.Free;
 end;
 
 
@@ -506,6 +485,8 @@ begin
   Sleep(100);
 
   Log:=TLoggingFile.Create('Thread_ActiveSip');
+  // добавляем ссылку на Log в класс
+  SharedActiveSipOperators.AddLinkLogFile(Log);
 
   // default при первом запуске
   isCheckThreadSipOperators:=True;

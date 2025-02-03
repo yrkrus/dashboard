@@ -56,6 +56,10 @@ type
     lblThread_Chat: TLabel;
     Label37: TLabel;
     Label38: TLabel;
+    Label36: TLabel;
+    lblThread_InternalProcess: TLabel;
+    Label40: TLabel;
+    Label41: TLabel;
     procedure FormCreate(Sender: TObject);
   private
     { Private declarations }

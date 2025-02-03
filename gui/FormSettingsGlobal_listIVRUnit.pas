@@ -21,6 +21,7 @@ type
   private
     { Private declarations }
   currentID_del:string;
+  procedure LoadPanel_IVR;
 
   public
     { Public declarations }
@@ -89,21 +90,25 @@ begin
 end;
 
 
-procedure loadPanel_IVR;
+procedure TFormSettingsGlobal_listIVR.LoadPanel_IVR;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  countList,i:Integer;
+ error:string;
 begin
   Screen.Cursor:=crHourGlass;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
      Screen.Cursor:=crDefault;
+     ShowFormErrorMessage(error, SharedMainLog, 'TFormSettingsGlobal_listIVR.LoadPanel_IVR');
      FreeAndNil(ado);
      Exit;
   end;
+
 
   try
     with ado do begin
@@ -166,7 +171,7 @@ begin
     currentID_del:='';
 
    // прогрузка списка
-   loadPanel_IVR;
+   LoadPanel_IVR;
   end;
 end;
 

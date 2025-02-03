@@ -28,6 +28,7 @@ uses
 
       const
       cGLOBAL_DEPTH                      : Word = 20; // глубина недель которые будут просматриваться (длинна массива)
+      cGLOBAL_DEPTH_CORRECT              : Word = 3;  // глубина недель которые будут просматриваться (длинна массива) для корректировки
       cGLOBAL_DAY_START                  : Word = 7;  // начальное значение дня от которого будем считать
 
       public
@@ -39,6 +40,8 @@ uses
 
       private
       m_list                      : array of Integer; // лист со значениями
+      m_listCorrect               : array of Integer; // лист со значениями
+
       m_dateStart                 : TDate; // дата от которой будем считать
       m_forecast                  : Integer; // прогнозируемое значение кол-ва звонков на текущий день
 
@@ -61,7 +64,9 @@ constructor TForecastCalls.Create(var p_label: TStaticText);
   // inherited;
 
    // создаем m_list 
-   SetLength(m_list,cGLOBAL_DEPTH); 
+   SetLength(m_list,cGLOBAL_DEPTH);
+   SetLength(m_listCorrect,cGLOBAL_DEPTH_CORRECT);
+
    m_dateStart:=Now-cGLOBAL_DAY_START;
 
    // создаем данные
@@ -103,8 +108,24 @@ begin
      else if p_label.Caption = '....' then p_label.Caption:='.....';
 
      m_list[i]:=GetCountCalls(currentDate);
-     currentDate:=currentDate-cGLOBAL_DAY_START;   
-   end; 
+     currentDate:=currentDate-cGLOBAL_DAY_START;
+   end;
+
+
+   // корректировочка по данным
+   currentDate:=m_dateStart;
+   for i:=0 to cGLOBAL_DEPTH_CORRECT-1 do begin
+     // делаем что то типа интерактивчика
+     if p_label.Caption = '.....' then p_label.Caption:=''
+     else if p_label.Caption = '' then p_label.Caption:='.'
+     else if p_label.Caption = '.' then p_label.Caption:='..'
+     else if p_label.Caption = '..' then p_label.Caption:='...'
+     else if p_label.Caption = '...' then p_label.Caption:='....'
+     else if p_label.Caption = '....' then p_label.Caption:='.....';
+
+     m_listCorrect[i]:=GetCountCalls(currentDate);
+     currentDate:=currentDate-cGLOBAL_DAY_START;
+   end;
 
 
    // TODO тут хотел сделать еще дельту чтобы знать кол-во которое поступило 
@@ -159,11 +180,18 @@ function TForecastCalls.GetAvgCount:Double;
 var
  i:Integer;
  avg:Integer;
+ avgCorrect:Integer;
 begin
    avg:=0;
+   avgCorrect:=0;
    
    for i:=0 to cGLOBAL_DEPTH-1 do avg:=avg+m_list[i];
-   Result:=avg/cGLOBAL_DEPTH;
+   for i:=0 to cGLOBAL_DEPTH_CORRECT-1 do avgCorrect:=avgCorrect+m_listCorrect[i];
+
+   if Round(avg/cGLOBAL_DEPTH) > Round(avgCorrect/cGLOBAL_DEPTH_CORRECT) then Result:=avg/cGLOBAL_DEPTH
+   else begin
+      Result:=(avgCorrect/cGLOBAL_DEPTH_CORRECT) + (Round(avgCorrect/cGLOBAL_DEPTH_CORRECT) - Round(avg/cGLOBAL_DEPTH));
+   end;
 end;
- 
+
 end.

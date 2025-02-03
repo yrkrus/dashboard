@@ -30,6 +30,7 @@ type
     btnCheckFirebirdSettings: TBitBtn;
     STFirebird_viewPwd: TStaticText;
     lblInfoCheckIKServerFirebird: TLabel;
+    Sheet_SMS: TTabSheet;
     procedure FormShow(Sender: TObject);
     procedure btnAddServerClick(Sender: TObject);
     procedure LoadSettings;

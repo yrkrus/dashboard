@@ -75,16 +75,7 @@ begin
         lblStstistisc_Day_Procent.Caption:='0%';
       end;
     end;
-
-
-     // обновление активной сесии пользователя
-    updateCurrentActiveSession(SharedCurrentUserLogon.GetID);
-
-
-    // нужно ли закрыть текущую сессию
-    if getForceActiveSessionClosed(SharedCurrentUserLogon.GetID) then KillProcess;
   end;
-
 end;
 
 

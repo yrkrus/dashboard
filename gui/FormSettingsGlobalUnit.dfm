@@ -32,14 +32,11 @@ object FormSettingsGlobal: TFormSettingsGlobal
     Font.Height = -13
     Font.Name = 'Tahoma'
     Font.Style = []
+    MultiLine = True
     ParentFont = False
     TabOrder = 0
     object Sheet_Queue: TTabSheet
-      Caption = #1050#1086#1088#1088#1077#1082#1090#1080#1088#1086#1074#1072#1082#1072' '#1074#1088#1077#1084#1077#1085#1080
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      Caption = #1050#1086#1088#1088#1077#1082#1090#1080#1088#1086#1074#1082#1072' '#1074#1088#1077#1084#1077#1085#1080
       object PanelSettings: TPanel
         Left = 0
         Top = 1
@@ -302,10 +299,6 @@ object FormSettingsGlobal: TFormSettingsGlobal
     object Sheet_PasswordFirebird: TTabSheet
       Caption = #1055#1072#1088#1086#1083#1100' Firebird'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Label1: TLabel
         Left = 81
         Top = 16
@@ -339,7 +332,7 @@ object FormSettingsGlobal: TFormSettingsGlobal
         Height = 16
         Alignment = taCenter
         AutoSize = False
-        Caption = #1044#1083#1103' '#1087#1088#1086#1074#1077#1088#1082#1080' '#1085#1077#1086#1073#1093#1086#1076#1080#1084#1086' '#1079#1072#1087#1086#1083#1085#1080#1090#1100'  '#1053#1072#1089#1090#1088#1086#1081#1082#1080' -> '#1057#1077#1088#1074#1077#1088#1072' '#1048#1050
+        Caption = #1044#1083#1103' '#1087#1088#1086#1074#1077#1088#1082#1080' '#1085#1077#1086#1073#1093#1086#1076#1080#1084#1086' '#1079#1072#1087#1086#1083#1085#1080#1090#1100'  '#1052#1077#1085#1102' '#8594' '#1057#1077#1088#1074#1077#1088#1072' '#1048#1050
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clBlue
         Font.Height = -11
@@ -550,6 +543,10 @@ object FormSettingsGlobal: TFormSettingsGlobal
         Transparent = False
         OnClick = STFirebird_viewPwdClick
       end
+    end
+    object Sheet_SMS: TTabSheet
+      Caption = 'SMS '#1086#1090#1087#1088#1072#1074#1082#1072
+      ImageIndex = 2
     end
   end
 end

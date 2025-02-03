@@ -715,12 +715,12 @@ end;
 
 procedure TFormAddNewUsers.btnAddNewUserClick(Sender: TObject);
 var
- _errorDescription:string;
+ error:string;
  ado:TADOQuery;
 begin
 
-  if not getCheckFields(_errorDescription) then begin
-    MessageBox(Handle,PChar(_errorDescription),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+  if not getCheckFields(error) then begin
+    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
   end;
 
@@ -728,16 +728,16 @@ begin
   // добавляем нового пользака
   if not currentEditUsers then begin
 
-    if not getResponseBD(user_add, _errorDescription) then begin
-      MessageBox(Handle,PChar(_errorDescription),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    if not getResponseBD(user_add, error) then begin
+      MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
       Exit;
     end;
 
   end
   else begin
 
-    if not getResponseBD(user_update,_errorDescription) then begin
-      MessageBox(Handle,PChar(_errorDescription),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    if not getResponseBD(user_update,error) then begin
+      MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
       Exit;
     end;
 
@@ -767,7 +767,6 @@ begin
 
     if edtNewLogin.Text<>'' then begin
       if not currentEditUsers then edtNewLogin.Text:='';
-
     end;
 
    end

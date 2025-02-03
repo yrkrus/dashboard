@@ -11,7 +11,7 @@ unit TActiveSIPUnit;
 interface
 
 uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
-     Variants, Graphics, System.SyncObjs, IdException, TUserUnit, TCustomTypeUnit;
+     Variants, Graphics, System.SyncObjs, IdException, TUserUnit, TCustomTypeUnit, TLogFileUnit;
 
   // class TOnline
 
@@ -83,6 +83,8 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
 
       listOperators                          : array of TStructSIP;   // список с операторами
       countAllTalkCalls                      : Integer; // общее кол-во отвеченных звонков
+      m_logging                              : TLoggingFile;
+
 
       procedure Clear;                       // очистка от всех значений
       function GetListOperatorsGoHome:TStringList;    // список операторов которые ушли домой
@@ -97,6 +99,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       destructor Destroy;                     override;
 
 
+      procedure AddLinkLogFile(var p_Log:TLoggingFile);   // данный метод исключительно только 1 раз нужен чтобы добавить в класс ссылку на лог и вызывать его потом корреткно для других функций
       procedure showActiveAndFreeOperatorsForm;           // показ на главной форме сколько сейчас есть активных и
       procedure showHideOperatorsForm;                    // показ на главной форме сколько сейчас скрытых операторов по статусу "ушли домой"
 
@@ -231,6 +234,7 @@ uses
    countActiveCalls:=0;   // кол-во активных звонков
    countFreeOperators:=0; // кол-во свободных операторов
    countAllTalkCalls:=0;       // общее кол-во отвеченных звонков операторами
+
 
    // генерация листа с актиыными операторами
    sipOperators:=TStringList.Create;
@@ -517,6 +521,12 @@ begin
   end;
 end;
 
+// данный метод исключительно только 1 раз нужен чтобы добавить в класс ссылку на лог
+// и вызывать его потом корреткно для других функций
+ procedure TActiveSIP.AddLinkLogFile(var p_Log:TLoggingFile);
+ begin
+   Self.m_logging:=p_Log;
+ end;
 
  procedure TActiveSIP.showActiveAndFreeOperatorsForm;
  begin
@@ -567,7 +577,7 @@ end;
 
             // есть разница в зыонках, надо обновиить список со звонками
              listOperators[i].list_talk_time_all.Clear;
-             listOperators[i].list_talk_time_all:=createListAnsweredCall(listOperators[i].sip_number);
+             listOperators[i].list_talk_time_all:=CreateListAnsweredCall(listOperators[i].sip_number);
 
              // переведем в общее кол-во секунд
              countAll:=0;
@@ -805,7 +815,7 @@ end;
 
          // кол-во звонков
        oldCount:=listOperators[i].count_talk;
-       newCount:=getCountAnsweredCall(listOperators[i].sip_number);
+       newCount:=GetCountAnsweredCall(listOperators[i].sip_number);
        if newCount=0 then Continue;
 
 

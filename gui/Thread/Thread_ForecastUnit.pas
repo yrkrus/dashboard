@@ -57,7 +57,6 @@ begin
   inherited;
   CoInitialize(Nil);
   Sleep(500);
-
   Log:=TLoggingFile.Create('Thread_Forecast');
 
   while not Terminated do
@@ -69,6 +68,9 @@ begin
 
         show;
         UpdateForecast:=False;
+
+        // останавливаем процесс
+        Terminate;
 
        // EndTime:= GetTickCount;
        // Duration:= EndTime - StartTime;

@@ -37,9 +37,6 @@ Coordinates=837,282,114,58
 [Label13]
 Coordinates=343,622,60,58
 
-[Button1]
-Coordinates=10,622,59,58
-
 [PanelShadowRight]
 Coordinates=73,282,124,58
 
@@ -163,4 +160,7 @@ Coordinates=910,597,99,36
 
 [menu]
 Coordinates=457,232,40,36
+
+[START_THREAD_ALLl]
+Coordinates=10,622,59,58
 

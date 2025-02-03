@@ -26,7 +26,7 @@ type
     Label18: TLabel;
     Label21: TLabel;
     lblCount_QUEUE: TLabel;
-    Button1: TButton;
+    START_THREAD_ALLl: TButton;
     Label20: TLabel;
     lblStstistisc_Day_Answered: TLabel;
     lblStstistisc_Day_No_Answered: TLabel;
@@ -142,7 +142,7 @@ type
     Label25: TLabel;
     STForecastCount: TStaticText;
     img_SL_History_Graph: TImage;
-    procedure Button1Click(Sender: TObject);
+    procedure START_THREAD_ALLlClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure Timer_Thread_StartTimer(Sender: TObject);
@@ -196,7 +196,6 @@ type
     procedure img_SL_History_GraphClick(Sender: TObject);
     procedure ListViewSIPData(Sender: TCustomListView;
   ItemIndex: Integer; var ItemData: Pointer);
-    procedure Button3Click(Sender: TObject);
 
 
 
@@ -210,19 +209,21 @@ type
   Log:TLoggingFile;
 
   ///////// ПОТОКИ ////////////
-  Statistics_thread:TThread;
-  IVR_thread:TThread;
-  QUEUE_thread:TThread;
-  ACTIVESIP_thread:TThread;
-  ACTIVESIP_Queue_thread:TThread;
-  ACTIVESIP_updateTalk_thread:TThread;
-  ACTIVESIP_updateTalkPhone_thread:TThread;
-  ACTIVESIP_countTalk_thread:TThread;
-  CHECKSERVERS_thread:TThread;
-  ANSWEREDQUEUE_thread:TThread;
-  ONLINECHAT_thread:TThread;
-  FORECAST_thread:TThread;
-
+  STATISTICS_thread                 :TThread;
+  IVR_thread                        :TThread;
+  QUEUE_thread                      :TThread;
+  ACTIVESIP_thread                  :TThread;
+  ACTIVESIP_Queue_thread            :TThread;
+  ACTIVESIP_updateTalk_thread       :TThread;
+  ACTIVESIP_updateTalkPhone_thread  :TThread;
+  ACTIVESIP_countTalk_thread        :TThread;
+  CHECKSERVERS_thread               :TThread;
+  ANSWEREDQUEUE_thread              :TThread;
+  ONLINECHAT_thread                 :TThread;
+  FORECAST_thread                   :TThread;
+  INTERNALPROCESS_thread            :TThread;
+  ///////// ПОТОКИ ////////////
+  ///
   end;
 
   ///   asterisk -rx "queue add member Local/НОМЕР_ОПЕРАОРА@from-queue/n to НОМЕР_ОЧЕРЕДИ penalty 0 as НОМЕР_ОПЕРАТОРА state_interface hint:НОМЕР_ОПЕРАТОРА@ext-local"
@@ -233,7 +234,7 @@ var
   HomeForm: THomeForm;
 
 
-  // thread
+  // **************** Thread Update ****************
   UpdateStatistiscSTOP:Boolean;                            // остановка обновления статичтики
   UpdateIVRSTOP:Boolean;                                   // остановка обновления IVR
   UpdateQUEUESTOP:Boolean;                                 // остановка обновления QUEUE
@@ -246,6 +247,15 @@ var
   UpdateAnsweredStop:Boolean;                              // остановка обновления AnsweredQueue
   UpdateOnlineChatStop:Boolean;                            // остановка обновления OnlineChat
   UpdateForecast:Boolean;                                  // остановка обновления Forecast
+  UpdateInternalProcess:Boolean;                           // остановка обновления InternalProcess
+  // **************** Thread Update ****************
+
+
+
+  LastKernelTime: Int64 = 0;
+  LastUserTime: Int64 = 0;
+  LastCheckTime: Int64 = 0;
+
 
  const
   // Размер панели "Статусы операторов"
@@ -458,98 +468,9 @@ begin
  end;
 end;
 
-procedure THomeForm.Button1Click(Sender: TObject);
+procedure THomeForm.START_THREAD_ALLlClick(Sender: TObject);
 begin
   Timer_Thread_Start.Enabled:=True;
-end;
-
-
-procedure THomeForm.Button3Click(Sender: TObject);
-var
- test:TForecastCalls;
-begin
-  test:=TForecastCalls.Create;
-  test.ShowForecastCount(STForecastCount);
-end;
-
-// распаковывем zip архив
-procedure UnPack(InFileName:string; var p_Log:TLoggingFile; var p_listUpdate:TStringList);
-var
- ZipFile:TZipFile;
- i:Integer;
- FileName:string;
- folderDest:string;
-begin
-   p_Log.Save('Распаковка архива <b>'+InFileName+'</b>');
-   folderDest:=FOLDERPATH+GetUpdateNameFolder;
-
-   try
-     ZipFile:=TZipFile.Create;
-     ZipFile.Open(folderDest+'\'+InFileName, zmRead);
-
-     try
-        // Перебираем все файлы в архиве
-        for I := 0 to ZipFile.FileCount - 1 do
-        begin
-          FileName := ZipFile.FileNames[I]; // Получаем имя файла
-          // Извлекаем файл
-          ZipFile.Extract(I, PChar(folderDest));
-          // Отслеживаем извлечение
-          p_Log.Save('Извлечен файл: <b>'+FileName+'</b>');
-          p_listUpdate.Add(StringReplace(FileName,'/','\',[rfReplaceAll]));
-        end;
-     except
-       on E:Exception do
-       begin
-         p_Log.Save('Не удалось извлечь файл: <b>'+FileName+'</b> | '+e.Message,IS_ERROR);
-       end;
-     end;
-   finally
-     if ZipFile<>nil then ZipFile.Free;
-     DeleteFile(folderDest+'\'+InFileName);
-   end;
-end;
-
-
-// создание установщика
-procedure CreateCMD(var p_XML:TXML; var p_listUpdate:TStringList);
-var
-  Bat:TStringList;
-  i:Integer;
-begin
-  Bat:=TStringList.Create;
-   with Bat do begin
-     Add('@echo off');
-     Add('set DirectoryUpdate='+FOLDERPATH+GetUpdateNameFolder+'\');
-     Add('set Directory='+FOLDERPATH);
-     Add('::');
-     Add('echo                      AutoUpdate Dashboard ');
-     Add('echo                  upgrade '+p_XML.GetCurrentVersion+' to '+p_XML.GetRemoteVersion);
-     Add('echo                    started after 10 sec ...');
-     Add('echo.');
-     Add('ping -n 10 localhost>Nul');
-     Add('::');
-
-      // закрываем exe
-     Add('taskkill /F /IM '+DASHBOARD_EXE);
-     Add('taskkill /F /IM '+CHAT_EXE);
-     Add('::');
-
-     // закрываем обновлялку
-     Add('net stop '+UPDATE_SERVICES);
-
-
-      // копируем новые файлы
-      for i:=0 to p_listUpdate.Count-1 do begin
-       Add('echo F | xcopy "%DirectoryUpdate%\'+p_listUpdate[i]+'"'+' "%Directory%'+p_listUpdate[i]+'" /Y /C');
-      end;
-      Add('::');
-
-    // запускаем обновлялку
-    Add('net start '+UPDATE_SERVICES);
-    Add('exit')
-   end;
-   Bat.SaveToFile(FOLDERPATH+'update.bat');
 end;
 
 
@@ -658,10 +579,18 @@ end;
 procedure THomeForm.FormShow(Sender: TObject);
 var
  i:Integer;
+ error:string;
 begin
  try
   Height:=900; //1011
   ClientWidth:=1410;
+
+
+  // проверка установлен ли MySQL Connector  TODO включить
+  if not isExistMySQLConnector then begin
+    error:='Не установлен MySQL Connector';
+    ShowFormErrorMessage(error,SharedMainLog,'THomeForm.FormShow');
+  end;
 
   // отображение текущей версии  ctrl+shift+G (GUID) - от этого ID зависит актуальность еще
   Caption:=Caption+' '+getVersion(GUID_VESRION,eGUI) + ' | '+'('+GUID_VESRION+')';
@@ -707,7 +636,7 @@ begin
    end;
 
    // заведение данных о текущей сесии
-   createCurrentActiveSession(SharedCurrentUserLogon.GetID);
+   CreateCurrentActiveSession(SharedCurrentUserLogon.GetID);
 
 
   // создание списка серверов для проверки доступности
@@ -725,7 +654,9 @@ begin
    HappyNewYear;
 
   Screen.Cursor:=crDefault;
-  Button1.Click;
+
+  // создаем все потоки
+  START_THREAD_ALLl.Click;
   except
   on E: Exception do begin
     MessageBox(Handle,PChar('Этой надписи никогда не должно было быть!'+#13+

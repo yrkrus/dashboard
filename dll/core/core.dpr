@@ -11,12 +11,12 @@ uses
   System.DateUtils,
   Winapi.TlHelp32,
   GlobalVariables in 'GlobalVariables.pas',
-  TCustomTypeUnit in '..\..\gui\TCustomTypeUnit.pas';
+  TCustomTypeUnit in '..\..\custom_class\TCustomTypeUnit.pas';
 
 {$R *.res}
 
 // создание подключения к серверу
-function createServerConnect: Pointer; stdcall; // Возвращаем указатель
+function createServerConnect: Pointer; stdcall; overload; // Возвращаем указатель
 begin
   Result:= Pointer(TADOConnection.Create(nil)); // Создаем объект и возвращаем указатель
 
@@ -48,6 +48,46 @@ begin
     end;
   end;
 end;
+
+function createServerConnectWithError(var _errorDescriptions:string): Pointer; stdcall; export; // Возвращаем указатель
+begin
+  Result:= Pointer(TADOConnection.Create(nil)); // Создаем объект и возвращаем указатель
+
+  _errorDescriptions:='';
+
+  with TADOConnection(Result) do
+  begin
+    DefaultDatabase := GetServerAddress;
+    Provider := 'MSDASQL.1';
+    ConnectionString := 'Provider=' + Provider +
+                        ';Password=' + GetServerPassword +
+                        ';Persist Security Info=True;User ID=' + GetServerUser +
+                        ';Extended Properties="Driver=MySQL ODBC 5.3 Unicode Driver;SERVER=' + GetServerAddress +
+                        ';UID=' + GetServerUser +
+                        ';PWD=' + GetServerPassword +
+                        ';DATABASE=' + DefaultDatabase +
+                        ';PORT=3306;COLUMN_SIZE_S32=1";Initial Catalog=' + DefaultDatabase;
+
+    LoginPrompt := False;  // без запроса на вывод логин\пароль
+
+    try
+      Connected := True;
+      Open;
+    except
+      on E: Exception do
+      begin
+        _errorDescriptions:=PChar(e.ClassName+ ' '+ e.Message);
+
+        Free; // Освобождаем память в случае ошибки
+        Result:=nil;
+
+       // raise; // Можно поднять исключение, чтобы сообщить об ошибке
+      end;
+    end;
+  end;
+end;
+
+
 
 function GetCopyright:PChar;stdcall;export;
 var
@@ -499,6 +539,7 @@ end;
 
 exports
   createServerConnect,
+  createServerConnectWithError,
   GetCopyright,
   GetUserNameFIO,
   GetUserAccessLocalChat,

@@ -28,6 +28,8 @@ type
     procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
+  procedure LoadPanel_Trunk;
+
   public
 
   panel_Trunks_ID         :string;
@@ -48,21 +50,25 @@ uses
 {$R *.dfm}
 
 // прогрузка транков
-procedure loadPanel_Trunk;
+procedure TFormTrunk.LoadPanel_Trunk;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  countServers,i:Integer;
+ error:string;
 begin
   Screen.Cursor:=crHourGlass;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
-   Screen.Cursor:=crDefault;
-   FreeAndNil(ado);
-    Exit;
+     Screen.Cursor:=crDefault;
+     ShowFormErrorMessage(error, SharedMainLog, 'TFormTrunk.LoadPanel_Trunk');
+     FreeAndNil(ado);
+     Exit;
   end;
+
 
   try
     with ado do begin
@@ -132,7 +138,7 @@ begin
 
 
      // прогрузка списка транков
-     loadPanel_Trunk;
+     LoadPanel_Trunk;
   end;
 end;
 
