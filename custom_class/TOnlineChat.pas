@@ -347,7 +347,7 @@ begin
   begin
     with HomeForm.lblNewMessageLocalChat do begin
       if Visible then Visible:=False;
-       Exit;
+      Exit;
     end;
   end;
 

@@ -6,8 +6,8 @@ uses
 FormHomeUnit,
  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,System.Win.ComObj,System.StrUtils,math, IdHTTP,
-  IdSSL,httpsend,ssl_openssl,IdIOHandlerStack, IdSSLOpenSSL, System.DateUtils,synacode, System.IniFiles,
-  Winapi.WinSock;
+  IdSSL,IdIOHandlerStack, IdSSLOpenSSL, System.DateUtils,System.IniFiles,
+  Winapi.WinSock,  Vcl.ComCtrls, GlobalVariables;
 
 
 procedure LoadData(InTypeReport:Word);                                                        // загрузка excel
@@ -20,205 +20,206 @@ function GetSMS(inPacientPhone,inPacientIO,inPacientBirthday,
                 inNapravlenie,inAddress:string):string; overload;                             // отправка смс
 function SettingsLoadString(INFILE,INSection,INValue,INValueDefault:string):string;           // загрузка параметров
 procedure SettingsSaveString(INFILE,INSection,INValue,INValueDefault:string);                 // сохранение параметров
-procedure LoadAuthotization;                                                                  // загрузка параметров авторизации
 procedure ErrorParsingLog(InPhoneNumber,InTypeParsing,InFullStackSMSParsing:string);          // отображение ошибки в логе
-procedure SmsTypeStyle(InSMSStyle:TSmsStyle);                                                 // выбор типа отправляемого смс
-function GetCheckAuth(InSMSStyle:TSmsStyle):string;                                           // проверка на заполненость
 procedure PreLoadData(inTypeReport:Word);                                                     // пред загрузка данных об отправке
 function GetTimeDiff(InCurrentSec:Integer):string;                                            // время высчитывание примерного времени
 function GetSMSStatusID(inPacientPhone:string):string;                                        // проверка смс статуса
 procedure LoadMsgMessageOld(InMaxCount:Integer);                                              // прогрузка последних успешных сообщений
 function GetExistSaveMessage(InMEssage:string):Boolean;                                       // проверка есть ли уже ранее сохраненное сообщение
 procedure AddSaveMessageOld(InMessage:string);                                                // сохранение сообщения
-procedure LoadSettingEnterSend;                                                               // отправка смс по нажатию на enter
-procedure SaveSettingEnterSend(inBool:Boolean);                                               // сохранение параметров по нажатию на enter
-procedure ClearTabs(InTypeStatus:TSmsStyle);                                                  // очистка заполненных полей
-function GetCheckNumber(InNumberPhone:string):string;                                         // проверка корректности номера телефона при вводе
+
 procedure ParsingResultStatusSMS(ResultServer,inPacientPhone:string);                         // парсинг и создание формы инфо статуса сообщения
 function GetMsgCount(ResultServer,inPacientPhone:string):Integer;                             // кол-во смс которые были отправлены
 procedure ShowInfoMessage(arrMsg: array of TSMSMessage; arrCount:Integer);                    // отображение инфо об отправке
-function GetLocalIP: String;                                                                  // функция получения локального IP
-function GetComputerNetName: string;                                                          // функция получения имени ПК
-function GetCurrentUserName: string;                                                          // получение имени залогиненого пользователя
+
+
+// проверенные
+procedure OptionsStyle(InOptionsType:enumSendingOptions);                                     // выбор типа отправляемого смс
+function isCorrectNumberPhone(InNumberPhone:string; var _errorDescription:string):Boolean;      // проверка корректности номера телефона при вводе
+function CheckParamsBeforeSending(InOptionsType:enumSendingOptions; var _errorDescription:string):Boolean; // проверка данных перед отправкой
+function CreateSMSMessage(var InMessage:TRichEdit):string;                                            // правка сообщения чтобы оно было в 1 строку
+function SendingMessage(InOptionsType:enumSendingOptions; var _errorDescription:string):Boolean; // отправка сообщения
+procedure ClearParamsForm(InOptionsType:enumSendingOptions);                                     // очистка полей формы
+procedure ShowOrHideLog(InOptions:enumFormShowingLog); // ототбражать или скрывать лог
+
+
 
 implementation
 
 uses
-  FormMsgPerenosUnit;
+  FormMyTemplateUnit, TSendSMSUint;
 
 
-// получение имени залогиненого пользователя
-function GetCurrentUserName: string;
- const
-   cnMaxUserNameLen = 254;
- var
-   sUserName: string;
-   dwUserNameLen: DWORD;
-begin
-   dwUserNameLen := cnMaxUserNameLen - 1;
-   SetLength(sUserName, cnMaxUserNameLen);
-   GetUserName(PChar(sUserName), dwUserNameLen);
-   SetLength(sUserName, dwUserNameLen);
-   Result:= PChar(sUserName);
-end;
-
-
-// функция получения имени ПК
-function GetComputerNetName: string;
-var
-  buffer: array[0..255] of char;
-  size: dword;
-begin
-  size := 256;
-  if GetComputerName(buffer, size) then Result := buffer
-  else Result := 'null';
-end;
-
-// функция получения локального IP
-function GetLocalIP: String;
-const WSVer = $101;
-var
-  wsaData: TWSAData;
-  P: PHostEnt;
-  Buf: array [0..127] of Char;
-begin
-  Result:='127.0.0.1';
-
-  if WSAStartup(WSVer, wsaData) = 0 then
-   begin
-    if GetHostName(@Buf, 128) = 0 then
-     begin
-      P := GetHostByName(@Buf);
-      if P <> nil then Result := iNet_ntoa(PInAddr(p^.h_addr_list^)^)
-      else Result:='127.0.0.1';
-     end;
-    WSACleanup;
-   end;
-end;
 
 
 // проверка корректности номера телефона при вводе
-function GetCheckNumber(InNumberPhone:string):string;
-const
- TypeErrorRassilka:string   = 'отправки SMS';
- TypeErrorMsgStatus:string  = 'проверки статуса SMS';
+function isCorrectNumberPhone(InNumberPhone:string; var _errorDescription:string):Boolean;
 var
  telefon:string;
 begin
+  Result:=False;
+  _errorDEscription:='';
+
   telefon:=InNumberPhone;
 
    if telefon='' then begin
-    Result:='ОШИБКА! Пустой номер телефона в первой строке';
+    _errorDescription:='Пустой номер телефона';
     Exit;
    end;
 
    // номер должен начинаться с 8
    if telefon[1]<>'8' then begin
-    Result:='ОШИБКА! Номер телефона '+telefon+' должен начинаться с 8';
+    _errorDescription:='Номер телефона "'+telefon+'" должен начинаться с 8';
     Exit;
    end;
 
    // длина
    if (Length(telefon)<>11) then begin
-    Result:='ОШИБКА! Некорректный номер '+telefon+' для %type_status'+#13#13+
-            'Длина номера должна быть 11 символов,'+#13+'сейчас длина '+IntToStr(Length(telefon))+' символов';
-
-    with FormHome do begin
-      case PageType.ActivePage.PageIndex of
-       0:begin                              // проверка статуса сообщения
-         Result:=StringReplace(Result,'%type_status',TypeErrorMsgStatus,[rfReplaceAll]);
-       end;
-       1:begin                              // ручная отправка
-         Result:=StringReplace(Result,'%type_status',TypeErrorRassilka,[rfReplaceAll]);
-       end;
-       2:begin                              // рассылка
-         // ничего не заменяем
-       end;
-      end;
-    end;
-
-    Exit;
+    _errorDescription:='Некорректный номер телефона "'+telefon+'"'+#13#13+
+                       'Длина номера телефона должна быть 11 символов'+#13+'сейчас длина '+IntToStr(Length(telefon))+' символов';
+     Exit;
    end;
 
-   Result:='OK';
+   Result:=True;
 end;
 
+// проверка данных перед отправкой
+function CheckParamsBeforeSending(InOptionsType:enumSendingOptions; var _errorDescription:string):Boolean;
+var
+ t:Integer;
+begin
+  Result:=False;
+  _errorDescription:='';
 
-// проверка на заполненость
-function GetCheckAuth(InSMSStyle:TSmsStyle):string;
+  // что именно проверяем
+   with FormHome do begin
+      case InOptionsType of
+        options_Manual:begin  // ручная отправка
+
+         // телефон
+         if not isCorrectNumberPhone(edtManualSMS.Text,_errorDescription) then begin
+            Exit;
+         end;
+
+         // сообщение
+         if Length(re_ManualSMS.Text)=0 then begin
+           _errorDescription:='Пустое сообщение';
+           Exit;
+         end;
+
+        end;
+        options_Sending:begin // рассылка
+           // TODO сделать
+        end;
+      end;
+   end;
+
+  Result:=True;
+end;
+
+// правка сообщения чтобы оно было в 1 строку
+function CreateSMSMessage(var InMessage:TRichEdit):string;
 var
  i:Integer;
- preResult:string;
+ tmp:string;
 begin
+  tmp:='';
+  for i:=0 to InMessage.Lines.Count-1 do begin
 
-   with FormHome do begin
-      if (edtLogin.Text='') and (edtPwd.Text='') then begin
-       Result:='ОШИБКА! Не заполнены поля Авторизация';
-       Exit;
-      end;
+    if tmp='' then tmp:=InMessage.Lines[i]
+    else tmp:=tmp + InMessage.Lines[i];
+  end;
 
-      if edtLogin.Text='' then begin
-       Result:='ОШИБКА! Не заполнено поле Авторизация.Логин';
-       Exit;
-      end;
-
-      if edtPwd.Text='' then begin
-       Result:='ОШИБКА! Не заполнено поле Авторизация.Пароль';
-       Exit;
-      end;
-
-     case InSMSStyle of
-        MsgStatus:begin
-          // проверка номера телефона
-          if edtNumbeFromStatus.Text=''  then begin
-            Result:='ОШИБКА! Отсутвует номер телефона для проверки статуса отправки';
-            Exit;
-          end;
-
-          preResult:=GetCheckNumber(edtNumbeFromStatus.Text);
-
-           if AnsiPos('ОШИБКА',preResult)<>0 then begin
-             Result:=preResult;
-             Exit;
-           end;
-
-        end;
-        ManualSend: begin
-          // есть ли текст сообщения
-          if SettingsLoadString(cAUTHconf,'core','msg_perenos','')='' then begin
-           Result:='ОШИБКА! Не написан текст СМС сообщения';
-           Exit;
-          end;
-
-         // проверка телефона
-         begin
-          if reNumberPhoneList.Lines.Count=0  then begin
-              Result:='ОШИБКА! Отсутвует номер телефона для отправки СМС';
-              Exit;
-          end;
-
-          for i:=0 to reNumberPhoneList.Lines.Count-1 do begin
-
-             preResult:=GetCheckNumber(reNumberPhoneList.Lines[i]);
-
-             if AnsiPos('ОШИБКА',preResult)<>0 then begin
-               Result:=preResult;
-               Exit;
-             end;
-          end;
-
-         end;
-        end;
-        Rassilka: begin
-           // загружаем exel для последкующего разбора
-           if FileExcelSMS='' then begin
-             Result:='ОШИБКА! Не загружен файл отчета';
-             Exit;
-           end;
-        end;
-     end;
-   end;
+  Result:=tmp;
 end;
+
+// отправка сообщения
+function SendingMessage(InOptionsType:enumSendingOptions; var _errorDescription:string):Boolean;
+var
+ SMS:TSendSMS;
+ SMSMessage:string;
+ phone:string;
+begin
+  Result:=False;
+  _errorDescription:='';
+
+  case InOptionsType of
+    options_Manual:begin  // ручная отправка
+      SMS:=TSendSMS.Create;
+      if not SMS.isExistAuth then begin
+        _errorDescription:='Отсутствуют авторизационные данные для отправки SMS';
+        Exit;
+      end;
+
+      // подправим сообщение чтобы оно было в одну строчку
+      SMSMessage:=CreateSMSMessage(FormHome.re_ManualSMS);
+
+      // телефон
+      phone:=FormHome.edtManualSMS.Text;
+
+      if not SMS.SendSMS(SMSMessage,phone,_errorDescription) then begin
+       Exit;
+      end;
+
+    end;
+    options_Sending:begin  // рассылка
+        // TODO сделать
+    end;
+  end;
+
+  Result:=True;
+end;
+
+ // очистка полей формы
+procedure ClearParamsForm(InOptionsType:enumSendingOptions);
+begin
+  with FormHome do begin
+   case InOptionsType of
+      options_Manual:begin  // ручная отправка
+         edtManualSMS.Text:='';
+         re_ManualSMS.Clear;
+      end;
+      options_Sending:begin // рассылка
+            // TODO сделать
+      end;
+    end;
+  end;
+end;
+
+// ототбражать или скрывать лог
+procedure ShowOrHideLog(InOptions:enumFormShowingLog);
+var
+  ScreenWidth, ScreenHeight: Integer;
+  FormWidth, FormHeight: Integer;
+  NewLeft, NewTop: Integer;
+begin
+  with FormHome do begin
+    case InOptions of
+      log_show:begin
+        Width:=cWIDTH_SHOWLOG;
+      end;
+      log_hide:begin
+       Width:=cWIDTH_HIDELOG;
+      end;
+    end;
+   // Получаем размеры экрана
+    ScreenWidth := Screen.Width;
+    ScreenHeight := Screen.Height;
+
+    // Получаем размеры формы
+    FormWidth := Width;
+    FormHeight := Height;
+
+    // Вычисляем новые координаты для центрирования формы
+    NewLeft := (ScreenWidth - FormWidth) div 2;
+    NewTop := (ScreenHeight - FormHeight) div 2;
+
+    // Устанавливаем новое положение формы
+    Left := NewLeft;
+    Top := NewTop;
+  end;
+end;
+
 
 // пред загрузка данных об отправке
 procedure PreLoadData(inTypeReport:Word);
@@ -263,50 +264,20 @@ begin
 end;
 
 // выбор типа отправляемого смс
-procedure SmsTypeStyle(InSMSStyle:TSmsStyle);
+procedure OptionsStyle(InOptionsType:enumSendingOptions);
 begin
   with FormHome do begin
-   case InSMSStyle of
-      ManualSend: begin
-       btnSendSMS.Caption:='Отправить SMS';
-       lblProgressBar.Caption:='Статус отправки';
+   case InOptionsType of
+      options_Manual: begin
+       btnSendSMS.Caption:=' &Отправить SMS';
       end;
-      Rassilka: begin
-       btnSendSMS.Caption:='Отправить SMS рассылку';
-       lblProgressBar.Caption:='Статус отправки';
-      end;
-      MsgStatus:begin
-       lblMsgStatusInfo.Caption:=StringReplace(lblMsgStatusInfo.Caption,'%current_date',DateToStr(Now-4),[rfReplaceAll]);
-       lblMsgStatusInfo.Caption:=StringReplace(lblMsgStatusInfo.Caption,'%now_date',DateToStr(Now),[rfReplaceAll]);
-
-       btnSendSMS.Caption:='Проверка статуса';
-       lblProgressBar.Caption:='Поиск сообщений';
+      options_Sending: begin
+       btnSendSMS.Caption:=' &Запустить SMS рассылку';
       end;
    end;
   end;
 end;
 
-
-// очистка заполненных полей
-procedure ClearTabs(InTypeStatus:TSmsStyle);
-begin
-  with FormHome do begin
-    case InTypeStatus of
-      ManualSend:begin
-        reNumberPhoneList.Lines.Clear;
-      end;
-      Rassilka:begin
-        edtExcelSMS.Text:='';
-        edtExcelSMS2.Text:='';
-
-       if SLSMS.Count<>0 then SLSMS.Clear;
-      end;
-      MsgStatus:begin
-         edtNumbeFromStatus.Text:='';
-      end;
-    end;
-  end;
-end;
 
 // сохранение параметров
 procedure SettingsSaveString(INFILE,INSection,INValue,INValueDefault:string);
@@ -314,7 +285,7 @@ var
 SettingsConf:TIniFile;
 begin
  try
-   SettingsConf:=TIniFile.Create(ParsingDirectory+'/'+INFILE);
+   SettingsConf:=TIniFile.Create(FOLDERPATH+'/'+INFILE);
    SettingsConf.WriteString(INSection,INValue,INValueDefault);
  finally
    if SettingsConf<>nil then FreeAndNil(SettingsConf);
@@ -327,7 +298,7 @@ function SettingsLoadString(INFILE,INSection,INValue,INValueDefault:string):stri
 var
   SettingsConf: TIniFile;
 begin
-   SettingsConf:=TIniFile.Create(ParsingDirectory+'/'+INFILE);
+   SettingsConf:=TIniFile.Create(FOLDERPATH+'/'+INFILE);
     with SettingsConf do begin
        Result:=ReadString(INSection,INValue,INValueDefault);
        Free;
@@ -622,33 +593,33 @@ begin
  else TextColor:='262331';
  Color:=ColorToRGB(StrToInt(TextColor));
 
- user:='['+currentUser.getUserName+' | '+currentUser.getIP+'] ';
+ //user:='['+currentUser.getUserName+' | '+currentUser.getIP+'] ';
 
  // переводим в HEX
  TextColor:=IntToHex(GetRValue(Color),2)+IntToHex(GetGValue(Color),2)+IntToHex(GetBValue(Color),2);
 
- if not DirectoryExists(ParsingDirectory+'log') then CreateDir(ParsingDirectory+'log');
+ if not DirectoryExists(FOLDERPATH+'log') then CreateDir(FOLDERPATH+'log');
 
- if not FileExists(ParsingDirectory+'log\'+CurrentDateTime+cLOG_EXTENSION) then begin
+ if not FileExists(FOLDERPATH+'log\'+CurrentDateTime+cLOG_EXTENSION) then begin
   if InText<>'<hr>' then SLSave.Insert(0, '<font color="'+TextColor+'"'+' size="'+TextSize+'"'+' face="'+TextFont+'">'+user+DateTimeNow+' '+InText+'</font><br>')
   else SLSave.Insert(0, '<font color="'+TextColor+'"'+' size="'+TextSize+'"'+' face="'+TextFont+'">'+InText+'</font><br>');
 
 
   try
-    SLSave.SaveToFile(ParsingDirectory+'log\'+CurrentDateTime+cLOG_EXTENSION);
+    SLSave.SaveToFile(FOLDERPATH+'log\'+CurrentDateTime+cLOG_EXTENSION);
   finally
     // ничего не делаем продолжаем
   end;
  end
  else begin
-  SLSave.LoadFromFile(ParsingDirectory+'log\'+CurrentDateTime+cLOG_EXTENSION);
+  SLSave.LoadFromFile(FOLDERPATH+'log\'+CurrentDateTime+cLOG_EXTENSION);
 
   if InText<>'<hr>' then SLSave.Insert(0, '<font color="'+TextColor+'"'+' size="'+TextSize+'"'+' face="'+TextFont+'">'+user+DateTimeNow+' '+InText+'</font><br>')
   else SLSave.Insert(0, '<font color="'+TextColor+'"'+' size="'+TextSize+'"'+' face="'+TextFont+'">'+InText+'</font><br>');
 
 
   try
-   SLSave.SaveToFile(ParsingDirectory+'log\'+CurrentDateTime+cLOG_EXTENSION);
+   SLSave.SaveToFile(FOLDERPATH+'log\'+CurrentDateTime+cLOG_EXTENSION);
   finally
    // ничего не делаем продолжаем
   end;
@@ -666,54 +637,13 @@ var
  ssl:TIdSSLIOHandlerSocketOpenSSL;
  ServerOtvet:string;
 
- Child:Boolean; // TRUE - ребенок | FALSE - взрослый
-
  Age:int64;
 
  MessageSMS:string;
  HTTPGet:string;
 begin
 
- if global_DEBUG then inPacientPhone:='89275052333';
-
  // разберем текст
- (*  begin
-     // ребенок или взрослый
-     begin
-      Age:=0;
-      Child:=False;
-
-      Age:=DateTimeToUnix(Now)-DateTimeToUnix(StrToDateTime(inPacientBirthday));
-      if Age>=cAGELIMIT18 then Child:=False
-      else Child:=True;
-     end;
-
-
-    if Child=False then begin  { Сообщение если взрослый }
-     MessageSMS:=cMESSAGEBefor18;
-
-
-     MessageSMS:=StringReplace(MessageSMS,'%FIO_Pacienta',inPacientIO,[rfReplaceAll]);
-     MessageSMS:=StringReplace(MessageSMS,'%FIO_Doctora',inFIOVracha,[rfReplaceAll]);
-    // MessageSMS:=StringReplace(MessageSMS,'%Napravlenie',inNapravlenie,[rfReplaceAll]);
-     MessageSMS:=StringReplace(MessageSMS,'%Data',inDataPriema,[rfReplaceAll]);
-     MessageSMS:=StringReplace(MessageSMS,'%Time',inTimePriema,[rfReplaceAll]);
-     MessageSMS:=StringReplace(MessageSMS,'%Address',inAddress,[rfReplaceAll]);
-
-    end
-    else begin                 { Сообщение если ребенок }
-     MessageSMS:=cMESSAGEAfter18;
-     MessageSMS:=StringReplace(MessageSMS,'%FIO_Pacienta',inPacientIO,[rfReplaceAll]);
-     if inPacientPol='м' then MessageSMS:=StringReplace(MessageSMS,'%записан(а)','записан',[rfReplaceAll])
-     else MessageSMS:=StringReplace(MessageSMS,'%записан(а)','записана',[rfReplaceAll]);
-
-     MessageSMS:=StringReplace(MessageSMS,'%FIO_Doctora',inFIOVracha,[rfReplaceAll]);
-    // MessageSMS:=StringReplace(MessageSMS,'%Napravlenie',inNapravlenie,[rfReplaceAll]);
-     MessageSMS:=StringReplace(MessageSMS,'%Data',inDataPriema,[rfReplaceAll]);
-     MessageSMS:=StringReplace(MessageSMS,'%Time',inTimePriema,[rfReplaceAll]);
-     MessageSMS:=StringReplace(MessageSMS,'%Address',inAddress,[rfReplaceAll]);
-    end;
-   end;  *)
 
  // нет градации ребенок или взрослый
   begin
@@ -739,9 +669,9 @@ begin
    }
 
    with FormHome do begin
-    HTTPGet:=StringReplace(HTTPGet,'%USERNAME',edtLogin.Text,[rfReplaceAll]);
-    HTTPGet:=StringReplace(HTTPGet,'%USERPWD',edtPwd.Text,[rfReplaceAll]);
-    HTTPGet:=StringReplace(HTTPGet,'%MESSAGE', EncodeURL(AnsiToUtf8(MessageSMS)),[rfReplaceAll]);
+   // HTTPGet:=StringReplace(HTTPGet,'%USERNAME',edtLogin.Text,[rfReplaceAll]);
+  //  HTTPGet:=StringReplace(HTTPGet,'%USERPWD',edtPwd.Text,[rfReplaceAll]);
+   // HTTPGet:=StringReplace(HTTPGet,'%MESSAGE', EncodeURL(AnsiToUtf8(MessageSMS)),[rfReplaceAll]);
     HTTPGet:=StringReplace(HTTPGet,'%PHONENUMBER',inPacientPhone,[rfReplaceAll]);
    end;
   end;
@@ -756,15 +686,15 @@ begin
 
   with http do begin
     IOHandler:=ssl;
-    Request.CustomHeaders.Add(CustomHeaders0);
-    Request.UserAgent:=CustomUserAgent;
-    Request.CustomHeaders.Add(CustomHeaders2);
-    Request.CustomHeaders.Add(CustomHeaders3);
-    Request.CustomHeaders.Add(CustomHeaders4);
+//    Request.CustomHeaders.Add(CustomHeaders0);
+//    Request.UserAgent:=CustomUserAgent;
+//    Request.CustomHeaders.Add(CustomHeaders2);
+//    Request.CustomHeaders.Add(CustomHeaders3);
+//    Request.CustomHeaders.Add(CustomHeaders4);
 
      try
-       if global_DEBUG=False then ServerOtvet:=Get(HTTPGet)
-       else ServerOtvet:='OK';
+      { if global_DEBUG=False then ServerOtvet:=Get(HTTPGet)
+       else} ServerOtvet:='OK';
      except on E: EIdHTTPProtocolException do
         begin
          Result:='ОШИБКА ОТПРАВКИ! '+e.Message+' / '+e.ErrorMessage;
@@ -796,7 +726,7 @@ var
  HTTPGet:string;
 begin
 
- if global_DEBUG then inPacientPhone:='89275052333';
+ //if global_DEBUG then inPacientPhone:='89275052333';
 
  MessageSMS:=SettingsLoadString(cAUTHconf,'core','msg_perenos','');
 
@@ -808,10 +738,10 @@ begin
    }
 
    with FormHome do begin
-    HTTPGet:=StringReplace(HTTPGet,'%USERNAME',edtLogin.Text,[rfReplaceAll]);
-    HTTPGet:=StringReplace(HTTPGet,'%USERPWD',edtPwd.Text,[rfReplaceAll]);
+   // HTTPGet:=StringReplace(HTTPGet,'%USERNAME',edtLogin.Text,[rfReplaceAll]);
+  //  HTTPGet:=StringReplace(HTTPGet,'%USERPWD',edtPwd.Text,[rfReplaceAll]);
   //  HTTPGet:=StringReplace(HTTPGet,'%MESSAGE', MessageSMS,[rfReplaceAll]);
-    HTTPGet:=StringReplace(HTTPGet,'%MESSAGE', EncodeURL(AnsiToUtf8(MessageSMS)),[rfReplaceAll]);
+  //  HTTPGet:=StringReplace(HTTPGet,'%MESSAGE', EncodeURL(AnsiToUtf8(MessageSMS)),[rfReplaceAll]);
     HTTPGet:=StringReplace(HTTPGet,'%PHONENUMBER',inPacientPhone,[rfReplaceAll]);
    end;
   end;
@@ -826,15 +756,15 @@ begin
 
   with http do begin
     IOHandler:=ssl;
-    Request.CustomHeaders.Add(CustomHeaders0);
-    Request.UserAgent:=CustomUserAgent;
-    Request.CustomHeaders.Add(CustomHeaders2);
-    Request.CustomHeaders.Add(CustomHeaders3);
-    Request.CustomHeaders.Add(CustomHeaders4);
+//    Request.CustomHeaders.Add(CustomHeaders0);
+//    Request.UserAgent:=CustomUserAgent;
+//    Request.CustomHeaders.Add(CustomHeaders2);
+//    Request.CustomHeaders.Add(CustomHeaders3);
+//    Request.CustomHeaders.Add(CustomHeaders4);
 
      try
-       if global_DEBUG=False then ServerOtvet:=Get(HTTPGet)
-       else ServerOtvet:='OK';
+      { if global_DEBUG=False then ServerOtvet:=Get(HTTPGet)
+       else }ServerOtvet:='OK';
      except on E: EIdHTTPProtocolException do
         begin
          Result:='ОШИБКА ОТПРАВКИ! '+e.Message+' / '+e.ErrorMessage;
@@ -1099,8 +1029,8 @@ begin
    HTTPGet:=cWebApiSMSstatusID;
 
    with FormHome do begin
-    HTTPGet:=StringReplace(HTTPGet,'%USERNAME',edtLogin.Text,[rfReplaceAll]);
-    HTTPGet:=StringReplace(HTTPGet,'%USERPWD',edtPwd.Text,[rfReplaceAll]);
+  //  HTTPGet:=StringReplace(HTTPGet,'%USERNAME',edtLogin.Text,[rfReplaceAll]);
+  //  HTTPGet:=StringReplace(HTTPGet,'%USERPWD',edtPwd.Text,[rfReplaceAll]);
     HTTPGet:=StringReplace(HTTPGet,'%DATE_START',DateToStr(Now-4),[rfReplaceAll]);
     HTTPGet:=StringReplace(HTTPGet,'%DATE_STOP',DateToStr(Now),[rfReplaceAll]);
    end;
@@ -1116,11 +1046,11 @@ begin
 
   with http do begin
     IOHandler:=ssl;
-    Request.CustomHeaders.Add(CustomHeaders0);
-    Request.UserAgent:=CustomUserAgent;
-    Request.CustomHeaders.Add(CustomHeaders2);
-    Request.CustomHeaders.Add(CustomHeaders3);
-    Request.CustomHeaders.Add(CustomHeaders4);
+//    Request.CustomHeaders.Add(CustomHeaders0);
+//    Request.UserAgent:=CustomUserAgent;
+//    Request.CustomHeaders.Add(CustomHeaders2);
+//    Request.CustomHeaders.Add(CustomHeaders3);
+//    Request.CustomHeaders.Add(CustomHeaders4);
 
      try
        ServerOtvet:=Get(HTTPGet);
@@ -1384,8 +1314,8 @@ begin
    end;
 
    if SMSResult='OK' then begin
-      if global_DEBUG=False then CurrentPostAddColoredLine('Отправлено СМС на номер "'+PacientPhonetmp+'"',clGreen)
-      else CurrentPostAddColoredLine('DEBUG. Виртуально отправлено СМС на номер "'+PacientPhonetmp+'"',clGreen)
+      {if global_DEBUG=False then} CurrentPostAddColoredLine('Отправлено СМС на номер "'+PacientPhonetmp+'"',clGreen)
+     { else CurrentPostAddColoredLine('DEBUG. Виртуально отправлено СМС на номер "'+PacientPhonetmp+'"',clGreen)}
    end
    else begin
      CurrentPostAddColoredLine(SMSResult+'. Номер телефона на который не удалось отправить СМС "'+PacientPhonetmp+'"',clRed);
@@ -1402,52 +1332,6 @@ begin
 //  ShowMessage(FormHome.SLParsingError.Text);
 end;
 
-
-// загрузка параметров авторизации
-procedure LoadAuthotization;
-begin
- if FileExists(ParsingDirectory+cAUTHconf)=False then begin
-   with FormHome do begin
-    lblLogin.Visible:=True;
-    lblPwd.Visible:=True;
-
-    PanelAuthEdit.Visible:=False;
-   end;
-    Exit;
- end;
-
-
-
- // прогружаем параметры
- with FormHome do begin
-   edtLogin.Text:=SettingsLoadString(cAUTHconf,'core','usr','');
-   edtPwd.Text:=SettingsLoadString(cAUTHconf,'core','pwd','');
- end;
-end;
-
-
-// отправка смс по нажатию на enter
-procedure LoadSettingEnterSend;
-begin
- with FormHome do begin
-    if SettingsLoadString(cAUTHconf,'core','send_enter','true')='true' then chkEnter.Checked:=True
-    else chkEnter.Checked:=False;
- end;
-end;
-
-
-// сохранение параметров по нажатию на enter
-procedure SaveSettingEnterSend(inBool:Boolean);
-begin
- case inBool of
-  False: begin
-     SettingsSaveString(cAUTHconf,'core','send_enter','false');
-  end;
-  True: begin
-     SettingsSaveString(cAUTHconf,'core','send_enter','true');
-  end;
- end;
-end;
 
 
 // отображение ошибки в логе
@@ -1568,36 +1452,36 @@ var
 
 begin
 
-  with FormMsgPerenos.SG do begin
-    LastID:=StrToInt(SettingsLoadString(cAUTHconf,'msg','lastID','0'));
-    if LastID=0 then  Inc(LastID);
-
-    DefaultColWidth:=DefColWidth;
-    RowCount:=LastID;
-
-    // очистим список
-    for i:=0 to RowCount do begin
-      for j:=0 to ColCount do begin
-         Cells[i,j]:='';
-      end;
-    end;
-
-    maxLenghMsg:=0;
-    SLMsg:=TStringList.Create;
-
-    // пробежимся по списку
-    for i:=cMAXCOUNTMESSAGEOLD-1 downto 0 do begin
-      msg:=SettingsLoadString(cAUTHconf,'msg','msg'+IntToStr(i),'');
-
-      if Length(msg)>maxLenghMsg then maxLenghMsg:=Length(msg);
-      if msg<>'' then  SLMsg.Add(msg);
-    end;
-
-    for i:=0 to SLMsg.Count-1 do  Cells[0,i]:=SLMsg[i];
-
-    // изменяем размер
-    if maxLenghMsg*Koeff > DefColWidth  then  DefaultColWidth:=Round(maxLenghMsg*Koeff);
-  end;
+//  with FormMsgPerenos.SG do begin
+//    LastID:=StrToInt(SettingsLoadString(cAUTHconf,'msg','lastID','0'));
+//    if LastID=0 then  Inc(LastID);
+//
+//    DefaultColWidth:=DefColWidth;
+//    RowCount:=LastID;
+//
+//    // очистим список
+//    for i:=0 to RowCount do begin
+//      for j:=0 to ColCount do begin
+//         Cells[i,j]:='';
+//      end;
+//    end;
+//
+//    maxLenghMsg:=0;
+//    SLMsg:=TStringList.Create;
+//
+//    // пробежимся по списку
+//    for i:=cMAXCOUNTMESSAGEOLD-1 downto 0 do begin
+//      msg:=SettingsLoadString(cAUTHconf,'msg','msg'+IntToStr(i),'');
+//
+//      if Length(msg)>maxLenghMsg then maxLenghMsg:=Length(msg);
+//      if msg<>'' then  SLMsg.Add(msg);
+//    end;
+//
+//    for i:=0 to SLMsg.Count-1 do  Cells[0,i]:=SLMsg[i];
+//
+//    // изменяем размер
+//    if maxLenghMsg*Koeff > DefColWidth  then  DefaultColWidth:=Round(maxLenghMsg*Koeff);
+//  end;
 end;
 
 end.

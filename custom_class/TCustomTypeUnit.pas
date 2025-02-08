@@ -21,6 +21,13 @@ interface
                       firebird_pwd      // пароль
                       );
 
+  type      // тип запроса к SMS рассыльщику
+  enumSMSAuth = (sms_server_addr,           // полный адрес сервера
+                 sms_login,                 // логин
+                 sms_pwd                    // пароль
+                );
+
+
  type   // тип запрошенных данных из очереди
  enumQueueCurrent =  (queue_5000,            // 5000 очередь
                       queue_5050,            // 5050 очередь

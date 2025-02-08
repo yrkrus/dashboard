@@ -1,7 +1,7 @@
 object FormOperatorStatus: TFormOperatorStatus
   Left = 0
   Top = 0
-  BorderIcons = [biSystemMenu]
+  BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = #1058#1077#1082#1091#1097#1080#1081' '#1089#1090#1072#1090#1091#1089': '#1085#1077#1080#1079#1074#1077#1089#1090#1077#1085
   ClientHeight = 98

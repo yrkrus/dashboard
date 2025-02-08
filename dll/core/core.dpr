@@ -201,6 +201,42 @@ begin
   end;
 end;
 
+
+// есть ли доступ у пользователя к SMS отправке
+function GetUserAccessSMS(InUserID:Integer):Boolean;stdcall;export;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+  Result:=False;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+
+      SQL.Clear;
+      SQL.Add('select sms from users where id = '+#39+IntToStr(InUserID)+#39);
+
+      Active:=True;
+      if StrToInt(VarToStr(Fields[0].Value)) = 1  then  Result:=True;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
 // текущая версия дашборда (БД)
 function GetRemoteVersionDashboard:PChar; stdcall;export;
 var
@@ -544,6 +580,7 @@ exports
   GetUserNameFIO,
   GetUserAccessLocalChat,
   GetUserAccessReports,
+  GetUserAccessSMS,
   GetRemoteVersionDashboard,
   GetCloneRun,
   KillProcessNow,

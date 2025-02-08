@@ -33,6 +33,7 @@ type
     edtOperatorSetting_Tel_show: TEdit;
     chkboxZoiper: TCheckBox;
     chkboxAllowReports: TCheckBox;
+    chkboxAllowSMS: TCheckBox;
     procedure chkboxmyPwdClick(Sender: TObject);
     procedure comboxUserGroupChange(Sender: TObject);
     procedure btnAddNewUserClick(Sender: TObject);
@@ -140,7 +141,8 @@ var
  user_sip,
  user_sip_phone,
  user_chat,
- user_reports:string;
+ user_reports,
+ user_sms:string;
 
  u_role:string;
 
@@ -224,19 +226,25 @@ begin
         if chkboxAllowReports.Checked then user_reports:='1'
         else user_reports:='0';
 
+        //доступ к SMS отправке
+        if chkboxAllowSMS.Checked then user_sms:='1'
+        else user_sms:='0';
+
+
       end;
 
 
       case InTypeAction of
         user_add:begin
-          SQL.Add('insert into users (name,familiya,role,login,pass,is_need_reset_pwd,chat,reports) values ('+#39+user_name+#39+','
+          SQL.Add('insert into users (name,familiya,role,login,pass,is_need_reset_pwd,chat,reports,sms) values ('+#39+user_name+#39+','
                                                                                                              +#39+user_familiya+#39+','
                                                                                                              +#39+u_role+#39+','
                                                                                                              +#39+user_login+#39+','
                                                                                                              +#39+user_pwd+#39+','
                                                                                                              +#39+IntToStr(isNeedResetPwd)+#39+','
                                                                                                              +#39+user_chat+#39+','
-                                                                                                             +#39+user_reports+#39+')');
+                                                                                                             +#39+user_reports+#39+','
+                                                                                                             +#39+user_sms+#39+')');
         end;
         user_update:begin
 
@@ -249,6 +257,7 @@ begin
                                               +', pass = '    +#39+user_pwd+#39
                                               +', chat = '    +#39+user_chat+#39
                                               +', reports = ' +#39+user_reports+#39
+                                              +', sms = '     +#39+user_sms+#39
                                               +' where id = ' +#39+IntToStr(FormAddNewUsers.currentEditUsersID)+#39);
              //,,,login,pass,
           end
@@ -259,6 +268,7 @@ begin
                                               +', login = '   +#39+user_login+#39
                                               +', chat = '    +#39+user_chat+#39
                                               +', reports = ' +#39+user_reports+#39
+                                              +', sms = '     +#39+user_sms+#39
                                               +' where id = ' +#39+IntToStr(FormAddNewUsers.currentEditUsersID)+#39);
           end;
         end;
@@ -347,6 +357,9 @@ begin
         // отчеты
         chkboxAllowReports.Top:=cTopChatReportsDefault;
 
+        // sms отправка
+        chkboxAllowSMS.Top:=cTopChatReportsDefault;
+
         if comboxUserGroup.Text='Оператор (без дашборда)' then begin
           lblOperatorSetting_Tel_show.Enabled:=False;
 
@@ -357,6 +370,7 @@ begin
 
           chkboxAllowLocalChat.Enabled:=False;
           chkboxAllowReports.Enabled:=False;
+          chkboxAllowSMS.Enabled:=False;
         end
         else begin
           lblOperatorSetting_Tel_show.Enabled:=True;
@@ -368,6 +382,7 @@ begin
 
           chkboxAllowLocalChat.Enabled:=True;
           chkboxAllowReports.Enabled:=True;
+          chkboxAllowSMS.Enabled:=True;
         end;
 
         if not currentEditUsers then edtOperatorSetting_SIP_show.Text:='';
@@ -378,6 +393,7 @@ begin
 
       chkboxAllowLocalChat.Top:=cTopPanelOperators;
       chkboxAllowReports.Top:=cTopPanelOperators;
+      chkboxAllowSMS.Top:=cTopPanelOperators;
 
       edtOperatorSetting_SIP_show.Text:='';
       edtOperatorSetting_Tel_show.Text:='';
@@ -690,6 +706,9 @@ begin
      // отчеты
       chkboxAllowReports.Checked:=GetUserAccessReports(currentEditUsersID);
 
+      // SMS отправка
+      chkboxAllowSMS.Checked:=GetUserAccessSMS(currentEditUsersID);
+
        // отобразим скрвтые поля
        comboxUserGroup.OnChange(comboxUserGroup);
 
@@ -844,6 +863,7 @@ begin
 
   chkboxAllowLocalChat.Checked:=False;
   chkboxAllowReports.Checked:=False;
+  chkboxAllowSMS.Checked:=False;
 
   // на всякий случай что уже не редактируется ничего
   currentEditUsers:=False;

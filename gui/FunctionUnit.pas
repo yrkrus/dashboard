@@ -113,7 +113,7 @@ function GetCountAnsweredCallAll:Integer;                                       
 function CreateListAnsweredCall(InSipOperator:string):TStringList;                   // создвание списка со всем отвеченными звонками  sip оператора
 procedure remoteCommand_addQueue(command:enumLogging);                                  // удаленна€ команда (добавление в очередь)
 procedure showWait(Status:enumShow_wait);                                               // отображение\сркытие окна запроса на сервер
-function remoteCommand_Responce(InStroka:string;_errorDescriptions:string):boolean;                             // отправка запроса на добавление удаленной команды
+function remoteCommand_Responce(InStroka:string; var _errorDescriptions:string):boolean;                             // отправка запроса на добавление удаленной команды
 function getUserSIP(InIDUser:integer):string;                                        // отображение SIP пользвоател€
 function isExistRemoteCommand(command:enumLogging):Boolean;                             // проверка есть ли уже така€ удаленна€ команда на сервера
 function getStatus(InStatus:enumStatusOperators):string;                                  // полчуение имени status оператора
@@ -148,6 +148,7 @@ function getCheckIP(InIPAdtress:string):Boolean;                                
 procedure CreateFormActiveSession;                                                   // создание окна активных сессий
 function getCheckAlias(InAlias:string):Boolean;                                      // проверка на существаование такого алиаса уже, он может быть только один!
 function GetFirbirdAuth(FBType:enumFirebirdAuth):string;                                // получение авторизационных данных при подключени к Ѕƒ firebird
+function GetSMSAuth(SMSType:enumSMSAuth):string;                                     // получение авторизационных данных при отправке SMS
 function GetStatusMonitoring(status:Integer):enumMonitoringTrunk;                       // мониторитс€ ли транк
 function GetCountServersIK:Integer;                                                  // получение кол-ва серверов » 
 procedure SetAccessMenu(InNameMenu:enumAccessList; InStatus: enumAccessStatus);            // установка разрешение\запрет на доступ к меню
@@ -162,6 +163,7 @@ procedure HappyNewYear;                                                         
 function GetExistAccessToLocalChat(InUserId:Integer):Boolean;                        //есть ли доступ к локальному чату
 procedure OpenLocalChat;                                                             // открытые exe локального чата
 procedure OpenReports;                                                               // открытые exe отчетов
+procedure OpenSMS;                                                                   // открытые exe SMS рассылки
 function EnumChannelChatIDToString(InChatID:enumChatID):string;                // enumChatID -> string
 function EnumChannelToString(InChannel:enumChannel):string;                 //enumChannel -> string
 function EnumActiveBrowserToString(InActiveBrowser:enumActiveBrowser):string;     // enumActiveBrowser -> string
@@ -661,6 +663,17 @@ begin
      countKillExe:=0;
      while GetTask(PChar(REPORT_EXE)) do begin
        KillTask(PChar(REPORT_EXE));
+
+       // на случай если не удастьс€ закрыть дочерний exe
+       Sleep(500);
+       Inc(countKillExe);
+       if countKillExe>10 then Break;
+     end;
+
+      // закрываем sms_exe если открыт
+     countKillExe:=0;
+     while GetTask(PChar(SMS_EXE)) do begin
+       KillTask(PChar(SMS_EXE));
 
        // на случай если не удастьс€ закрыть дочерний exe
        Sleep(500);
@@ -3244,12 +3257,12 @@ begin
    with HomeForm do begin
       if InShow then begin
        ST_StatusPanel.Visible:=True;
-       ST_StatusPanelWindow.Visible:=True;
+       img_ShowOperatorStatus.Visible:=True;
        PanelStatus.Visible:=True;
       end
       else begin
        ST_StatusPanel.Visible:=False;
-       ST_StatusPanelWindow.Visible:=False;
+       img_ShowOperatorStatus.Visible:=False;
        PanelStatus.Visible:=False;
       end;
    end;
@@ -3478,7 +3491,7 @@ end;
 
 
 // отправка запроса на добавление удаленной команды
-function remoteCommand_Responce(InStroka:string; _errorDescriptions:string):boolean;
+function remoteCommand_Responce(InStroka:string; var _errorDescriptions:string):boolean;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -3491,8 +3504,6 @@ begin
 
   if not Assigned(serverConnect) then begin
      Result:=False;
-
-    // ShowFormErrorMessage(_errorDescriptions, SharedMainLog, 'remoteCommand_Responce');
      FreeAndNil(ado);
      Exit;
   end;
@@ -3515,7 +3526,7 @@ begin
                  serverConnect.Close;
                  FreeAndNil(serverConnect);
                end;
-               _errorDescriptions:='ќЎ»Ѕ ј! Ќе удалось выполнить запрос'+#13#13+e.ClassName+' '+e.Message;
+               _errorDescriptions:='Ќе удалось выполнить запрос'+#13#13+e.ClassName+': '+e.Message;
                Exit;
             end;
         end;
@@ -4625,7 +4636,55 @@ begin
 
       Active:=True;
       if Fields[0].Value<>null then begin
-         Result:=VarToStr(Fields[0].Value);
+          if Length(VarToStr(Fields[0].Value))<>0 then Result:=VarToStr(Fields[0].Value);
+      end;
+
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+
+// получение авторизационных данных при отправке SMS
+function GetSMSAuth(SMSType:enumSMSAuth):string;   // TODO потом эти данные перенести в класс дл€ отправки SMS
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+   Result:='null';
+
+   ado:=TADOQuery.Create(nil);
+   serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+
+      case SMSType of
+       sms_server_addr:begin
+         SQL.Add('select url from sms_settings');
+       end;
+       sms_login:begin
+          SQL.Add('select sms_login from sms_settings');
+       end;
+       sms_pwd:begin
+         SQL.Add('select sms_pwd from sms_settings');
+       end;
+      end;
+
+      Active:=True;
+      if Fields[0].Value<>null then begin
+        if Length(VarToStr(Fields[0].Value)) <> 0 then Result:=VarToStr(Fields[0].Value);
       end;
 
     end;
@@ -4890,6 +4949,23 @@ begin
   end;
 
   ShellExecute(HomeForm.Handle, 'Open', PChar(REPORT_EXE),PChar(USER_ID_PARAM+' '+IntToStr(SharedCurrentUserLogon.GetID)),nil,SW_SHOW);
+end;
+
+
+// открытые exe SMS рассылки
+procedure OpenSMS;
+begin
+ if not SharedCurrentUserLogon.GetIsAccessSMS then begin
+    MessageBox(HomeForm.Handle,PChar('ќтсутствует доступ к SMS рассылке'),PChar('ќтсутствует доступ'),MB_OK+MB_ICONINFORMATION);
+    Exit;
+ end;
+
+  if not FileExists(SMS_EXE) then begin
+    MessageBox(HomeForm.Handle,PChar('Ќе удаетс€ найти файл '+SMS_EXE),PChar('‘айл не найден'),MB_OK+MB_ICONERROR);
+    Exit;
+  end;
+
+  ShellExecute(HomeForm.Handle, 'Open', PChar(SMS_EXE),PChar(USER_ID_PARAM+' '+IntToStr(SharedCurrentUserLogon.GetID)),nil,SW_SHOW);
 end;
 
 // enumChatID -> string
@@ -5208,6 +5284,10 @@ begin
     Exit;
   end;
 
+  if AnsiPos('¬озникла критическа€ ошибка',_errorMessage)<>0 then begin
+    Result:=eNeedReconnectNO;
+    Exit;
+  end;
 end;
 
 

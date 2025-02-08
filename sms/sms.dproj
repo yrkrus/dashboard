@@ -1,9 +1,9 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <ProjectGuid>{0A09AC5D-C4D6-4D85-ACC5-F37C58F9C8AE}</ProjectGuid>
+        <ProjectGuid>{C19BC902-0FAC-4B37-B08B-ED1E0E8A2425}</ProjectGuid>
         <ProjectVersion>18.2</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
-        <MainSource>dashboard.dpr</MainSource>
+        <MainSource>sms.dpr</MainSource>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
         <Platform Condition="'$(Platform)'==''">Win64</Platform>
@@ -70,29 +70,25 @@
         <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
         <UWP_DelphiLogo44>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png</UWP_DelphiLogo150>
-        <SanitizedProjectName>dashboard</SanitizedProjectName>
+        <SanitizedProjectName>sms</SanitizedProjectName>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
         <DCC_UsePackage>DBXSqliteDriver;DataSnapServerMidas;DBXDb2Driver;DBXInterBaseDriver;vclactnband;vclFireDAC;DataSnapFireDAC;svnui;tethering;EhLibIBXDataDrivers250;FireDACADSDriver;DBXMSSQLDriver;DatasnapConnectorsFreePascal;FireDACMSSQLDriver;vcltouch;vcldb;bindcompfmx;svn;Intraweb;DBXOracleDriver;inetdb;FmxTeeUI;emsedge;fmx;fmxdae;vclib;FireDACDBXDriver;dbexpress;IndyCore;vclx;dsnap;DataSnapCommon;DataSnapConnectors;VCLRESTComponents;acntDX10Tokyo_R;vclie;bindengine;DBXMySQLDriver;FireDACOracleDriver;FireDACMySQLDriver;DBXFirebirdDriver;FireDACCommonODBC;DataSnapClient;bindcompdbx;IndyIPCommon;vcl;DBXSybaseASEDriver;IndyIPServer;IndySystem;FireDACDb2Driver;FIBPlus_D25;dsnapcon;FireDACMSAccDriver;fmxFireDAC;FireDACInfxDriver;vclimg;EhLibADODataDrivers250;TeeDB;emshosting;FireDACPgDriver;ibmonitor;FireDACASADriver;DBXOdbcDriver;FireDACTDataDriver;FMXTee;DbxCommonDriver;ibxpress;Tee;DataSnapServer;xmlrtl;DataSnapNativeClient;fmxobj;vclwinx;ibxbindings;rtl;FireDACDSDriver;DbxClientDriver;DBXSybaseASADriver;CustomIPTransport;vcldsnap;bindcomp;appanalytics;DBXInformixDriver;IndyIPClient;bindcompvcl;TeeUI;dbxcds;VclSmp;adortl;FireDACODBCDriver;DataSnapIndy10ServerTransport;dsnapxml;DataSnapProviderClient;dbrtl;inetdbxpress;FireDACMongoDBDriver;IndyProtocols;EhLibDBXDataDrivers250;EhLib250;fmxase;$(DCC_UsePackage)</DCC_UsePackage>
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
         <BT_BuildType>Debug</BT_BuildType>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_Keys>CompanyName=Petrov Yuri;FileDescription=Дашбоард коллцентра;FileVersion=1.10.0.0;InternalName=;LegalCopyright=Petrov Yuri;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Дашбоард коллцентра;ProductVersion=1.10.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
-        <VerInfo_MinorVer>10</VerInfo_MinorVer>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
         <DCC_UsePackage>DBXSqliteDriver;DataSnapServerMidas;DBXDb2Driver;DBXInterBaseDriver;vclactnband;vclFireDAC;DataSnapFireDAC;tethering;EhLibIBXDataDrivers250;FireDACADSDriver;DBXMSSQLDriver;DatasnapConnectorsFreePascal;FireDACMSSQLDriver;vcltouch;vcldb;bindcompfmx;Intraweb;DBXOracleDriver;inetdb;FmxTeeUI;emsedge;fmx;fmxdae;vclib;FireDACDBXDriver;dbexpress;IndyCore;vclx;dsnap;DataSnapCommon;DataSnapConnectors;VCLRESTComponents;vclie;bindengine;DBXMySQLDriver;FireDACOracleDriver;FireDACMySQLDriver;DBXFirebirdDriver;FireDACCommonODBC;DataSnapClient;bindcompdbx;IndyIPCommon;vcl;DBXSybaseASEDriver;IndyIPServer;IndySystem;FireDACDb2Driver;FIBPlus_D25;dsnapcon;FireDACMSAccDriver;fmxFireDAC;FireDACInfxDriver;vclimg;EhLibADODataDrivers250;TeeDB;emshosting;FireDACPgDriver;ibmonitor;FireDACASADriver;DBXOdbcDriver;FireDACTDataDriver;FMXTee;DbxCommonDriver;ibxpress;Tee;DataSnapServer;xmlrtl;DataSnapNativeClient;fmxobj;vclwinx;ibxbindings;rtl;FireDACDSDriver;DbxClientDriver;DBXSybaseASADriver;CustomIPTransport;vcldsnap;bindcomp;appanalytics;DBXInformixDriver;IndyIPClient;bindcompvcl;TeeUI;dbxcds;VclSmp;adortl;FireDACODBCDriver;DataSnapIndy10ServerTransport;dsnapxml;DataSnapProviderClient;dbrtl;inetdbxpress;FireDACMongoDBDriver;IndyProtocols;EhLibDBXDataDrivers250;EhLib250;fmxase;$(DCC_UsePackage)</DCC_UsePackage>
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
         <BT_BuildType>Debug</BT_BuildType>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_Keys>CompanyName=Petrov Yuri;FileDescription=Дашбоард коллцентра;FileVersion=1.11.0.0;InternalName=;LegalCopyright=Petrov Yuri;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Дашбоард коллцентра;ProductVersion=1.11.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
-        <VerInfo_MinorVer>11</VerInfo_MinorVer>
-        <DCC_UnitSearchPath>C:\Program Files (x86)\Embarcadero\FastMM4;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
-        <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
@@ -103,23 +99,14 @@
         <DCC_RemoteDebug>true</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+        <DCC_RemoteDebug>false</DCC_RemoteDebug>
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <AppEnableHighDPI>true</AppEnableHighDPI>
-        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_Locale>1033</VerInfo_Locale>
-        <Icon_MainIcon>ico\diagram09.ico</Icon_MainIcon>
-        <UWP_DelphiLogo44>C:\Users\home0\Desktop\dasboard_COV_temp\ico\diagram09(1).png</UWP_DelphiLogo44>
-        <UWP_DelphiLogo150>C:\Users\home0\Desktop\dasboard_COV_temp\ico\diagram09.png</UWP_DelphiLogo150>
-        <DCC_UnitSearchPath>C:\Program Files (x86)\Embarcadero\FastMM5;C:\Program Files (x86)\Embarcadero\FastMM4</DCC_UnitSearchPath>
-        <DCC_ShowGeneralMessages>true</DCC_ShowGeneralMessages>
-        <VerInfo_MinorVer>10</VerInfo_MinorVer>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <VerInfo_MinorVer>12</VerInfo_MinorVer>
-        <VerInfo_Keys>CompanyName=Petrov Yuri;FileDescription=Дашбоард коллцентра;FileVersion=1.12.0.0;InternalName=;LegalCopyright=Petrov Yuri;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Дашбоард коллцентра;ProductVersion=1.12.0.0;Comments=</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
@@ -132,140 +119,30 @@
         <AppEnableHighDPI>true</AppEnableHighDPI>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <Icon_MainIcon>ico\diagram09.ico</Icon_MainIcon>
-        <UWP_DelphiLogo44>C:\Users\home0\Desktop\dasboard_COV_temp\ico\diagram09(1).png</UWP_DelphiLogo44>
-        <UWP_DelphiLogo150>C:\Users\home0\Desktop\dasboard_COV_temp\ico\diagram09.png</UWP_DelphiLogo150>
-        <DCC_UnitSearchPath>C:\Program Files (x86)\Embarcadero\FastMM4;C:\Program Files (x86)\Embarcadero\FastMM5;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
-        <VerInfo_MinorVer>11</VerInfo_MinorVer>
-        <VerInfo_Keys>CompanyName=Petrov Yuri;FileDescription=Дашбоард коллцентра;FileVersion=1.11.0.0;InternalName=;LegalCopyright=Petrov Yuri;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Дашбоард коллцентра;ProductVersion=1.11.0.0;Comments=</VerInfo_Keys>
+        <Icon_MainIcon>sms_send_Icon.ico</Icon_MainIcon>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <Icon_MainIcon>ico\diagram09.ico</Icon_MainIcon>
-        <UWP_DelphiLogo44>C:\Users\home0\Desktop\DASHBOARD\develop\gui\ico\diagram09(1).png</UWP_DelphiLogo44>
-        <UWP_DelphiLogo150>C:\Users\home0\Desktop\DASHBOARD\develop\gui\ico\diagram09.png</UWP_DelphiLogo150>
-        <VerInfo_MinorVer>15</VerInfo_MinorVer>
-        <VerInfo_Keys>CompanyName=Petrov Yuri;FileDescription=Дашборд коллцентра;FileVersion=1.15.0.27;InternalName=;LegalCopyright=Petrov Yuri;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Дашборд коллцентра;ProductVersion=0.0.0.0;Comments=</VerInfo_Keys>
-        <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
-        <VerInfo_Build>27</VerInfo_Build>
+        <Icon_MainIcon>ico\sms_send_Icon.ico</Icon_MainIcon>
+        <UWP_DelphiLogo44>C:\Users\home0\Desktop\DASHBOARD\develop\sms\ico\sms_send_Icon.png</UWP_DelphiLogo44>
+        <UWP_DelphiLogo150>C:\Users\home0\Desktop\DASHBOARD\develop\sms\ico\sms_send_Icon.png</UWP_DelphiLogo150>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="FormHome.pas">
-            <Form>HomeForm</Form>
-        </DCCReference>
-        <DCCReference Include="DMUnit.pas">
-            <Form>DM</Form>
-            <DesignClass>TDataModule</DesignClass>
+        <DCCReference Include="FormHomeUnit.pas">
+            <Form>FormHome</Form>
+            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="FunctionUnit.pas"/>
-        <DCCReference Include="FormPropushennieUnit.pas">
-            <Form>FormPropushennie</Form>
-        </DCCReference>
-        <DCCReference Include="FormSettingsUnit.pas">
-            <Form>FormSettings</Form>
-        </DCCReference>
-        <DCCReference Include="FormAboutUnit.pas">
-            <Form>FormAbout</Form>
-        </DCCReference>
-        <DCCReference Include="FormOperatorStatusUnit.pas">
-            <Form>FormOperatorStatus</Form>
-        </DCCReference>
-        <DCCReference Include="FormServerIKCheckUnit.pas">
-            <Form>FormServerIKCheck</Form>
-        </DCCReference>
-        <DCCReference Include="FormAuthUnit.pas">
-            <Form>FormAuth</Form>
-        </DCCReference>
-        <DCCReference Include="FormActiveSessionUnit.pas">
-            <Form>FormActiveSession</Form>
-        </DCCReference>
-        <DCCReference Include="FormAddNewUsersUnit.pas">
-            <Form>FormAddNewUsers</Form>
-        </DCCReference>
-        <DCCReference Include="FormRePasswordUnit.pas">
-            <Form>FormRePassword</Form>
-        </DCCReference>
-        <DCCReference Include="FormErrorUnit.pas">
-            <Form>FormError</Form>
-        </DCCReference>
-        <DCCReference Include="FormWaitUnit.pas">
-            <Form>FormWait</Form>
-        </DCCReference>
-        <DCCReference Include="ReportsUnit.pas">
-            <Form>FormReports</Form>
-        </DCCReference>
-        <DCCReference Include="FormUsersUnit.pas">
-            <Form>FormUsers</Form>
-        </DCCReference>
-        <DCCReference Include="FormServersIKUnit.pas">
-            <Form>FormServersIK</Form>
-        </DCCReference>
-        <DCCReference Include="FormServerIKEditUnit.pas">
-            <Form>FormServerIKEdit</Form>
-        </DCCReference>
-        <DCCReference Include="FormDEBUGUnit.pas">
-            <Form>FormDEBUG</Form>
-        </DCCReference>
-        <DCCReference Include="FormSettingsGlobalUnit.pas">
-            <Form>FormSettingsGlobal</Form>
-        </DCCReference>
-        <DCCReference Include="FormSettingsGlobal_addIVRUnit.pas">
-            <Form>FormSettingsGlobal_addIVR</Form>
-        </DCCReference>
-        <DCCReference Include="FormSettingsGlobal_listIVRUnit.pas">
-            <Form>FormSettingsGlobal_listIVR</Form>
-        </DCCReference>
-        <DCCReference Include="FormTrunkUnit.pas">
-            <Form>FormTrunk</Form>
-        </DCCReference>
-        <DCCReference Include="FormTrunkEditUnit.pas">
-            <Form>FormTrunkEdit</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
-        <DCCReference Include="FormGlobalSettingCheckFirebirdConnectUnit.pas">
-            <Form>FormGlobalSettingCheckFirebirdConnect</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
         <DCCReference Include="GlobalVariables.pas"/>
-        <DCCReference Include="FormStatisticsChartUnit.pas">
-            <Form>FormStatisticsChart</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
-        <DCCReference Include="..\custom_class\TActiveSessionUnit.pas"/>
-        <DCCReference Include="..\custom_class\TActiveSIPUnit.pas"/>
-        <DCCReference Include="..\custom_class\TAnsweredQueueUnit.pas"/>
-        <DCCReference Include="..\custom_class\TCheckServersUnit.pas"/>
         <DCCReference Include="..\custom_class\TCustomTypeUnit.pas"/>
-        <DCCReference Include="..\custom_class\TFTPUnit.pas"/>
-        <DCCReference Include="..\custom_class\TIVRUnit.pas"/>
-        <DCCReference Include="..\custom_class\TForecastCallsUnit.pas"/>
-        <DCCReference Include="..\custom_class\TLogFileUnit.pas"/>
-        <DCCReference Include="..\custom_class\TOnlineChat.pas"/>
-        <DCCReference Include="..\custom_class\TQueueUnit.pas"/>
-        <DCCReference Include="..\custom_class\TTranslirtUnit.pas"/>
-        <DCCReference Include="..\custom_class\TUserUnit.pas"/>
-        <DCCReference Include="..\custom_class\TXmlUnit.pas"/>
-        <DCCReference Include="Thread\Thread_ACTIVESIP_countTalkUnit.pas"/>
-        <DCCReference Include="Thread\Thread_ACTIVESIP_QueueUnit.pas"/>
-        <DCCReference Include="Thread\Thread_ACTIVESIP_updatePhoneTalkUnit.pas"/>
-        <DCCReference Include="Thread\Thread_ACTIVESIP_updatetalkUnit.pas"/>
-        <DCCReference Include="Thread\Thread_ACTIVESIPUnit.pas"/>
-        <DCCReference Include="Thread\Thread_AnsweredQueueUnit.pas"/>
-        <DCCReference Include="Thread\Thread_ChatUnit.pas"/>
-        <DCCReference Include="Thread\Thread_CHECKSERVERSUnit.pas"/>
-        <DCCReference Include="Thread\Thread_IVRUnit.pas"/>
-        <DCCReference Include="Thread\Thread_QUEUEUnit.pas"/>
-        <DCCReference Include="Thread\Thread_StatisticsUnit.pas"/>
-        <DCCReference Include="Thread\Thread_ForecastUnit.pas"/>
-        <DCCReference Include="..\custom_class\TInternalProcessUnit.pas"/>
-        <DCCReference Include="Thread\Thread_InternalProcessUnit.pas"/>
-        <DCCReference Include="FormStatusInfoUnit.pas">
-            <Form>FormStatusInfo</Form>
+        <DCCReference Include="..\custom_class\TSendSMSUint.pas"/>
+        <DCCReference Include="FormMyTemplateUnit.pas">
+            <Form>FormMyTemplate</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <BuildConfiguration Include="Release">
@@ -286,7 +163,7 @@
         <BorlandProject>
             <Delphi.Personality>
                 <Source>
-                    <Source Name="MainSource">dashboard.dpr</Source>
+                    <Source Name="MainSource">sms.dpr</Source>
                 </Source>
                 <Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\bcboffice2k250.bpl">Embarcadero C++Builder Office 2000 Servers Package</Excluded_Packages>
@@ -296,103 +173,28 @@
                 </Excluded_Packages>
             </Delphi.Personality>
             <Deployment Version="3">
-                <DeployFile LocalName="ico\diagram09.png" Configuration="Debug" Class="UWP_DelphiLogo150">
-                    <Platform Name="Win32">
-                        <RemoteDir>Assets\</RemoteDir>
-                        <RemoteName>Logo150x150.png</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="Win32\Debug\dashboard.exe" Configuration="Debug" Class="ProjectOutput">
-                    <Platform Name="Win32">
-                        <RemoteName>dashboard.exe</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="ico\diagram09(1).png" Configuration="Debug" Class="UWP_DelphiLogo44">
+                <DeployFile LocalName="Win64\Debug\sms.rsm" Configuration="Debug" Class="DebugSymbols">
                     <Platform Name="Win64">
-                        <RemoteDir>Assets\</RemoteDir>
-                        <RemoteName>Logo44x44.png</RemoteName>
+                        <RemoteName>sms.rsm</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="Win64\Release\dashboard.exe" Configuration="Release" Class="ProjectOutput">
-                    <Platform Name="Win64">
-                        <RemoteName>dashboard.exe</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="ico\diagram09(1).png" Configuration="Debug" Class="UWP_DelphiLogo44">
+                <DeployFile LocalName="Win32\Debug\sms.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
-                        <RemoteDir>Assets\</RemoteDir>
-                        <RemoteName>Logo44x44.png</RemoteName>
+                        <RemoteName>sms.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="free-icon-headset-3293464.png" Configuration="Release" Class="UWP_DelphiLogo150">
-                    <Platform Name="Win32">
-                        <RemoteDir>Assets\</RemoteDir>
-                        <RemoteName>Logo150x150.png</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="Win64\Debug\dashboard.exe" Configuration="Debug" Class="ProjectOutput">
-                    <Platform Name="Win64">
-                        <RemoteName>dashboard.exe</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="ico\diagram09.png" Configuration="Release" Class="UWP_DelphiLogo150">
+                <DeployFile LocalName="ico\sms_send_Icon.png" Configuration="Release" Class="UWP_DelphiLogo150">
                     <Platform Name="Win64">
                         <RemoteDir>Assets\</RemoteDir>
                         <RemoteName>Logo150x150.png</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="Win32\Release\dashboard.exe" Configuration="Release" Class="ProjectOutput">
-                    <Platform Name="Win32">
-                        <RemoteName>dashboard.exe</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="ico\diagram09(1).png" Configuration="Release" Class="UWP_DelphiLogo44">
+                <DeployFile LocalName="Win64\Debug\sms.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win64">
-                        <RemoteDir>Assets\</RemoteDir>
-                        <RemoteName>Logo44x44.png</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="ico\diagram09.png" Configuration="Release" Class="UWP_DelphiLogo150">
-                    <Platform Name="Win32">
-                        <RemoteDir>Assets\</RemoteDir>
-                        <RemoteName>Logo150x150.png</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="free-icon-headset-3293464.png" Configuration="Debug" Class="UWP_DelphiLogo150">
-                    <Platform Name="Win32">
-                        <RemoteDir>Assets\</RemoteDir>
-                        <RemoteName>Logo150x150.png</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="ico\diagram09(1).png" Configuration="Release" Class="UWP_DelphiLogo44">
-                    <Platform Name="Win32">
-                        <RemoteDir>Assets\</RemoteDir>
-                        <RemoteName>Logo44x44.png</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="Win64\Debug\dashboard.rsm" Configuration="Debug" Class="DebugSymbols">
-                    <Platform Name="Win64">
-                        <RemoteName>dashboard.rsm</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="ico\diagram09.png" Configuration="Debug" Class="UWP_DelphiLogo150">
-                    <Platform Name="Win64">
-                        <RemoteDir>Assets\</RemoteDir>
-                        <RemoteName>Logo150x150.png</RemoteName>
+                        <RemoteName>sms.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
@@ -816,7 +618,6 @@
                 <Platform value="Win32">False</Platform>
                 <Platform value="Win64">True</Platform>
             </Platforms>
-            <ModelSupport>False</ModelSupport>
         </BorlandProject>
         <ProjectFileVersion>12</ProjectFileVersion>
     </ProjectExtensions>

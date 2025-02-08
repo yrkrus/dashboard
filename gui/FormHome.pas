@@ -109,7 +109,6 @@ type
     btnStatus_reserve: TButton;
     Button2: TButton;
     ST_StatusPanel: TStaticText;
-    ST_StatusPanelWindow: TStaticText;
     img_goHome_YES: TImage;
     img_goHome_NO: TImage;
     chkboxGoHome: TCheckBox;
@@ -142,6 +141,11 @@ type
     Label25: TLabel;
     STForecastCount: TStaticText;
     img_SL_History_Graph: TImage;
+    menu_SMS: TMenuItem;
+    ST_HelpStatusInfo: TStaticText;
+    img_ShowOperatorStatus: TImage;
+    Label26: TLabel;
+    Label27: TLabel;
     procedure START_THREAD_ALLlClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -196,6 +200,12 @@ type
     procedure img_SL_History_GraphClick(Sender: TObject);
     procedure ListViewSIPData(Sender: TCustomListView;
   ItemIndex: Integer; var ItemData: Pointer);
+    procedure menu_SMSClick(Sender: TObject);
+    procedure ST_HelpStatusInfoMouseLeave(Sender: TObject);
+    procedure ST_HelpStatusInfoMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
+    procedure ST_HelpStatusInfoClick(Sender: TObject);
+    procedure img_ShowOperatorStatusClick(Sender: TObject);
 
 
 
@@ -292,7 +302,7 @@ uses
     TFTPUnit,
     TXmlUnit,
     FormStatisticsChartUnit,
-    TForecastCallsUnit;
+    TForecastCallsUnit, FormStatusInfoUnit;
 
 
 {$R *.dfm}
@@ -474,12 +484,30 @@ begin
 end;
 
 
+procedure THomeForm.ST_HelpStatusInfoClick(Sender: TObject);
+begin
+ FormStatusInfo.Show;
+end;
+
+procedure THomeForm.ST_HelpStatusInfoMouseLeave(Sender: TObject);
+begin
+  ST_HelpStatusInfo.Font.Style:=[fsBold];
+end;
+
+procedure THomeForm.ST_HelpStatusInfoMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  ST_HelpStatusInfo.Font.Style:=[fsUnderline,fsBold];
+end;
+
 procedure THomeForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 var
   AMsgDialog: TForm;
   ACheckBox: TCheckBox;
   DialogResult: Integer;
 begin
+  if DEBUG then KillProcess;  
+
   // проверка вдруг роль оператора и он не вышел из линии
   if getIsExitOperatorCurrentQueue(SharedCurrentUserLogon.GetRole, SharedCurrentUserLogon.GetID) then begin
     CanClose:= Application.MessageBox(PChar(getUserNameBD(SharedCurrentUserLogon.GetID) + ', Вы забыли выйти из очереди'), 'Ошибка при выходе', MB_OK + MB_ICONERROR) = IDNO;
@@ -605,7 +633,7 @@ begin
   if GetCloneRun(PChar(DASHBOARD_EXE)) then begin
     MessageBox(HomeForm.Handle,PChar('Обнаружен запуск 2ой копии дашборда'+#13#13+
                                      'Для продолжения закройте предыдущую копию'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
-   KillProcess;
+    KillProcess;
   end;
 
 
@@ -659,13 +687,17 @@ begin
   START_THREAD_ALLl.Click;
   except
   on E: Exception do begin
-    MessageBox(Handle,PChar('Этой надписи никогда не должно было быть!'+#13+
-                            'Если вы ее видите возникла ошибка'+#13#13+
-                            'Код ошибки: '+E.ClassName+#13+E.Message),PChar('Неизвестная ошибка'),MB_OK+MB_ICONERROR);
-    KillProcess;
+    error:='Этой надписи никогда не должно было быть!'+#13+
+           'Возникла критическая ошибка'+#13#13+
+           'Код ошибки: '+E.ClassName+#13+E.Message;
+    ShowFormErrorMessage(error, SharedMainLog, 'THomeForm.FormShow');
   end;
  end;
+end;
 
+procedure THomeForm.img_ShowOperatorStatusClick(Sender: TObject);
+begin
+  ShowOperatorsStatus;
 end;
 
 procedure THomeForm.menu_UsersClick(Sender: TObject);
@@ -826,6 +858,11 @@ end;
 procedure THomeForm.menu_SIPtrunkClick(Sender: TObject);
 begin
    FormTrunk.ShowModal;
+end;
+
+procedure THomeForm.menu_SMSClick(Sender: TObject);
+begin
+ OpenSMS;
 end;
 
 procedure THomeForm.Timer_Thread_StartTimer(Sender: TObject);

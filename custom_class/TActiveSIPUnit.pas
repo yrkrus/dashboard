@@ -573,7 +573,7 @@ end;
       if listOperators[i].sip_number<>'' then begin
         if (listOperators[i].count_talk<>0) then begin
 
-          if listOperators[i].count_talk > listOperators[i].list_talk_time_all.Count then begin
+          if (listOperators[i].count_talk > listOperators[i].list_talk_time_all.Count) then begin
 
             // есть разница в зыонках, надо обновиить список со звонками
              listOperators[i].list_talk_time_all.Clear;
@@ -592,8 +592,10 @@ end;
              listOperators[i].talk_time_all:=countAll;
 
              // среднее врем€ разговора
-             if listOperators[i].list_talk_time_all.Count-1 > 0 then listOperators[i].talk_time_avg:=Round(countAll/listOperators[i].list_talk_time_all.Count-1);
-          end
+             if listOperators[i].list_talk_time_all.Count-1 > 0 then listOperators[i].talk_time_avg:=Round(countAll/listOperators[i].list_talk_time_all.Count-1)
+             else listOperators[i].talk_time_avg:=Round(countAll);
+          end;
+
         end;
 
        { else begin // провер€ем вдруг сейчас иде разговор    ѕЋќ’јя »ƒ≈я, т.к. суммирование общего времени идет + задержки при работе

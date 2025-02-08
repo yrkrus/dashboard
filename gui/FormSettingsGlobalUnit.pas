@@ -31,6 +31,15 @@ type
     STFirebird_viewPwd: TStaticText;
     lblInfoCheckIKServerFirebird: TLabel;
     Sheet_SMS: TTabSheet;
+    Label5: TLabel;
+    reSmsURL: TRichEdit;
+    edtLogin_SMS: TEdit;
+    edtPassword_SMS: TEdit;
+    Label7: TLabel;
+    btnSaveSMSSettings: TBitBtn;
+    BitBtn2: TBitBtn;
+    STSMS_viewPwd: TStaticText;
+    Label6: TLabel;
     procedure FormShow(Sender: TObject);
     procedure btnAddServerClick(Sender: TObject);
     procedure LoadSettings;
@@ -40,10 +49,13 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btnCheckFirebirdSettingsClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure btnSaveSMSSettingsClick(Sender: TObject);
+    procedure STSMS_viewPwdClick(Sender: TObject);
   private
 
    procedure SetFirebirdAuth;
    procedure SetButtonCheckFirebirdServer;
+   procedure SetSMSAuth;
     { Private declarations }
   public
     { Public declarations }
@@ -88,13 +100,15 @@ var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  isNewAuth:Boolean;
+ error:string;
 begin
   Screen.Cursor:=crHourGlass;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
+
   if not Assigned(serverConnect) then begin
-     Screen.Cursor:=crDefault;
+     ShowFormErrorMessage(error, SharedMainLog, 'TFormSettingsGlobal.SetFirebirdAuth');
      FreeAndNil(ado);
      Exit;
   end;
@@ -143,6 +157,71 @@ begin
 end;
 
 
+
+procedure TFormSettingsGlobal.SetSMSAuth;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ isNewAuth:Boolean;
+ error:string;
+begin
+  Screen.Cursor:=crHourGlass;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnectWithError(error);
+
+  if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error, SharedMainLog, 'TFormSettingsGlobal.SetSMSAuth');
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+
+      if (GetSMSAuth(sms_server_addr)='null') and
+         (GetSMSAuth(sms_login)='null') and
+         (GetSMSAuth(sms_pwd)='null') then begin
+        SQL.Add('insert into sms_settings (url,sms_login,sms_pwd) values ('+#39+reSmsURL.Text+#39+','+#39+edtLogin_SMS.Text+#39+','+#39+edtPassword_SMS.Text+#39+')');
+        isNewAuth:=True;
+      end
+      else begin
+        SQL.Add('update sms_settings set url = '+#39+reSmsURL.Text+#39+', sms_login = '+#39+edtLogin_SMS.Text+#39+', sms_pwd = '+#39+edtPassword_SMS.Text+#39);
+        isNewAuth:=False;
+      end;
+
+      try
+          ExecSQL;
+      except
+          on E:EIdException do begin
+            Screen.Cursor:=crDefault;
+            FreeAndNil(ado);
+            if Assigned(serverConnect) then begin
+              serverConnect.Close;
+              FreeAndNil(serverConnect);
+            end;
+            Exit;
+          end;
+      end;
+
+    end;
+  finally
+   FreeAndNil(ado);
+   if Assigned(serverConnect) then begin
+     serverConnect.Close;
+     FreeAndNil(serverConnect);
+   end;
+  end;
+
+  Screen.Cursor:=crDefault;
+
+  if isNewAuth then MessageBox(Handle,PChar('Учетные данные подключения к SMS серверу сохранены'),PChar('Успех'),MB_OK+MB_ICONINFORMATION)
+  else MessageBox(Handle,PChar('Учетные данные подключения к SMS серверу обновлены'),PChar('Успех'),MB_OK+MB_ICONINFORMATION)
+end;
+
+
 procedure TFormSettingsGlobal.STFirebird_viewPwdClick(Sender: TObject);
 begin
   if STFirebird_viewPwd.Caption='показать' then begin
@@ -153,6 +232,19 @@ begin
   begin
     edtPassword_Firebird.PasswordChar:='*';
     STFirebird_viewPwd.Caption:='показать';
+  end;
+end;
+
+procedure TFormSettingsGlobal.STSMS_viewPwdClick(Sender: TObject);
+begin
+   if STSMS_viewPwd.Caption='показать' then begin
+    edtPassword_SMS.PasswordChar:=#0;
+    STSMS_viewPwd.Caption:='скрыть';
+  end
+  else
+  begin
+    edtPassword_SMS.PasswordChar:='*';
+    STSMS_viewPwd.Caption:='показать';
   end;
 end;
 
@@ -171,6 +263,19 @@ begin
 
    // проверка можно ли включить кнопку проверка подключения к серверу
    SetButtonCheckFirebirdServer;
+
+   // подключение к SMS рассылке
+   if (GetSMSAuth(sms_server_addr)<>'null')  and
+      (GetSMSAuth(sms_login)<>'null') and
+      (GetSMSAuth(sms_pwd)<>'null') then begin
+     reSmsURL.Text:=GetSMSAuth(sms_server_addr);
+     edtLogin_SMS.Text:=GetSMSAuth(sms_login);
+     edtPassword_SMS.Text:=GetSMSAuth(sms_pwd);
+   end;
+
+
+
+
 end;
 
 
@@ -203,7 +308,27 @@ begin
 
    // записываем данные
    SetFirebirdAuth;
+end;
 
+procedure TFormSettingsGlobal.btnSaveSMSSettingsClick(Sender: TObject);
+begin
+  if reSmsURL.Lines.Count=0 then begin
+     MessageBox(Handle,PChar('ОШИБКА! Не заполнена "Строка подключения"'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+     Exit;
+  end;
+
+  if edtLogin_SMS.Text='' then begin
+     MessageBox(Handle,PChar('ОШИБКА! Не заполнено поле "Логин"'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+     Exit;
+  end;
+
+   if edtPassword_SMS.Text='' then begin
+     MessageBox(Handle,PChar('ОШИБКА! Не заполнено поле "Пароль"'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+     Exit;
+   end;
+
+   // записываем данные
+   SetSMSAuth;
 end;
 
 procedure TFormSettingsGlobal.FormClose(Sender: TObject;

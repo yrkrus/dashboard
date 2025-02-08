@@ -56,7 +56,8 @@ uses
   Thread_StatisticsUnit in 'Thread\Thread_StatisticsUnit.pas',
   Thread_ForecastUnit in 'Thread\Thread_ForecastUnit.pas',
   TInternalProcessUnit in '..\custom_class\TInternalProcessUnit.pas',
-  Thread_InternalProcessUnit in 'Thread\Thread_InternalProcessUnit.pas';
+  Thread_InternalProcessUnit in 'Thread\Thread_InternalProcessUnit.pas',
+  FormStatusInfoUnit in 'FormStatusInfoUnit.pas' {FormStatusInfo};
 
 {$R *.res}
 
@@ -95,5 +96,6 @@ begin
   Application.CreateForm(TFormTrunkEdit, FormTrunkEdit);
   Application.CreateForm(TFormGlobalSettingCheckFirebirdConnect, FormGlobalSettingCheckFirebirdConnect);
   Application.CreateForm(TFormStatisticsChart, FormStatisticsChart);
+  Application.CreateForm(TFormStatusInfo, FormStatusInfo);
   Application.Run;
 end.
