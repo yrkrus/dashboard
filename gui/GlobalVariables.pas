@@ -40,7 +40,7 @@ var
   SMS_EXE           :string = 'sms.exe';
 
   USER_ID_PARAM     :string = '--USER_ID';
-
+  USER_ACCESS_PARAM :string = '--ACCESS';
 
   // служба обновления
   UPDATE_EXE        : string = 'update.exe';

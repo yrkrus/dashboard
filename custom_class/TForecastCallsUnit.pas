@@ -37,6 +37,7 @@ uses
 
 
       constructor Create(var p_label: TStaticText);                   overload;
+      constructor Create(InDate:TDateTime; var p_label: TStaticText);                   overload;
 
       private
       m_list                      : array of Integer; // лист со значениями
@@ -44,6 +45,8 @@ uses
 
       m_dateStart                 : TDate; // дата от которой будем считать
       m_forecast                  : Integer; // прогнозируемое значение кол-ва звонков на текущий день
+
+      isManualDateStart           :Boolean;   // ручное указание даты старта
 
       procedure CreateData(var p_label: TStaticText);            // добавление данных в m_list
       function GetCountCalls(InDate:TDate):Integer;   // получить текущее кол-во звонков за день
@@ -62,14 +65,34 @@ constructor TForecastCalls.Create(var p_label: TStaticText);
   i:Integer;
  begin
   // inherited;
+    isManualDateStart:=False;
 
-   // создаем m_list 
+   // создаем m_list
    SetLength(m_list,cGLOBAL_DEPTH);
    SetLength(m_listCorrect,cGLOBAL_DEPTH_CORRECT);
 
    m_dateStart:=Now-cGLOBAL_DAY_START;
 
    // создаем данные
+   CreateData(p_label);
+ end;
+
+
+constructor TForecastCalls.Create(InDate:TDateTime; var p_label: TStaticText);
+ var
+  i:Integer;
+ begin
+  // inherited;
+    isManualDateStart:=True;
+
+   // создаем m_list
+   SetLength(m_list,cGLOBAL_DEPTH);
+   SetLength(m_listCorrect,cGLOBAL_DEPTH_CORRECT);
+
+   m_dateStart:=InDate-cGLOBAL_DAY_START;
+
+   // создаем данные
+   p_label.Caption:=DateToStr(m_dateStart);
    CreateData(p_label);
  end;
   
@@ -80,11 +103,13 @@ constructor TForecastCalls.Create(var p_label: TStaticText);
   Result:=Self.m_forecast;
  end;
 
- // показ прогнозируемого значения кол-ва звонков на текущий день 
- procedure TForecastCalls.ShowForecastCount (var p_label: TStaticText); 
- begin    
-   p_label.Caption:=IntToStr(ShowForecastCount);
+ // показ прогнозируемого значения кол-ва звонков на текущий день
+ procedure TForecastCalls.ShowForecastCount (var p_label: TStaticText);
+ begin
+    if not isManualDateStart then p_label.Caption:=IntToStr(ShowForecastCount)
+    else p_label.Caption:= DateToStr(m_dateStart)+' ('+IntToStr(ShowForecastCount)+')';
  end;
+
 
 
  // добавление данных в m_list
@@ -99,13 +124,25 @@ begin
    currentDate:=m_dateStart;
    for i:=0 to cGLOBAL_DEPTH-1 do begin
 
-     // делаем что то типа интерактивчика
-     if p_label.Caption = '.....' then p_label.Caption:=''
-     else if p_label.Caption = '' then p_label.Caption:='.'
-     else if p_label.Caption = '.' then p_label.Caption:='..'
-     else if p_label.Caption = '..' then p_label.Caption:='...'
-     else if p_label.Caption = '...' then p_label.Caption:='....'
-     else if p_label.Caption = '....' then p_label.Caption:='.....';
+     if not isManualDateStart then begin
+       // делаем что то типа интерактивчика
+       if p_label.Caption = '.....' then p_label.Caption:=''
+       else if p_label.Caption = '' then p_label.Caption:='.'
+       else if p_label.Caption = '.' then p_label.Caption:='..'
+       else if p_label.Caption = '..' then p_label.Caption:='...'
+       else if p_label.Caption = '...' then p_label.Caption:='....'
+       else if p_label.Caption = '....' then p_label.Caption:='.....';
+
+     end
+     else begin
+       // делаем что то типа интерактивчика
+       if p_label.Caption = DateToStr(m_dateStart)+' .....' then p_label.Caption:=DateToStr(m_dateStart)+''
+       else if p_label.Caption = DateToStr(m_dateStart)+'' then p_label.Caption:=DateToStr(m_dateStart)+' .'
+       else if p_label.Caption = DateToStr(m_dateStart)+' .' then p_label.Caption:=DateToStr(m_dateStart)+' ..'
+       else if p_label.Caption = DateToStr(m_dateStart)+' ..' then p_label.Caption:=DateToStr(m_dateStart)+' ...'
+       else if p_label.Caption = DateToStr(m_dateStart)+' ...' then p_label.Caption:=DateToStr(m_dateStart)+' ....'
+       else if p_label.Caption = DateToStr(m_dateStart)+' ....' then p_label.Caption:=DateToStr(m_dateStart)+' .....';
+     end;
 
      m_list[i]:=GetCountCalls(currentDate);
      currentDate:=currentDate-cGLOBAL_DAY_START;
@@ -116,12 +153,23 @@ begin
    currentDate:=m_dateStart;
    for i:=0 to cGLOBAL_DEPTH_CORRECT-1 do begin
      // делаем что то типа интерактивчика
-     if p_label.Caption = '.....' then p_label.Caption:=''
-     else if p_label.Caption = '' then p_label.Caption:='.'
-     else if p_label.Caption = '.' then p_label.Caption:='..'
-     else if p_label.Caption = '..' then p_label.Caption:='...'
-     else if p_label.Caption = '...' then p_label.Caption:='....'
-     else if p_label.Caption = '....' then p_label.Caption:='.....';
+     if not isManualDateStart then begin
+       if p_label.Caption = '.....' then p_label.Caption:=''
+       else if p_label.Caption = '' then p_label.Caption:='.'
+       else if p_label.Caption = '.' then p_label.Caption:='..'
+       else if p_label.Caption = '..' then p_label.Caption:='...'
+       else if p_label.Caption = '...' then p_label.Caption:='....'
+       else if p_label.Caption = '....' then p_label.Caption:='.....';
+     end
+     else begin
+      // делаем что то типа интерактивчика
+       if p_label.Caption = DateToStr(m_dateStart)+' (.....)' then p_label.Caption:=DateToStr(m_dateStart)+' ()'
+       else if p_label.Caption = DateToStr(m_dateStart)+' ()' then p_label.Caption:=DateToStr(m_dateStart)+' (.)'
+       else if p_label.Caption = DateToStr(m_dateStart)+' (.)' then p_label.Caption:=DateToStr(m_dateStart)+' (..)'
+       else if p_label.Caption = DateToStr(m_dateStart)+' (..)' then p_label.Caption:=DateToStr(m_dateStart)+' (...)'
+       else if p_label.Caption = DateToStr(m_dateStart)+' (...)' then p_label.Caption:=DateToStr(m_dateStart)+' (....)'
+       else if p_label.Caption = DateToStr(m_dateStart)+' (....)' then p_label.Caption:=DateToStr(m_dateStart)+' (.....)';
+     end;
 
      m_listCorrect[i]:=GetCountCalls(currentDate);
      currentDate:=currentDate-cGLOBAL_DAY_START;
@@ -137,7 +185,7 @@ begin
 //   end; 
    
    
-  m_forecast:=Round(GetAvgCount);       
+  m_forecast:=Round(GetAvgCount);
 end;
 
 // получить текущее кол-во звонков за день

@@ -37,9 +37,11 @@ type
     edtPassword_SMS: TEdit;
     Label7: TLabel;
     btnSaveSMSSettings: TBitBtn;
-    BitBtn2: TBitBtn;
+    btnCheckSMSSettings: TBitBtn;
     STSMS_viewPwd: TStaticText;
     Label6: TLabel;
+    Label8: TLabel;
+    edtSmsSign: TEdit;
     procedure FormShow(Sender: TObject);
     procedure btnAddServerClick(Sender: TObject);
     procedure LoadSettings;
@@ -83,7 +85,7 @@ begin
   // есть ли логин\пасс
   if (edtLogin_Firebird.Text<>'') and (edtPassword_Firebird.Text<>'') then isAuth:=True;
 
-  // кол-во серверров ИК
+  // кол-во серверов ИК
   if GetCountServersIK<>0 then isServers:=True;
 
   if isAuth and isServers then begin
@@ -183,12 +185,14 @@ begin
 
       if (GetSMSAuth(sms_server_addr)='null') and
          (GetSMSAuth(sms_login)='null') and
-         (GetSMSAuth(sms_pwd)='null') then begin
-        SQL.Add('insert into sms_settings (url,sms_login,sms_pwd) values ('+#39+reSmsURL.Text+#39+','+#39+edtLogin_SMS.Text+#39+','+#39+edtPassword_SMS.Text+#39+')');
+         (GetSMSAuth(sms_pwd)='null') and
+         (GetSMSAuth(sms_sign)='null')
+      then begin
+        SQL.Add('insert into sms_settings (url,sms_login,sms_pwd,sign) values ('+#39+reSmsURL.Text+#39+','+#39+edtLogin_SMS.Text+#39+','+#39+edtPassword_SMS.Text+#39+','+#39+edtSmsSign.Text+#39')');
         isNewAuth:=True;
       end
       else begin
-        SQL.Add('update sms_settings set url = '+#39+reSmsURL.Text+#39+', sms_login = '+#39+edtLogin_SMS.Text+#39+', sms_pwd = '+#39+edtPassword_SMS.Text+#39);
+        SQL.Add('update sms_settings set url = '+#39+reSmsURL.Text+#39+', sms_login = '+#39+edtLogin_SMS.Text+#39+', sms_pwd = '+#39+edtPassword_SMS.Text+#39+', sign = '+#39+edtSmsSign.Text+#39);
         isNewAuth:=False;
       end;
 
@@ -267,10 +271,15 @@ begin
    // подключение к SMS рассылке
    if (GetSMSAuth(sms_server_addr)<>'null')  and
       (GetSMSAuth(sms_login)<>'null') and
-      (GetSMSAuth(sms_pwd)<>'null') then begin
+      (GetSMSAuth(sms_pwd)<>'null')  and
+      (GetSMSAuth(sms_sign)<>'null')
+   then begin
      reSmsURL.Text:=GetSMSAuth(sms_server_addr);
      edtLogin_SMS.Text:=GetSMSAuth(sms_login);
      edtPassword_SMS.Text:=GetSMSAuth(sms_pwd);
+     edtSmsSign.Text:=GetSMSAuth(sms_sign);
+
+     btnCheckSMSSettings.Enabled:=True;
    end;
 
 
@@ -322,10 +331,15 @@ begin
      Exit;
   end;
 
-   if edtPassword_SMS.Text='' then begin
-     MessageBox(Handle,PChar('ОШИБКА! Не заполнено поле "Пароль"'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-     Exit;
-   end;
+  if edtPassword_SMS.Text='' then begin
+    MessageBox(Handle,PChar('ОШИБКА! Не заполнено поле "Пароль"'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    Exit;
+  end;
+
+  if edtSmsSign.Text='' then begin
+    MessageBox(Handle,PChar('ОШИБКА! Не заполнено поле "Подпись в конце SMS"'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    Exit;
+  end;
 
    // записываем данные
    SetSMSAuth;

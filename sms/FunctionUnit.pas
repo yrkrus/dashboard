@@ -1,5 +1,7 @@
 unit FunctionUnit;
 
+
+
 interface
 
 uses
@@ -7,26 +9,33 @@ FormHomeUnit,
  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,System.Win.ComObj,System.StrUtils,math, IdHTTP,
   IdSSL,IdIOHandlerStack, IdSSLOpenSSL, System.DateUtils,System.IniFiles,
-  Winapi.WinSock,  Vcl.ComCtrls, GlobalVariables;
+  Winapi.WinSock,  Vcl.ComCtrls, GlobalVariables, Vcl.Grids, Data.Win.ADODB, Data.DB, IdException,
+  TPacientsListUnit;
 
+ ////////////////////////// Создание динамических потоков //////////////////////////
 
-procedure LoadData(InTypeReport:Word);                                                        // загрузка excel
-procedure Log(InText:string;InError:Boolean);                                                 // запись в лог
-procedure CurrentPostAddColoredLine(AText:string;AColor: TColor);
-procedure ParsingSMSandSend(InSMSList:TStringList;InTypeReport:Word);                         // разбор и отправка смс   { InTypeReport=1 - отчет СМС | InTypeReport=2 - отчет отказнки  }
+ type
+  TMyThread = class(TThread)
+  private
+   m_RangeStart:Integer;
+   m_RangeStop:Integer;
+
+    procedure ShowLog; // Процедура для обновления RELog в FormHome
+  protected
+    procedure Execute; override;
+  public
+    constructor Create(RangeStart,RangeStop:Integer);
+  end;
+
+ ////////////////////////// Создание динамических потоков //////////////////////////
+
 function GetSMS(inPacientPhone:string):string; overload;                                      // отправка смс v2
-function GetSMS(inPacientPhone,inPacientIO,inPacientBirthday,
-                inPacientPol,inDataPriema,inTimePriema,inFIOVracha,
-                inNapravlenie,inAddress:string):string; overload;                             // отправка смс
+
 function SettingsLoadString(INFILE,INSection,INValue,INValueDefault:string):string;           // загрузка параметров
 procedure SettingsSaveString(INFILE,INSection,INValue,INValueDefault:string);                 // сохранение параметров
-procedure ErrorParsingLog(InPhoneNumber,InTypeParsing,InFullStackSMSParsing:string);          // отображение ошибки в логе
-procedure PreLoadData(inTypeReport:Word);                                                     // пред загрузка данных об отправке
 function GetTimeDiff(InCurrentSec:Integer):string;                                            // время высчитывание примерного времени
 function GetSMSStatusID(inPacientPhone:string):string;                                        // проверка смс статуса
-procedure LoadMsgMessageOld(InMaxCount:Integer);                                              // прогрузка последних успешных сообщений
-function GetExistSaveMessage(InMEssage:string):Boolean;                                       // проверка есть ли уже ранее сохраненное сообщение
-procedure AddSaveMessageOld(InMessage:string);                                                // сохранение сообщения
+//function GetExistSaveMessage(InMEssage:string):Boolean;                                       // проверка есть ли уже ранее сохраненное сообщение
 
 procedure ParsingResultStatusSMS(ResultServer,inPacientPhone:string);                         // парсинг и создание формы инфо статуса сообщения
 function GetMsgCount(ResultServer,inPacientPhone:string):Integer;                             // кол-во смс которые были отправлены
@@ -34,14 +43,36 @@ procedure ShowInfoMessage(arrMsg: array of TSMSMessage; arrCount:Integer);      
 
 
 // проверенные
+function LoadData(InFileExcel:string; var _errorDescription:string;
+                  var p_Status:TStaticText;
+                  var p_CountSending:TLabel;
+                  var p_CountNotSending:TLabel):Boolean;                                     // загрузка excel
 procedure OptionsStyle(InOptionsType:enumSendingOptions);                                     // выбор типа отправляемого смс
 function isCorrectNumberPhone(InNumberPhone:string; var _errorDescription:string):Boolean;      // проверка корректности номера телефона при вводе
 function CheckParamsBeforeSending(InOptionsType:enumSendingOptions; var _errorDescription:string):Boolean; // проверка данных перед отправкой
-function CreateSMSMessage(var InMessage:TRichEdit):string;                                            // правка сообщения чтобы оно было в 1 строку
+function CreateSMSMessage(var InMessage:TRichEdit):string;                                             // правка сообщения чтобы оно было в 1 строку
 function SendingMessage(InOptionsType:enumSendingOptions; var _errorDescription:string):Boolean; // отправка сообщения
 procedure ClearParamsForm(InOptionsType:enumSendingOptions);                                     // очистка полей формы
 procedure ShowOrHideLog(InOptions:enumFormShowingLog); // ототбражать или скрывать лог
+function isExistExcel(var _errorDescriptions:string):Boolean;                                  // проверка установлен ли excel
+procedure CreateCopyright;                                                 // создание Copyright
+procedure ShowSaveTemplateMessage(var p_PageControl:TPageControl;
+                                  var p_ListView:TListView;
+                                  InTemplate:enumTemplateMessage;
+                                  var p_NoMessageInfo:TStaticText);             // очистка шаблонов сообщений
+procedure ClearListView(var p_ListView:TListView);                                      // очистка StringGrid
+procedure SaveMyTemplateMesaage(InMessage:string; IsGlobal:Boolean = False);                // запись в шалблоны отправленного сообщения
+function isExistMyTemplateMessage(InMessage:string; isGlobal:Boolean = False):Boolean;                                  // есть ли такое сообщение уже в шаблонах сообщений
+function isValidPacientFields(var Pacient:TListPacients):Boolean;                 // проверка на корректность записи из excel файла
+procedure ClearTabs(InOptionsType:enumSendingOptions);                            // очистка окон после отправки
+procedure CreateLogAddColoredLine(var p_ParentLot:TRichEdit; AText:string; AColor:TColor);  // отображение лога в цвете
+procedure AddMessageFromTemplate(InMessage:string);                             // добавление сообщения на отправку из шаблонов сообщений
+function StrToBoolean(InValue:string):Boolean;        // string -> boolean
+procedure SaveMyTemplateMessage(id:Integer; InNewMessage:string; IsDelete:Boolean = False);  // редактирование сообщения в сохраненных шаблонов
+procedure SendingRemember;                                                            // отправка рассылки sms о напоминании приема
 
+procedure CreateThreadSendind(CountThread,InStartSendindID,InStopSendingID:Integer);       // создание динамических потоков
+procedure SignSMS;                                                                         // есть ли возможность вставлять подпись в СМС сообщение
 
 
 implementation
@@ -50,6 +81,44 @@ uses
   FormMyTemplateUnit, TSendSMSUint;
 
 
+ ////////////////////////// Создание динамических потоков //////////////////////////
+
+constructor TMyThread.Create(RangeStart,RangeStop:Integer);
+begin
+  inherited Create(True);   // Создаем поток в приостановленном состоянии
+  m_RangeStart:=RangeStart;
+  m_RangeStop:=RangeStop;
+
+  FreeOnTerminate := True;  // Освобождаем поток после завершения
+end;
+
+
+procedure TMyThread.Execute;
+begin
+  //Sleep(500);
+  Synchronize(ShowLog); // Обновляем RichEdit в главном потоке
+
+ // Здесь вызываем функцию SendingRemember
+ // SendingRemember;
+
+end;
+
+
+procedure TMyThread.ShowLog;
+begin
+
+ SharedMainLog.Save('SendingRemember executed by thread: ' + IntToStr(GetCurrentThreadId));
+
+ CreateLogAddColoredLine(FormHome.RELog,'SendingRemember executed by thread: ' + IntToStr(GetCurrentThreadId),clBlack);
+
+end;
+
+procedure CreateThreadSendind(CountThread,InStartSendindID,InStopSendingID:Integer);
+begin
+  TMyThread.Create(InStartSendindID,InStopSendingID).Start; // Создаем и запускаем поток
+end;
+
+////////////////////////// Создание динамических потоков //////////////////////////
 
 
 // проверка корректности номера телефона при вводе
@@ -109,7 +178,10 @@ begin
 
         end;
         options_Sending:begin // рассылка
-           // TODO сделать
+           if SharedPacientsList.Count = 0 then begin
+             _errorDescription:='Не загружен excel файл с рассылкой';
+             Exit;
+           end;
         end;
       end;
    end;
@@ -125,7 +197,6 @@ var
 begin
   tmp:='';
   for i:=0 to InMessage.Lines.Count-1 do begin
-
     if tmp='' then tmp:=InMessage.Lines[i]
     else tmp:=tmp + InMessage.Lines[i];
   end;
@@ -139,13 +210,14 @@ var
  SMS:TSendSMS;
  SMSMessage:string;
  phone:string;
+ addSign:Boolean;
 begin
   Result:=False;
   _errorDescription:='';
 
   case InOptionsType of
     options_Manual:begin  // ручная отправка
-      SMS:=TSendSMS.Create;
+      SMS:=TSendSMS.Create(DEBUG);
       if not SMS.isExistAuth then begin
         _errorDescription:='Отсутствуют авторизационные данные для отправки SMS';
         Exit;
@@ -157,13 +229,26 @@ begin
       // телефон
       phone:=FormHome.edtManualSMS.Text;
 
-      if not SMS.SendSMS(SMSMessage,phone,_errorDescription) then begin
+      if FormHome.chkbox_SignSMS.Checked then addSign:=True
+      else addSign:=False;
+
+      if not SMS.SendSMS(SMSMessage,phone,_errorDescription,addSign) then begin
+       SharedMainLog.Save('Не удалось отправить SMS на номер ('+phone+') : '+SMSMessage+'. ОШИБКА : '+_errorDescription, True);
        Exit;
       end;
 
+      SharedMainLog.Save('Отправлено SMS на номер ('+phone+') : '+SMSMessage);
+
     end;
     options_Sending:begin  // рассылка
-        // TODO сделать
+      SMS:=TSendSMS.Create(DEBUG);
+      if not SMS.isExistAuth then begin
+        _errorDescription:='Отсутствуют авторизационные данные для отправки SMS';
+        Exit;
+      end;
+
+      // отправляем смс  (в потоке = MAX_COUNT_THREAD_SENDIND)
+      SendingRemember;
     end;
   end;
 
@@ -173,17 +258,7 @@ end;
  // очистка полей формы
 procedure ClearParamsForm(InOptionsType:enumSendingOptions);
 begin
-  with FormHome do begin
-   case InOptionsType of
-      options_Manual:begin  // ручная отправка
-         edtManualSMS.Text:='';
-         re_ManualSMS.Clear;
-      end;
-      options_Sending:begin // рассылка
-            // TODO сделать
-      end;
-    end;
-  end;
+  ClearTabs(InOptionsType);
 end;
 
 // ототбражать или скрывать лог
@@ -221,47 +296,6 @@ begin
 end;
 
 
-// пред загрузка данных об отправке
-procedure PreLoadData(inTypeReport:Word);
-var
- FormPleaseWait:TForm;
- lblPlease:TLabel;
-begin
-
-    // динамическая форма
-   FormPleaseWait:=TForm.Create(Application);
-   lblPlease:=TLabel.Create(FormPleaseWait);
-
-   with FormPleaseWait do begin
-     Caption:='Загрузка отчета';
-     BorderStyle:=bsSizeable;
-     ClientWidth:=280;
-     ClientHeight:=35;
-     Position:=poScreenCenter;
-     WindowState:=wsNormal;
-     BorderIcons:=[];
-     lblPlease.Caption:=' Подождите ...';
-     lblPlease.Left:=4;
-     lblPlease.Top:=5;
-     lblPlease.Width:=ClientWidth-10;
-     lblPlease.Height:=25;
-     lblPlease.Visible:=True;
-     lblPlease.Layout:=tlCenter;
-     lblPlease.Font.Size:=12;
-     lblPlease.Font.Name:='Times New Roman';
-     lblPlease.Parent:=FormPleaseWait;
-     Show;
-     Application.ProcessMessages;
-   end;
-
-   with FormHome do begin
-       SLSMS.Clear;
-       // загружаем файл с рассылкой
-       LoadData(inTypeReport);
-   end;
-
-    FormPleaseWait.Free;
-end;
 
 // выбор типа отправляемого смс
 procedure OptionsStyle(InOptionsType:enumSendingOptions);
@@ -270,9 +304,37 @@ begin
    case InOptionsType of
       options_Manual: begin
        btnSendSMS.Caption:=' &Отправить SMS';
+
+       edtManualSMS.Text:='';                 // номер телефона
+       st_PhoneInfo.Visible:=True;            // инфо что телдефон должен начинаться с 8
+       re_ManualSMS.Clear;                    // сообщение
+
+       //chkbox_SignSMS.Checked:=True;          // подпись в конце SMS
+       chkbox_SaveMyTemplate.Checked:=False;  // сохранить сообщение в мои шаблоны
+       chkbox_SaveGlobalTemplate.Checked:=False;  // сохранить сообщение в глобальные шаблоны
+
+       st_ShowInfoAddAddressClinic.Visible:=True; // справка как добавить адрес клиники
+
       end;
       options_Sending: begin
        btnSendSMS.Caption:=' &Запустить SMS рассылку';
+
+       edtExcelSMS.Text:='';                  // excel файл
+       lblCountSendingSMS.Caption:='null';    // кол-во смс на отправку
+       lblCountNotSendingSMS.Caption:='null';    // кол-во смс с ошибкой на отправку
+       st_ShowNotSendingSMS.Visible:=False;   // показ списка с данными которые не могут быть отправены в смс
+       //RELog.Clear;                           // очистка лога отправки
+
+       st_ShowInfoAddAddressClinic.Visible:=False; // справка как добавить адрес клиники
+
+       ProgressStatusText.Caption:='Статус : Файл не загружен в память';
+       ProgressBar.Progress:=0;               // прогресс бар
+
+       //chkboxShowLog.Checked:=False;          // показывать лог отправки
+
+       // очистка памяти по отправке смс
+       SharedPacientsList.Clear;
+       SharedPacientsListNotSending.Clear;
       end;
    end;
   end;
@@ -306,29 +368,166 @@ begin
 end;
 
 
-procedure CurrentPostAddColoredLine(AText:string;AColor: TColor);
+procedure CreateLogAddColoredLine(var p_ParentLot:TRichEdit; AText:string; AColor:TColor);
  var
  Error:Boolean;
 begin
-  with FormHome.RELog do
+  with p_ParentLot do
   begin
     SelStart:= Length(Text);
     SelAttributes.Color:=AColor;
     SelAttributes.Size:=10;
-    SelAttributes.Name:='Times New Roman';
-    Lines.Add(DateTimeToStr(Now)+' '+AText);
+    SelAttributes.Name:='Tahoma';
+    //Lines.Add(DateTimeToStr(Now)+' '+AText);
+    Lines.Add(AText);
+
     Perform(EM_LINESCROLL,0,Lines.Count-1);
     SetFocus;
   end;
 
-
   // есть или нет ошибки
-  if AColor=clRed then Log(AText,True)
-  else Log(AText,False);
+//  if AColor=clRed then Log(AText,True)
+//  else Log(AText,False);
 end;
 
-  // загрузка счета
-procedure LoadData(InTypeReport:Word);  { InTypeReport=1 - отчет СМС | InTypeReport=2 - отчет отказнки  }
+
+// добавление сообщения на отправку из шаблонов сообщений
+procedure AddMessageFromTemplate(InMessage:string);
+begin
+  with FormHome do begin
+    re_ManualSMS.Clear;
+    re_ManualSMS.Text:=InMessage;
+  end;
+end;
+
+// string -> boolean
+function StrToBoolean(InValue:string):Boolean;
+var
+ tmp:string;
+begin
+  Result:=False;
+  tmp:=AnsiLowerCase(InValue);
+  if tmp = 'true' then Result:=True;
+end;
+
+// редактирование сообщения в сохраненных шаблонов
+procedure SaveMyTemplateMessage(id:Integer; InNewMessage:string; IsDelete:Boolean = False);
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ response:string;
+begin
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+
+  if not Assigned(serverConnect) then begin
+    FreeAndNil(ado);
+    Exit;
+  end;
+
+   try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      if not IsDelete then begin
+       SQL.Add('update sms_template set template = '+#39+InNewMessage+#39+' where id = '+#39+IntToStr(id)+#39);
+      end
+      else begin
+        SQL.Add('delete from sms_template where id = '+#39+IntToStr(id)+#39);
+      end;
+
+      try
+          ExecSQL;
+      except
+          on E:EIdException do begin
+            FreeAndNil(ado);
+            if Assigned(serverConnect) then begin
+              serverConnect.Close;
+              FreeAndNil(serverConnect);
+            end;
+             Exit;
+          end;
+      end;
+
+    end;
+   finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+   end;
+end;
+
+// отправка рассылки sms о напоминании приема
+procedure SendingRemember;
+const
+ cADDSIGN:Boolean = True;  // по умолчанию добавляем подпись к SMS
+var
+ SMS:TSendSMS;
+ SendingMessage:string;
+ i:Integer;
+ error:string;
+ startSendind, stopSending:Integer;
+ countSMS:Integer;
+ countSMSLast:Integer;  // кол-во смс которые не вошли в пул, последнее значение которое в последний поток передастся
+ CurrentCountSending:Integer; // текущее кол-во записей на отправку
+
+begin
+
+    CurrentCountSending:=SharedPacientsList.Count;
+    countSMS:=Round(CurrentCountSending / MAX_COUNT_THREAD_SENDIND);
+    countSMSLast:=CurrentCountSending - (countSMS*MAX_COUNT_THREAD_SENDIND);
+
+   // выясняем по сколько смс нужно в потоке отправить
+   for i:=0 to MAX_COUNT_THREAD_SENDIND do begin
+     startSendind:=i*countSMS;
+
+     if i=0 then stopSending:=countSMS-1
+     else
+     begin
+      stopSending:=stopSending+stopSending;
+     end;
+
+     //CreateThreadSendind(1,startSendind,stopSending);
+   end;
+
+
+  //
+
+
+
+   SMS:=TSendSMS.Create(DEBUG);
+   if not SMS.isExistAuth then Exit;
+
+   for i:=0 to SharedPacientsList.Count-1 do begin
+     SendingMessage:=SharedPacientsList.CreateMessage(i, REMEMBER_MESSAGE);
+
+     if not SMS.SendSMS(SendingMessage,SharedPacientsList.GetPhone(i),error, cADDSIGN) then
+     begin
+       CreateLogAddColoredLine(FormHome.RELog,'Не удалось отправить СМС на номер ('+SharedPacientsList.GetPhone(i)+') '+error, clRed);
+       SharedMainLog.Save('Не удалось отправить SMS на номер ('+SharedPacientsList.GetPhone(i)+') : '+SendingMessage+'. ОШИБКА : '+error, True);
+     end
+     else begin
+       CreateLogAddColoredLine(FormHome.RELog,'Отправлено СМС на номер ('+SharedPacientsList.GetPhone(i)+') : '+SendingMessage, clGreen);
+       SharedMainLog.Save('Отправлено SMS на номер ('+SharedPacientsList.GetPhone(i)+') : '+SendingMessage);
+     end;
+
+     if i=2 then begin
+       error:='';
+
+     end;
+   end;
+
+end;
+
+
+// загрузка excel файла о напоминании о приеме
+function LoadData(InFileExcel:string;
+                  var _errorDescription:string;
+                  var p_Status:TStaticText;
+                  var p_CountSending:TLabel;
+                  var p_CountNotSending:TLabel):Boolean;
 var
  WorkSheet,Excel:OLEVariant;
  Rows, Cols, i:integer;
@@ -337,24 +536,39 @@ var
 
  stopRows:string;
 
- RowsAdd:Boolean; // подгружаем строки
+ checkRows:Boolean;
 
- PacientPhone,PacientIO,PacientBirthday,PacientPol,DataPriema,TimePriema,
- FIOVracha,Napravlenie,Address:string;
+ PacientPCode,PacientPhone,PacientFamiliya,PacientIO,PacientBirthday,PacientPol,
+ PacientDataPriema,PacientTimePriema, PacientFIOVracha, Napravlenie,Address:string;
 
- tmpOstatok:string;
+ NewPacient:TListPacients;
 
 begin
-    CurrentPostAddColoredLine('Загрузка отчета',clBlack);
+  Screen.Cursor:=crHourGlass;
 
-    RowsAdd:=False;
+  if DEBUG then begin
+    while (GetTask('EXCEL.EXE')) do KillTask('EXCEL.EXE');
+  end;
+
+   // очищаем память на всякий случай
+   if SharedPacientsList.Count <> 0 then SharedPacientsList.Clear;
+   if SharedPacientsListNotSending.Count <> 0 then SharedPacientsListNotSending.Clear;
+
+    Result:=False;
+    _errorDescription:='';
+    p_Status.Caption:='Статус : Загрузка в память';
+    Application.ProcessMessages;
+
+   // CurrentPostAddColoredLine('Загрузка отчета',clBlack);
+
+    checkRows:=False;
 
     Excel:=CreateOleObject('Excel.Application');
     Excel.displayAlerts:=False;
     Excel.workbooks.add;
 
       //открываем книгу
-    Excel.Workbooks.Open(FileExcelSMS);
+    Excel.Workbooks.Open(InFileExcel);
     //получаем активный лист
     WorkSheet:=Excel.ActiveWorkbook.ActiveSheet;
     //определяем количество строк и столбцов таблицы
@@ -365,354 +579,141 @@ begin
     try
      FData:=WorkSheet.UsedRange.Value;
     except on E:Exception do
-            begin
-              MessageBox(FormHome.Handle,PChar('ОШИБКА! Не удалось загрузить файл в память'+#13#13+
-                                               e.ClassName+': '+e.Message),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+        begin
+          Screen.Cursor:=crDefault;
 
-              Excel.quit;
-              Exit;
-            end;
+          _errorDescription:='Не удалось загрузить файл в память'+#13#13+e.ClassName+': '+e.Message;
+          p_Status.Caption:='Статус : Ошибка при загрузке в память!';
+          Application.ProcessMessages;
+          Excel.quit;
+          Exit;
+        end;
     end;
 
 
    with FormHome do begin
       // смотримм нужны ли формат
 
-     case InTypeReport of
-      1:begin
-        if (FData[1,1]='PCODE')       and
-           (FData[1,2]='PHONE')       and
-           (FData[1,3]='LASTNAME')    and
-           (FData[1,4]='IO')          and
-           (FData[1,5]='BDATE')       and
-           (FData[1,6]='POL')         and
-           (FData[1,7]='WORKDATE')    and
-           (FData[1,8]='TIMES')       and
-           (FData[1,9]='DNAME')       and
-           (FData[1,10]='DEPNAME')    and
-           (FData[1,11]='F_FILID')    and
-           (FData[1,12]='F_SHORTADDR')
-        then RowsAdd:=True
-        else RowsAdd:=False;
+      if (FData[1,1]='PCODE')       and
+         (FData[1,2]='PHONE')       and
+         (FData[1,3]='LASTNAME')    and
+         (FData[1,4]='IO')          and
+         (FData[1,5]='BDATE')       and
+         (FData[1,6]='POL')         and
+         (FData[1,7]='WORKDATE')    and
+         (FData[1,8]='TIMES')       and
+         (FData[1,9]='DNAME')       and
+         (FData[1,10]='DEPNAME')    and
+         (FData[1,11]='F_FILID')    and
+         (FData[1,12]='F_SHORTADDR')
+      then checkRows:=True
+      else checkRows:=False;
 
 
-        if RowsAdd=False then begin
-           Excel.quit;
+      if checkRows=False then begin
+         Screen.Cursor:=crDefault;
 
-           CurrentPostAddColoredLine('ОШИБКА ЗАГРУЗКИ! Некорректный формат отчета',clRed);
+         Excel.quit;
 
-           Application.ProcessMessages;
+        // CurrentPostAddColoredLine('Некорректный формат отчета',clRed);
 
-           MessageBox(Handle,PChar('Некорректный формат отчета'+#13#13+
-                                   'Формат должен включать следуюшие столбцы:'+#13+
-                                   '1. PCODE'+#13+
-                                   '2. PHONE'+#13+
-                                   '3. LASTNAME'+#13+
-                                   '4. IO'+#13+
-                                   '5. BDATE'+#13+
-                                   '6. POL'+#13+
-                                   '7. WORKDATE'+#13+
-                                   '8. TIMES'+#13+
-                                   '9. DNAME'+#13+
-                                   '10.DEPNAME'+#13+
-                                   '11.F_FILID'+#13+
-                                   '12.F_SHORTADDR'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-           // очищаем строку с отчетом
-          FileExcelSMS:='';
-          edtExcelSMS.Text:='';
+         Application.ProcessMessages;
 
-          SLSMS.Clear;
-          Exit;
-        end;
+         _errorDescription:='Некорректный формат отчета'+#13#13+
+                             'Формат должен включать следуюшие столбцы:'+#13+
+                             '1. PCODE'+#13+
+                             '2. PHONE'+#13+
+                             '3. LASTNAME'+#13+
+                             '4. IO'+#13+
+                             '5. BDATE'+#13+
+                             '6. POL'+#13+
+                             '7. WORKDATE'+#13+
+                             '8. TIMES'+#13+
+                             '9. DNAME'+#13+
+                             '10.DEPNAME'+#13+
+                             '11.F_FILID'+#13+
+                             '12.F_SHORTADDR';
+        p_Status.Caption:='Статус : Ошибка, некорректный формат файла!';
+        Application.ProcessMessages;
+        edtExcelSMS.Text:='';
+
+        SharedPacientsList.Clear;
+        SharedPacientsListNotSending.Clear;
+        Exit;
       end;
-      2:begin
-        if (FData[1,1]='PCODE')         and
-           (FData[1,2]='PHONE1')        and
-           (FData[1,3]='PHONE2')        and
-           (FData[1,4]='PHONE3')        and
-           (FData[1,5]='LASTNAME')      and
-           (FData[1,6]='IO')            and
-           (FData[1,7]='BDATE')         and
-           (FData[1,8]='POL')           and
-           (FData[1,9]='WORKDATE')      and
-           (FData[1,10]='TIMES')        and
-           (FData[1,11]='DNAME')        and
-           (FData[1,12]='DEPNAME')      and
-           (FData[1,13]='F_FILID')      and
-           (FData[1,14]='F_SHORTADDR')  and
-           (FData[1,15]='DOPINFO')      and
-           (FData[1,16]='PHONE')
-        then RowsAdd:=True
-        else RowsAdd:=False;
 
 
-        if RowsAdd=False then begin
-           Excel.quit;
+     checkRows:=False;
+     NewPacient:= TListPacients.Create;
 
-           CurrentPostAddColoredLine('ОШИБКА ЗАГРУЗКИ! Некорректный формат отчета',clRed);
-
-           Application.ProcessMessages;
-
-           MessageBox(Handle,PChar('Некорректный формат отчета'+#13#13+
-                                   'Формат должен включать следуюшие столбцы:'+#13+
-                                   '1. PCODE'+#13+
-                                   '2. PHONE1'+#13+
-                                   '3. PHONE2'+#13+
-                                   '4. PHONE3'+#13+
-                                   '5. LASTNAME'+#13+
-                                   '6. IO'+#13+
-                                   '7. POL'+#13+
-                                   '8. TIMES'+#13+
-                                   '9. WORKDATE'+#13+
-                                   '10.TIMES'+#13+
-                                   '11.DNAME'+#13+
-                                   '12.DEPNAME'+#13+
-                                   '13.F_FILID'+#13+
-                                   '14.F_SHORTADDR'+#13+
-                                   '15.DOPINFO'+#13+
-                                   '16.PHONE'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-           // очищаем строку с отчетом
-          FileExcelSMS:='';
-          edtExcelSMS.Text:='';
-
-          SLSMS.Clear;
-          Exit;
-        end;
-
-      end;
-     end;
-
-
-
-    //выводим данные в таблицу
-     RowsAdd:=False;
      for i:=1 to Rows do
      begin
-
-       // поиск нужных строк
-       case InTypeReport of
-        1: begin
-          if RowsAdd=False then begin
-            if (FData[i,1]='PCODE')     and
-               (FData[i,2]='PHONE')     and
-               (FData[i,3]='LASTNAME')  and
-               (FData[i,4]='IO') then
-            begin
-             RowsAdd:=True;
-             Continue;
-            end;
+        if checkRows=False then begin
+          if (FData[i,1]='PCODE')     and
+             (FData[i,2]='PHONE')     and
+             (FData[i,3]='LASTNAME')  and
+             (FData[i,4]='IO') then
+          begin
+           checkRows:=True;
+           Continue;
           end;
-
-         PacientPhone:=FData[i,2];
-         PacientIO:=FData[i,4];
-         PacientBirthday:=FData[i,5];
-         PacientPol:=FData[i,6];
-         DataPriema:=FData[i,7];
-         TimePriema:=FData[i,8];
-         FIOVracha:=FData[i,9];
-         Napravlenie:=FData[i,10];
-         Address:=FData[i,12];
-
-
         end;
-        2:begin
-          if RowsAdd=False then begin
-            if (FData[i,1]='PCODE')     and
-               (FData[i,2]='PHONE1')    and
-               (FData[i,3]='PHONE2')    and
-               (FData[i,4]='PHONE3')    and
-               (FData[i,5]='LASTNAME')  and
-               (FData[i,9]='WORKDATE')  and
-               (FData[i,14]='F_SHORTADDR') then
-            begin
-             RowsAdd:=True;
-             Continue;
-            end;
-          end;
 
+       PacientPCode:=FData[i,1];
+       PacientPhone:=FData[i,2];
+       PacientFamiliya:=FData[i,3];
+       PacientIO:=FData[i,4];
+       PacientBirthday:=FData[i,5];
+       PacientPol:=FData[i,6];
+       PacientDataPriema:=FData[i,7];
+       PacientTimePriema:=FData[i,8];
+       PacientFIOVracha:=FData[i,9];
+       Napravlenie:=FData[i,10];
+       Address:=FData[i,12];
 
-         PacientPhone:=FData[i,16];
-         PacientIO:=FData[i,6];
-         PacientBirthday:=FData[i,7];
-         PacientPol:=FData[i,8];
-         DataPriema:=FData[i,9];
-         TimePriema:=FData[i,10];
-         FIOVracha:=FData[i,11];
-         Napravlenie:=FData[i,12];
-         Address:=FData[i,14];
-        end;
-       end;
 
       begin
         // заносим в память
-        SLSMS.Add(PacientPhone+';'+
-                  PacientIO+';'+
-                  PacientBirthday+';'+
-                  PacientPol+';'+
-                  DataPriema+';'+
-                  TimePriema+';'+
-                  FIOVracha+';'+
-                  Napravlenie+';'+
-                  Address);
+        with NewPacient do begin
+           PCODE:=StrToInt(PacientPCode);
+           Phone:=PacientPhone;
+           Familiya:=PacientFamiliya;
+           IO:=PacientIO;
+           Birthday:=StrToDate(PacientBirthday);
+           Pol:=PacientPol;
+           DataPriema:=StrToDate(PacientDataPriema);
+           TimePriema:=StrToTime(PacientTimePriema);
+           FIOVracha:=PacientFIOVracha;
+           ServiceNapravlenie:=Napravlenie;
+           ClinicAddress:=Address;
+        end;
+
+        if isValidPacientFields(NewPacient) then SharedPacientsList.Add(NewPacient)
+        else SharedPacientsListNotSending.Add(NewPacient);
       end;
+
+      NewPacient.Clear;
 
      end;
    end;
 
   Excel.quit;
-  CurrentPostAddColoredLine('Отчет загружен',clBlack);
-  CurrentPostAddColoredLine('Кол-во сообщений на отправку: '+IntToStr(SLSMS.Count), clGreen);
-  CurrentPostAddColoredLine('Примерное время на отправку всех СМС: '+GetTimeDiff(SLSMS.Count), clRed);
+  //CurrentPostAddColoredLine('Отчет загружен',clBlack);
+  //CurrentPostAddColoredLine('Кол-во сообщений на отправку: '+IntToStr(SharedPacientsList.Count), clGreen);
+  //CurrentPostAddColoredLine('Примерное время на отправку всех СМС: '+GetTimeDiff(SharedPacientsList.Count), clRed);
 
+  p_Status.Caption:='Статус : Загружено, готово к отправке';
+  p_CountSending.Caption:=IntToStr(SharedPacientsList.Count);
+  p_CountNotSending.Caption:=IntToStr(SharedPacientsListNotSending.Count);
+  if SharedPacientsListNotSending.Count>0 then FormHome.st_ShowNotSendingSMS.Visible:=True;
+  
+
+  Result:=True;
 
   Application.ProcessMessages;
+  Screen.Cursor:=crDefault;
 end;
 
-
-// запись в лог
-procedure Log(InText:string;InError:Boolean);
-var
- SLSave:TStringList;
- CurrentDateTime,DateTimeNow:string;
- TextStyle,TextColor,TextFont,TextSize:string;
-
- Color: TColor;
- R,G,B: Byte;
- i:Integer;
-
- user:string;
-begin
- SLSave:=TStringList.Create;
- CurrentDateTime:=FormatDateTime('ddmmyyyy',Now);
- DateTimeNow:=DateTimeToStr(Now);
-
- TextFont:='Times New Roman';
-
- TextSize:='3';
- if InError=False then TextColor:='0'
- else TextColor:='262331';
- Color:=ColorToRGB(StrToInt(TextColor));
-
- //user:='['+currentUser.getUserName+' | '+currentUser.getIP+'] ';
-
- // переводим в HEX
- TextColor:=IntToHex(GetRValue(Color),2)+IntToHex(GetGValue(Color),2)+IntToHex(GetBValue(Color),2);
-
- if not DirectoryExists(FOLDERPATH+'log') then CreateDir(FOLDERPATH+'log');
-
- if not FileExists(FOLDERPATH+'log\'+CurrentDateTime+cLOG_EXTENSION) then begin
-  if InText<>'<hr>' then SLSave.Insert(0, '<font color="'+TextColor+'"'+' size="'+TextSize+'"'+' face="'+TextFont+'">'+user+DateTimeNow+' '+InText+'</font><br>')
-  else SLSave.Insert(0, '<font color="'+TextColor+'"'+' size="'+TextSize+'"'+' face="'+TextFont+'">'+InText+'</font><br>');
-
-
-  try
-    SLSave.SaveToFile(FOLDERPATH+'log\'+CurrentDateTime+cLOG_EXTENSION);
-  finally
-    // ничего не делаем продолжаем
-  end;
- end
- else begin
-  SLSave.LoadFromFile(FOLDERPATH+'log\'+CurrentDateTime+cLOG_EXTENSION);
-
-  if InText<>'<hr>' then SLSave.Insert(0, '<font color="'+TextColor+'"'+' size="'+TextSize+'"'+' face="'+TextFont+'">'+user+DateTimeNow+' '+InText+'</font><br>')
-  else SLSave.Insert(0, '<font color="'+TextColor+'"'+' size="'+TextSize+'"'+' face="'+TextFont+'">'+InText+'</font><br>');
-
-
-  try
-   SLSave.SaveToFile(FOLDERPATH+'log\'+CurrentDateTime+cLOG_EXTENSION);
-  finally
-   // ничего не делаем продолжаем
-  end;
- end;
-
- if SLSave<>nil then FreeAndNil(SLSave);
-end;
-
-
-// отправка смс
-function GetSMS(inPacientPhone,inPacientIO,inPacientBirthday,inPacientPol,
-                inDataPriema,inTimePriema,inFIOVracha,inNapravlenie,inAddress:string):string; overload;
-var
- http:TIdHTTP;
- ssl:TIdSSLIOHandlerSocketOpenSSL;
- ServerOtvet:string;
-
- Age:int64;
-
- MessageSMS:string;
- HTTPGet:string;
-begin
-
- // разберем текст
-
- // нет градации ребенок или взрослый
-  begin
-   MessageSMS:=cMESSAGE;
-
-   MessageSMS:=StringReplace(MessageSMS,'%FIO_Pacienta',inPacientIO,[rfReplaceAll]);
-   if inPacientPol='м' then MessageSMS:=StringReplace(MessageSMS,'%записан(а)','записан',[rfReplaceAll])
-   else MessageSMS:=StringReplace(MessageSMS,'%записан(а)','записана',[rfReplaceAll]);
-
-   MessageSMS:=StringReplace(MessageSMS,'%FIO_Doctora',inFIOVracha,[rfReplaceAll]);
-  // MessageSMS:=StringReplace(MessageSMS,'%Napravlenie',inNapravlenie,[rfReplaceAll]);
-   MessageSMS:=StringReplace(MessageSMS,'%Data',inDataPriema,[rfReplaceAll]);
-   MessageSMS:=StringReplace(MessageSMS,'%Time',inTimePriema,[rfReplaceAll]);
-   MessageSMS:=StringReplace(MessageSMS,'%Address',inAddress,[rfReplaceAll]);
-  end;
-
-
-  // формируем ссылку на отправку
-  begin
-   HTTPGet:=cWebApiSMS;
-    {
-   cWebApiSMS:string='https://a2p-sms-https.beeline.ru/proto/http/?user=%USERNAME&pass=%USERPWD&action=post_sms&message=%MESSAGE&target=%PHONENUMBER';
-   }
-
-   with FormHome do begin
-   // HTTPGet:=StringReplace(HTTPGet,'%USERNAME',edtLogin.Text,[rfReplaceAll]);
-  //  HTTPGet:=StringReplace(HTTPGet,'%USERPWD',edtPwd.Text,[rfReplaceAll]);
-   // HTTPGet:=StringReplace(HTTPGet,'%MESSAGE', EncodeURL(AnsiToUtf8(MessageSMS)),[rfReplaceAll]);
-    HTTPGet:=StringReplace(HTTPGet,'%PHONENUMBER',inPacientPhone,[rfReplaceAll]);
-   end;
-  end;
-
-   http:=TIdHTTP.Create(nil);
-
-    begin
-     ssl:=TIdSSLIOHandlerSocketOpenSSL.Create(http);
-     ssl.SSLOptions.Method:=sslvTLSv1_2;
-     ssl.SSLOptions.SSLVersions:=[sslvTLSv1_2];
-    end;
-
-  with http do begin
-    IOHandler:=ssl;
-//    Request.CustomHeaders.Add(CustomHeaders0);
-//    Request.UserAgent:=CustomUserAgent;
-//    Request.CustomHeaders.Add(CustomHeaders2);
-//    Request.CustomHeaders.Add(CustomHeaders3);
-//    Request.CustomHeaders.Add(CustomHeaders4);
-
-     try
-      { if global_DEBUG=False then ServerOtvet:=Get(HTTPGet)
-       else} ServerOtvet:='OK';
-     except on E: EIdHTTPProtocolException do
-        begin
-         Result:='ОШИБКА ОТПРАВКИ! '+e.Message+' / '+e.ErrorMessage;
-         if ssl<>nil then FreeAndNil(ssl);
-         if http<>nil then FreeAndNil(http);
-         Exit;
-        end;
-     end;
-  end;
-
-   begin
-    Result:='OK';
-    Log(MessageSMS,False);
-
-    if ssl<>nil then FreeAndNil(ssl);
-    if http<>nil then FreeAndNil(http);
-   end;
-end;
 
 
 // отправка смс v2
@@ -777,10 +778,10 @@ begin
 
    begin
     Result:='OK';
-    Log(MessageSMS,False);
+   // Log(MessageSMS,False);
 
     // сохраняем последнее отправленное сообщение для истории и типа для формирования шаблонов сообщений
-    AddSaveMessageOld(MessageSMS);
+    //AddSaveMessageOld(MessageSMS);
 
     if ssl<>nil then FreeAndNil(ssl);
     if http<>nil then FreeAndNil(http);
@@ -1077,276 +1078,59 @@ begin
   ParsingResultStatusSMS(ServerOtvet,inPacientPhone);
 end;
 
-// разбор и отправка смс
-procedure ParsingSMSandSend(InSMSList:TStringList;InTypeReport:Word);   { InTypeReport=1 - отчет СМС | InTypeReport=2 - отчет отказнки  }
+// проверка на корректность записи из excel файла
+function isValidPacientFields(var Pacient:TListPacients):Boolean;
+const
+ cPHONE_ERROR:string = 'Некорректный номер телефона';
 var
  i,j:Integer;
 
- PacientPhonetmp:string;
- PacientPhone,PacientIO,PacientBirthday,PacientPol,DataPriema,TimePriema,
- FIOVracha,Napravlenie,Address:string;
-
- SMSResult:string;
-
 begin
-  for i:=0 to InSMSList.Count-1 do begin
-    PacientPhone:='';
-    PacientIO:='';
-    PacientBirthday:='';
-    PacientPol:='';
-    DataPriema:='';
-    TimePriema:='';
-    FIOVracha:='';
-    Napravlenie:='';
-    Address:='';
+  Result:=False;
 
-    with FormHome do begin
-     ProgressBar.Progress:=Round(100*i/InSMSList.Count-1);
-     lblProgressBar.Caption:=IntToStr(i+1)+' из '+IntToStr(InSMSList.Count);
-     Application.ProcessMessages;
-    end;
-
-    // разбираем
-    PacientPhone:=InSMSList[i];
-    System.Delete(PacientPhone,AnsiPos(';',PacientPhone),Length(PacientPhone));
-    PacientPhonetmp:=PacientPhone;
-
-    // проверим чтобы лишнего ничего не было (PacientPhone)
-    begin
-     if AnsiPos(' ',PacientPhone)<>0 then begin
-      // присутствует пробел
-      CurrentPostAddColoredLine('НАЙДЕНА ОШИБКА! В номере телефона "'+PacientPhone+'" присутствует пробел',clRed);
-      PacientPhone:=StringReplace(PacientPhone,' ','',[rfReplaceAll]);
-     end;
-
-     // проверим чтобы номер телефона был только сотовым
-     case InTypeReport of
-      1:begin
-       if AnsiPos('(9',PacientPhone)=0 then begin
-        // номер телефона не сотовый
-        CurrentPostAddColoredLine('НАЙДЕНА ОШИБКА! Номер телефона "'+PacientPhone+'" не мобильный, пропуск данной записи',clRed);
-
-        // занесем данную ошибку в список
-        with FormHome do begin
-          ParsingError:=True;
-          SLParsingError.Add('Номер телефона не мобильный >> '+InSMSList[i]);
-        end;
-
-        Continue;
-       end;
-
-       // разберем до состояния привет как охуенно ))
-       PacientPhone:=StringReplace(PacientPhone,'(','',[rfReplaceAll]);
-       PacientPhone:=StringReplace(PacientPhone,')','',[rfReplaceAll]);
-       PacientPhone:=StringReplace(PacientPhone,'+7','8',[rfReplaceAll]);
-       PacientPhone:=StringReplace(PacientPhone,'-','',[rfReplaceAll]);
-
-      end;
-      2:begin
-       if (PacientPhone[1]<>'7') and (PacientPhone[2]<>'9') then begin
-        // номер телефона не сотовый
-        CurrentPostAddColoredLine('НАЙДЕНА ОШИБКА! Номер телефона "'+PacientPhone+'" не мобильный, пропуск данной записи',clRed);
-
-        // занесем данную ошибку в список
-        with FormHome do begin
-          ParsingError:=True;
-          SLParsingError.Add('Номер телефона не мобильный >> '+InSMSList[i]);
-        end;
-
-        Continue;
-       end;
-       // разберем до состояния привет как охуенно ))
-       PacientPhone[1]:='8';
-      end;
-     end;
-
-
-     // последняя проверка, чтобы длинна былав не меньше и не больше 11 символов
-     if Length(PacientPhone)<>11  then begin
-      CurrentPostAddColoredLine('НАЙДЕНА ОШИБКА! Не удалось корректно распознать номер телефона "'+PacientPhonetmp+'", пропуск данной записи',clRed);
-
-       with FormHome do begin
-        ParsingError:=True;
-        SLParsingError.Add('Номер телефона не мобильный >> '+InSMSList[i]);
-       end;
-
-       Continue;
-     end;
-    end;
-
-    // проверим чтобы лишнего ничего не было (PacientIO)
-    begin
-      PacientIO:=InSMSList[i];
-      for j:=1 to 1 do System.Delete(PacientIO,1,AnsiPos(';',PacientIO));
-      System.Delete(PacientIO,AnsiPos(';',PacientIO),Length(PacientIO));
-
-      if PacientIO='' then begin
-       ErrorParsingLog(PacientPhone,'Имя Отчество',InSMSList[i]);
-       Continue;
-      end;
-
-    end;
-
-    // проверим чтобы лишнего ничего не было (PacientBirthday)
-    begin
-      PacientBirthday:=InSMSList[i];
-      for j:=1 to 2 do System.Delete(PacientBirthday,1,AnsiPos(';',PacientBirthday));
-      System.Delete(PacientBirthday,AnsiPos(';',PacientBirthday),Length(PacientBirthday));
-
-      if PacientBirthday='' then begin
-       ErrorParsingLog(PacientPhone,'Дата рождения',InSMSList[i]);
-       Continue;
-      end;
-
-    end;
-
-
-    // проверим чтобы лишнего ничего не было (PacientPol)
-    begin
-      PacientPol:=InSMSList[i];
-      for j:=1 to 3 do System.Delete(PacientPol,1,AnsiPos(';',PacientPol));
-      System.Delete(PacientPol,AnsiPos(';',PacientPol),Length(PacientPol));
-
-     if PacientPol='' then begin
-       ErrorParsingLog(PacientPhone,'Пол',InSMSList[i]);
-       Continue;
-     end;
-    end;
-
-    // проверим чтобы лишнего ничего не было (DataPriema)
-    begin
-      DataPriema:=InSMSList[i];
-      for j:=1 to 4 do System.Delete(DataPriema,1,AnsiPos(';',DataPriema));
-      System.Delete(DataPriema,AnsiPos(';',DataPriema),Length(DataPriema));
-
-     if DataPriema='' then begin
-       ErrorParsingLog(PacientPhone,'Дата приема',InSMSList[i]);
-       Continue;
-     end;
-    end;
-
-    // проверим чтобы лишнего ничего не было (TimePriema)
-    begin
-      TimePriema:=InSMSList[i];
-      for j:=1 to 5 do System.Delete(TimePriema,1,AnsiPos(';',TimePriema));
-      System.Delete(TimePriema,AnsiPos(';',TimePriema),Length(TimePriema));
-
-     if TimePriema='' then begin
-       ErrorParsingLog(PacientPhone,'Время приема',InSMSList[i]);
-       Continue;
-     end;
-    end;
-
-    // проверим чтобы лишнего ничего не было (FIOVracha)
-    begin
-      FIOVracha:=InSMSList[i];
-      for j:=1 to 6 do System.Delete(FIOVracha,1,AnsiPos(';',FIOVracha));
-      System.Delete(FIOVracha,AnsiPos(';',FIOVracha),Length(FIOVracha));
-
-     if FIOVracha='' then begin
-       ErrorParsingLog(PacientPhone,'ФИО врача',InSMSList[i]);
-       Continue;
-     end;
-    end;
-
-    // проверим чтобы лишнего ничего не было (Napravlenie)
-    begin
-      Napravlenie:=InSMSList[i];
-      for j:=1 to 7 do System.Delete(Napravlenie,1,AnsiPos(';',Napravlenie));
-      System.Delete(Napravlenie,AnsiPos(';',Napravlenie),Length(Napravlenie));
-      // Переведем в человеческий вид, чтобы все было не капсом
-     Napravlenie:=AnsiLowerCase(Napravlenie);
-
-     if Napravlenie='' then begin
-       ErrorParsingLog(PacientPhone,'Направление',InSMSList[i]);
-       Continue;
-     end;
-    end;
-
-    // проверим чтобы лишнего ничего не было (Address)
-    begin
-      Address:=InSMSList[i];
-      for j:=1 to 8 do System.Delete(Address,1,AnsiPos(';',Address));
-
-     // if Address='' then Address:=cTempAddrClinika;
-
-     if Address='' then begin
-        CurrentPostAddColoredLine('НАЙДЕНА ОШИБКА! Адрес клиники "пустой", пропуск данной записи',clRed);
-
-        // занесем данную ошибку в список
-        with FormHome do begin
-          ParsingError:=True;
-          SLParsingError.Add('Пустой адрес клиники >> '+InSMSList[i]);
-        end;
-
-        Continue;
-     end;
-
-     // проверим есть ли в строке г.
-     if (AnsiPos('г.',Address)=0) then Address:='г. '+Address;
-    end;
-
-
-    // отправляем смс
-   try
-    SMSResult:=GetSMS(PacientPhone,
-                      PacientIO,
-                      PacientBirthday,
-                      PacientPol,
-                      DataPriema,
-                      TimePriema,
-                      FIOVracha,
-                      Napravlenie,
-                      Address);
-
-   except on E:Exception do
-    begin
-       CurrentPostAddColoredLine('ОШИБКА! Не удалось отправить СМС на номер "'+PacientPhonetmp+'" , '+e.ClassName+': '+e.Message,clRed);
-
-       with FormHome do begin
-        ParsingError:=True;
-        SLParsingError.Add(InSMSList[i]);
-       end;
-
-      SMSResult:=SMSResult+' '+e.Message;
-      Continue;
-    end;
+ // проверим чтобы лишнего ничего не было (Phone)
+  begin
+   if AnsiPos(' ',Pacient.Phone)<>0 then begin
+    // присутствует пробел
+    Pacient.Phone:=StringReplace(Pacient.Phone,' ','',[rfReplaceAll]);
    end;
 
-   if SMSResult='OK' then begin
-      {if global_DEBUG=False then} CurrentPostAddColoredLine('Отправлено СМС на номер "'+PacientPhonetmp+'"',clGreen)
-     { else CurrentPostAddColoredLine('DEBUG. Виртуально отправлено СМС на номер "'+PacientPhonetmp+'"',clGreen)}
-   end
-   else begin
-     CurrentPostAddColoredLine(SMSResult+'. Номер телефона на который не удалось отправить СМС "'+PacientPhonetmp+'"',clRed);
-
-      with FormHome do begin
-        ParsingError:=True;
-        SLParsingError.Add(InSMSList[i]);
-      end;
+   // проверим чтобы номер телефона был только сотовым
+   if AnsiPos('(9',Pacient.Phone)=0 then begin
+      Pacient._errorDescriptions:=cPHONE_ERROR;
+      Exit;
    end;
 
-   Sleep(cSLEEPNEXTSMS);
+     // разберем до состояния привет как охуенно ))
+   Pacient.Phone:=StringReplace(Pacient.Phone,'(','',[rfReplaceAll]);
+   Pacient.Phone:=StringReplace(Pacient.Phone,')','',[rfReplaceAll]);
+   Pacient.Phone:=StringReplace(Pacient.Phone,'+7','8',[rfReplaceAll]);
+   Pacient.Phone:=StringReplace(Pacient.Phone,'-','',[rfReplaceAll]);
+
+
+   // последняя проверка, чтобы длинна былав не меньше и не больше 11 символов
+   if Length(Pacient.Phone)<>11  then begin
+    Pacient._errorDescriptions:=cPHONE_ERROR;
+    Exit;
+   end;
   end;
 
-//  ShowMessage(FormHome.SLParsingError.Text);
+  if Pacient.IO = '' then begin
+
+
+  end;
+
+
+  // проверим есть ли в строке буковка г.
+  if (AnsiPos('г.',Pacient.ClinicAddress)=0) then Pacient.ClinicAddress:='г. '+Pacient.ClinicAddress;
+
+  Result:=True;
 end;
 
-
-
-// отображение ошибки в логе
-procedure ErrorParsingLog(InPhoneNumber,InTypeParsing,InFullStackSMSParsing:string);
-var
- TextError:string;
+// очистка окон после отправки
+procedure ClearTabs(InOptionsType:enumSendingOptions);
 begin
-  TextError:='Не заполнена строка ' +InTypeParsing;
-
-  CurrentPostAddColoredLine('ОШИБКА! Не удалось отправить СМС на номер "'+InPhoneNumber+'" , причина ошибки: '+TextError,clRed);
-
-   with FormHome do begin
-    ParsingError:=True;
-    SLParsingError.Add(InFullStackSMSParsing);
-   end;
+   OptionsStyle(InOptionsType);
 end;
 
 
@@ -1400,88 +1184,310 @@ begin
 end;
 
 
-// сохранение сообщения
-procedure AddSaveMessageOld(InMessage:string);
+
+//// проверка есть ли уже ранее сохраненное сообщение
+//function GetExistSaveMessage(InMEssage:string):Boolean;
+//var
+// i:Integer;
+// isExist:Boolean;
+//begin
+//   isExist:=False;
+//
+//   for i:=0 to cMAXCOUNTMESSAGEOLD-1 do begin
+//     if InMEssage=SettingsLoadString(cAUTHconf,'msg','msg'+IntToStr(i),'') then isExist:=True;
+//   end;
+//
+//   result:=isExist;
+//end;
+
+
+// проверка установлен ли excel
+function isExistExcel(var _errorDescriptions:string):Boolean;
 var
- lastIDmsg:Integer;
+  Excel:OleVariant;
 begin
- // проверим есть ли сообщение ранее
- if GetExistSaveMessage(InMessage) then Exit;
+  Result:=False;
+  _errorDescriptions:='';
 
- // сохраним
- lastIDmsg:=StrToInt(SettingsLoadString(cAUTHconf,'msg','lastID','0'));
+  try
+    Excel:=CreateOleObject('Excel.Application');
+    Excel:=Unassigned; // Освобождаем объект
 
- if lastIDmsg>=cMAXCOUNTMESSAGEOLD-1 then lastIDmsg:=0; // обнуляем ID
+    Result:=True; // Если объект создан, значит Excel установлен
+  except
+    on E: Exception do begin
+      _errorDescriptions:=e.ClassName+#13+E.Message;
+    end;
+  end;
+end;
 
-  SettingsSaveString(cAUTHconf,'msg','msg'+IntToStr(lastIDmsg),InMessage);
-  SettingsSaveString(cAUTHconf,'msg','lastID',IntToStr(lastIDmsg+1));
+// создание Copyright
+procedure CreateCopyright;
+begin
+  with FormHome.StatusBar do begin
+    Panels[0].Text:=GetCopyright;
+  end;
 end;
 
 
-// проверка есть ли уже ранее сохраненное сообщение
-function GetExistSaveMessage(InMEssage:string):Boolean;
-var
- i:Integer;
- isExist:Boolean;
-begin
-   isExist:=False;
-
-   for i:=0 to cMAXCOUNTMESSAGEOLD-1 do begin
-     if InMEssage=SettingsLoadString(cAUTHconf,'msg','msg'+IntToStr(i),'') then isExist:=True;
-   end;
-
-   result:=isExist;
-end;
-
-
-
-// прогрузка последних успешных сообщений
-procedure LoadMsgMessageOld(InMaxCount:Integer);
+// очистка шаблонов сообщений
+procedure ClearListView(var p_ListView:TListView);
 const
-  DefColWidth:Integer = 427;   // минимальная длина при котором будет увеличиваться поле
-  Koeff:Double        = 6.27;  // коэффициент расширения поля
-var
- i,j:Integer;
- msg:string;
-
- LastID:Integer;
-
- maxLenghMsg:Integer; // максимальная длинна сообщения
-
- SLMsg:TStringList;
-
+ cWidth_default         :Word = 792;
 begin
+  p_ListView.Items.Clear;
+  p_ListView.Columns.Clear;
 
-//  with FormMsgPerenos.SG do begin
-//    LastID:=StrToInt(SettingsLoadString(cAUTHconf,'msg','lastID','0'));
-//    if LastID=0 then  Inc(LastID);
-//
-//    DefaultColWidth:=DefColWidth;
-//    RowCount:=LastID;
-//
-//    // очистим список
-//    for i:=0 to RowCount do begin
-//      for j:=0 to ColCount do begin
-//         Cells[i,j]:='';
-//      end;
-//    end;
-//
-//    maxLenghMsg:=0;
-//    SLMsg:=TStringList.Create;
-//
-//    // пробежимся по списку
-//    for i:=cMAXCOUNTMESSAGEOLD-1 downto 0 do begin
-//      msg:=SettingsLoadString(cAUTHconf,'msg','msg'+IntToStr(i),'');
-//
-//      if Length(msg)>maxLenghMsg then maxLenghMsg:=Length(msg);
-//      if msg<>'' then  SLMsg.Add(msg);
-//    end;
-//
-//    for i:=0 to SLMsg.Count-1 do  Cells[0,i]:=SLMsg[i];
-//
-//    // изменяем размер
-//    if maxLenghMsg*Koeff > DefColWidth  then  DefaultColWidth:=Round(maxLenghMsg*Koeff);
-//  end;
+ with p_ListView do begin
+   ViewStyle:= vsReport;
+
+    with p_ListView.Columns.Add do
+    begin
+      Caption:='ID';
+      Width:=0;
+    end;
+
+    with p_ListView.Columns.Add do
+    begin
+      Caption:=' Шаблон сообщения';
+      Width:=cWidth_default;
+      Alignment:=taLeftJustify;
+    end;
+ end;
+end;
+
+
+
+// прогрузка шаблорнов сообщений
+procedure ShowSaveTemplateMessage(var p_PageControl:TPageControl;
+                                  var p_ListView:TListView;
+                                  InTemplate:enumTemplateMessage;
+                                  var p_NoMessageInfo:TStaticText);
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ countTemplate:Integer;
+ i:Integer;
+ ListItem: TListItem;
+begin
+  //очистка stringgrid
+  ClearListView(p_ListView);
+
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+
+  if not Assigned(serverConnect) then begin
+    FreeAndNil(ado);
+    Exit;
+  end;
+
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+
+      SQL.Clear;
+      case InTemplate of
+        template_my:begin
+          SQL.Add('select count(template) from sms_template where user_id = '+#39+inttostr(USER_STARTED_SMS_ID) +#39+' and is_global = ''0'' ');
+        end;
+        template_global:begin
+          SQL.Add('select count(template) from sms_template where is_global = ''1'' ');
+        end;
+      end;
+
+      Active:=True;
+      countTemplate:=Fields[0].Value;
+
+      if countTemplate=0 then begin
+        // надпись что нет данных
+        case InTemplate of
+          template_my:begin
+           FormMyTemplate.st_NoMessage_MyTemplate.Visible:=True;
+           p_PageControl.Pages[0].Caption:='Мои сохраненные шаблоны ('+IntToStr(countTemplate)+')';
+          end;
+          template_global:begin
+           FormMyTemplate.st_NoMessage_GlobalTemplate.Visible:=True;
+           p_PageControl.Pages[1].Caption:='Глобальные шаблоны ('+IntToStr(countTemplate)+')';
+          end;
+        end;
+
+        FreeAndNil(ado);
+        if Assigned(serverConnect) then begin
+          serverConnect.Close;
+          FreeAndNil(serverConnect);
+        end;
+
+        p_NoMessageInfo.Visible:=True;
+
+        //убираем меню
+        p_ListView.PopupMenu:=nil;
+
+        Exit;
+      end;
+
+      // скрываем надпись что нет данных
+      p_NoMessageInfo.Visible:=False;
+      ////////////////////////////////////////////////////////////////
+
+      SQL.Clear;
+      case InTemplate of
+        template_my:begin
+          SQL.Add('select id,template from sms_template where user_id = '+#39+inttostr(USER_STARTED_SMS_ID) +#39+' and is_global = ''0'' ');
+          p_PageControl.Pages[0].Caption:='Мои сохраненные шаблоны ('+IntToStr(countTemplate)+')';
+        end;
+        template_global:begin
+          SQL.Add('select id,template from sms_template where is_global = ''1'' ');
+          p_PageControl.Pages[1].Caption:='Глобальные шаблоны ('+IntToStr(countTemplate)+')';
+        end;
+      end;
+      Active:=True;
+
+      for i:=0 to countTemplate-1 do
+      begin
+        // Элемент не найден, добавляем новый
+        ListItem := p_ListView.Items.Add;
+        ListItem.Caption := VarToStr(Fields[0].Value);  // id
+        ListItem.SubItems.Add(Fields[1].Value);         // шаблон ранее сохраненного сообщения
+
+        ado.Next;
+      end;
+
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+
+// есть ли такое сообщение уже в шаблонах сообщений
+function isExistMyTemplateMessage(InMessage:string; isGlobal:Boolean = False):Boolean;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ countTemplate:Integer;
+begin
+  Result:=False;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+
+  if not Assigned(serverConnect) then begin
+    Result:=True;  // считаем что сообщение есть, в случае ошибки
+    FreeAndNil(ado);
+    Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      if not isGlobal then SQL.Add('select count(id) from sms_template where user_id = '+#39+inttostr(USER_STARTED_SMS_ID) +#39+' and is_global = ''0'' and template = '+#39+InMessage+#39)
+      else SQL.Add('select count(id) from sms_template where is_global = ''1'' and template = '+#39+InMessage+#39);
+
+      Active:=True;
+      countTemplate:=Fields[0].Value;
+
+      if countTemplate > 0 then Result:=True;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+
+// запись в шалблоны отправленного сообщения
+procedure SaveMyTemplateMesaage(InMessage:string; IsGlobal:Boolean = False);
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ response:string;
+begin
+  if isExistMyTemplateMessage(InMessage, IsGlobal) then Exit;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+
+  if not Assigned(serverConnect) then begin
+    FreeAndNil(ado);
+    Exit;
+  end;
+
+  if not IsGlobal then begin
+     response:='insert into sms_template (user_id,template) values ('+#39+IntToStr(USER_STARTED_SMS_ID)+#39+','
+                                                                    +#39+InMessage+#39+')';
+  end
+  else begin
+   response:='insert into sms_template (user_id,template,is_global) values ('+#39+IntToStr(USER_STARTED_SMS_ID)+#39+','
+                                                                             +#39+InMessage+#39+','
+                                                                             +#39+'1'+#39+')';
+  end;
+
+
+   try
+     with ado do begin
+        ado.Connection:=serverConnect;
+        SQL.Clear;
+        SQL.Add(response);
+
+        try
+            ExecSQL;
+        except
+            on E:EIdException do begin
+               FreeAndNil(ado);
+               if Assigned(serverConnect) then begin
+                 serverConnect.Close;
+                 FreeAndNil(serverConnect);
+               end;
+               Exit;
+            end;
+        end;
+     end;
+   finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+   end;
+end;
+
+// есть ли возможность вставлять подпись в СМС сообщение
+procedure SignSMS;
+ var
+  sms:TSendSMS;
+begin
+  sms:=TSendSMS.Create(DEBUG);
+  with FormHome do begin
+    if not sms.isExistAuth then begin
+      chkbox_SignSMS.Enabled:=False;
+      chkbox_SignSMS.Checked:=False;
+
+      Exit;
+    end;
+
+    if sms.GetSignSMS = 'null' then begin
+      chkbox_SignSMS.Enabled:=False;
+      chkbox_SignSMS.Checked:=False;
+
+      Exit;
+    end;
+
+   with chkbox_SignSMS do begin
+     Hint:='К отправляемому SMS будет подставляться подпись'+#13+#10+'"'+sms.GetSignSMS+'"';
+     Checked:=True;
+     Enabled:=True;
+   end;
+  end;
 end;
 
 end.

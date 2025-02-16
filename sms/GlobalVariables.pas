@@ -13,7 +13,9 @@ interface
 uses
   SysUtils,
   Windows,
-  TCustomTypeUnit;
+  TCustomTypeUnit,
+  TLogFileUnit,
+  TPacientsListUnit;
 
 
   type   // тип отправки
@@ -25,6 +27,10 @@ uses
                         log_hide);    // лог скрывать
 
 
+  type  // тип прогрузки шаблонов сообщений
+  enumTemplateMessage = (template_my,       // мои шаблоны
+                         template_global);  // глобальные шаблоны                  
+
 var
   // ****************** режим разработки ******************
                       DEBUG:Boolean = TRUE;
@@ -32,16 +38,36 @@ var
 
   SMS_EXE :string = 'sms.exe';
 
+  // лог главной формы
+  SharedMainLog:TLoggingFile;
+
   // текущая директория откуда запускаем sms.exe
   FOLDERPATH:string;
 
   // Залогиненый польщователь который открыл sms
   USER_STARTED_SMS_ID    :Integer;
 
+  // есть ли доступ к отправке расслыки напоминание о приеме
+  USER_ACCESS_SENDING_LIST  :Boolean;
+
   // глобальная ошибка при подкобчении к БД
   CONNECT_BD_ERROR        :Boolean = False;
   // внутренняя ошибка
-  INTERNAL_ERROR          :Boolean =  False;
+  INTERNAL_ERROR          :Boolean = False;
+
+  // кол-во одновременных потоков для отправки рассылки SMS
+  MAX_COUNT_THREAD_SENDIND :Word = 10;
+
+  // список для СМС отправки
+  SharedPacientsList            : TPacients;
+  SharedPacientsListNotSending  : TPacients;
+
+  // Сохранение в глобальный шаблон
+  ISGLOBAL_MESSAGE:Boolean = True;
+
+  // текстовка SMS сообщения, напоминания о приеме   // TODO %к_доктору  сделать счобы менялось на или к доктору!
+  REMEMBER_MESSAGE        :string='%FIO_Pacienta %записан(а) %к_доктору %FIO_Doctora в %Time %Data в клинику по адресу %Address.'+
+                                  ' Если у Вас есть вопросы, готовы на них ответить, номер тел. для связи (8442)220-220 или (8443)450-450';
 
 
 
@@ -61,13 +87,8 @@ var
   function KillTask(ExeFileName:string):integer;              stdcall;    external 'core.dll';          // функция остановки exe
   function GetTask(ExeFileName:string):Boolean;               stdcall;    external 'core.dll';          // проверка запущен ли процесс
   function GetDateToDateBD(InDateTime:string):PChar;          stdcall;    external 'core.dll';          // перевод даты и времени в ненормальный вид для BD
-  //function GetTimeAnsweredToSeconds(InTimeAnswered:string):Integer; stdcall;  external 'core.dll';    // перевод времени разговора оператора типа 00:00:00 в секунды
-  //function GetTimeAnsweredSecondsToString(InSecondAnswered:Integer):PChar; stdcall;  external 'core.dll'; // перевод времени разговора оператора типа из секунд в 00:00:00
- // function GetIVRTimeQueue(InQueue:enumQueueCurrent):Integer;  stdcall;  external 'core.dll';    // время которое необходимо отнимать от текущего звонка в очереди
-  //function StringToTQueue(InQueueSTR:string):enumQueueCurrent; stdcall;  external 'core.dll';      // конвертер из string в TQueue
- // function TQueueToString(InQueueSTR:enumQueueCurrent):PChar;  stdcall;  external 'core.dll';      // конвертер из TQueue в string
- // function GetUserNameOperators(InSip:string):PChar;           stdcall;  external 'core.dll';      // полчуение имени пользователя из его SIP номера
-
+  function GetExtensionLog:PChar;                             stdcall;    external 'core.dll';       // папка с локальным чатом
+  function GetLogNameFolder:PChar;                            stdcall;    external 'core.dll';       // папка с логом
 
   // --- connect_to_server.dll ---
   // НЕ ИСПОЛЬЗУЕТСЯ!
@@ -77,8 +98,14 @@ implementation
 
 
 
+
 initialization  // Инициализация
  FOLDERPATH:=ExtractFilePath(ParamStr(0));
+
+ SharedPacientsList           :=TPacients.Create;
+ SharedPacientsListNotSending :=TPacients.Create;
+
+ SharedMainLog                := TLoggingFile.Create('sms');   // лог работы формы
 
  finalization
 

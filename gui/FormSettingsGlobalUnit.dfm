@@ -4,7 +4,7 @@ object FormSettingsGlobal: TFormSettingsGlobal
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = #1043#1083#1086#1073#1072#1083#1100#1085#1099#1077' '#1085#1072#1089#1090#1088#1086#1082#1080
-  ClientHeight = 190
+  ClientHeight = 230
   ClientWidth = 431
   Color = clWindow
   DefaultMonitor = dmDesktop
@@ -24,8 +24,8 @@ object FormSettingsGlobal: TFormSettingsGlobal
     Left = 0
     Top = 0
     Width = 431
-    Height = 190
-    ActivePage = Sheet_SMS
+    Height = 230
+    ActivePage = Sheet_Queue
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -35,18 +35,20 @@ object FormSettingsGlobal: TFormSettingsGlobal
     MultiLine = True
     ParentFont = False
     TabOrder = 0
+    ExplicitHeight = 190
     object Sheet_Queue: TTabSheet
       Caption = #1050#1086#1088#1088#1077#1082#1090#1080#1088#1086#1074#1082#1072' '#1074#1088#1077#1084#1077#1085#1080
+      ExplicitHeight = 159
       object PanelSettings: TPanel
         Left = 0
         Top = 1
         Width = 428
-        Height = 163
+        Height = 192
         BevelOuter = bvNone
         TabOrder = 0
         object GroupBox1: TGroupBox
-          Left = 10
-          Top = 4
+          Left = 9
+          Top = 22
           Width = 402
           Height = 92
           Caption = ' '#1058#1077#1082#1091#1097#1072#1103' '#1082#1086#1088#1088#1077#1082#1090#1080#1088#1086#1074#1082#1072' '#1074#1088#1077#1084#1077#1085#1080' '#1074' '#1086#1095#1077#1088#1077#1076#1103#1093'  '
@@ -126,7 +128,7 @@ object FormSettingsGlobal: TFormSettingsGlobal
         end
         object btnAddServer: TBitBtn
           Left = 34
-          Top = 105
+          Top = 145
           Width = 166
           Height = 47
           Caption = '&'#1044#1086#1073#1072#1074#1080#1090#1100
@@ -211,7 +213,7 @@ object FormSettingsGlobal: TFormSettingsGlobal
         end
         object btnEditUser: TBitBtn
           Left = 220
-          Top = 105
+          Top = 145
           Width = 166
           Height = 47
           Caption = ' &'#1048#1089#1090#1086#1088#1080#1103' '#1082#1086#1088#1088#1077#1082#1090#1080#1088#1086#1074#1086#1082
@@ -299,9 +301,10 @@ object FormSettingsGlobal: TFormSettingsGlobal
     object Sheet_PasswordFirebird: TTabSheet
       Caption = #1055#1072#1088#1086#1083#1100' Firebird'
       ImageIndex = 1
+      ExplicitHeight = 159
       object Label1: TLabel
         Left = 81
-        Top = 16
+        Top = 31
         Width = 39
         Height = 16
         Caption = #1051#1086#1075#1080#1085
@@ -314,7 +317,7 @@ object FormSettingsGlobal: TFormSettingsGlobal
       end
       object Label2: TLabel
         Left = 70
-        Top = 52
+        Top = 67
         Width = 50
         Height = 16
         Caption = #1055#1072#1088#1086#1083#1100
@@ -327,7 +330,7 @@ object FormSettingsGlobal: TFormSettingsGlobal
       end
       object lblInfoCheckIKServerFirebird: TLabel
         Left = 8
-        Top = 81
+        Top = 97
         Width = 400
         Height = 16
         Alignment = taCenter
@@ -342,14 +345,14 @@ object FormSettingsGlobal: TFormSettingsGlobal
       end
       object edtLogin_Firebird: TEdit
         Left = 142
-        Top = 15
+        Top = 30
         Width = 170
         Height = 24
         TabOrder = 0
       end
       object edtPassword_Firebird: TEdit
         Left = 142
-        Top = 49
+        Top = 64
         Width = 170
         Height = 24
         PasswordChar = '*'
@@ -357,7 +360,7 @@ object FormSettingsGlobal: TFormSettingsGlobal
       end
       object btnSaveFirebirdSettings: TBitBtn
         Left = 34
-        Top = 105
+        Top = 145
         Width = 166
         Height = 47
         Caption = '&'#1057#1086#1093#1088#1072#1085#1080#1090#1100
@@ -442,7 +445,7 @@ object FormSettingsGlobal: TFormSettingsGlobal
       end
       object btnCheckFirebirdSettings: TBitBtn
         Left = 220
-        Top = 105
+        Top = 145
         Width = 166
         Height = 47
         Caption = '  &'#1055#1088#1086#1074#1077#1088#1080#1090#1100' '#1089#1086#1077#1076#1080#1085#1077#1085#1080#1077
@@ -528,7 +531,7 @@ object FormSettingsGlobal: TFormSettingsGlobal
       end
       object STFirebird_viewPwd: TStaticText
         Left = 253
-        Top = 53
+        Top = 68
         Width = 59
         Height = 15
         Cursor = crHandPoint
@@ -549,6 +552,7 @@ object FormSettingsGlobal: TFormSettingsGlobal
       ImageIndex = 2
       ExplicitLeft = 0
       ExplicitTop = 31
+      ExplicitHeight = 159
       object Label5: TLabel
         Left = 14
         Top = 3
@@ -564,7 +568,7 @@ object FormSettingsGlobal: TFormSettingsGlobal
       end
       object Label6: TLabel
         Left = 8
-        Top = 69
+        Top = 67
         Width = 39
         Height = 16
         Caption = #1051#1086#1075#1080#1085
@@ -577,10 +581,23 @@ object FormSettingsGlobal: TFormSettingsGlobal
       end
       object Label7: TLabel
         Left = 205
-        Top = 69
+        Top = 67
         Width = 50
         Height = 16
         Caption = #1055#1072#1088#1086#1083#1100
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object Label8: TLabel
+        Left = 14
+        Top = 94
+        Width = 144
+        Height = 16
+        Caption = #1055#1086#1076#1087#1080#1089#1100' '#1074' '#1082#1086#1085#1094#1077' SMS'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -13
@@ -605,14 +622,14 @@ object FormSettingsGlobal: TFormSettingsGlobal
       end
       object edtLogin_SMS: TEdit
         Left = 50
-        Top = 68
+        Top = 66
         Width = 140
         Height = 23
         TabOrder = 2
       end
       object edtPassword_SMS: TEdit
         Left = 259
-        Top = 66
+        Top = 64
         Width = 155
         Height = 24
         PasswordChar = '*'
@@ -620,7 +637,7 @@ object FormSettingsGlobal: TFormSettingsGlobal
       end
       object btnSaveSMSSettings: TBitBtn
         Left = 34
-        Top = 105
+        Top = 145
         Width = 166
         Height = 47
         Caption = '&'#1057#1086#1093#1088#1072#1085#1080#1090#1100
@@ -699,13 +716,13 @@ object FormSettingsGlobal: TFormSettingsGlobal
         ParentFont = False
         ParentShowHint = False
         ShowHint = False
-        TabOrder = 4
+        TabOrder = 5
         WordWrap = True
         OnClick = btnSaveSMSSettingsClick
       end
-      object BitBtn2: TBitBtn
+      object btnCheckSMSSettings: TBitBtn
         Left = 220
-        Top = 105
+        Top = 145
         Width = 166
         Height = 47
         Caption = '  &'#1054#1090#1087#1088#1072#1074#1080#1090#1100'        '#1090#1077#1089#1090#1086#1074#1086#1077' SMS'
@@ -785,12 +802,12 @@ object FormSettingsGlobal: TFormSettingsGlobal
         ParentFont = False
         ParentShowHint = False
         ShowHint = False
-        TabOrder = 5
+        TabOrder = 6
         WordWrap = True
       end
       object STSMS_viewPwd: TStaticText
         Left = 353
-        Top = 70
+        Top = 68
         Width = 57
         Height = 15
         Cursor = crHandPoint
@@ -804,6 +821,14 @@ object FormSettingsGlobal: TFormSettingsGlobal
         TabOrder = 3
         Transparent = False
         OnClick = STSMS_viewPwdClick
+      end
+      object edtSmsSign: TEdit
+        Left = 6
+        Top = 112
+        Width = 410
+        Height = 24
+        MaxLength = 50
+        TabOrder = 4
       end
     end
   end

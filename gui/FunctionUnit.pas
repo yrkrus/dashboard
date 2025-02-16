@@ -3,60 +3,22 @@ unit FunctionUnit;
 interface
 
   uses
-    Windows,
-    Messages,
-    SysUtils,
-    Variants,
-    Classes,
-    Graphics,
-    Controls,
-    Forms,
-    Dialogs,
-    Registry,
-    IniFiles,
-    TlHelp32,
-    IdBaseComponent,
-    IdComponent,
-    ShellAPI,
-    StdCtrls,
-    ComCtrls,
-    ExtCtrls,
-    WinSock,
-    Math,
-    IdHashCRC,
-    Nb30,
-    IdMessage,
-    StrUtils,
-    WinSvc,
-    System.Win.ComObj,
-    IdSMTP,
-    IdText,
-    IdSSL,
-    IdSSLOpenSSL,
-    IdAttachmentFile,
-    DMUnit,
-    FormHome,
-    Data.Win.ADODB,
-    Data.DB,
-    IdIcmpClient,
-    IdException,
-    System.DateUtils,
-    FIBDatabase,
-    pFIBDatabase,
-    TCustomTypeUnit,
-    TUserUnit,
-    Vcl.Menus,
-    GlobalVariables,
-    TActiveSIPUnit,
-    System.IOUtils,
+    Windows, Messages, SysUtils, Variants, Classes,
+    Graphics, Controls, Forms, Dialogs, Registry,
+    IniFiles, TlHelp32, IdBaseComponent, IdComponent,
+    ShellAPI, StdCtrls, ComCtrls, ExtCtrls, WinSock,
+    Math, IdHashCRC, Nb30, IdMessage, StrUtils, WinSvc,
+    System.Win.ComObj, IdSMTP, IdText, IdSSL, IdSSLOpenSSL,
+    IdAttachmentFile, DMUnit, FormHome, Data.Win.ADODB,
+    Data.DB, IdIcmpClient, IdException, System.DateUtils,
+    FIBDatabase, pFIBDatabase, TCustomTypeUnit, TUserUnit,
+    Vcl.Menus, GlobalVariables, TActiveSIPUnit, System.IOUtils,
     TLogFileUnit;
-
-
 
 
 procedure KillProcess;                                                               // принудительное завершение работы
 function GetStatistics_queue(InQueueNumber:enumQueueCurrent;InQueueType:enumQueueType):string;    // отображение инфо по очередеям
-function GetStatistics_day(inStatDay:enumStatistiscDay):string;                         // отображение инфо за день
+function GetStatistics_day(inStatDay:enumStatistiscDay):string;                      // отображение инфо за день
 procedure clearAllLists;                                                             // очистка всех list's
 procedure clearList_IVR;                                                             // отображение листа с текущими звонками
 procedure clearList_QUEUE;                                                           // очистка listbox_QUEUE
@@ -69,9 +31,6 @@ procedure showVersionAbout(programm:enumProrgamm);                              
 function GetVersionAbout(programm:enumProrgamm; inGUID:string):string;               // отображение истории вресий дашбоарда (только текущая версия)
 function Ping(InIp:string):Boolean;                                                  // проверка ping
 procedure CreateCheckServersInfoclinika;                                             // создание списка с серверами
-function StrToTRole(InRole:string):enumRole;                                         // string -> TRole
-function TRoleToStr(InRole:enumRole):string;                                         // TRole -> string
-function EnumProgrammToStr(InEnumProgram:enumProrgamm):string;                       // enumProgramm -> string
 function GetRoleID(InRole:string):Integer;                                           // получение ID TRole
 function GetUserGroupSTR(InGroup:Integer):string;                                    // отображение роли пользвоателя
 function getHashPwd(inPwd: String):Integer;                                          // хэширование пароля
@@ -88,10 +47,10 @@ procedure LoadUsersAuthForm;                                                    
 function getUserPwd(InUserID:Integer):Integer;                                       // полчуение userPwd из userID
 function getUserLogin(InUserID:Integer):string;                                      // полчуение userLogin из userID
 function GetUserRoleSTR(InUserID:Integer):string;                                    // отображение роли пользвоателя
-function correctTimeQueue(InQueue:enumQueueCurrent;InTime:string):string;               // правильноt отображение времени в очереди
+function correctTimeQueue(InQueue:enumQueueCurrent;InTime:string):string;            // правильноt отображение времени в очереди
 function GetUserRePassword(InUserID:Integer):Boolean;                                // необходимо ли поменять пароль при входе
 function UpdateUserPassword(InUserID,InUserNewPassword:Integer;
-                                  var _errorDescription:string):boolean;              // обновление пароля пользователя
+                                  var _errorDescription:string):boolean;             // обновление пароля пользователя
 function getLocalIP: string;                                                         // функция получения локального IP
 procedure CreateCurrentActiveSession(InUserID:Integer);                              // заведение активной сессии
 function isExistCurrentActiveSession(InUserID:Integer):Boolean;                      // сущуствует ли акивная сессия
@@ -103,41 +62,37 @@ function getCurrentUserNamePC:string;                                           
 function getComputerPCName: string;                                                  // функция получения имени ПК
 function getForceActiveSessionClosed(InUserID:Integer):Boolean;                      // проверка нужно ли закрыть активную сессию
 function GetSelectResponse(InStroka:string):Integer;                                 // запрос по статичтике данных
-procedure LoggingRemote(InLoggingID:enumLogging);                                      // логирование действий
-function TLoggingToInt(InTLogging:enumLogging):Integer;                                 // проеобразование из TLogging в Integer
-function IntToTLogging(InLogging:Integer):enumLogging;                                  // проеобразование из Integer в TLogging
+procedure LoggingRemote(InLoggingID:enumLogging);                                    // логирование действий
 function GetUserFamiliyaName_LastSuccessEnter(InUser_login_pc,
                                               InUser_pc:string):string;              // нахождение userID после успешного входа на пк
 function GetCountAnsweredCall(InSipOperator:string):Integer;                         // кол-во отвеченных звонков оператором
 function GetCountAnsweredCallAll:Integer;                                            // кол-во отвеченных звонков всех операторов
 function CreateListAnsweredCall(InSipOperator:string):TStringList;                   // создвание списка со всем отвеченными звонками  sip оператора
-procedure remoteCommand_addQueue(command:enumLogging);                                  // удаленная команда (добавление в очередь)
-procedure showWait(Status:enumShow_wait);                                               // отображение\сркытие окна запроса на сервер
-function remoteCommand_Responce(InStroka:string; var _errorDescriptions:string):boolean;                             // отправка запроса на добавление удаленной команды
+procedure remoteCommand_addQueue(command:enumLogging);                               // удаленная команда (добавление в очередь)
+procedure showWait(Status:enumShow_wait);                                            // отображение\сркытие окна запроса на сервер
+function remoteCommand_Responce(InStroka:string; var _errorDescriptions:string):boolean;  // отправка запроса на добавление удаленной команды
 function getUserSIP(InIDUser:integer):string;                                        // отображение SIP пользвоателя
-function isExistRemoteCommand(command:enumLogging):Boolean;                             // проверка есть ли уже такая удаленная команда на сервера
-function getStatus(InStatus:enumStatusOperators):string;                                  // полчуение имени status оператора
-function getCurrentQueueOperator(InSipNumber:string):enumQueueCurrent;                  // в какой очереди сейчас находится оператор
+function isExistRemoteCommand(command:enumLogging):Boolean;                          // проверка есть ли уже такая удаленная команда на сервера
+function getStatus(InStatus:enumStatusOperators):string;                             // полчуение имени status оператора
+function getCurrentQueueOperator(InSipNumber:string):enumQueueCurrent;               // в какой очереди сейчас находится оператор
 procedure clearOperatorStatus;                                                       // очитска текущего статуса оператора
-procedure checkCurrentStatusOperator(InOperatorStatus:enumStatusOperators);                      // проверка и отображение кнопок статусов оператора
+procedure checkCurrentStatusOperator(InOperatorStatus:enumStatusOperators);              // проверка и отображение кнопок статусов оператора
 procedure showStatusOperator(InShow:Boolean = True);                                 // отобрадение панели статусы операторов
-function getLastStatusTime(InUserid:Integer; InOperatorStatus:enumStatusOperators):string;                // подсчет времени в текущем статусе оператора
-function getStatusOperatorToTLogging(InOperatorStatus:Integer):enumLogging;             // преобразование текущего статуса оператора из int в TLogging
+function getLastStatusTime(InUserid:Integer; InOperatorStatus:enumStatusOperators):string;    // подсчет времени в текущем статусе оператора
 function isOperatorGoHome(inUserID:Integer):Boolean;                                 // проверка оператор ушел домой или нет
 function getIsExitOperatorCurrentQueue(InCurrentRole:enumRole;InUserID:Integer):Boolean;// проверка вдруг оператор забыл выйти из линии
 function getLastStatusTimeOnHold(InStartTimeonHold:string):string;                   // подсчет времени в статусе OnHold
 function getTranslate(Stroka: string):string;                                        // Транслитерация из рус - > транлирт
-//function getUserFIO(InUserID:Integer):string;                                        // полчуение имени пользователя из его UserID
+//function getUserFIO(InUserID:Integer):string;                                      // полчуение имени пользователя из его UserID
 function getUserFamiliya(InUserID:Integer):string;                                   // полчуение фамилии пользователя из его UserID
 function getUserNameBD(InUserID:Integer):string;                                     // полчуение имени пользователя из его UserID
-function UserIsOperator(InUserID:Integer):Boolean;                                  // проверка userID принадлежит оператору или нет TRUE - оператор
+function UserIsOperator(InUserID:Integer):Boolean;                                   // проверка userID принадлежит оператору или нет TRUE - оператор
 procedure disableOperator(InUserId:Integer);                                         // отключение оператора и перенос его в таблицу operators_disable
 function EnableUser(InUserID:Integer):string;                                        // включение пользователя
 function GetOperatorAccessDashboard(InSip:string):Boolean;                           // нахождение статуса доступен ли дашбор орератору или нет
 function isExistSettingUsers(InUserID:Integer):Boolean;                              // проверка существу.т ли индивидуальные настрокий пользователч true - существуют настроки
 procedure saveIndividualSettingUser(InUserID:Integer; settings:enumSettingUsers;
                                     status:enumSettingUsersStatus);                     // сохранение индивидульных настроек пользователя
-function SettingUsersStatusToInt(status:enumSettingUsersStatus):Integer;                // конвертация из TSettingUsersStatus --> Int
 function getStatusIndividualSettingsUser(InUserID:Integer;
                                         settings:enumSettingUsers):enumSettingUsersStatus; // получение данных об индивидуальных настройках пользователя
 procedure LoadIndividualSettingUser(InUserId:Integer);                               // прогрузка индивидуальных настроек пользователя
@@ -147,44 +102,36 @@ procedure CheckCurrentVersion;                                                  
 function getCheckIP(InIPAdtress:string):Boolean;                                     // проверка корректности IP адреса
 procedure CreateFormActiveSession;                                                   // создание окна активных сессий
 function getCheckAlias(InAlias:string):Boolean;                                      // проверка на существаование такого алиаса уже, он может быть только один!
-function GetFirbirdAuth(FBType:enumFirebirdAuth):string;                                // получение авторизационных данных при подключени к БД firebird
+function GetFirbirdAuth(FBType:enumFirebirdAuth):string;                             // получение авторизационных данных при подключени к БД firebird
 function GetSMSAuth(SMSType:enumSMSAuth):string;                                     // получение авторизационных данных при отправке SMS
-function GetStatusMonitoring(status:Integer):enumMonitoringTrunk;                       // мониторится ли транк
+function GetStatusMonitoring(status:Integer):enumMonitoringTrunk;                    // мониторится ли транк
 function GetCountServersIK:Integer;                                                  // получение кол-ва серверов ИК
-procedure SetAccessMenu(InNameMenu:enumAccessList; InStatus: enumAccessStatus);            // установка разрешение\запрет на доступ к меню
-function TAccessListToStr(AccessList:enumAccessList):string;                            // TAccessListToStr -> string
-function TAccessStatusToBool(Status: enumAccessStatus): Boolean;                        // TAccessStatus --> Bool
+procedure SetAccessMenu(InNameMenu:enumAccessList; InStatus: enumAccessStatus);      // установка разрешение\запрет на доступ к меню
 function GetOnlyOperatorsRoleID:TStringList;                                         // получение только операторские ID роли
 procedure ShowOperatorsStatus;                                                       // отображение оотдельного окна со статусами оператора
 procedure ResizeCentrePanelStatusOperators(WidthMainWindow:Integer);                 // изменение позиции панели статусы операторов в зависимости от размера главного окна
 procedure VisibleIconOperatorsGoHome(InStatus:enumHideShowGoHomeOperators;
                                      InClick:Boolean = False);                       // показывать\скрывать операторов ушедших домой
 procedure HappyNewYear;                                                              // пасхалка с новым годом
-function GetExistAccessToLocalChat(InUserId:Integer):Boolean;                        //есть ли доступ к локальному чату
+function GetExistAccessToLocalChat(InUserId:Integer):Boolean;                        // есть ли доступ к локальному чату
 procedure OpenLocalChat;                                                             // открытые exe локального чата
 procedure OpenReports;                                                               // открытые exe отчетов
 procedure OpenSMS;                                                                   // открытые exe SMS рассылки
-function EnumChannelChatIDToString(InChatID:enumChatID):string;                // enumChatID -> string
-function EnumChannelToString(InChannel:enumChannel):string;                 //enumChannel -> string
-function EnumActiveBrowserToString(InActiveBrowser:enumActiveBrowser):string;     // enumActiveBrowser -> string
 function GetExistActiveSession(InUserID:Integer; var ActiveSession:string):Boolean;  // есть ли активная сессия уже
-function GetStatusUpdateService:Boolean;                                           // проверка запущена ли служба обновления
-function IntegerToEnumStatusOperators(InStatusId:Integer):enumStatusOperators;     // Integer -> enumStatusOperators
-function EnumStatusOperatorsToInteger(InStatus:enumStatusOperators):Integer;        // enumStatusOperators -> integer
-function getStatusOperator(InUserId:Integer):enumStatusOperators;                  // текущий стаус оператора из таблицы operators
-procedure ClearAfterUpdate;                                                       //  очистка от всего что осталось после обновления
-function GetListAdminRole:TStringList;                                           // получение списка пользвоателй с ролью администратор
-procedure SetRandomFontColor(var p_label: TLabel);                                // изменение цвета надписи
-procedure ShowInfoNewVersionAfterUpdate(InGUID:string);                          // показ информации о новой версии
-procedure ShowStatisticsCallsDay(InTypeStatisticsCalls: enumStatisticsCalls;    // отображение статистики ожидание в очереди за текущий день
+function GetStatusUpdateService:Boolean;                                             // проверка запущена ли служба обновления
+function getStatusOperator(InUserId:Integer):enumStatusOperators;                    // текущий стаус оператора из таблицы operators
+procedure ClearAfterUpdate;                                                          //  очистка от всего что осталось после обновления
+function GetListAdminRole:TStringList;                                               // получение списка пользвоателй с ролью администратор
+procedure SetRandomFontColor(var p_label: TLabel);                                   // изменение цвета надписи
+procedure ShowInfoNewVersionAfterUpdate(InGUID:string);                              // показ информации о новой версии
+procedure ShowStatisticsCallsDay(InTypeStatisticsCalls: enumStatisticsCalls;         // отображение статистики ожидание в очереди за текущий день
                                  InClick:Boolean = False);
-function isExistMySQLConnector:Boolean;                                          // установлен ли MySQL COnnector
-function EnumNeedReconnectBDToBoolean(inStatusReconnect:enumNeedReconnectBD):Boolean;  // enumNeedReconnectBD -> Boolean
+function isExistMySQLConnector:Boolean;                                              // установлен ли MySQL COnnector
 procedure ShowFormErrorMessage(const _errorMessage:string;
-                                 var p_Log:TLoggingFile;
-                                 const __METHOD_NAME__:string);                  // отрображение окна с ошибкой
-function GetNeedReconnectBase(const _errorMessage:string):enumNeedReconnectBD;    // проверка нужно ли перезапускать reconnect к базе
-                                                   // высчитывание нагрузки на CPU
+                               var p_Log:TLoggingFile;
+                               const __METHOD_NAME__:string);                        // отрображение окна с ошибкой
+function GetNeedReconnectBase(const _errorMessage:string):enumNeedReconnectBD;       // проверка нужно ли перезапускать reconnect к базе
+
 
 
 implementation
@@ -219,79 +166,6 @@ uses
 
 
 
-// проеобразование из TLogging в Integer
-function TLoggingToInt(InTLogging:enumLogging):Integer;
-begin
-  case InTLogging of
-    eLog_unknown:             Result:=-1;       // неизвестный статус
-    eLog_enter:               Result:=0;        // вход
-    eLog_exit:                Result:=1;        // выход
-    eLog_auth_error:          Result:=2;        // не успешная авторизация
-    eLog_exit_force:          Result:=3;        // выход (через команду force_closed)
-    eLog_add_queue_5000:      Result:=4;        // добавление в очередь 5000
-    eLog_add_queue_5050:      Result:=5;        // добавление в очередь 5050
-    eLog_add_queue_5000_5050: Result:=6;        // добавление в очередь 5000 и 5050
-    eLog_del_queue_5000:      Result:=7;        // удаление из очереди 5000
-    eLog_del_queue_5050:      Result:=8;        // удаление из очереди 5050
-    eLog_del_queue_5000_5050: Result:=9;        // удаление из очереди 5000 и 5050
-    eLog_available:           Result:=10;       // доступен
-    eLog_home:                Result:=11;       // домой
-    eLog_exodus:              Result:=12;       // исход
-    eLog_break:               Result:=13;       // перерыв
-    eLog_dinner:              Result:=14;       // обед
-    eLog_postvyzov:           Result:=15;       // поствызов
-    eLog_studies:             Result:=16;       // учеба
-    eLog_IT:                  Result:=17;       // ИТ
-    eLog_transfer:            Result:=18;       // переносы
-    eLog_reserve:             Result:=19;       // резерв
-  end;
-end;
-
-// преобразование из Integer в TLogging
-function IntToTLogging(InLogging:Integer):enumLogging;
-begin
-  case InLogging of
-   -1:    Result:=eLog_unknown;             // неизвестный статус
-    0:    Result:=eLog_enter;               // вход
-    1:    Result:=eLog_exit;                // выход
-    2:    Result:=eLog_auth_error;          // не успешная авторизация
-    3:    Result:=eLog_exit_force;          // выход (через команду force_closed)
-    4:    Result:=eLog_add_queue_5000;      // добавление в очередь 5000
-    5:    Result:=eLog_add_queue_5050;      // добавление в очередь 5050
-    6:    Result:=eLog_add_queue_5000_5050; // добавление в очередь 5000 и 5050
-    7:    Result:=eLog_del_queue_5000;      // удаление из очереди 5000
-    8:    Result:=eLog_del_queue_5050;      // удаление из очереди 5050
-    9:    Result:=eLog_del_queue_5000_5050; // удаление из очереди 5000 и 5050
-    10:   Result:=eLog_available;           // доступен
-    11:   Result:=eLog_home;                // домой
-    12:   Result:=eLog_exodus;              // исход
-    13:   Result:=eLog_break;               // перерыв
-    14:   Result:=eLog_dinner;              // обед
-    15:   Result:=eLog_postvyzov;           // поствызов
-    16:   Result:=eLog_studies;             // учеба
-    17:   Result:=eLog_IT;                  // ИТ
-    18:   Result:=eLog_transfer;            // переносы
-    19:   Result:=eLog_reserve;             // резерв
-  end;
-end;
-
-
-// преобразование текущего статуса оператора из int в TLogging
-function getStatusOperatorToTLogging(InOperatorStatus:Integer):enumLogging;
-begin
-  case InOperatorStatus of
-     1: Result:=eLog_available;
-     2: Result:=eLog_home;
-     3: Result:=eLog_exodus;
-     4: Result:=eLog_break;
-     5: Result:=eLog_dinner;
-     6: Result:=eLog_postvyzov;
-     7: Result:=eLog_studies;
-     8: Result:=eLog_IT;
-     9: Result:=eLog_transfer;
-    10: Result:=eLog_reserve;
-  end;
-end;
 
  // логирование действий
 procedure LoggingRemote(InLoggingID:enumLogging);
@@ -320,7 +194,7 @@ begin
                                                                                    +#39+IntToStr(SharedCurrentUserLogon.GetID)+#39+','
                                                                                    +#39+SharedCurrentUserLogon.GetUserLoginPC+#39+','
                                                                                    +#39+SharedCurrentUserLogon.GetPC+#39+','
-                                                                                   +#39+IntToStr(TLoggingToInt(InLoggingID))+#39+')');
+                                                                                   +#39+IntToStr(TLoggingToInteger(InLoggingID))+#39+')');
 
         try
             ExecSQL;
@@ -395,41 +269,7 @@ begin
   else Result := 'null';
 end;
 
-// string -> TRole
-function StrToTRole(InRole:string):enumRole;
-begin
-  if InRole='Администратор'             then Result:=role_administrator;
-  if InRole='Ведущий оператор'          then Result:=role_lead_operator;
-  if InRole='Старший оператор'          then Result:=role_senior_operator;
-  if InRole='Оператор'                  then Result:=role_operator;
-  if InRole='Оператор (без дашборда)'   then Result:=role_operator_no_dash;
-  if InRole='Руководитель ЦОВ'          then Result:=role_supervisor_cov;
-end;
 
-
-// TRole -> string
-function TRoleToStr(InRole:enumRole):string;
-begin
-  case InRole of
-   role_administrator       :Result:='Администратор';
-   role_lead_operator       :Result:='Ведущий оператор';
-   role_senior_operator     :Result:='Старший оператор';
-   role_operator            :Result:='Оператор';
-   role_operator_no_dash    :Result:='Оператор (без дашборда)';
-   role_supervisor_cov      :Result:='Руководитель ЦОВ';
-  end;
-end;
-
-
- // enumProgramm -> string
-function EnumProgrammToStr(InEnumProgram:enumProrgamm):string;
-begin
-  case InEnumProgram of
-   eGUI     :Result:='gui';
-   eCHAT    :Result:='chat';
-   eREPORT  :Result:='report';
-  end;
-end;
 
 // получение ID TRole
 function GetRoleID(InRole:string):Integer;
@@ -1278,7 +1118,7 @@ begin
       ado.Connection:=serverConnect;
 
       SQL.Clear;
-      SQL.Add('select version,bild from version_update where guid = '+#39+GUID+#39+' and programm = '+#39+EnumProgrammToStr(programm)+#39+' order by id DESC limit 1');
+      SQL.Add('select version,bild from version_update where guid = '+#39+GUID+#39+' and programm = '+#39+EnumProgrammToString(programm)+#39+' order by id DESC limit 1');
       Active:=True;
 
       if (Fields[0].Value<>null) and (Fields[1].Value<>null) then  Result:='v.'+Fields[0].Value+' bild '+Fields[1].Value;
@@ -1316,13 +1156,13 @@ begin
         ado.Connection:=serverConnect;
 
         SQL.Clear;
-        SQL.Add('select count(id) from version_update where programm = '+#39+EnumProgrammToStr(programm)+#39);
+        SQL.Add('select count(id) from version_update where programm = '+#39+EnumProgrammToString(programm)+#39);
         Active:=True;
 
         countVersion:=Fields[0].Value;
 
         SQL.Clear;
-        SQL.Add('select date_update,version,update_text from version_update where programm = '+#39+EnumProgrammToStr(programm)+#39+' order by date_update DESC');
+        SQL.Add('select date_update,version,update_text from version_update where programm = '+#39+EnumProgrammToString(programm)+#39+' order by date_update DESC');
         Active:=True;
 
         with FormAbout do begin
@@ -1413,7 +1253,7 @@ begin
      with ado do begin
         ado.Connection:=serverConnect;
         SQL.Clear;
-        SQL.Add('select date_update,version,update_text from version_update where programm = '+#39+EnumProgrammToStr(programm)+#39+' and guid = '+#39+inGUID+#39+' order by date_update DESC');
+        SQL.Add('select date_update,version,update_text from version_update where programm = '+#39+EnumProgrammToString(programm)+#39+' and guid = '+#39+inGUID+#39+' order by date_update DESC');
         Active:=True;
 
         Result:=VarToStr(Fields[2].Value);
@@ -2844,14 +2684,14 @@ begin
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
-      SQL.Add('select familiya,name from users where id = (select user_id  from logging where user_login_pc='+#39+InUser_login_pc+#39+' and pc='+#39+InUser_pc+#39+' and action='+#39+IntToStr(TLoggingToInt(eLog_enter))+#39+' order by date_time DESC limit 1) and disabled =''0'' ');
+      SQL.Add('select familiya,name from users where id = (select user_id  from logging where user_login_pc='+#39+InUser_login_pc+#39+' and pc='+#39+InUser_pc+#39+' and action='+#39+IntToStr(TLoggingToInteger(eLog_enter))+#39+' order by date_time DESC limit 1) and disabled =''0'' ');
 
       Active:=True;
 
       // если нет в основной, то смотрим в таблице history_logging
       if Fields[0].Value = null then begin
         SQL.Clear;
-        SQL.Add('select familiya,name from users where id = (select user_id  from history_logging where user_login_pc='+#39+InUser_login_pc+#39+' and pc='+#39+InUser_pc+#39+' and action='+#39+IntToStr(TLoggingToInt(eLog_enter))+#39+' order by date_time DESC limit 1) and disabled =''0'' ');
+        SQL.Add('select familiya,name from users where id = (select user_id  from history_logging where user_login_pc='+#39+InUser_login_pc+#39+' and pc='+#39+InUser_pc+#39+' and action='+#39+IntToStr(TLoggingToInteger(eLog_enter))+#39+' order by date_time DESC limit 1) and disabled =''0'' ');
 
         Active:=True;
 
@@ -3268,17 +3108,7 @@ begin
    end;
 end;
 
-// TAccessListToStr -> string
-function TAccessListToStr(AccessList:enumAccessList):string;
-begin
-  case AccessList of
-    menu_settings_users:                      Result:='menu_Users';
-    menu_settings_serversik:                  Result:='menu_ServersIK';
-    menu_settings_siptrunk:                   Result:='menu_SIPtrunk';
-    menu_settings_global:                     Result:='menu_GlobalSettings';
-    menu_active_session:                      Result:='menu_activeSession';
-  end;
-end;
+
 
 
 function FindMenuItem(AOwner: TMenuItem; const AName: string): TMenuItem;
@@ -3306,13 +3136,6 @@ begin
 end;
 
 
-// преобразование TAccessStatus --> Bool
-function TAccessStatusToBool(Status: enumAccessStatus): Boolean;
-begin
-  if Status = access_ENABLED then Result:=True;
-  if Status = access_DISABLED then Result:=False;
-end;
-
 // Вспомогательная функция для получения имени элемента TMenuItem
 function MenuItemName(AItem: TMenuItem): string;
 begin
@@ -3330,7 +3153,7 @@ procedure SetAccessMenu(InNameMenu:enumAccessList; InStatus: enumAccessStatus);
 var
   MenuItem: TMenuItem;
 begin
-  MenuItem:=FindMenuItem(HomeForm.FooterMenu.Items, TAccessListToStr(InNameMenu));
+  MenuItem:=FindMenuItem(HomeForm.FooterMenu.Items, TAccessListToString(InNameMenu));
   if Assigned(MenuItem) then
   begin
     MenuItem.Enabled := TAccessStatusToBool(InStatus);
@@ -3356,17 +3179,17 @@ begin
        role_lead_operator:begin                  // ведущий оператор
          showStatusOperator;
        end;
-       role_senior_operator:begin               // старший оператор
+       role_senior_operator:begin                // старший оператор
          showStatusOperator;
        end;
-       role_operator:begin                      // оператор
+       role_operator:begin                       // оператор
         // панель статусы операторов
         showStatusOperator;
        end;
-       role_operator_no_dash:begin             // оператор (без дашборда)
+       role_operator_no_dash:begin               // оператор (без дашборда)
         showStatusOperator;
        end;
-       role_supervisor_cov:begin               // Руководитель ЦОВ
+       role_supervisor_cov:begin                 // Руководитель ЦОВ
         // панель статусы операторов
         showStatusOperator(False);
        end;
@@ -3447,9 +3270,6 @@ begin
 
    ShowFormErrorMessage(error,SharedMainLog,'CheckCurrentVersion');
 
-//   MessageBox(HomeForm.Handle,PChar('Текущая версия дашборда отличается от актуальной версии'+#13#13
-//                                    +'Перезагрузите компьютер или перезапустите службу обновления ('+UPDATE_SERVICES+')'+#13#13#13
-//                                    +'Имя ПК: '+getComputerPCName),PChar('Текущая версия устарела'),MB_OK+MB_ICONINFORMATION);
    KillProcess;
   end;
 
@@ -3567,7 +3387,7 @@ begin
       ado.Connection:=serverConnect;
 
       SQL.Clear;
-      SQL.Add('select count(id) from remote_commands where command = '+#39+inttostr(TLoggingToInt(command)) +#39+' and user_id = '+#39+IntToStr(SharedCurrentUserLogon.GetID)+#39);
+      SQL.Add('select count(id) from remote_commands where command = '+#39+inttostr(TLoggingToInteger(command)) +#39+' and user_id = '+#39+IntToStr(SharedCurrentUserLogon.GetID)+#39);
       Active:=True;
 
       if Fields[0].Value<>null then begin
@@ -3598,7 +3418,7 @@ begin
   showWait(open);
 
   response:='insert into remote_commands (sip,command,ip,user_id,user_login_pc,pc) values ('+#39+getUserSIP(SharedCurrentUserLogon.GetID) +#39+','
-                                                                                            +#39+IntToStr(TLoggingToInt(command))+#39+','
+                                                                                            +#39+IntToStr(TLoggingToInteger(command))+#39+','
                                                                                             +#39+SharedCurrentUserLogon.GetIP+#39+','
                                                                                             +#39+IntToStr(SharedCurrentUserLogon.GetID)+#39+','
                                                                                             +#39+SharedCurrentUserLogon.GetUserLoginPC+#39+','
@@ -3619,7 +3439,7 @@ begin
 
     // пробуем удалить команду
        response:='delete from remote_commands where sip ='+#39+getUserSIP(SharedCurrentUserLogon.GetID)+#39+
-                                                         ' and command ='+#39+IntToStr(TLoggingToInt(command))+#39;
+                                                         ' and command ='+#39+IntToStr(TLoggingToInteger(command))+#39;
 
     if not remoteCommand_Responce(response,error) then begin
       showWait(close);
@@ -4012,7 +3832,7 @@ begin
   end;
 
   // текущий статуса из лога
-  status:=TLoggingToInt(getStatusOperatorToTLogging(EnumStatusOperatorsToInteger(InOperatorStatus)));
+  status:=TLoggingToInteger(StatusOperatorToTLogging(EnumStatusOperatorsToInteger(InOperatorStatus)));
 
   try
     with ado do begin
@@ -4318,15 +4138,6 @@ begin
 end;
 
 
-// конвертация из TSettingUsersStatus --> Int
-function SettingUsersStatusToInt(status:enumSettingUsersStatus):Integer;
-begin
-  case status of
-    settingUsersStatus_ENABLED:   Result:= 1;
-    settingUsersStatus_DISABLED:  Result:= 0;
-  end;
-end;
-
 
 // сохранение индивидульных настроек пользователя
 procedure saveIndividualSettingUser(InUserID:Integer; settings:enumSettingUsers; status:enumSettingUsersStatus);
@@ -4341,35 +4152,35 @@ begin
 
       // проверяем есть ли уже запись
       if isExistSettingUsers(InUserID) then begin
-        response:='update settings_users set go_home = '+#39+IntToStr(SettingUsersStatusToInt(status))+#39+' where user_id = '+#39+IntToStr(InUserID)+#39;
+        response:='update settings_users set go_home = '+#39+IntToStr(SettingUsersStatusToInteger(status))+#39+' where user_id = '+#39+IntToStr(InUserID)+#39;
 
       end
       else begin
         response:='insert into settings_users (user_id,go_home) values ('+#39+IntToStr(InUserID) +#39+','
-                                                                         +#39+IntToStr(SettingUsersStatusToInt(status))+#39+')';
+                                                                         +#39+IntToStr(SettingUsersStatusToInteger(status))+#39+')';
       end;
     end;
     settingUsers_noConfirmExit: begin  // не показывать окно "точно хотите выйти из дашборда?"
 
       // проверяем есть ли уже запись
       if isExistSettingUsers(InUserID) then begin
-        response:='update settings_users set no_confirmExit = '+#39+IntToStr(SettingUsersStatusToInt(status))+#39+' where user_id = '+#39+IntToStr(InUserID)+#39;
+        response:='update settings_users set no_confirmExit = '+#39+IntToStr(SettingUsersStatusToInteger(status))+#39+' where user_id = '+#39+IntToStr(InUserID)+#39;
 
       end
       else begin
         response:='insert into settings_users (user_id,no_confirmExit) values ('+#39+IntToStr(InUserID) +#39+','
-                                                                         +#39+IntToStr(SettingUsersStatusToInt(status))+#39+')';
+                                                                         +#39+IntToStr(SettingUsersStatusToInteger(status))+#39+')';
       end;
     end;
     settingUsers_showStatisticsQueueDay:begin  // какой тип графика отображать в модуле "сатистика ожидания в очереди" 0-цифры | 1 - график
       // проверяем есть ли уже запись
       if isExistSettingUsers(InUserID) then begin
-        response:='update settings_users set statistics_queue_day = '+#39+IntToStr(SettingUsersStatusToInt(status))+#39+' where user_id = '+#39+IntToStr(InUserID)+#39;
+        response:='update settings_users set statistics_queue_day = '+#39+IntToStr(SettingUsersStatusToInteger(status))+#39+' where user_id = '+#39+IntToStr(InUserID)+#39;
 
       end
       else begin
         response:='insert into settings_users (user_id,statistics_queue_day) values ('+#39+IntToStr(InUserID) +#39+','
-                                                                         +#39+IntToStr(SettingUsersStatusToInt(status))+#39+')';
+                                                                         +#39+IntToStr(SettingUsersStatusToInteger(status))+#39+')';
       end;
     end;
    end;
@@ -4486,7 +4297,7 @@ begin
         Active:=True;
 
         if Fields[0].Value<>null then begin
-          Result:=IntToTLogging(StrToInt(VarToStr(Fields[0].Value)));
+          Result:=IntegerToTLogging(StrToInt(VarToStr(Fields[0].Value)));
         end;
       end;
    finally
@@ -4675,10 +4486,13 @@ begin
          SQL.Add('select url from sms_settings');
        end;
        sms_login:begin
-          SQL.Add('select sms_login from sms_settings');
+         SQL.Add('select sms_login from sms_settings');
        end;
        sms_pwd:begin
          SQL.Add('select sms_pwd from sms_settings');
+       end;
+       sms_sign:begin
+         SQL.Add('select sign from sms_settings');
        end;
       end;
 
@@ -4954,6 +4768,8 @@ end;
 
 // открытые exe SMS рассылки
 procedure OpenSMS;
+ var
+  showSendingSMS:Boolean; // отображать ли excel рассылку
 begin
  if not SharedCurrentUserLogon.GetIsAccessSMS then begin
     MessageBox(HomeForm.Handle,PChar('Отсутствует доступ к SMS рассылке'),PChar('Отсутствует доступ'),MB_OK+MB_ICONINFORMATION);
@@ -4965,83 +4781,23 @@ begin
     Exit;
   end;
 
-  ShellExecute(HomeForm.Handle, 'Open', PChar(SMS_EXE),PChar(USER_ID_PARAM+' '+IntToStr(SharedCurrentUserLogon.GetID)),nil,SW_SHOW);
+  // отображать ли excel рассылку
+  if (SharedCurrentUserLogon.GetRole = role_senior_operator) or
+     (SharedCurrentUserLogon.GetRole = role_operator) or
+     (SharedCurrentUserLogon.GetRole = role_operator_no_dash)
+   then showSendingSMS:=False
+   else showSendingSMS:=True;
+
+  ShellExecute(HomeForm.Handle, 'Open', PChar(SMS_EXE),PChar(USER_ID_PARAM+' '+
+                                                            IntToStr(SharedCurrentUserLogon.GetID)+' '+
+                                                            USER_ACCESS_PARAM +' '+
+                                                            BooleanToString(showSendingSMS)),nil,SW_SHOW);
 end;
 
-// enumChatID -> string
-function EnumChannelChatIDToString(InChatID:enumChatID):string;
-begin
-  case InChatID of
-    eChatMain:  Result:='main';
-    eChatID0:   Result:='0';
-    eChatID1:   Result:='1';
-    eChatID2:   Result:='2';
-    eChatID3:   Result:='3';
-    eChatID4:   Result:='4';
-    eChatID5:   Result:='5';
-    eChatID6:   Result:='6';
-    eChatID7:   Result:='7';
-    eChatID8:   Result:='8';
-    eChatID9:   Result:='9';
-  end;
-end;
 
-//enumChannel -> string
-function EnumChannelToString(InChannel:enumChannel):string;
-begin
-   case InChannel of
-     ePublic:   Result:='public';
-     ePrivate:  Result:='private';
-   end;
-end;
 
-// enumActiveBrowser -> string
-function EnumActiveBrowserToString(InActiveBrowser:enumActiveBrowser):string;
-begin
-  case InActiveBrowser of
-    eNone   :Result:='none';
-    eMaster :Result:='master';
-    eSlave  :Result:='slave';
-  end;
-end;
 
- // Integer -> enumStatusOperators
-function IntegerToEnumStatusOperators(InStatusId:Integer):enumStatusOperators;
-begin
- case InStatusId of
-   -1:  Result:=eUnknown;         // unknown
-    0:  Result:=eReserved0;       // резерв
-    1:  Result:=eAvailable;       // доступен
-    2:  Result:=eHome;            // домой
-    3:  Result:=eExodus;          // исход
-    4:  Result:=eBreak;           // перерыв
-    5:  Result:=eDinner;          // обед
-    6:  Result:=ePostvyzov;       // поствызов
-    7:  Result:=eStudies;         // учеба
-    8:  Result:=eIT;              // ИТ
-    9:  Result:=eTransfer;        // переносы
-   10:  Result:=eReserve;         // резерв
- end;
-end;
 
- // enumStatusOperators -> integer
-function EnumStatusOperatorsToInteger(InStatus:enumStatusOperators):Integer;
-begin
- case InStatus of
-   eUnknown:    Result:= -1;      // unknown
-   eReserved0:  Result:= 0;       // резерв
-   eAvailable:  Result:= 1;       // доступен
-   eHome:       Result:= 2;       // домой
-   eExodus:     Result:= 3;       // исход
-   eBreak:      Result:= 4;       // перерыв
-   eDinner:     Result:= 5;       // обед
-   ePostvyzov:  Result:= 6;       // поствызов
-   eStudies:    Result:= 7;       // учеба
-   eIT:         Result:= 8;       // ИТ
-   eTransfer:   Result:= 9;       // переносы
-   eReserve:    Result:= 10;      // резерв
- end;
-end;
 
 
 // есть ли активная сессия уже
@@ -5134,7 +4890,7 @@ begin
   with ado do begin
     ado.Connection:=serverConnect;
     SQL.Clear;
-    SQL.Add('select count(id) from users where role = '+#39+IntToStr(GetRoleID(TRoleToStr(role_administrator)))+#39+' and disabled = ''0'' ');
+    SQL.Add('select count(id) from users where role = '+#39+IntToStr(GetRoleID(TRoleToString(role_administrator)))+#39+' and disabled = ''0'' ');
 
     Active:=True;
     countUsers:=Fields[0].Value;
@@ -5151,7 +4907,7 @@ begin
     if Active then Active:=False;
 
     SQL.Clear;
-    SQL.Add('select familiya,name from users where role = '+#39+IntToStr(GetRoleID(TRoleToStr(role_administrator)))+#39+' and disabled = ''0'' ');
+    SQL.Add('select familiya,name from users where role = '+#39+IntToStr(GetRoleID(TRoleToString(role_administrator)))+#39+' and disabled = ''0'' ');
 
     Active:=True;
 
@@ -5247,14 +5003,7 @@ begin
 
 end;
 
- // enumNeedReconnectBD -> Boolean
-function EnumNeedReconnectBDToBoolean(inStatusReconnect:enumNeedReconnectBD):Boolean;
-begin
-  case inStatusReconnect of
-    eNeedReconnectYES: Result:=True;
-    eNeedReconnectNO:  Result:=False;
-  end;
-end;
+
 
 
 // проверка нужно ли перезапускать reconnect к базе
@@ -5289,6 +5038,8 @@ begin
     Exit;
   end;
 end;
+
+
 
 
 // отрображение окна с ошибкой

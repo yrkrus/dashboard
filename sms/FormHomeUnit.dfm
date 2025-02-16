@@ -1,10 +1,10 @@
 object FormHome: TFormHome
   Left = 0
   Top = 0
-  BorderIcons = [biSystemMenu]
+  BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = #1054#1090#1087#1088#1072#1074#1082#1072' SMS'
-  ClientHeight = 368
+  ClientHeight = 388
   ClientWidth = 1122
   Color = clWindow
   Font.Charset = RUSSIAN_CHARSET
@@ -15,6 +15,7 @@ object FormHome: TFormHome
   OldCreateOrder = False
   Position = poScreenCenter
   OnCreate = FormCreate
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 16
   object GroupBox2: TGroupBox
@@ -23,7 +24,7 @@ object FormHome: TFormHome
     Width = 327
     Height = 44
     Caption = ' '#1044#1086#1087#1086#1083#1085#1080#1090#1077#1083#1100#1085#1086'   '
-    TabOrder = 6
+    TabOrder = 8
     object chkboxLog: TCheckBox
       Left = 185
       Top = 20
@@ -40,19 +41,20 @@ object FormHome: TFormHome
     Left = 8
     Top = 8
     Width = 419
-    Height = 281
+    Height = 302
     ActivePage = sheet_ManualSMS
     TabOrder = 0
     OnChange = page_TypesSMSChange
     object sheet_ManualSMS: TTabSheet
       Caption = #1056#1091#1095#1085#1072#1103' '#1086#1090#1087#1088#1072#1074#1082#1072' SMS'
+      PopupMenu = PopMenu_AddressClinic
       ExplicitWidth = 421
       ExplicitHeight = 246
       object group_ManualSMS: TGroupBox
         Left = 0
         Top = 3
         Width = 404
-        Height = 241
+        Height = 262
         Caption = ' '#1054#1076#1080#1085#1086#1095#1085#1072#1103' '#1086#1090#1087#1088#1072#1074#1082#1072' SMS '
         TabOrder = 0
         object Label1: TLabel
@@ -74,6 +76,7 @@ object FormHome: TFormHome
           Width = 197
           Height = 24
           TabOrder = 1
+          OnClick = edtManualSMSClick
         end
         object btnSaveFirebirdSettings: TBitBtn
           Left = 226
@@ -81,7 +84,7 @@ object FormHome: TFormHome
           Width = 166
           Height = 47
           Hint = #1042#1099#1073#1086#1088' '#1089#1086#1086#1073#1097#1077#1085#1080#1103' '#1080#1079' '#1088#1072#1085#1077#1077' '#1089#1086#1093#1088#1072#1085#1077#1085#1085#1099#1093
-          Caption = '&'#1052#1086#1080' '#1096#1072#1073#1083#1086#1085#1099' '#1089#1086#1086#1073#1097#1077#1085#1080#1081
+          Caption = ' &'#1052#1086#1080' '#1096#1072#1073#1083#1086#1085#1099' '#1089#1086#1086#1073#1097#1077#1085#1080#1081
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
           Font.Height = -13
@@ -168,11 +171,11 @@ object FormHome: TFormHome
           Height = 122
           BevelInner = bvLowered
           BevelOuter = bvSpace
-          TabOrder = 3
+          TabOrder = 4
           object re_ManualSMS: TRichEdit
-            Left = 4
+            Left = 6
             Top = 11
-            Width = 372
+            Width = 368
             Height = 104
             Align = alCustom
             BorderStyle = bsNone
@@ -196,15 +199,69 @@ object FormHome: TFormHome
           Font.Name = 'Tahoma'
           Font.Style = []
           ParentFont = False
+          TabOrder = 3
+        end
+        object chkbox_SaveMyTemplate: TCheckBox
+          Left = 12
+          Top = 224
+          Width = 375
+          Height = 17
+          Cursor = crHandPoint
+          Hint = 
+            #1057#1086#1086#1073#1097#1077#1085#1080#1077' '#1084#1086#1078#1085#1086' '#1073#1091#1076#1077#1090' '#1074#1099#1073#1088#1072#1090#1100' '#1076#1083#1103' '#1087#1086#1074#1090#1086#1088#1085#1086#1081' '#1086#1090#1087#1088#1072#1074#1082#1080#13#10'('#1076#1086#1089#1090#1091#1087#1085#1086' ' +
+            #1090#1086#1083#1100#1082#1086' '#1072#1074#1090#1086#1088#1091')'
+          Caption = #1089#1086#1093#1088#1072#1085#1080#1090#1100' '#1089#1086#1086#1073#1097#1077#1085#1080#1077' '#1074' "'#1052#1086#1080' '#1096#1072#1073#1083#1086#1085#1099' '#1089#1086#1086#1073#1097#1077#1085#1080#1081'"'
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 6
+          OnMouseLeave = chkbox_SaveMyTemplateMouseLeave
+          OnMouseMove = chkbox_SaveMyTemplateMouseMove
+        end
+        object st_PhoneInfo: TStaticText
+          Left = 76
+          Top = 42
+          Width = 128
+          Height = 16
+          Caption = #1076#1086#1083#1078#1077#1085' '#1085#1072#1095#1080#1085#1072#1090#1100#1089#1103' '#1089' "8"'
+          Enabled = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
           TabOrder = 2
         end
-        object CheckBox1: TCheckBox
+        object chkbox_SaveGlobalTemplate: TCheckBox
           Left = 12
-          Top = 213
-          Width = 377
+          Top = 240
+          Width = 375
           Height = 17
-          Caption = #1089#1086#1093#1088#1072#1085#1080#1090#1100' '#1089#1086#1086#1073#1097#1077#1085#1080#1077' '#1074' "'#1052#1086#1080' '#1096#1072#1073#1083#1086#1085#1099' '#1089#1086#1086#1073#1097#1077#1085#1080#1081'"'
-          TabOrder = 4
+          Cursor = crHandPoint
+          Hint = 
+            #1057#1086#1086#1073#1097#1077#1085#1080#1077' '#1084#1086#1078#1085#1086' '#1073#1091#1076#1077#1090' '#1074#1099#1073#1088#1072#1090#1100' '#1076#1083#1103' '#1087#1086#1074#1090#1086#1088#1085#1086#1081' '#1086#1090#1087#1088#1072#1074#1082#1080#13#10'('#1076#1086#1089#1090#1091#1087#1085#1086' ' +
+            #1042#1057#1045#1052' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1103#1084', '#1088#1077#1076#1072#1082#1090#1080#1088#1091#1077#1090#1089#1103' '#1090#1086#1083#1100#1082#1086' "'#1042#1077#1076#1091#1097#1080#1084#1080' '#1086#1087#1077#1088#1072#1090#1086#1088#1072#1084#1080'")'
+          Caption = #1089#1086#1093#1088#1072#1085#1080#1090#1100' '#1089#1086#1086#1073#1097#1077#1085#1080#1077' '#1074' "'#1043#1083#1086#1073#1072#1083#1100#1085#1099#1077' '#1096#1072#1073#1083#1086#1085#1099'"'
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 7
+          OnMouseLeave = chkbox_SaveGlobalTemplateMouseLeave
+          OnMouseMove = chkbox_SaveGlobalTemplateMouseMove
+        end
+        object chkbox_SignSMS: TCheckBox
+          Left = 12
+          Top = 208
+          Width = 375
+          Height = 17
+          Cursor = crHandPoint
+          Caption = #1074#1089#1090#1072#1074#1080#1090#1100' '#1087#1086#1076#1087#1080#1089#1100' '#1074' '#1082#1086#1085#1094#1077' SMS'
+          Checked = True
+          ParentShowHint = False
+          ShowHint = True
+          State = cbChecked
+          TabOrder = 5
+          OnMouseLeave = chkbox_SignSMSMouseLeave
+          OnMouseMove = chkbox_SignSMSMouseMove
         end
       end
     end
@@ -214,23 +271,10 @@ object FormHome: TFormHome
       ExplicitTop = 26
       ExplicitWidth = 323
       ExplicitHeight = 139
-      object lblProgressBar: TLabel
-        Left = 18
-        Top = 197
-        Width = 45
-        Height = 16
-        Caption = #1057#1090#1072#1090#1091#1089
-        Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -13
-        Font.Name = 'Tahoma'
-        Font.Style = [fsBold]
-        ParentFont = False
-      end
       object ProgressBar: TGauge
-        Left = 73
-        Top = 192
-        Width = 324
+        Left = 16
+        Top = 206
+        Width = 377
         Height = 29
         Align = alCustom
         ForeColor = clGradientInactiveCaption
@@ -241,10 +285,11 @@ object FormHome: TFormHome
         Font.Style = [fsBold]
         ParentFont = False
         Progress = 50
+        ShowText = False
       end
       object lblCountSendingSMS: TLabel
-        Left = 278
-        Top = 128
+        Left = 320
+        Top = 122
         Width = 22
         Height = 16
         Caption = 'null'
@@ -256,18 +301,47 @@ object FormHome: TFormHome
         ParentFont = False
       end
       object Label3: TLabel
-        Left = 79
-        Top = 128
-        Width = 193
+        Left = 123
+        Top = 122
+        Width = 190
         Height = 16
-        AutoSize = False
-        Caption = #1050#1086#1083'-'#1074#1086' '#1089#1086#1086#1073#1097#1077#1085#1080#1081' '#1085#1072' '#1086#1090#1087#1088#1072#1074#1082#1091': '
+        Caption = #1050#1086#1083'-'#1074#1086' '#1089#1086#1086#1073#1097#1077#1085#1080#1081' '#1085#1072' '#1086#1090#1087#1088#1072#1074#1082#1091':'
         Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clWindowText
+        Font.Color = clGreen
         Font.Height = -13
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
+      end
+      object Label4: TLabel
+        Left = 16
+        Top = 141
+        Width = 297
+        Height = 16
+        Caption = #1050#1086#1083'-'#1074#1086' '#1089#1086#1086#1073#1097#1077#1085#1080#1081' '#1082#1086#1090#1086#1088#1099#1077' '#1085#1077' '#1073#1091#1076#1091#1090' '#1086#1090#1087#1088#1072#1074#1083#1077#1085#1099':'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clMaroon
+        Font.Height = -13
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+      end
+      object lblCountNotSendingSMS: TLabel
+        Left = 320
+        Top = 141
+        Width = 22
+        Height = 16
+        BiDiMode = bdLeftToRight
+        Caption = 'null'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentBiDiMode = False
+        ParentFont = False
+        ParentShowHint = False
+        ShowHint = False
       end
       object group_SendingSMS: TGroupBox
         Left = 0
@@ -303,8 +377,8 @@ object FormHome: TFormHome
           Top = 24
           Width = 166
           Height = 47
-          Hint = #1055#1086#1080#1089#1082' excel '#1076#1083#1103' '#1088#1072#1089#1089#1099#1083#1082#1080' SMS'
-          Caption = '&'#1055#1086#1080#1089#1082
+          Hint = #1055#1086#1080#1089#1082' excel '#1092#1072#1081#1083#1072' '#1076#1083#1103' '#1088#1072#1089#1089#1099#1083#1082#1080' SMS'
+          Caption = ' &'#1055#1086#1080#1089#1082
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
           Font.Height = -13
@@ -386,13 +460,48 @@ object FormHome: TFormHome
         end
       end
       object chkboxShowLog: TCheckBox
-        Left = 12
-        Top = 226
-        Width = 385
-        Height = 15
+        Left = 16
+        Top = 240
+        Width = 378
+        Height = 17
         Caption = #1054#1090#1086#1073#1088#1072#1078#1072#1090#1100' '#1093#1086#1076' '#1086#1090#1087#1088#1072#1074#1082#1080
-        TabOrder = 1
+        TabOrder = 3
         OnClick = chkboxShowLogClick
+      end
+      object ProgressStatusText: TStaticText
+        Left = 20
+        Top = 213
+        Width = 51
+        Height = 17
+        Caption = #1057#1090#1072#1090#1091#1089' :'
+        Color = clGradientInactiveCaption
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentColor = False
+        ParentFont = False
+        TabOrder = 2
+      end
+      object st_ShowNotSendingSMS: TStaticText
+        Left = 339
+        Top = 143
+        Width = 55
+        Height = 15
+        Cursor = crHandPoint
+        Caption = '('#1087#1086#1082#1072#1079#1072#1090#1100')'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+        TabOrder = 1
+        Visible = False
+        OnClick = st_ShowNotSendingSMSClick
+        OnMouseLeave = st_ShowNotSendingSMSMouseLeave
+        OnMouseMove = st_ShowNotSendingSMSMouseMove
       end
     end
   end
@@ -402,12 +511,12 @@ object FormHome: TFormHome
     Width = 75
     Height = 25
     Caption = 'Button1'
-    TabOrder = 5
+    TabOrder = 6
     OnClick = Button1Click
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 349
+    Top = 369
     Width = 1122
     Height = 19
     Panels = <
@@ -421,10 +530,9 @@ object FormHome: TFormHome
   end
   object btnSendSMS: TBitBtn
     Left = 8
-    Top = 295
+    Top = 316
     Width = 418
     Height = 47
-    Hint = #1042#1099#1073#1086#1088' '#1089#1086#1086#1073#1097#1077#1085#1080#1103' '#1080#1079' '#1088#1072#1085#1077#1077' '#1089#1086#1093#1088#1072#1085#1077#1085#1085#1099#1093
     Caption = ' &'#1054#1090#1087#1088#1072#1074#1080#1090#1100' SMS'
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -532,8 +640,8 @@ object FormHome: TFormHome
       FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
     ParentFont = False
     ParentShowHint = False
-    ShowHint = True
-    TabOrder = 3
+    ShowHint = False
+    TabOrder = 5
     WordWrap = True
     OnClick = btnSendSMSClick
   end
@@ -541,14 +649,14 @@ object FormHome: TFormHome
     Left = 442
     Top = 8
     Width = 671
-    Height = 334
-    Caption = ' '#1061#1086#1076' '#1086#1090#1087#1088#1072#1074#1082#1080' '#1088#1072#1089#1089#1099#1083#1082#1080' SMS '
+    Height = 355
+    Caption = ' '#1061#1086#1076' '#1088#1072#1089#1089#1099#1083#1082#1080' SMS '
     TabOrder = 2
     object RELog: TRichEdit
       Left = 2
       Top = 18
       Width = 667
-      Height = 314
+      Height = 335
       Align = alClient
       BevelInner = bvNone
       BevelOuter = bvNone
@@ -582,8 +690,71 @@ object FormHome: TFormHome
     Transparent = False
     Visible = False
   end
+  object Button2: TButton
+    Left = 464
+    Top = 49
+    Width = 137
+    Height = 47
+    Caption = 'Button2'
+    TabOrder = 3
+    OnClick = Button2Click
+  end
+  object st_ShowInfoAddAddressClinic: TStaticText
+    Left = 198
+    Top = 115
+    Width = 197
+    Height = 17
+    Cursor = crHandPoint
+    Hint = #1055#1086#1082#1072#1079#1072#1090#1100' '#1089#1087#1088#1072#1074#1082#1091
+    Caption = ' '#1050#1072#1082' '#1073#1099#1089#1090#1088#1086' '#1074#1089#1090#1072#1074#1080#1090#1100' '#1072#1076#1088#1077#1089' '#1082#1083#1080#1085#1080#1082#1080' '
+    Color = clWindow
+    DoubleBuffered = False
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentColor = False
+    ParentDoubleBuffered = False
+    ParentFont = False
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 4
+    Transparent = False
+    OnClick = st_ShowInfoAddAddressClinicClick
+    OnMouseLeave = st_ShowInfoAddAddressClinicMouseLeave
+    OnMouseMove = st_ShowInfoAddAddressClinicMouseMove
+  end
   object OpenDialog: TOpenDialog
     Left = 85
     Top = 367
+  end
+  object PopMenu_AddressClinic: TPopupMenu
+    Left = 496
+    Top = 128
+    object r1: TMenuItem
+      Caption = #1042#1086#1083#1075#1086#1075#1088#1072#1076
+      object N2: TMenuItem
+        Caption = #1052#1052#1062
+        object N6: TMenuItem
+          Caption = #1050#1083#1080#1085#1080#1082#1072'1'
+        end
+        object N7: TMenuItem
+          Caption = #1050#1083#1080#1085#1080#1082#1072'2'
+        end
+      end
+      object N4: TMenuItem
+        Caption = #1062#1051#1044
+      end
+    end
+    object N1: TMenuItem
+      Caption = #1042#1086#1083#1078#1089#1082#1080#1081
+      object N3: TMenuItem
+        Caption = #1052#1052#1062
+      end
+      object N5: TMenuItem
+        Caption = #1062#1051#1044
+      end
+    end
   end
 end

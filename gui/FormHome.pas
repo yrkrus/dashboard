@@ -144,8 +144,8 @@ type
     menu_SMS: TMenuItem;
     ST_HelpStatusInfo: TStaticText;
     img_ShowOperatorStatus: TImage;
-    Label26: TLabel;
-    Label27: TLabel;
+    st_Forecast_Tomorrow: TStaticText;
+    st_Forecast_AfterTomorrow: TStaticText;
     procedure START_THREAD_ALLlClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);

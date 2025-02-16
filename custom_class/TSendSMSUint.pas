@@ -22,6 +22,9 @@ uses
   IdSSLOpenSSL,
   Xml.XMLDoc, Xml.XMLIntf,
   IdException,
+  Vcl.StdCtrls,
+  Winapi.Windows,
+  Vcl.Controls,
   TCustomTypeUnit;
 
   type
@@ -86,6 +89,7 @@ type
     m_URL                         :string; // строка подключения
     m_login                       :string; // логин
     m_password                    :string; // пароль
+    m_sign                        :string; // подпись к отправялемым смс
 
     function GetAuth(SMSType:enumSMSAuth):string;      // получение авторизационных данных при отправке SMS
     procedure CreateAuthSMS;      // получение данных по авторизации
@@ -101,18 +105,24 @@ type
   type
       TSendSMS = class
       public
-      function SendSMS(InMessage:string; InNumberPhone:string; var _errorDescription:string):Boolean;
+      function SendSMS(InMessage:string; InNumberPhone:string; var _errorDescription:string; isAddSign:Boolean):Boolean;
       function isExistAuth:Boolean;                         // есть ли все авторизационные данные
+      function GetSignSMS:string;                           // подпись в СМС сообщение
 
-      constructor Create;                   overload;
+      constructor Create(isDEBUG:Boolean);                    overload;
       private
       m_Auth      :TAuthSMS;        // авторизационные данные
       m_isExistAuth:Boolean;       // есть все авторизационные данные
+      m_isDEBUG:Boolean;              // debug без отправки реальной смс
+
 
       function EncodeURL(const Value: AnsiString): AnsiString;
       function ResponceParsing(InServerOtvet:string; var _errorDescription:string):Boolean;  // парсинг ответа
 
-      procedure SaveToBase(InServerOtvet:string; InMessage:string); // сохранение данных в базу
+      procedure SaveToBase(InServerOtvet:string; InMessage:string); // сохранение отправленной смс в базу
+
+      function AddSign(InMessage:string):string; // добавление подписи к отправляемомй сообщению
+
 
       end;
  // class TSendSMS END
@@ -157,6 +167,9 @@ begin
        sms_pwd:begin
          SQL.Add('select sms_pwd from sms_settings');
        end;
+       sms_sign:begin
+         SQL.Add('select sign from sms_settings');
+       end;
       end;
 
       Active:=True;
@@ -180,11 +193,14 @@ begin
   m_URL:=GetAuth(sms_server_addr);
   m_login:=GetAuth(sms_login);
   m_password:=GetAuth(sms_pwd);
+  m_sign:=GetAuth(sms_sign);
 end;
 
-constructor TSendSMS.Create;
+
+
+ constructor TSendSMS.Create(isDEBUG:Boolean);
  begin
-   inherited;
+  // inherited;
    m_Auth:=TAuthSMS.Create;
 
    // есть ли все авторизационные данные
@@ -194,6 +210,8 @@ constructor TSendSMS.Create;
      m_isExistAuth:=True;
    end
    else m_isExistAuth:=False;
+
+   m_isDEBUG:=isDEBUG;
  end;
 
 
@@ -312,7 +330,7 @@ begin
 end;
 
 
-// сохранение данных в базу
+// сохранение отправленной смс в базу
 procedure TSendSMS.SaveToBase(InServerOtvet:string; InMessage:string);
  var
  XmlDoc: IXMLDocument;
@@ -342,16 +360,23 @@ begin
       sms_id:=  RootNode.Attributes['id'];
       phone:=   RootNode.Attributes['phone'];
     end
-    else Exit;
+    else begin
+      FreeAndNil(ado);
+      if Assigned(serverConnect) then begin
+        serverConnect.Close;
+        FreeAndNil(serverConnect);
+      end;
+      Exit;
+    end;
 
   finally
     // XMLDoc автоматически освобождается, если используется IXMLDocument
   end;
 
   response:='insert into sms_sending (user_id,phone,message,sms_id) values ('+#39+IntToStr(USER_STARTED_SMS_ID)+#39+','
-                                                                              +#39+phone+#39+','
-                                                                              +#39+InMessage+#39+','
-                                                                              +#39+sms_id+#39+')';
+                                                                             +#39+phone+#39+','
+                                                                             +#39+InMessage+#39+','
+                                                                             +#39+sms_id+#39+')';
    try
      with ado do begin
         ado.Connection:=serverConnect;
@@ -381,19 +406,23 @@ begin
 end;
 
 
-function TSendSMS.SendSMS(InMessage:string; InNumberPhone:string; var _errorDescription:string):Boolean;
+function TSendSMS.SendSMS(InMessage:string;
+                          InNumberPhone:string;
+                          var _errorDescription:string;
+                          isAddSign:Boolean):Boolean;
 const
-  CustomHeaders0  :string ='Connection:Keep-alive';
-  CustomUserAgent :string='Mozilla/5.0 (Windows NT 10.0; WOW64; rv:56.0) Gecko/20100101 Firefox/56.0';
-  CustomHeaders2  :string='Content-Type: application/x-www-form-urlencoded; charset=utf-8 ';
-  CustomHeaders3  :string='Accept-Charset:utf-8';
-  CustomHeaders4  :string='Accept:application/json, text/javascript, */*; q=0.01';
+  CustomHeaders1  :string = 'Connection:Keep-alive';
+  CustomHeaders2  :string = 'Content-Type: application/x-www-form-urlencoded; charset=utf-8 ';
+  CustomHeaders3  :string = 'Accept-Charset:utf-8';
+  CustomHeaders4  :string = 'Accept:application/json, text/javascript, */*; q=0.01';
+  CustomUserAgent :string = 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:56.0) Gecko/20100101 Firefox/56.0';
 var
  http:TIdHTTP;
  ssl:TIdSSLIOHandlerSocketOpenSSL;
  ServerOtvet:string;
  HTTPGet:string;
-
+ resultat:Word;
+ sendMessage:string;
 begin
    Result:=False;
   _errorDescription:='';
@@ -405,10 +434,16 @@ begin
 
    // формируем ссылку на отправку
   begin
+    sendMessage:=InMessage;
+    if isAddSign then begin
+     if m_Auth.m_sign <>'null' then sendMessage:=AddSign(sendMessage);
+    end;
+
+
     HTTPGet:=m_Auth.m_URL;
     HTTPGet:=StringReplace(HTTPGet,'%USERNAME',m_Auth.m_login,[rfReplaceAll]);
     HTTPGet:=StringReplace(HTTPGet,'%USERPWD',m_Auth.m_password,[rfReplaceAll]);
-    HTTPGet:=StringReplace(HTTPGet,'%MESSAGE', EncodeURL(AnsiToUtf8(InMessage)),[rfReplaceAll]);
+    HTTPGet:=StringReplace(HTTPGet,'%MESSAGE', EncodeURL(AnsiToUtf8(sendMessage)),[rfReplaceAll]);
     HTTPGet:=StringReplace(HTTPGet,'%PHONENUMBER',InNumberPhone,[rfReplaceAll]);
   end;
 
@@ -425,13 +460,20 @@ begin
   try
     with http do begin
       IOHandler:=ssl;
-      Request.CustomHeaders.Add(CustomHeaders0);
-      Request.UserAgent:=CustomUserAgent;
+      Request.CustomHeaders.Add(CustomHeaders1);
       Request.CustomHeaders.Add(CustomHeaders2);
       Request.CustomHeaders.Add(CustomHeaders3);
       Request.CustomHeaders.Add(CustomHeaders4);
+      Request.UserAgent:=CustomUserAgent;
 
        try
+//        if m_isDEBUG then begin
+//          resultat:=MessageBox(0,PChar('===DEBUG MODE=== '+#13#13+'Cейчас будет отправлено SMS, отправлять?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
+//          if resultat=mrNo then begin
+//            Exit;
+//          end;
+//        end;
+
         ServerOtvet:=Get(HTTPGet);
         // парсинг ответа, если ошибка false возвратит
         if not ResponceParsing(ServerOtvet,_errorDescription) then begin
@@ -440,7 +482,7 @@ begin
           Exit;
         end;
 
-        // сохраняем в базу
+         // сохраняем в базу
          SaveToBase(ServerOtvet,InMessage);
 
        except on E: EIdHTTPProtocolException do
@@ -464,6 +506,31 @@ end;
 function TSendSMS.isExistAuth:Boolean;
 begin
   Result:=Self.m_isExistAuth;
+end;
+
+// подпись в СМС сообщение
+function TSendSMS.GetSignSMS:string;
+begin
+  Result:=m_Auth.m_sign;
+end;
+
+// добавление подписи к отправляемомй сообщению
+function TSendSMS.AddSign(InMessage:string):string;
+begin
+  // проверки
+  if m_Auth.m_sign = 'null' then begin
+   Result:=InMessage;
+   Exit;
+  end;
+
+  if (InMessage[Length(InMessage)] = '.' ) then begin
+   Result:=InMessage+' '+m_Auth.m_sign;
+  end else if (InMessage[Length(InMessage)] = ' ' ) then begin
+   Result:=InMessage+'. '+m_Auth.m_sign;
+  end else
+  begin
+   Result:=InMessage+'. '+m_Auth.m_sign;
+  end;
 end;
 
 end.

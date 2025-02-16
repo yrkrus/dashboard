@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls, Vcl.Grids,
   Vcl.Samples.Gauges, Winapi.ShellAPI, Vcl.Imaging.jpeg, Vcl.ExtCtrls,
-  Vcl.Buttons;
+  Vcl.Buttons, Vcl.Menus;
 
 
  // class TSMSMessage
@@ -54,12 +54,11 @@ type
     panel_ManualSMS: TPanel;
     re_ManualSMS: TRichEdit;
     ST_StatusPanel: TStaticText;
-    CheckBox1: TCheckBox;
+    chkbox_SaveMyTemplate: TCheckBox;
     group_SendingSMS: TGroupBox;
     Label2: TLabel;
     edtExcelSMS: TEdit;
     btnLoadFile: TBitBtn;
-    lblProgressBar: TLabel;
     ProgressBar: TGauge;
     chkboxShowLog: TCheckBox;
     GroupBox1: TGroupBox;
@@ -67,24 +66,59 @@ type
     STDEBUG: TStaticText;
     lblCountSendingSMS: TLabel;
     Label3: TLabel;
+    ProgressStatusText: TStaticText;
+    Label4: TLabel;
+    lblCountNotSendingSMS: TLabel;
+    st_ShowNotSendingSMS: TStaticText;
+    st_PhoneInfo: TStaticText;
+    chkbox_SaveGlobalTemplate: TCheckBox;
+    Button2: TButton;
+    PopMenu_AddressClinic: TPopupMenu;
+    r1: TMenuItem;
+    N1: TMenuItem;
+    N2: TMenuItem;
+    N3: TMenuItem;
+    N4: TMenuItem;
+    N5: TMenuItem;
+    N6: TMenuItem;
+    N7: TMenuItem;
+    chkbox_SignSMS: TCheckBox;
+    st_ShowInfoAddAddressClinic: TStaticText;
     procedure ProcessCommandLineParams(DEBUG:Boolean = False);
     procedure FormCreate(Sender: TObject);
     procedure btnLoadFileClick(Sender: TObject);
     procedure btnSendSMSClick(Sender: TObject);
     procedure btnLoadFile2Click(Sender: TObject);
     procedure Button1Click(Sender: TObject);
-    procedure edtNumbeFromStatusKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
-      procedure Button2Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
     procedure page_TypesSMSChange(Sender: TObject);
     procedure btnSaveFirebirdSettingsClick(Sender: TObject);
     procedure chkboxShowLogClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure st_ShowNotSendingSMSMouseLeave(Sender: TObject);
+    procedure st_ShowNotSendingSMSMouseMove(Sender: TObject; Shift: TShiftState;
+      X, Y: Integer);
+    procedure st_ShowNotSendingSMSClick(Sender: TObject);
+    procedure edtManualSMSClick(Sender: TObject);
+    procedure chkbox_SignSMSMouseLeave(Sender: TObject);
+    procedure chkbox_SignSMSMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
+    procedure chkbox_SaveMyTemplateMouseMove(Sender: TObject;
+      Shift: TShiftState; X, Y: Integer);
+    procedure chkbox_SaveMyTemplateMouseLeave(Sender: TObject);
+    procedure chkbox_SaveGlobalTemplateMouseMove(Sender: TObject;
+      Shift: TShiftState; X, Y: Integer);
+    procedure chkbox_SaveGlobalTemplateMouseLeave(Sender: TObject);
+    procedure st_ShowInfoAddAddressClinicMouseLeave(Sender: TObject);
+    procedure st_ShowInfoAddAddressClinicMouseMove(Sender: TObject;
+      Shift: TShiftState; X, Y: Integer);
+    procedure st_ShowInfoAddAddressClinicClick(Sender: TObject);
   private
     { Private declarations }
   public
     { Public declarations }
-  ParsingError:Boolean; // при разборе строк обнаружена ошибка при которой не было отправлено СМС оповещение
-  SLParsingError:TStringList; // список с ошибками
+  //ParsingError:Boolean; // при разборе строк обнаружена ошибка при которой не было отправлено СМС оповещение
+  //SLParsingError:TStringList; // список с ошибками
 
   //SLPArsingErorr:array of TErrorFileList;
 
@@ -93,12 +127,6 @@ type
 
 var
   FormHome: TFormHome;
-  FileExcelSMS:string;
-
-  SLSMS:TStringList; // файл с выгрузкой из exel
-
-  //currentUser:TUser;
-
 
 const
 cWIDTH_SHOWLOG:Integer=1128;
@@ -110,17 +138,10 @@ cWebApiSMSstatusID:string='https://a2p-sms-https.beeline.ru/proto/http/?gzip=non
 
 cAUTHconf:string='auth.conf';
 
-//CustomHeaders0='Connection:Keep-alive';
-//CustomUserAgent='Mozilla/5.0 (Windows NT 10.0; WOW64; rv:56.0) Gecko/20100101 Firefox/56.0';
-//CustomHeaders2='Content-Type:application/x-www-form-urlencoded';
-//CustomHeaders3='Accept-Charset:utf-8';
-//CustomHeaders4='Accept:application/json, text/javascript, */*; q=0.01';
-//CustomHeaders4='Content-Encoding: gzip';
-
 
 cSLEEPNEXTSMS:Integer=150; // время задержки перед следующей отправкой смс
 
-cMINIMALMESSAGESIZE:Word = 70; // минимальное кол-во симовлов в отправляемом сообщении
+// cMINIMALMESSAGESIZE:Word = 70; // минимальное кол-во симовлов в отправляемом сообщении
 
 //cMESSAGEBefor18:string='%FIO_Pacienta Вы записаны к доктору %FIO_Doctora (%Napravlenie) на %Data в %Time, %Address. При себе необходимо иметь паспорт и СНИЛС';
 //cMESSAGEAfter18:string='%FIO_Pacienta %записан(а) к доктору %FIO_Doctora (%Napravlenie) на %Data в %Time, %Address. Прием возможен в присутствии законного представителя ребенка';
@@ -128,16 +149,13 @@ cMINIMALMESSAGESIZE:Word = 70; // минимальное кол-во симовлов в отправляемом соо
 //cMESSAGEBefor18:string='%FIO_Pacienta Вы записаны к доктору %FIO_Doctora на %Data в %Time, %Address. При себе необходимо иметь паспорт и СНИЛС';
 //cMESSAGEAfter18:string='%FIO_Pacienta %записан(а) к доктору %FIO_Doctora на %Data в %Time, %Address. Прием возможен в присутствии законного представителя ребенка';
 
-cMESSAGE:string='%FIO_Pacienta %записан(а) к доктору %FIO_Doctora в %Time %Data в Клинику по адресу %Address. Если у Вас есть вопросы, готовы на них ответить, номер тел. для связи (8442)220-220 или (8443)450-450';
 
-cTempAddrClinika:string='ул. 40 лет ВЛКСМ, 55Б';
 
-cMAXCOUNTMESSAGEOLD:Word = 50; //кол-во сообщений которые прогружать и хранить в памяти при успешных отправках
 
 implementation
 
 uses
-  FunctionUnit, GlobalVariables, TSendSMSUint, FormMyTemplateUnit;
+  FunctionUnit, GlobalVariables, TSendSMSUint, FormMyTemplateUnit, FormNotSendingSMSErrorUnit;
 
  {$R *.dfm}
 
@@ -228,6 +246,8 @@ end;
 procedure TFormHome.btnLoadFileClick(Sender: TObject);
 var
  TypeReport:Word;
+ FileExcelSMS:string;
+ error:string;
 begin
 
   with OpenDialog do begin
@@ -247,16 +267,14 @@ begin
       end;
   end;
 
-   // подгружаем в память
-   if FileExcelSMS<>'' then
-   begin
-     if edtExcelSMS.Text<>'' then TypeReport:=1  { файл с рассылкой (смс) }
-     else TypeReport:=2;                         { файл с рассылкой (отказники) }
+  if FileExcelSMS='' then Exit;
 
-     // загружаем данные
-     PreLoadData(TypeReport);
-   end;
-
+   // подгружаем загружаем данные в память
+  if not LoadData(FileExcelSMS, error, ProgressStatusText,
+                  lblCountSendingSMS,lblCountNotSendingSMS) then begin
+    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    Exit;
+  end;
 end;
 
 procedure TFormHome.btnSaveFirebirdSettingsClick(Sender: TObject);
@@ -266,17 +284,13 @@ end;
 
 procedure TFormHome.btnSendSMSClick(Sender: TObject);
 var
-// TypeReport:Word;
-// resultat:Word;
-// sresult:string;
-// SMSResult:string;
-// i:Integer;
-// MessageSMS:string;
  currentOptions:enumSendingOptions;
  error:string;
  SendindMessage:string;
 begin
   // проверки
+  Screen.Cursor:=crHourGlass;
+
   begin
     case page_TypesSMS.ActivePage.PageIndex of
      0:begin                 // ручная отправка
@@ -288,6 +302,7 @@ begin
     end;
 
     if not CheckParamsBeforeSending(currentOptions,error) then begin
+     Screen.Cursor:=crDefault;
      MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
      Exit;
     end;
@@ -297,116 +312,30 @@ begin
    // отправляем сообщение
    case currentOptions of
     options_Manual: begin
-      if not SendingMessage(currentOptions, error) then  MessageBox(Handle,PChar(error),PChar('Ошибка отправки'),MB_OK+MB_ICONERROR)
-      else MessageBox(Handle,PChar('Сообщение отправлено'),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
+      if not SendingMessage(currentOptions, error) then begin
+       Screen.Cursor:=crDefault;
+       MessageBox(Handle,PChar(error),PChar('Ошибка отправки'),MB_OK+MB_ICONERROR);
+      end
+      else begin
+        // запись в качестве шаблона сообщений
+        if chkbox_SaveMyTemplate.Checked then SaveMyTemplateMesaage(re_ManualSMS.Text);
+        if chkbox_SaveGlobalTemplate.Checked then SaveMyTemplateMesaage(re_ManualSMS.Text, ISGLOBAL_MESSAGE);
+
+        Screen.Cursor:=crDefault;
+        MessageBox(Handle,PChar('Сообщение отправлено'),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
+      end;
     end;
     options_Sending:begin
-
+      if not SendingMessage(currentOptions, error) then begin
+        Screen.Cursor:=crDefault;
+        MessageBox(Handle,PChar(error),PChar('Ошибка отправки'),MB_OK+MB_ICONERROR);
+      end;
     end;
    end;
 
    // очищаем данные формы
    ClearParamsForm(currentOptions);
-
-
-//  case PageType.ActivePage.PageIndex of
-//   0:begin                 // проверка статуса сообщения
-//      try
-//       // SMSResult:=GetSMSStatusID(edtNumbeFromStatus.Text);
-//
-//        if AnsiPos('ОШИБКА',SMSResult) <> 0 then begin
-//          MessageBox(Handle,PChar(sresult),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-//          Exit;
-//        end;
-//      except on E:Exception do
-//          begin
-//           // CurrentPostAddColoredLine('ОШИБКА! Не удалось проверить статус СМС на номер "'+reNumberPhoneList.Lines[i]+'" , '+e.ClassName+': '+e.Message,clRed);
-//            Exit;
-//          end;
-//      end;
-//
-//   end;
-//   1:begin                 // ручная отправка
-//
-//      // длинна сообшения
-//      MessageSMS:=SettingsLoadString(cAUTHconf,'core','msg_perenos','');
-//
-//      if Length(MessageSMS) <= cMINIMALMESSAGESIZE then begin
-//
-//        resultat:=MessageBox(FormHome.Handle,PChar('Размер отправляемого сообщения меньше рекомендованной МИНИМАЛЬНОЙ длины ('+IntToStr(cMINIMALMESSAGESIZE)+' символов)'+#13#13+
-//                                                   'Возможно это ошибка, точно отправить сообщение?'+#13#13#13+
-//                                                   'Будет отправлено следующее сообщение:'+#13+
-//                                                    MessageSMS),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
-//        if resultat=mrNo then begin
-//           Exit;
-//        end;
-//      end;
-
-
-      {for i:=0 to reNumberPhoneList.Lines.Count-1 do begin
-
-        begin
-         ProgressBar.Progress:=Round(100*i/reNumberPhoneList.Lines.Count-1);
-         lblProgressBar.Caption:=IntToStr(i+1)+' из '+IntToStr(reNumberPhoneList.Lines.Count);
-         Application.ProcessMessages;
-        end;
-
-         try
-          SMSResult:=GetSMS(reNumberPhoneList.Lines[i]);
-
-         except on E:Exception do
-          begin
-            CurrentPostAddColoredLine('ОШИБКА! Не удалось отправить СМС на номер "'+reNumberPhoneList.Lines[i]+'" , '+e.ClassName+': '+e.Message,clRed);
-            Exit;
-          end;
-         end;
-
-         if SMSResult='OK' then begin
-           CurrentPostAddColoredLine('Отправлено СМС на номер "'+reNumberPhoneList.Lines[i]+'"',clGreen);
-         end
-         else begin
-           CurrentPostAddColoredLine(SMSResult+'. Номер телефона на который не удалось отправить СМС "'+reNumberPhoneList.Lines[i]+'"',clRed);
-         end;
-      end; }
-
-//     // очищаем данные
-//     reNumberPhoneList.Lines.Clear;
-//     ProgressBar.Progress:=0;
-//     lblProgressBar.Caption:='Статус отправки';
-//   end;
-//   2:begin                            // рассылка
-//    if edtExcelSMS.Text<>'' then TypeReport:=1  { файл с рассылкой (смс) }
-//    else TypeReport:=2;                         { файл с рассылкой (отказники) }
-//
-//       //отправляем смс
-//       if SLSMS.Count<>0 then ParsingSMSandSend(SLSMS,TypeReport)
-//       else begin
-//        CurrentPostAddColoredLine('ОШИБКА ОТПРАВКИ! В памяти нет данных для отправки',clRed);
-//
-//        MessageBox(Handle,PChar('В памяти нет данных для отправки'+#13+
-//                                'Сформируйте отчет еще раз '),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-//        Exit;
-//       end;
-//
-//      // очищаем данные
-//      ProgressBar.Progress:=0;
-//      lblProgressBar.Caption:='Статус отправки';
-//
-//      // есть ошибки
-//      if ParsingError then begin
-//        SLParsingError.SaveToFile(ParsingDirectory+'ErrorSend.log');
-//
-//        resultat:=MessageBox(FormHome.Handle,PChar('В процессе отправки рассылки, возникли ошибки ('+inttostr(SLParsingError.Count)+')'+#13+
-//                                                   'Сформирован отчет ErrorSend.log'+#13#13+
-//                                                   'Открыть отчет?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
-//        SLParsingError.Clear;
-//        if resultat=mrYes then begin
-//           ShellExecute(Handle, 'Open', PChar(ParsingDirectory+'ErrorSend.log'),nil,nil,SW_SHOWNORMAL);
-//        end;
-//      end;
-//   end;
-//  end;
-
+   Screen.Cursor:=crDefault;
 end;
 
 procedure TFormHome.Button1Click(Sender: TObject);
@@ -421,20 +350,8 @@ begin
 end;
 
 procedure TFormHome.Button2Click(Sender: TObject);
-var
- SMS:TSendSMS;
- error:string;
-
 begin
-  SMS:=TSendSMS.Create;
-
-  if not SMS.SendSMS('Тескт чтобы не повторялся '+DateTimeToStr(now),'89093858545',error) then begin
-    ShowMessage(error);
-    Exit;
-  end;
-
-  ShowMessage('Сообщение отправлено');
-
+  CreateThreadSendind(MAX_COUNT_THREAD_SENDIND,0,0);
 end;
 
 
@@ -445,15 +362,44 @@ begin
   else ShowOrHideLog(log_hide);
 end;
 
-procedure TFormHome.edtNumbeFromStatusKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
+procedure TFormHome.chkbox_SaveGlobalTemplateMouseLeave(Sender: TObject);
 begin
- if SettingsLoadString(cAUTHconf,'core','send_enter','true')='true' then begin
-    if (Key=VK_RETURN) then begin
-        btnSendSMS.Click;
-    end;
- end;
+  chkbox_SaveGlobalTemplate.Font.Style:=[];
 end;
+
+procedure TFormHome.chkbox_SaveGlobalTemplateMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+begin
+ chkbox_SaveGlobalTemplate.Font.Style:=[fsUnderline];
+end;
+
+procedure TFormHome.chkbox_SaveMyTemplateMouseLeave(Sender: TObject);
+begin
+ chkbox_SaveMyTemplate.Font.Style:=[];
+end;
+
+procedure TFormHome.chkbox_SaveMyTemplateMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  chkbox_SaveMyTemplate.Font.Style:=[fsUnderline];
+end;
+
+procedure TFormHome.chkbox_SignSMSMouseLeave(Sender: TObject);
+begin
+  chkbox_SignSMS.Font.Style:=[];
+end;
+
+procedure TFormHome.chkbox_SignSMSMouseMove(Sender: TObject; Shift: TShiftState;
+  X, Y: Integer);
+begin
+ chkbox_SignSMS.Font.Style:=[fsUnderline];
+end;
+
+procedure TFormHome.edtManualSMSClick(Sender: TObject);
+begin
+  if st_PhoneInfo.Visible then st_PhoneInfo.Visible:=False;
+end;
+
 
 
 procedure TFormHome.ProcessCommandLineParams(DEBUG:Boolean);
@@ -462,6 +408,7 @@ var
 begin
   if DEBUG then begin
    USER_STARTED_SMS_ID:=1;
+   USER_ACCESS_SENDING_LIST:=True;
    Exit;
   end;
 
@@ -486,9 +433,58 @@ begin
         KillProcessNow;
       end;
     end;
+
+    if ParamStr(i) = '--ACCESS' then
+    begin
+      if (i + 1 <= ParamCount) then
+      begin
+        USER_ACCESS_SENDING_LIST:= StrToBoolean(ParamStr(i + 1));
+       // if DEBUG then ShowMessage('Value for --USER_ID: ' + ParamStr(i + 1));
+
+      end
+      else
+      begin
+        MessageBox(Handle,PChar('Слишком много параметров'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
+        KillProcessNow;
+      end;
+    end;
   end;
 end;
 
+
+procedure TFormHome.st_ShowInfoAddAddressClinicClick(Sender: TObject);
+begin
+ MessageBox(Handle,PChar('Для быстрой вставки адреса клинки необходимо'+#13#10+
+                         'кликнуть правой кл. мыши и выбрать нужный адрес из выпадающего меню'+#13#10+
+                         'и он вставиться в сообщение на месте где находится курсор'),PChar('Инфо'),MB_OK+MB_ICONINFORMATION);
+end;
+
+procedure TFormHome.st_ShowInfoAddAddressClinicMouseLeave(Sender: TObject);
+begin
+  st_ShowInfoAddAddressClinic.Font.Style:=[];
+end;
+
+procedure TFormHome.st_ShowInfoAddAddressClinicMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  st_ShowInfoAddAddressClinic.Font.Style:=[fsUnderline];
+end;
+
+procedure TFormHome.st_ShowNotSendingSMSClick(Sender: TObject);
+begin
+ FormNotSendingSMSError.ShowModal;
+end;
+
+procedure TFormHome.st_ShowNotSendingSMSMouseLeave(Sender: TObject);
+begin
+ st_ShowNotSendingSMS.Font.Style:=[];
+end;
+
+procedure TFormHome.st_ShowNotSendingSMSMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+begin
+   st_ShowNotSendingSMS.Font.Style:=[fsUnderline];
+end;
 
 procedure TFormHome.FormCreate(Sender: TObject);
 begin
@@ -502,58 +498,55 @@ begin
 
   ProcessCommandLineParams(DEBUG);
 
-  // debug node
-  if DEBUG then STDEBUG.Visible:=True;
-
 
   // размер окна
   FormHome.Width:=cWIDTH_HIDELOG;
-
-
-
-  // создаем текущего рльзака
- {
-
-  with FormHome do begin
-
-  if global_DEBUG then Caption:='     ### DEBUG ###      '+Caption;
-
-  Width:=cWIDTHStart;
- end;
-
-  ParsingDirectory:=ExtractFilePath(ParamStr(0));
-  ProgressBar.Progress:=0;
-
-  SLSMS:=TStringList.Create;
-  SLParsingError:=TStringList.Create;
-
-
-  // вкладка рассылки (по умолчанию)
-  PageType.ActivePageIndex:=2;
-
-  // отображаем лог (по умолчанию)
-  chkboxShowLog.Checked:=True; }
-
-
 end;
 
 
 
+
+procedure TFormHome.FormShow(Sender: TObject);
+var
+ error:string;
+begin
+  // debug node
+  if DEBUG then STDEBUG.Visible:=True
+  else begin
+    // скрываем отправку рассылки для обычных операторов
+    if not USER_ACCESS_SENDING_LIST then begin
+       page_TypesSMS.Pages[1].TabVisible:=False;
+       chkbox_SaveGlobalTemplate.Visible:=False;  // сохранить сообщение в глобальные шаблоны
+    end
+    else begin
+       chkbox_SaveGlobalTemplate.Visible:=True;  // сохранить сообщение в глобальные шаблоны
+    end;
+  end;
+
+   // создатим copyright
+  CreateCopyright;
+
+  // проверка существует ли excel
+  if not isExistExcel(error) then begin
+   MessageBox(Handle,PChar('Excel не установлен'+#13#13+error),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
+   KillProcessNow;
+  end;
+
+  // возможность автоматически вставлять подпись в смс сообщение
+  SignSMS;
+
+  // стартовая вкладка
+  page_TypesSMS.ActivePage:=sheet_ManualSMS;
+end;
 
 procedure TFormHome.page_TypesSMSChange(Sender: TObject);
 begin
   case page_TypesSMS.ActivePage.PageIndex of
 
    0:begin                 // ручная отправка
-    //ClearTabs(MsgStatus);
-   // ClearTabs(Rassilka);
-
     OptionsStyle(options_Manual);
    end;
    1:begin                  // рассылка
-   // ClearTabs(MsgStatus);
-   // ClearTabs(ManualSend);
-
     OptionsStyle(options_Sending);
    end;
   end;

@@ -40,10 +40,22 @@ end;
 procedure Thread_Forecast.show;
 var
 forecast:TForecastCalls;
+forecast_Tomorrow:TForecastCalls;
+forecast_AfterTomorrow:TForecastCalls;
+tomorrow:TDate;
 begin
   if not CONNECT_BD_ERROR then begin
    forecast:=TForecastCalls.Create(HomeForm.STForecastCount);
    forecast.ShowForecastCount(HomeForm.STForecastCount);
+
+//   tomorrow:=Now+1;
+//   forecast_Tomorrow:=TForecastCalls.Create(tomorrow, HomeForm.st_Forecast_Tomorrow);
+//   forecast_Tomorrow.ShowForecastCount(HomeForm.st_Forecast_Tomorrow);
+//
+//   tomorrow:=Now+2;
+//   forecast_AfterTomorrow:=TForecastCalls.Create(tomorrow, HomeForm.st_Forecast_AfterTomorrow);
+//   forecast_AfterTomorrow.ShowForecastCount(HomeForm.st_Forecast_AfterTomorrow);
+
   end;
 end;
 

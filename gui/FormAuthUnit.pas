@@ -300,7 +300,7 @@ begin
       familiya      := user_familiya;
       id            := getUserID(user_name,user_familiya);
       login         := getUserLogin(id);
-      group_role    := StrToTRole(getUserRoleSTR(id));
+      group_role    := StringToTRole(getUserRoleSTR(id));
       re_password   := getUserRePassword(id);
       ip            := getLocalIP;
       pc            := getComputerPCName;

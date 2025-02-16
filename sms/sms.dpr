@@ -7,7 +7,11 @@ uses
   GlobalVariables in 'GlobalVariables.pas',
   TCustomTypeUnit in '..\custom_class\TCustomTypeUnit.pas',
   TSendSMSUint in '..\custom_class\TSendSMSUint.pas',
-  FormMyTemplateUnit in 'FormMyTemplateUnit.pas' {FormMyTemplate};
+  FormMyTemplateUnit in 'FormMyTemplateUnit.pas' {FormMyTemplate},
+  TPacientsListUnit in '..\custom_class\TPacientsListUnit.pas',
+  FormNotSendingSMSErrorUnit in 'FormNotSendingSMSErrorUnit.pas' {FormNotSendingSMSError},
+  FormEditTemplateUnit in 'FormEditTemplateUnit.pas' {FormEditTemplate},
+  TLogFileUnit in '..\custom_class\TLogFileUnit.pas';
 
 {$R *.res}
 
@@ -19,5 +23,7 @@ begin
 
   Application.CreateForm(TFormHome, FormHome);
   Application.CreateForm(TFormMyTemplate, FormMyTemplate);
+  Application.CreateForm(TFormNotSendingSMSError, FormNotSendingSMSError);
+  Application.CreateForm(TFormEditTemplate, FormEditTemplate);
   Application.Run;
 end.

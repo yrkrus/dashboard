@@ -150,7 +150,7 @@ begin
     SQL.Clear;
     SQL.Add('select menu_users,menu_serversik,menu_siptrunk,');
     SQL.Add('menu_settings_global,menu_active_session ');
-    SQL.Add('from access_panel where role = '+#39+IntToStr(GetRoleID(TRoleToStr(p_InRole)))+#39);
+    SQL.Add('from access_panel where role = '+#39+IntToStr(GetRoleID(TRoleToString(p_InRole)))+#39);
 
     Active:=True;
 
@@ -209,7 +209,7 @@ begin
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
-      SQL.Add('select only_operators from role where id = '+#39+IntToStr(GetRoleID(TRoleToStr(InRole)))+#39);
+      SQL.Add('select only_operators from role where id = '+#39+IntToStr(GetRoleID(TRoleToString(InRole)))+#39);
 
       Active:=True;
 

@@ -38,7 +38,7 @@ procedure TFormGlobalSettingCheckFirebirdConnect.btnSaveFirebirdSettingsClick(
  resultat:Boolean;
 begin
    if comboxServer.ItemIndex=-1 then begin
-     MessageBox(Handle,PChar('ОШИБКА! Не выбран сервер'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+     MessageBox(Handle,PChar('Не выбран сервер'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
      Exit;
    end;
 
@@ -52,7 +52,7 @@ begin
      MessageBox(Handle,PChar('Успешное подключение к серверу:'+#13#13+servers.listServers[id].address),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
    end
    else begin
-     MessageBox(Handle,PChar('ОШИБКА! Не удалось подключиться к серверу:'+#13#13+servers.listServers[id].address),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+     MessageBox(Handle,PChar('Не удалось подключиться к серверу:'+#13#13+servers.listServers[id].address),PChar('Ошибка'),MB_OK+MB_ICONERROR);
    end;
 end;
 
