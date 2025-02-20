@@ -2,13 +2,16 @@
 ///                                                                           ///
 ///                                                                           ///
 ///                       ТОЛЬКО СОЗДАННЫЕ ТИПЫ ДАННЫХ                        ///
-///                         + преобразования                                  ///
+///                            + преобразования                               ///
 ///                                                                           ///
 ///                                                                           ///
 /////////////////////////////////////////////////////////////////////////////////
 unit TCustomTypeUnit;
 
 interface
+
+  uses
+  SysUtils;
 
   type    // тип проверки мониториться ли транк или нет
   enumMonitoringTrunk = ( monitoring_DISABLE,
@@ -32,7 +35,8 @@ interface
  type     // типы клиник (ММЦ, ЦЛД, Яаборатория)
   enumTypeClinic = (eMMC,                  // ММЦ
                     eCLD,                  // ЦЛД
-                    eLaboratory            // Лаборатория
+                    eLaboratory,           // Лаборатория
+                    eOther                 // Прочее
                     );
 
 
@@ -60,10 +64,10 @@ interface
                           settingUsers_showStatisticsQueueDay   // какой тип графика отображать в модуле "сатистика ожидания в очереди" 0-цифры | 1 - график
                             );
 
-  type  // тип включение\отключение индивидуальных пользовательских настроек
-    enumSettingUsersStatus = (settingUsersStatus_ENABLED = 1,  // включить
-                           settingUsersStatus_DISABLED = 0  // выключить
-                          );
+  type  // тип включение\отключение boolean параметров
+    enumParamStatus = (paramStatus_ENABLED  = 1,  // включить
+                       paramStatus_DISABLED = 0   // выключить
+                       );
 
   {
      НЕ ЗАБЫТЬ!!
@@ -158,7 +162,8 @@ interface
   type  // тип программы
   enumProrgamm = ( eGUI,
                    eCHAT,
-                   eREPORT
+                   eREPORT,
+                   eSMS
                  );
 
   type  // какой браузер сейчас активен основной или дополнительный  !TODO эти же типы есть еще и в chat.exe
@@ -237,11 +242,16 @@ interface
  function EnumStatusOperatorsToInteger(InStatus:enumStatusOperators):Integer;      // enumStatusOperators -> integer
  function EnumNeedReconnectBDToBoolean(inStatusReconnect:enumNeedReconnectBD):Boolean;   // enumNeedReconnectBD -> Boolean
  function StatusOperatorToTLogging(InOperatorStatus:Integer):enumLogging;          // преобразование текущего статуса оператора из int в TLogging
- function SettingUsersStatusToInteger(status:enumSettingUsersStatus):Integer;      // TSettingUsersStatus --> Int
-
+ function SettingParamsStatusToInteger(status:enumParamStatus):Integer;            // SettingParamsStatus --> Int
+ function IntegerToSettingParamsStatus(status:Integer):enumParamStatus;            // Int --> SettingParamsStatus
+ function EnumTypeClinicToString(typeClinic:enumTypeClinic):string;                // EnumTypeClinic -> String
+ function StringToEnumTypeClinic(typeClinic:string):enumTypeClinic;                // String -> EnumTypeClinic
+ function StringToSettingParamsStatus(status:string):enumParamStatus;              // String (Да\Нет) --> SettingParamsStatus
+ function StrToBoolean(InValue:string):Boolean;                                    // string -> boolean
 
  // =================== ПРОЕОБРАЗОВАНИЯ ===================
  implementation
+
 
  // Boolean -> string
 function BooleanToString(InValue:Boolean):string;
@@ -471,13 +481,67 @@ begin
 end;
 
 
-// TSettingUsersStatus --> Int
-function SettingUsersStatusToInteger(status:enumSettingUsersStatus):Integer;
+// SettingParamsStatus --> Int
+function SettingParamsStatusToInteger(status:enumParamStatus):Integer;
 begin
   case status of
-    settingUsersStatus_ENABLED:   Result:= 1;
-    settingUsersStatus_DISABLED:  Result:= 0;
+    paramStatus_ENABLED:   Result:= 1;
+    paramStatus_DISABLED:  Result:= 0;
   end;
 end;
+
+// Int --> SettingParamsStatus
+function IntegerToSettingParamsStatus(status:Integer):enumParamStatus;
+begin
+  case status of
+    0:Result:=paramStatus_DISABLED;
+    1:Result:=paramStatus_ENABLED;
+  end;
+end;
+
+// string (Да\Нет) --> SettingParamsStatus
+function StringToSettingParamsStatus(status:string):enumParamStatus;
+var
+ tmp:string;
+begin
+  tmp:=status;
+  tmp:=AnsiLowerCase(status);
+
+  if tmp='да' then Result:=paramStatus_ENABLED
+  else if tmp='нет' then Result:=paramStatus_DISABLED
+  else Result:=paramStatus_DISABLED;
+end;
+
+
+// EnumTypeClinic -> String
+function EnumTypeClinicToString(typeClinic:enumTypeClinic):string;
+begin
+   case typeClinic of
+     eMMC:            Result:='ММЦ';
+     eCLD:            Result:='ЦЛД';
+     eLaboratory:     Result:='Лаборатория';
+     eOther:          Result:='Прочее';
+   end;
+end;
+
+// String -> EnumTypeClinic
+function StringToEnumTypeClinic(typeClinic:string):enumTypeClinic;
+begin
+   if typeClinic = 'ММЦ'          then Result:=eMMC;
+   if typeClinic = 'ЦЛД'          then Result:=eCLD;
+   if typeClinic = 'Лаборатория'  then Result:=eLaboratory;
+   if typeClinic = 'Прочее'       then Result:=eOther;
+end;
+
+// string -> boolean
+function StrToBoolean(InValue:string):Boolean;
+var
+ tmp:string;
+begin
+  Result:=False;
+  tmp:=AnsiLowerCase(InValue);
+  if tmp = 'true' then Result:=True;
+end;
+
 
 end.

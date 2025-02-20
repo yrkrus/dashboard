@@ -432,8 +432,8 @@ begin
  Result:=PChar(Datetmp);
 end;
 
-// перевод времени разговора оператора типа 00:00:00 в секунды
-function GetTimeAnsweredToSeconds(InTimeAnswered:string):Integer; stdcall;export;
+// перевод времени разговора оператора типа 00:00:00 или 00:00 в секунды
+function GetTimeAnsweredToSeconds(InTimeAnswered:string; isReducedTime:Boolean = False):Integer; stdcall;export;
  const
   SecPerDay = 86400;
   SecPerHour = 3600;
@@ -441,11 +441,32 @@ function GetTimeAnsweredToSeconds(InTimeAnswered:string):Integer; stdcall;export
  var
  tmp_time:TTime;
  curr_time:Integer;
+ parts: TArray<string>;
+ minutes: Integer;
+ seconds: Integer;
 begin
-  tmp_time:=StrToDateTime(InTimeAnswered);
-  curr_time:=HourOf(tmp_time) * 3600 + MinuteOf(tmp_time) * 60 + SecondOf(tmp_time);
+  if isReducedTime then
+  begin
+   parts:=InTimeAnswered.Split([':']);
 
-  Result:=curr_time;
+    // Входное время в формате mm:ss
+    if Length(parts) = 2 then
+    begin
+      // Преобразуем минуты и секунды в целые числа
+      minutes:= StrToInt(parts[0]);
+      seconds:= StrToInt(parts[1]);
+      // Вычисляем общее количество секунд
+      Result := minutes * SecPerMinute + seconds;
+    end
+    else Result := 0;
+  end
+  else
+  begin
+    // Обработка времени в формате даты и времени
+    tmp_time := StrToDateTime(InTimeAnswered);
+    curr_time := HourOf(tmp_time) * 3600 + MinuteOf(tmp_time) * 60 + SecondOf(tmp_time);
+    Result := curr_time;
+  end;
 end;
 
 

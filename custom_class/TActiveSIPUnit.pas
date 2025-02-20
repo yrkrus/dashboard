@@ -472,7 +472,7 @@ begin
       if Active then Active:=False;
 
       SQL.Clear;
-      SQL.Add('select count(user_id) from active_session where last_active>'+#39+GetCurrentStartDateTime+#39);
+      SQL.Add('select count(user_id) from active_session where last_active>'+#39+GetNowDateTime+#39);
       Active:=True;
 
       countActiveSession:=Fields[0].Value;
@@ -489,7 +489,7 @@ begin
       if Active then Active:=False;
 
       SQL.Clear;
-      SQL.Add('select user_id,last_active from active_session where last_active>'+#39+GetCurrentStartDateTime+#39);
+      SQL.Add('select user_id,last_active from active_session where last_active>'+#39+GetNowDateTime+#39);
       Active:=True;
 
       for i:=0 to countActiveSession-1 do begin
@@ -651,14 +651,14 @@ end;
                 SQL.Clear;
 
 
-                SQL.Add('select count(distinct(sip)) from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and sip <> ''-1'' order by sip asc');
+                SQL.Add('select count(distinct(sip)) from queue where date_time > '+#39+GetNowDateTime+#39+' and sip <> ''-1'' order by sip asc');
                 Active:=True;
                 if Fields[0].Value<>null then count_sip:=Fields[0].Value;
 
                  if count_sip>=1 then begin
 
                     SQL.Clear;
-                    SQL.Add('select distinct(sip) from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and sip <> ''-1'' order by sip asc');
+                    SQL.Add('select distinct(sip) from queue where date_time > '+#39+GetNowDateTime+#39+' and sip <> ''-1'' order by sip asc');
                     Active:=True;
 
                     for i:=0 to count_sip-1 do begin
@@ -720,7 +720,7 @@ end;
            with ado do begin
               ado.Connection:=serverConnect;
               SQL.Clear;
-              SQL.Add('select count(distinct(sip)) from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and sip not IN ('+operatorsGoHomeNow+') and sip <> ''-1'' order by sip asc');
+              SQL.Add('select count(distinct(sip)) from queue where date_time > '+#39+GetNowDateTime+#39+' and sip not IN ('+operatorsGoHomeNow+') and sip <> ''-1'' order by sip asc');
 
               Active:=True;
               if Fields[0].Value<>null then count_sip:=Fields[0].Value;
@@ -728,7 +728,7 @@ end;
                if count_sip<>0 then begin
 
                   SQL.Clear;
-                  SQL.Add('select distinct(sip) from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and sip not IN ('+operatorsGoHomeNow+') and sip <> ''-1'' order by sip asc');
+                  SQL.Add('select distinct(sip) from queue where date_time > '+#39+GetNowDateTime+#39+' and sip not IN ('+operatorsGoHomeNow+') and sip <> ''-1'' order by sip asc');
                   Active:=True;
 
                   for i:=0 to count_sip-1 do begin
@@ -864,7 +864,7 @@ end;
           if listOperators[i].sip_number<>'' then begin
 
               SQL.Clear;
-              SQL.Add('select phone from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and sip = '+#39+listOperators[i].sip_number+#39+' and answered=''1'' and hash is null limit 1');
+              SQL.Add('select phone from queue where date_time > '+#39+GetNowDateTime+#39+' and sip = '+#39+listOperators[i].sip_number+#39+' and answered=''1'' and hash is null limit 1');
               Active:=True;
 
               if Fields[0].Value = null then listOperators[i].phone:=''
@@ -1107,7 +1107,7 @@ var
         if listOperators[i].sip_number<>'' then begin
 
            SQL.Clear;
-           SQL.Add('select talk_time from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and sip = '+#39+listOperators[i].sip_number+#39+' and answered=''1'' and hash is null limit 1');
+           SQL.Add('select talk_time from queue where date_time > '+#39+GetNowDateTime+#39+' and sip = '+#39+listOperators[i].sip_number+#39+' and answered=''1'' and hash is null limit 1');
            Active:=True;
 
            try
@@ -1256,7 +1256,7 @@ procedure TActiveSIP.updateTalkTimeAll;
         SQL.Clear;
 
         if notViewGoHome = False then begin
-         SQL.Add('select count(distinct(sip)) from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and sip <> ''-1'' order by sip asc');
+         SQL.Add('select count(distinct(sip)) from queue where date_time > '+#39+GetNowDateTime+#39+' and sip <> ''-1'' order by sip asc');
 
          Active:=True;
          if Fields[0].Value<>null then count_sip:=Fields[0].Value;
@@ -1281,7 +1281,7 @@ procedure TActiveSIP.updateTalkTimeAll;
               else operatorsGoHomeNow:=operatorsGoHomeNow+','+#39+getUserSIP(StrToInt(operatorsGoHome[i]))+#39;
             end;
 
-            SQL.Add('select count(distinct(sip)) from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and sip not IN ('+operatorsGoHomeNow+') and sip <> ''-1'' order by sip asc');
+            SQL.Add('select count(distinct(sip)) from queue where date_time > '+#39+GetNowDateTime+#39+' and sip not IN ('+operatorsGoHomeNow+') and sip <> ''-1'' order by sip asc');
             if operatorsGoHome<>nil then FreeAndNil(operatorsGoHome);
 
             Active:=True;

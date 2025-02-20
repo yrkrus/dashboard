@@ -26,6 +26,10 @@ type
     STInfoVersionREPORT: TStaticText;
     Panel3: TPanel;
     REHistory_REPORT: TRichEdit;
+    sheetSMS: TTabSheet;
+    Panel4: TPanel;
+    REHistory_SMS: TRichEdit;
+    STInfoVersionSMS: TStaticText;
     procedure FormShow(Sender: TObject);
     procedure imgAboutClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -51,10 +55,15 @@ uses
 {$R *.dfm}
 
 procedure TFormAbout.ShowVersion;
+var
+ i:Integer;
+ prog:enumProrgamm;
 begin
-  showVersionAbout(eGUI);
-  showVersionAbout(eCHAT);
-  showVersionAbout(eREPORT);
+  for i:=Ord(Low(enumProrgamm)) to Ord(High(enumProrgamm)) do
+  begin
+    prog:=enumProrgamm(i);
+    showVersionAbout(prog);
+  end;
 end;
 
 procedure TFormAbout.FormClose(Sender: TObject; var Action: TCloseAction);

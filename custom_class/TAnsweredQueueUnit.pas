@@ -516,7 +516,7 @@ begin
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
-      SQL.Add('select id,number_queue,waiting_time,talk_time from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and answered = ''1'' and sip <>''-1'' and hash is not null');
+      SQL.Add('select id,number_queue,waiting_time,talk_time from queue where date_time > '+#39+GetNowDateTime+#39+' and answered = ''1'' and sip <>''-1'' and hash is not null');
       Active:=True;
 
       for i:=0 to countAnswered-1 do begin

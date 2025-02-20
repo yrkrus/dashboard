@@ -124,7 +124,7 @@ object HomeForm: THomeForm
     Font.Color = clGreen
     Font.Height = -13
     Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
+    Font.Style = []
     ParentFont = False
     Layout = tlCenter
     WordWrap = True
@@ -142,7 +142,7 @@ object HomeForm: THomeForm
     Font.Color = clMaroon
     Font.Height = -13
     Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
+    Font.Style = []
     ParentFont = False
     ParentShowHint = False
     ShowHint = True
@@ -162,7 +162,7 @@ object HomeForm: THomeForm
     Font.Color = clWindowText
     Font.Height = -13
     Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
+    Font.Style = []
     ParentFont = False
     ParentShowHint = False
     ShowHint = True
@@ -198,7 +198,7 @@ object HomeForm: THomeForm
     Font.Color = clWindowText
     Font.Height = -13
     Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
+    Font.Style = []
     ParentFont = False
     Layout = tlCenter
     WordWrap = True
@@ -299,7 +299,7 @@ object HomeForm: THomeForm
     Font.Color = clMaroon
     Font.Height = -13
     Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
+    Font.Style = []
     ParentFont = False
     ParentShowHint = False
     ShowHint = True
@@ -318,7 +318,7 @@ object HomeForm: THomeForm
     Font.Color = clGreen
     Font.Height = -13
     Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
+    Font.Style = []
     ParentFont = False
     Layout = tlCenter
   end
@@ -334,7 +334,7 @@ object HomeForm: THomeForm
     Font.Color = clWindowText
     Font.Height = -13
     Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
+    Font.Style = []
     ParentFont = False
     Layout = tlCenter
   end
@@ -350,7 +350,7 @@ object HomeForm: THomeForm
     Font.Color = clWindowText
     Font.Height = -13
     Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
+    Font.Style = []
     ParentFont = False
     Layout = tlCenter
   end
@@ -366,7 +366,7 @@ object HomeForm: THomeForm
     Font.Color = clWindowText
     Font.Height = -13
     Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
+    Font.Style = []
     ParentFont = False
     Layout = tlCenter
   end
@@ -382,7 +382,7 @@ object HomeForm: THomeForm
     Font.Color = clWindowText
     Font.Height = -13
     Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
+    Font.Style = []
     ParentFont = False
     Layout = tlCenter
   end
@@ -398,7 +398,7 @@ object HomeForm: THomeForm
     Font.Color = clGreen
     Font.Height = -13
     Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
+    Font.Style = []
     ParentFont = False
     Layout = tlCenter
   end
@@ -415,7 +415,7 @@ object HomeForm: THomeForm
     Font.Color = clMaroon
     Font.Height = -13
     Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
+    Font.Style = []
     ParentFont = False
     ParentShowHint = False
     ShowHint = True
@@ -6108,7 +6108,6 @@ object HomeForm: THomeForm
       ParentFont = False
       TabOrder = 0
       ViewStyle = vsReport
-      ExplicitHeight = 238
     end
     object STlist_QUEUE_NO_Rings: TStaticText
       Left = 0
@@ -6161,7 +6160,7 @@ object HomeForm: THomeForm
         Text = 'developer by     '
         Width = 150
       end>
-    ExplicitTop = 797
+    ExplicitTop = 801
   end
   object START_THREAD_ALLl: TButton
     Left = 248
@@ -6175,13 +6174,13 @@ object HomeForm: THomeForm
   end
   object PanelShadowRight: TPanel
     Left = 1227
-    Top = 13
+    Top = 14
     Width = 153
     Height = 16
     Anchors = [akRight]
     BevelOuter = bvNone
     TabOrder = 3
-    ExplicitTop = 12
+    ExplicitTop = 13
     object imgRight: TImage
       Left = 136
       Top = 0
@@ -6450,7 +6449,7 @@ object HomeForm: THomeForm
       ParentFont = False
       TabOrder = 2
       ViewStyle = vsReport
-      ExplicitHeight = 531
+      OnCustomDrawItem = ListViewSIPCustomDrawItem
     end
     object ST_SL: TStaticText
       Left = 888
@@ -6473,7 +6472,6 @@ object HomeForm: THomeForm
       ShowHint = True
       TabOrder = 0
       Transparent = False
-      ExplicitTop = 3
     end
     object STlist_ACTIVESIP_NO_Rings: TStaticText
       Left = 0
@@ -6494,7 +6492,7 @@ object HomeForm: THomeForm
     end
     object ST_operatorsHideCount: TStaticText
       Left = 33
-      Top = 6
+      Top = 5
       Width = 102
       Height = 15
       Hint = #1050#1086#1083'-'#1074#1086' '#1086#1087#1077#1088#1072#1090#1086#1088#1086#1074' '#1082#1086#1090#1086#1088#1099#1077' '#1085#1077' '#1086#1090#1086#1073#1088#1072#1078#1072#1102#1090#1089#1103' '#1085#1072' '#1092#1086#1088#1084#1077
@@ -6514,7 +6512,6 @@ object HomeForm: THomeForm
       TabOrder = 1
       Transparent = False
       Visible = False
-      ExplicitTop = 5
     end
   end
   object PanelStatus: TPanel
@@ -7272,7 +7269,7 @@ object HomeForm: THomeForm
     Font.Color = clGreen
     Font.Height = -13
     Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
+    Font.Style = []
     ParentBiDiMode = False
     ParentColor = False
     ParentFont = False
@@ -7284,7 +7281,7 @@ object HomeForm: THomeForm
     Left = 35
     Top = 801
     Width = 70
-    Height = 16
+    Height = 20
     BiDiMode = bdLeftToRight
     Caption = #1085#1072' '#1079#1072#1074#1090#1088#1072
     Color = clWindow
@@ -7299,12 +7296,13 @@ object HomeForm: THomeForm
     ParentShowHint = False
     ShowHint = False
     TabOrder = 11
+    Visible = False
   end
   object st_Forecast_AfterTomorrow: TStaticText
     Left = 195
     Top = 801
     Width = 110
-    Height = 16
+    Height = 20
     BiDiMode = bdLeftToRight
     Caption = #1085#1072' '#1087#1086#1089#1083#1077#1079#1072#1074#1090#1088#1072
     Color = clWindow
@@ -7319,6 +7317,7 @@ object HomeForm: THomeForm
     ParentShowHint = False
     ShowHint = False
     TabOrder = 12
+    Visible = False
   end
   object Timer_Thread_Start: TTimer
     Enabled = False
@@ -7841,7 +7840,7 @@ object HomeForm: THomeForm
         000000499BA4A4A452000000000007FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF07
         5200000000000000000000009BFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
         FF08F75B49000000529B07F6FFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-      Caption = #1051#1086#1082#1072#1083#1100#1085#1099#1081' '#1095#1072#1090
+      Caption = #1063#1072#1090
       OnClick = menu_ChatClick
     end
     object menu_SMS: TMenuItem
@@ -7912,7 +7911,7 @@ object HomeForm: THomeForm
         FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
         FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
         FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-      Caption = 'SMS '#1088#1072#1089#1089#1099#1083#1082#1072
+      Caption = 'SMS'
       OnClick = menu_SMSClick
     end
     object menu_ChangePassword: TMenuItem
@@ -7983,7 +7982,7 @@ object HomeForm: THomeForm
         FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
         FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
         FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-      Caption = #1057#1084#1077#1085#1080#1090#1100' '#1089#1074#1086#1081' '#1087#1072#1088#1086#1083#1100
+      Caption = #1057#1084#1077#1085#1072' '#1089#1074#1086#1077#1075#1086' '#1087#1072#1088#1086#1083#1103
       OnClick = menu_ChangePasswordClick
     end
     object menu_About: TMenuItem

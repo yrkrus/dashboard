@@ -16,6 +16,9 @@ type
     procedure btnLoadFileClick(Sender: TObject);
   private
     { Private declarations }
+
+  procedure CreateLogAddColoredLine(var p_Log:TRichEdit; InMessage:string; InColor:TColor);
+
   procedure ShowError;
   function SaveFile(var _errorDescription:string):Boolean;
 
@@ -61,6 +64,23 @@ begin
   Screen.Cursor:=crDefault;
 end;
 
+
+procedure TFormNotSendingSMSError.CreateLogAddColoredLine(var p_Log:TRichEdit; InMessage:string; InColor:TColor);
+begin
+  with p_Log do
+  begin
+    SelStart:= Length(Text);
+    SelAttributes.Color:=InColor;
+    SelAttributes.Size:=10;
+    SelAttributes.Name:='Tahoma';
+    Lines.Add(InMessage);
+
+    Perform(EM_LINESCROLL,0,Lines.Count-1);
+    SetFocus;
+  end;
+end;
+
+
 procedure TFormNotSendingSMSError.ShowError;
 var
  i:Integer;
@@ -69,11 +89,11 @@ begin
   re_LogError.Clear;
 
   for i:=0 to SharedPacientsListNotSending.Count-1 do begin
+
     CreateLogAddColoredLine(re_LogError,SharedPacientsListNotSending.GetErrorDescriptions(i),clRed);
     CreateLogAddColoredLine(re_LogError,SharedPacientsListNotSending.ShowPacientInfo(i),clBlack);
   end;
 end;
-
 
 // сохранение файла
 function TFormNotSendingSMSError.SaveFile(var _errorDescription:string):Boolean;

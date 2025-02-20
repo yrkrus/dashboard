@@ -217,6 +217,7 @@ begin
      Add('taskkill /F /IM '+DASHBOARD_EXE);
      Add('taskkill /F /IM '+CHAT_EXE);
      Add('taskkill /F /IM '+REPORT_EXE);
+     Add('taskkill /F /IM '+SMS_EXE);
      Add('::');
 
      // закрываем обновлялку

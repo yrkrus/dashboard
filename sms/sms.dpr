@@ -11,7 +11,9 @@ uses
   TPacientsListUnit in '..\custom_class\TPacientsListUnit.pas',
   FormNotSendingSMSErrorUnit in 'FormNotSendingSMSErrorUnit.pas' {FormNotSendingSMSError},
   FormEditTemplateUnit in 'FormEditTemplateUnit.pas' {FormEditTemplate},
-  TLogFileUnit in '..\custom_class\TLogFileUnit.pas';
+  TLogFileUnit in '..\custom_class\TLogFileUnit.pas',
+  TAddressClinicPopMenuUnit in '..\custom_class\TAddressClinicPopMenuUnit.pas',
+  TThreadSendSMSUnit in '..\custom_class\TThreadSendSMSUnit.pas';
 
 {$R *.res}
 

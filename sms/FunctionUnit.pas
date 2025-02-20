@@ -1,124 +1,60 @@
 unit FunctionUnit;
 
-
-
 interface
 
 uses
 FormHomeUnit,
- Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,System.Win.ComObj,System.StrUtils,math, IdHTTP,
-  IdSSL,IdIOHandlerStack, IdSSLOpenSSL, System.DateUtils,System.IniFiles,
-  Winapi.WinSock,  Vcl.ComCtrls, GlobalVariables, Vcl.Grids, Data.Win.ADODB, Data.DB, IdException,
-  TPacientsListUnit;
+ Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+ System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
+ Vcl.StdCtrls,System.Win.ComObj,System.StrUtils,math, IdHTTP,
+ IdSSL,IdIOHandlerStack, IdSSLOpenSSL, System.DateUtils,System.IniFiles,
+ Winapi.WinSock,  Vcl.ComCtrls, GlobalVariables, Vcl.Grids, Data.Win.ADODB,
+ Data.DB, IdException, TPacientsListUnit, Vcl.Menus, System.SyncObjs;
 
- ////////////////////////// Создание динамических потоков //////////////////////////
-
- type
-  TMyThread = class(TThread)
-  private
-   m_RangeStart:Integer;
-   m_RangeStop:Integer;
-
-    procedure ShowLog; // Процедура для обновления RELog в FormHome
-  protected
-    procedure Execute; override;
-  public
-    constructor Create(RangeStart,RangeStop:Integer);
-  end;
-
- ////////////////////////// Создание динамических потоков //////////////////////////
 
 function GetSMS(inPacientPhone:string):string; overload;                                      // отправка смс v2
-
-function SettingsLoadString(INFILE,INSection,INValue,INValueDefault:string):string;           // загрузка параметров
-procedure SettingsSaveString(INFILE,INSection,INValue,INValueDefault:string);                 // сохранение параметров
-function GetTimeDiff(InCurrentSec:Integer):string;                                            // время высчитывание примерного времени
 function GetSMSStatusID(inPacientPhone:string):string;                                        // проверка смс статуса
-//function GetExistSaveMessage(InMEssage:string):Boolean;                                       // проверка есть ли уже ранее сохраненное сообщение
-
 procedure ParsingResultStatusSMS(ResultServer,inPacientPhone:string);                         // парсинг и создание формы инфо статуса сообщения
 function GetMsgCount(ResultServer,inPacientPhone:string):Integer;                             // кол-во смс которые были отправлены
 procedure ShowInfoMessage(arrMsg: array of TSMSMessage; arrCount:Integer);                    // отображение инфо об отправке
+
 
 
 // проверенные
 function LoadData(InFileExcel:string; var _errorDescription:string;
                   var p_Status:TStaticText;
                   var p_CountSending:TLabel;
-                  var p_CountNotSending:TLabel):Boolean;                                     // загрузка excel
+                  var p_CountNotSending:TLabel):Boolean;                                      // загрузка excel
 procedure OptionsStyle(InOptionsType:enumSendingOptions);                                     // выбор типа отправляемого смс
-function isCorrectNumberPhone(InNumberPhone:string; var _errorDescription:string):Boolean;      // проверка корректности номера телефона при вводе
+function isCorrectNumberPhone(InNumberPhone:string; var _errorDescription:string):Boolean;    // проверка корректности номера телефона при вводе
 function CheckParamsBeforeSending(InOptionsType:enumSendingOptions; var _errorDescription:string):Boolean; // проверка данных перед отправкой
-function CreateSMSMessage(var InMessage:TRichEdit):string;                                             // правка сообщения чтобы оно было в 1 строку
+function CreateSMSMessage(var InMessage:TRichEdit):string;                                    // правка сообщения чтобы оно было в 1 строку
 function SendingMessage(InOptionsType:enumSendingOptions; var _errorDescription:string):Boolean; // отправка сообщения
-procedure ClearParamsForm(InOptionsType:enumSendingOptions);                                     // очистка полей формы
-procedure ShowOrHideLog(InOptions:enumFormShowingLog); // ототбражать или скрывать лог
-function isExistExcel(var _errorDescriptions:string):Boolean;                                  // проверка установлен ли excel
-procedure CreateCopyright;                                                 // создание Copyright
+procedure ClearParamsForm(InOptionsType:enumSendingOptions);                                  // очистка полей формы
+procedure ShowOrHideLog(InOptions:enumFormShowingLog);                                        // ототбражать или скрывать лог
+function isExistExcel(var _errorDescriptions:string):Boolean;                                 // проверка установлен ли excel
+procedure CreateCopyright;                                                                    // создание Copyright
 procedure ShowSaveTemplateMessage(var p_PageControl:TPageControl;
                                   var p_ListView:TListView;
                                   InTemplate:enumTemplateMessage;
-                                  var p_NoMessageInfo:TStaticText);             // очистка шаблонов сообщений
-procedure ClearListView(var p_ListView:TListView);                                      // очистка StringGrid
-procedure SaveMyTemplateMesaage(InMessage:string; IsGlobal:Boolean = False);                // запись в шалблоны отправленного сообщения
-function isExistMyTemplateMessage(InMessage:string; isGlobal:Boolean = False):Boolean;                                  // есть ли такое сообщение уже в шаблонах сообщений
-function isValidPacientFields(var Pacient:TListPacients):Boolean;                 // проверка на корректность записи из excel файла
-procedure ClearTabs(InOptionsType:enumSendingOptions);                            // очистка окон после отправки
-procedure CreateLogAddColoredLine(var p_ParentLot:TRichEdit; AText:string; AColor:TColor);  // отображение лога в цвете
-procedure AddMessageFromTemplate(InMessage:string);                             // добавление сообщения на отправку из шаблонов сообщений
-function StrToBoolean(InValue:string):Boolean;        // string -> boolean
-procedure SaveMyTemplateMessage(id:Integer; InNewMessage:string; IsDelete:Boolean = False);  // редактирование сообщения в сохраненных шаблонов
-procedure SendingRemember;                                                            // отправка рассылки sms о напоминании приема
-
-procedure CreateThreadSendind(CountThread,InStartSendindID,InStopSendingID:Integer);       // создание динамических потоков
-procedure SignSMS;                                                                         // есть ли возможность вставлять подпись в СМС сообщение
+                                  var p_NoMessageInfo:TStaticText);                           // очистка шаблонов сообщений
+procedure ClearListView(var p_ListView:TListView);                                            // очистка StringGrid
+procedure SaveMyTemplateMesaage(InMessage:string; IsGlobal:Boolean = False);                  // запись в шалблоны отправленного сообщения
+function isExistMyTemplateMessage(InMessage:string; isGlobal:Boolean = False):Boolean;        // есть ли такое сообщение уже в шаблонах сообщений
+function isValidPacientFields(var Pacient:TListPacients):Boolean;                             // проверка на корректность записи из excel файла
+procedure ClearTabs(InOptionsType:enumSendingOptions);                                        // очистка окон после отправки
+procedure AddMessageFromTemplate(InMessage:string);                                           // добавление сообщения на отправку из шаблонов сообщений
+procedure SaveMyTemplateMessage(id:Integer; InNewMessage:string; IsDelete:Boolean = False);   // редактирование сообщения в сохраненных шаблонов
+procedure SendingRemember(isShowLog:Boolean);                                                 // отправка рассылки sms о напоминании приема
+procedure SignSMS;                                                                            // есть ли возможность вставлять подпись в СМС сообщение
+procedure CreatePopMenuAddressClinic(var p_PopMenu:TPopupMenu; var p_Message:TRichEdit);      // создание списка с адресами клиник для быстрого доступа к ним
 
 
 implementation
 
 uses
-  FormMyTemplateUnit, TSendSMSUint;
+  FormMyTemplateUnit, TSendSMSUint, TAddressClinicPopMenuUnit, TThreadSendSMSUnit;
 
-
- ////////////////////////// Создание динамических потоков //////////////////////////
-
-constructor TMyThread.Create(RangeStart,RangeStop:Integer);
-begin
-  inherited Create(True);   // Создаем поток в приостановленном состоянии
-  m_RangeStart:=RangeStart;
-  m_RangeStop:=RangeStop;
-
-  FreeOnTerminate := True;  // Освобождаем поток после завершения
-end;
-
-
-procedure TMyThread.Execute;
-begin
-  //Sleep(500);
-  Synchronize(ShowLog); // Обновляем RichEdit в главном потоке
-
- // Здесь вызываем функцию SendingRemember
- // SendingRemember;
-
-end;
-
-
-procedure TMyThread.ShowLog;
-begin
-
- SharedMainLog.Save('SendingRemember executed by thread: ' + IntToStr(GetCurrentThreadId));
-
- CreateLogAddColoredLine(FormHome.RELog,'SendingRemember executed by thread: ' + IntToStr(GetCurrentThreadId),clBlack);
-
-end;
-
-procedure CreateThreadSendind(CountThread,InStartSendindID,InStopSendingID:Integer);
-begin
-  TMyThread.Create(InStartSendindID,InStopSendingID).Start; // Создаем и запускаем поток
-end;
-
-////////////////////////// Создание динамических потоков //////////////////////////
 
 
 // проверка корректности номера телефона при вводе
@@ -211,6 +147,7 @@ var
  SMSMessage:string;
  phone:string;
  addSign:Boolean;
+ showLog:Boolean;
 begin
   Result:=False;
   _errorDescription:='';
@@ -248,7 +185,8 @@ begin
       end;
 
       // отправляем смс  (в потоке = MAX_COUNT_THREAD_SENDIND)
-      SendingRemember;
+      showLog:=FormHome.chkboxShowLog.Checked;
+      SendingRemember(showLog);
     end;
   end;
 
@@ -319,16 +257,19 @@ begin
       options_Sending: begin
        btnSendSMS.Caption:=' &Запустить SMS рассылку';
 
-       edtExcelSMS.Text:='';                  // excel файл
+       lblNameExcelFile.Caption:=EXCEL_FILE_NOT_LOADED;   // excel файл
+       lblNameExcelFile.Hint:='';
+       lblNameExcelFile.Font.Color:=clRed;
+
        lblCountSendingSMS.Caption:='null';    // кол-во смс на отправку
        lblCountNotSendingSMS.Caption:='null';    // кол-во смс с ошибкой на отправку
        st_ShowNotSendingSMS.Visible:=False;   // показ списка с данными которые не могут быть отправены в смс
-       //RELog.Clear;                           // очистка лога отправки
+
 
        st_ShowInfoAddAddressClinic.Visible:=False; // справка как добавить адрес клиники
 
        ProgressStatusText.Caption:='Статус : Файл не загружен в память';
-       ProgressBar.Progress:=0;               // прогресс бар
+
 
        //chkboxShowLog.Checked:=False;          // показывать лог отправки
 
@@ -341,56 +282,6 @@ begin
 end;
 
 
-// сохранение параметров
-procedure SettingsSaveString(INFILE,INSection,INValue,INValueDefault:string);
-var
-SettingsConf:TIniFile;
-begin
- try
-   SettingsConf:=TIniFile.Create(FOLDERPATH+'/'+INFILE);
-   SettingsConf.WriteString(INSection,INValue,INValueDefault);
- finally
-   if SettingsConf<>nil then FreeAndNil(SettingsConf);
- end;
-
-end;
-
-// загрузка параметров
-function SettingsLoadString(INFILE,INSection,INValue,INValueDefault:string):string;
-var
-  SettingsConf: TIniFile;
-begin
-   SettingsConf:=TIniFile.Create(FOLDERPATH+'/'+INFILE);
-    with SettingsConf do begin
-       Result:=ReadString(INSection,INValue,INValueDefault);
-       Free;
-    end;
-end;
-
-
-procedure CreateLogAddColoredLine(var p_ParentLot:TRichEdit; AText:string; AColor:TColor);
- var
- Error:Boolean;
-begin
-  with p_ParentLot do
-  begin
-    SelStart:= Length(Text);
-    SelAttributes.Color:=AColor;
-    SelAttributes.Size:=10;
-    SelAttributes.Name:='Tahoma';
-    //Lines.Add(DateTimeToStr(Now)+' '+AText);
-    Lines.Add(AText);
-
-    Perform(EM_LINESCROLL,0,Lines.Count-1);
-    SetFocus;
-  end;
-
-  // есть или нет ошибки
-//  if AColor=clRed then Log(AText,True)
-//  else Log(AText,False);
-end;
-
-
 // добавление сообщения на отправку из шаблонов сообщений
 procedure AddMessageFromTemplate(InMessage:string);
 begin
@@ -400,15 +291,6 @@ begin
   end;
 end;
 
-// string -> boolean
-function StrToBoolean(InValue:string):Boolean;
-var
- tmp:string;
-begin
-  Result:=False;
-  tmp:=AnsiLowerCase(InValue);
-  if tmp = 'true' then Result:=True;
-end;
 
 // редактирование сообщения в сохраненных шаблонов
 procedure SaveMyTemplateMessage(id:Integer; InNewMessage:string; IsDelete:Boolean = False);
@@ -460,64 +342,86 @@ begin
 end;
 
 // отправка рассылки sms о напоминании приема
-procedure SendingRemember;
-const
- cADDSIGN:Boolean = True;  // по умолчанию добавляем подпись к SMS
+procedure SendingRemember(isShowLog:Boolean);
 var
- SMS:TSendSMS;
- SendingMessage:string;
  i:Integer;
  error:string;
- startSendind, stopSending:Integer;
- countSMS:Integer;
- countSMSLast:Integer;  // кол-во смс которые не вошли в пул, последнее значение которое в последний поток передастся
- CurrentCountSending:Integer; // текущее кол-во записей на отправку
+ StartValue, EndValue: Integer;
+ BaseValue: Integer;
+ Remainder: Integer;
 
+ Threads: array of TThreadSendSMS;
+
+ isSending: array of Boolean;
+ sending_end:Boolean;      // закончилась ли отправка
 begin
 
-    CurrentCountSending:=SharedPacientsList.Count;
-    countSMS:=Round(CurrentCountSending / MAX_COUNT_THREAD_SENDIND);
-    countSMSLast:=CurrentCountSending - (countSMS*MAX_COUNT_THREAD_SENDIND);
+ // Вычисляем базовое значение для каждого потока
+  BaseValue := SharedPacientsList.Count div MAX_COUNT_THREAD_SENDIND;
+  Remainder := SharedPacientsList.Count mod MAX_COUNT_THREAD_SENDIND;
 
-   // выясняем по сколько смс нужно в потоке отправить
-   for i:=0 to MAX_COUNT_THREAD_SENDIND do begin
-     startSendind:=i*countSMS;
+  SetLength(Threads, MAX_COUNT_THREAD_SENDIND);
+  SetLength(isSending,MAX_COUNT_THREAD_SENDIND);
 
-     if i=0 then stopSending:=countSMS-1
-     else
-     begin
-      stopSending:=stopSending+stopSending;
-     end;
+  // Перебираем потоки
+  StartValue := 0;
+  for i := 0 to MAX_COUNT_THREAD_SENDIND - 1 do
+  begin
+    // Определяем конечное значение для потока
+    EndValue := StartValue + BaseValue - 1;
 
-     //CreateThreadSendind(1,startSendind,stopSending);
+    // Если это последний поток, добавляем остаток
+    if i = MAX_COUNT_THREAD_SENDIND - 1 then EndValue:= EndValue + Remainder;
+
+
+    // Создаем поток
+    Threads[i]:= TThreadSendSMS.Create(i + 1, StartValue, EndValue, SharedPacientsList, FormHome.RELog,isShowLog);
+    Threads[i].Start;
+    isSending[i]:=False;
+
+    // Обновляем начальное значение для следующего потока
+    StartValue:= EndValue + 1;
+  end;
+
+  // Ожидаем завершения всех потоков и освобождаем их
+  try
+    while not sending_end do begin
+      Application.ProcessMessages;
+      for i:=0 to MAX_COUNT_THREAD_SENDIND - 1 do  begin
+        if Assigned(Threads[i]) then begin
+          try
+           if Threads[i].FThreadFinished.WaitFor(0) = wrSignaled then
+            begin
+              Threads[i].Free; // Освобождаем поток только после его завершения
+              isSending[i]:=True;
+            end;
+           except on E: EIdException do
+              begin
+                 ShowMessage(e.ClassName+': '+E.Message);
+              end;
+           end;
+        end;
+      end;
+
+      // Здесь добавляем проверку статуса потоков
+      sending_end := True; // Предположим, что все потоки завершены
+      for i := 0 to MAX_COUNT_THREAD_SENDIND - 1 do
+      begin
+        if Assigned(Threads[i]) and not isSending[i] then
+        begin
+          sending_end := False; // Если хотя бы один поток еще работает
+          Break;
+        end;
+      end;
+
+      Sleep(1000);
+    end;
+  except on E: EIdException do
+      begin
+         ShowMessage(e.ClassName+': '+E.Message);
+      end;
    end;
 
-
-  //
-
-
-
-   SMS:=TSendSMS.Create(DEBUG);
-   if not SMS.isExistAuth then Exit;
-
-   for i:=0 to SharedPacientsList.Count-1 do begin
-     SendingMessage:=SharedPacientsList.CreateMessage(i, REMEMBER_MESSAGE);
-
-     if not SMS.SendSMS(SendingMessage,SharedPacientsList.GetPhone(i),error, cADDSIGN) then
-     begin
-       CreateLogAddColoredLine(FormHome.RELog,'Не удалось отправить СМС на номер ('+SharedPacientsList.GetPhone(i)+') '+error, clRed);
-       SharedMainLog.Save('Не удалось отправить SMS на номер ('+SharedPacientsList.GetPhone(i)+') : '+SendingMessage+'. ОШИБКА : '+error, True);
-     end
-     else begin
-       CreateLogAddColoredLine(FormHome.RELog,'Отправлено СМС на номер ('+SharedPacientsList.GetPhone(i)+') : '+SendingMessage, clGreen);
-       SharedMainLog.Save('Отправлено SMS на номер ('+SharedPacientsList.GetPhone(i)+') : '+SendingMessage);
-     end;
-
-     if i=2 then begin
-       error:='';
-
-     end;
-   end;
 
 end;
 
@@ -635,7 +539,9 @@ begin
                              '12.F_SHORTADDR';
         p_Status.Caption:='Статус : Ошибка, некорректный формат файла!';
         Application.ProcessMessages;
-        edtExcelSMS.Text:='';
+        lblNameExcelFile.Caption:=EXCEL_FILE_NOT_LOADED;
+        lblNameExcelFile.Hint:='';
+        lblNameExcelFile.Font.Color:=clRed;
 
         SharedPacientsList.Clear;
         SharedPacientsListNotSending.Clear;
@@ -729,7 +635,7 @@ begin
 
  //if global_DEBUG then inPacientPhone:='89275052333';
 
- MessageSMS:=SettingsLoadString(cAUTHconf,'core','msg_perenos','');
+ //MessageSMS:=SettingsLoadString(cAUTHconf,'core','msg_perenos','');
 
   // формируем ссылку на отправку
   begin
@@ -915,7 +821,7 @@ begin
  // парсим для последующего создания человеческой формы
  while(AnsiPos(MSGSTOP,ResultServer))<> 0 do begin
 
-   FormHome.ProgressBar.Progress:=100-(Round(100*Length(ResultServer)/oldLenghtResult));
+   //FormHome.ProgressBar.Progress:=100-(Round(100*Length(ResultServer)/oldLenghtResult));
    Application.ProcessMessages;
 
    tmp:=ResultServer;
@@ -977,7 +883,7 @@ begin
 
  end;
 
-  FormHome.ProgressBar.Progress:=0;
+  //FormHome.ProgressBar.Progress:=0;
 
   //отображаем найденное
   if numberPhoneCount<>0 then ShowInfoMessage(listMsg,numberPhoneCount);
@@ -1132,73 +1038,6 @@ procedure ClearTabs(InOptionsType:enumSendingOptions);
 begin
    OptionsStyle(InOptionsType);
 end;
-
-
-// время высчитывание примерного времени
-function GetTimeDiff(InCurrentSec:Integer):string;
-var
- WorkingHours:string;
- days,hour,min,sec:Integer;
- hourtmp,mintmp,sectmp:string;
- CurrentSec:Integer;
-begin
-  // InType=0 - отображать формат Xд XXчас XXмин XXсек
-  // InType=1 - отображать формат 1д 00:00:00
-
-   CurrentSec:=InCurrentSec;
-
-  days:=Trunc(CurrentSec/(24*3600));
-  dec(CurrentSec,days * 24*3600);
-
-  hour:=Trunc(CurrentSec/3600);
-  hourtmp:=IntToStr(hour);
-  if Length(hourtmp)=1 then hourtmp:='0'+hourtmp;
-  dec(CurrentSec,hour * 3600);
-
-
-  min:=Trunc(CurrentSec/60);
-  mintmp:=IntToStr(min);
-  if Length(mintmp)=1 then mintmp:='0'+mintmp;
-  dec(CurrentSec,min * 60);
-
-  sec:=CurrentSec;
-  sectmp:=IntToStr(sec);
-  if Length(sectmp)=1 then sectmp:='0'+sectmp;
-
-  if days<>0 then WorkingHours:=IntToStr(days)+' дн '+IntToStr(hour)+' час '+IntToStr(min)+' мин '+IntToStr(sec)+' сек'
-  else
-  begin
-   if hour<>0 then WorkingHours:=IntToStr(hour)+' час '+IntToStr(min)+' мин '+IntToStr(sec)+' сек'
-   else
-   begin
-    if min<>0 then WorkingHours:=IntToStr(min)+' мин '+IntToStr(sec)+' сек'
-    else
-    begin
-     WorkingHours:=IntToStr(sec)+' сек';
-     if WorkingHours='0 сек' then WorkingHours:='0.5 сек';
-    end;
-   end;
-  end;
-
-  result:=WorkingHours;
-end;
-
-
-
-//// проверка есть ли уже ранее сохраненное сообщение
-//function GetExistSaveMessage(InMEssage:string):Boolean;
-//var
-// i:Integer;
-// isExist:Boolean;
-//begin
-//   isExist:=False;
-//
-//   for i:=0 to cMAXCOUNTMESSAGEOLD-1 do begin
-//     if InMEssage=SettingsLoadString(cAUTHconf,'msg','msg'+IntToStr(i),'') then isExist:=True;
-//   end;
-//
-//   result:=isExist;
-//end;
 
 
 // проверка установлен ли excel
@@ -1489,5 +1328,14 @@ begin
    end;
   end;
 end;
+
+// создание списка с адресами клиник для быстрого доступа к ним
+procedure CreatePopMenuAddressClinic(var p_PopMenu:TPopupMenu; var p_Message:TRichEdit);
+ var
+  address_clinic:TAddressClinicPopMenu;
+begin
+  address_clinic:=TAddressClinicPopMenu.Create(p_PopMenu, p_Message);
+end;
+
 
 end.

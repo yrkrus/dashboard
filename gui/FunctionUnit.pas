@@ -50,7 +50,7 @@ function GetUserRoleSTR(InUserID:Integer):string;                               
 function correctTimeQueue(InQueue:enumQueueCurrent;InTime:string):string;            // правильноt отображение времени в очереди
 function GetUserRePassword(InUserID:Integer):Boolean;                                // необходимо ли поменять пароль при входе
 function UpdateUserPassword(InUserID,InUserNewPassword:Integer;
-                                  var _errorDescription:string):boolean;             // обновление пароля пользователя
+                            var _errorDescription:string):boolean;                   // обновление пароля пользователя
 function getLocalIP: string;                                                         // функция получения локального IP
 procedure CreateCurrentActiveSession(InUserID:Integer);                              // заведение активной сессии
 function isExistCurrentActiveSession(InUserID:Integer):Boolean;                      // сущуствует ли акивная сессия
@@ -92,9 +92,9 @@ function EnableUser(InUserID:Integer):string;                                   
 function GetOperatorAccessDashboard(InSip:string):Boolean;                           // нахождение статуса доступен ли дашбор орератору или нет
 function isExistSettingUsers(InUserID:Integer):Boolean;                              // проверка существу.т ли индивидуальные настрокий пользователч true - существуют настроки
 procedure saveIndividualSettingUser(InUserID:Integer; settings:enumSettingUsers;
-                                    status:enumSettingUsersStatus);                     // сохранение индивидульных настроек пользователя
+                                    status:enumParamStatus);                     // сохранение индивидульных настроек пользователя
 function getStatusIndividualSettingsUser(InUserID:Integer;
-                                        settings:enumSettingUsers):enumSettingUsersStatus; // получение данных об индивидуальных настройках пользователя
+                                        settings:enumSettingUsers):enumParamStatus; // получение данных об индивидуальных настройках пользователя
 procedure LoadIndividualSettingUser(InUserId:Integer);                               // прогрузка индивидуальных настроек пользователя
 function getIsExitOperatorCurrentGoHome(InCurrentRole:enumRole;InUserID:Integer):Boolean; // проверка вдруг оператор не правильно выходит, нужно выходить через команду "домой"
 function getLastStatusOperator(InUserId:Integer):enumLogging;                           // текущий стаус оператора из таблицы logging
@@ -131,6 +131,8 @@ procedure ShowFormErrorMessage(const _errorMessage:string;
                                var p_Log:TLoggingFile;
                                const __METHOD_NAME__:string);                        // отрображение окна с ошибкой
 function GetNeedReconnectBase(const _errorMessage:string):enumNeedReconnectBD;       // проверка нужно ли перезапускать reconnect к базе
+function GetNowDateTimeDec(DecMinutes:Integer):string;                               // текущее время начала дня (минус минуты)
+function GetNowDateTime:string;                                                      // текущее время начала дня
 
 
 
@@ -594,11 +596,11 @@ begin
 
     answered: begin    // отвеченные
       select_response:='select count(phone) from queue where number_queue = '+#39+TQueueToString(InQueueNumber)+#39
-                                                                             +' and answered = ''1'' and sip <>''-1'' and hash is not null and date_time > '+#39+GetCurrentStartDateTime+#39;
+                                                                             +' and answered = ''1'' and sip <>''-1'' and hash is not null and date_time > '+#39+GetNowDateTime+#39;
     end;
     no_answered: begin  // не отвеченные
       select_response:='select count(phone) from queue where number_queue = '+#39+TQueueToString(InQueueNumber)+#39
-                                                                             +' and fail = ''1'' and date_time > '+#39+GetCurrentStartDateTime+#39;
+                                                                             +' and fail = ''1'' and date_time > '+#39+GetNowDateTime+#39;
     end;
     no_answered_return: begin  // не отвеченные + вернувшиеся
      {select_response:='select ((select count(phone) from queue where number_queue ='+#39+IntToStr(InQueueNumber)+#39
@@ -610,15 +612,15 @@ begin
                                                                                     +GetCurrentStartDateTime+#39+'))) as temp'; }
 
       select_response:='select count(distinct(phone)) from queue where number_queue='+#39+TQueueToString(InQueueNumber)+#39+
-                                                                ' and fail =''1'' and date_time >'+#39+GetCurrentStartDateTime+#39+
+                                                                ' and fail =''1'' and date_time >'+#39+GetNowDateTime+#39+
                                                                 ' and phone not in (select phone from queue where number_queue ='+#39+TQueueToString(InQueueNumber)+#39+
-                                                                ' and answered  = ''1'' and date_time > +'#39+GetCurrentStartDateTime+#39+')';
+                                                                ' and answered  = ''1'' and date_time > +'#39+GetNowDateTime+#39+')';
 
 
     end;
     all_answered:begin  // всего отвеченных
       select_response:='select count(phone) from queue where number_queue = '+#39+TQueueToString(InQueueNumber)+#39
-                                                                             +' and date_time > '+#39+GetCurrentStartDateTime+#39;
+                                                                             +' and date_time > '+#39+GetNowDateTime+#39;
     end;
   end;
 
@@ -646,18 +648,18 @@ begin
  with HomeForm do begin
     case inStatDay of
       stat_answered:begin
-       select_response:='select count(phone) from queue where number_queue in ('+all_queue+') and answered = ''1'' and sip <>''-1'' and hash is not null and date_time > '+#39+GetCurrentStartDateTime+#39;
+       select_response:='select count(phone) from queue where number_queue in ('+all_queue+') and answered = ''1'' and sip <>''-1'' and hash is not null and date_time > '+#39+GetNowDateTime+#39;
        resultat:=IntToStr(GetSelectResponse(select_response));
       end;
       stat_no_answered:begin
-       select_response:='select count(phone) from queue where number_queue in ('+all_queue+') and fail = ''1'' and date_time > '+#39+GetCurrentStartDateTime+#39;
+       select_response:='select count(phone) from queue where number_queue in ('+all_queue+') and fail = ''1'' and date_time > '+#39+GetNowDateTime+#39;
        resultat:=IntToStr(GetSelectResponse(select_response));
       end;
       stat_no_answered_return:begin
        select_response:='select count(distinct(phone)) from queue where number_queue in ('+all_queue+')'+
-                                                                ' and fail =''1'' and date_time >'+#39+GetCurrentStartDateTime+#39+
+                                                                ' and fail =''1'' and date_time >'+#39+GetNowDateTime+#39+
                                                                 ' and phone not in (select phone from queue where number_queue in ('+all_queue+')'+
-                                                                ' and answered  = ''1'' and date_time > +'#39+GetCurrentStartDateTime+#39+')';
+                                                                ' and answered  = ''1'' and date_time > +'#39+GetNowDateTime+#39+')';
 
 
        resultat:=IntToStr(GetSelectResponse(select_response));
@@ -702,7 +704,7 @@ begin
         end;
       end;
       stat_summa:begin
-       select_response:='select count(phone) from queue where number_queue in ('+all_queue+') and date_time > '+#39+GetCurrentStartDateTime+#39;
+       select_response:='select count(phone) from queue where number_queue in ('+all_queue+') and date_time > '+#39+GetNowDateTime+#39;
        resultat:=IntToStr(GetSelectResponse(select_response));
       end;
     end;
@@ -931,7 +933,7 @@ begin
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
-      SQL.Add('select count(phone) from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and sip = '+#39+InSipOperator+#39+' and answered = ''1'' and fail = ''0'' and hash is not null' );
+      SQL.Add('select count(phone) from queue where date_time > '+#39+GetNowDateTime+#39+' and sip = '+#39+InSipOperator+#39+' and answered = ''1'' and fail = ''0'' and hash is not null' );
       Active:=True;
 
       if Fields[0].Value<>null then Result:=Fields[0].Value
@@ -966,7 +968,7 @@ begin
   with ado do begin
     ado.Connection:=serverConnect;
     SQL.Clear;
-    SQL.Add('select count(phone) from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and answered = ''1'' and fail = ''0'' and hash is not null' );
+    SQL.Add('select count(phone) from queue where date_time > '+#39+GetNowDateTime+#39+' and answered = ''1'' and fail = ''0'' and hash is not null' );
     Active:=True;
 
     if Fields[0].Value<>null then Result:=Fields[0].Value
@@ -1006,7 +1008,7 @@ begin
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
-      SQL.Add('select talk_time from queue where date_time > '+#39+GetCurrentStartDateTime+#39+' and sip = '+#39+InSipOperator+#39+' and answered = ''1'' and fail = ''0''and hash is not null' );
+      SQL.Add('select talk_time from queue where date_time > '+#39+GetNowDateTime+#39+' and sip = '+#39+InSipOperator+#39+' and answered = ''1'' and fail = ''0''and hash is not null' );
       Active:=True;
 
       for i:=0 to countTalk-1 do begin
@@ -1054,7 +1056,7 @@ begin
 
    with DM.ADOQuerySelect_Propushennie do begin
       SQL.Clear;
-      SQL.Add('select count(phone) from queue where date_time > '+#39+GetCurrentStartDateTime+#39+ ' and fail = 1 and hash is null and number_queue IN ('+list_queue+')  order by date_time DESC');
+      SQL.Add('select count(phone) from queue where date_time > '+#39+GetNowDateTime+#39+ ' and fail = 1 and hash is null and number_queue IN ('+list_queue+')  order by date_time DESC');
       Active:=True;
       if Fields[0].Value<>null then listCount:=Fields[0].Value;
    end;
@@ -1062,7 +1064,7 @@ begin
 
      with DM.ADOQuerySelect_Propushennie do begin
         SQL.Clear;
-        SQL.Add('select date_time,waiting_time,phone,number_queue from queue where date_time > '+#39+GetCurrentStartDateTime+#39+ ' and fail = 1 and hash is null and number_queue IN ('+list_queue+') order by date_time DESC');
+        SQL.Add('select date_time,waiting_time,phone,number_queue from queue where date_time > '+#39+GetNowDateTime+#39+ ' and fail = 1 and hash is null and number_queue IN ('+list_queue+') order by date_time DESC');
         Active:=True;
 
         FormPropushennie.listSG_Propushennie.RowCount:=listCount+1;
@@ -1218,6 +1220,23 @@ begin
 
                 REHistory_REPORT.SelStart:=0;
                 STInfoVersionREPORT.Caption:=getVersion(GUID_VESRION,programm);
+              end;
+              eSMS:begin
+                REHistory_SMS.Clear;
+
+                for i:=0 to countVersion-1 do begin
+                     with REHistory_SMS do begin
+                      Lines.Add('версия '+VarToStr(Fields[1].Value) + ' ('+VarToStr(Fields[0].Value)+')');
+                      Lines.Add(Fields[2].Value);
+                      Lines.Add('');
+                      Lines.Add('');
+                      Lines.Add('');
+                     end;
+                   ado.Next;
+                end;
+
+                REHistory_SMS.SelStart:=0;
+                STInfoVersionSMS.Caption:=getVersion(GUID_VESRION,programm);
               end;
            end;
         end;
@@ -4140,7 +4159,7 @@ end;
 
 
 // сохранение индивидульных настроек пользователя
-procedure saveIndividualSettingUser(InUserID:Integer; settings:enumSettingUsers; status:enumSettingUsersStatus);
+procedure saveIndividualSettingUser(InUserID:Integer; settings:enumSettingUsers; status:enumParamStatus);
 var
  response:string;
  error:string;
@@ -4152,35 +4171,35 @@ begin
 
       // проверяем есть ли уже запись
       if isExistSettingUsers(InUserID) then begin
-        response:='update settings_users set go_home = '+#39+IntToStr(SettingUsersStatusToInteger(status))+#39+' where user_id = '+#39+IntToStr(InUserID)+#39;
+        response:='update settings_users set go_home = '+#39+IntToStr(SettingParamsStatusToInteger(status))+#39+' where user_id = '+#39+IntToStr(InUserID)+#39;
 
       end
       else begin
         response:='insert into settings_users (user_id,go_home) values ('+#39+IntToStr(InUserID) +#39+','
-                                                                         +#39+IntToStr(SettingUsersStatusToInteger(status))+#39+')';
+                                                                         +#39+IntToStr(SettingParamsStatusToInteger(status))+#39+')';
       end;
     end;
     settingUsers_noConfirmExit: begin  // не показывать окно "точно хотите выйти из дашборда?"
 
       // проверяем есть ли уже запись
       if isExistSettingUsers(InUserID) then begin
-        response:='update settings_users set no_confirmExit = '+#39+IntToStr(SettingUsersStatusToInteger(status))+#39+' where user_id = '+#39+IntToStr(InUserID)+#39;
+        response:='update settings_users set no_confirmExit = '+#39+IntToStr(SettingParamsStatusToInteger(status))+#39+' where user_id = '+#39+IntToStr(InUserID)+#39;
 
       end
       else begin
         response:='insert into settings_users (user_id,no_confirmExit) values ('+#39+IntToStr(InUserID) +#39+','
-                                                                         +#39+IntToStr(SettingUsersStatusToInteger(status))+#39+')';
+                                                                         +#39+IntToStr(SettingParamsStatusToInteger(status))+#39+')';
       end;
     end;
     settingUsers_showStatisticsQueueDay:begin  // какой тип графика отображать в модуле "сатистика ожидания в очереди" 0-цифры | 1 - график
       // проверяем есть ли уже запись
       if isExistSettingUsers(InUserID) then begin
-        response:='update settings_users set statistics_queue_day = '+#39+IntToStr(SettingUsersStatusToInteger(status))+#39+' where user_id = '+#39+IntToStr(InUserID)+#39;
+        response:='update settings_users set statistics_queue_day = '+#39+IntToStr(SettingParamsStatusToInteger(status))+#39+' where user_id = '+#39+IntToStr(InUserID)+#39;
 
       end
       else begin
         response:='insert into settings_users (user_id,statistics_queue_day) values ('+#39+IntToStr(InUserID) +#39+','
-                                                                         +#39+IntToStr(SettingUsersStatusToInteger(status))+#39+')';
+                                                                         +#39+IntToStr(SettingParamsStatusToInteger(status))+#39+')';
       end;
     end;
    end;
@@ -4196,13 +4215,13 @@ begin
 end;
 
 // получение данных об индивидуальных настройках пользователя
-function getStatusIndividualSettingsUser(InUserID:Integer; settings:enumSettingUsers):enumSettingUsersStatus;
+function getStatusIndividualSettingsUser(InUserID:Integer; settings:enumSettingUsers):enumParamStatus;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
 
 begin
- Result:=settingUsersStatus_DISABLED;
+ Result:=paramStatus_DISABLED;
  if not isExistSettingUsers(InUserID) then Exit;
 
  ado:=TADOQuery.Create(nil);
@@ -4231,8 +4250,8 @@ begin
       Active:=True;
 
       if Fields[0].Value<>null then begin
-        if VarToStr(Fields[0].Value) = '1'  then Result:=settingUsersStatus_ENABLED
-        else Result:=settingUsersStatus_DISABLED;
+        if VarToStr(Fields[0].Value) = '1'  then Result:=paramStatus_ENABLED
+        else Result:=paramStatus_DISABLED;
       end;
     end;
   finally
@@ -4251,7 +4270,7 @@ begin
   with HomeForm do begin
     // не показывать ушедших домой
     begin
-      if getStatusIndividualSettingsUser(InUserId,settingUsers_gohome) = settingUsersStatus_ENABLED then
+      if getStatusIndividualSettingsUser(InUserId,settingUsers_gohome) = paramStatus_ENABLED then
       begin
          VisibleIconOperatorsGoHome(goHome_Hide);
          chkboxGoHome.Checked:=True;
@@ -4262,7 +4281,7 @@ begin
 
     // какой тип графика отображать в модуле "сатистика ожидания в очереди"  0- цифры | 1 - график
     begin
-     if getStatusIndividualSettingsUser(InUserId,settingUsers_showStatisticsQueueDay) = settingUsersStatus_DISABLED then
+     if getStatusIndividualSettingsUser(InUserId,settingUsers_showStatisticsQueueDay) = paramStatus_DISABLED then
      begin
       ShowStatisticsCallsDay(eNumbers);
      end
@@ -4644,7 +4663,7 @@ begin
     case InStatus of
      goHome_Hide:begin
        if InClick then begin
-        saveIndividualSettingUser(SharedCurrentUserLogon.GetID,settingUsers_gohome,settingUsersStatus_ENABLED);
+        saveIndividualSettingUser(SharedCurrentUserLogon.GetID,settingUsers_gohome,paramStatus_ENABLED);
         chkboxGoHome.Checked:=True;
        end;
 
@@ -4662,7 +4681,7 @@ begin
      goHome_Show:begin
 
        if InClick then begin
-        saveIndividualSettingUser(SharedCurrentUserLogon.GetID,settingUsers_gohome,settingUsersStatus_DISABLED);
+        saveIndividualSettingUser(SharedCurrentUserLogon.GetID,settingUsers_gohome,paramStatus_DISABLED);
         chkboxGoHome.Checked:=False;
        end;
 
@@ -4819,7 +4838,7 @@ begin
    with ado do begin
     ado.Connection:=serverConnect;
     SQL.Clear;
-    SQL.Add('select pc,user_login_pc,last_active from active_session where user_id = '+#39+IntToStr(InUserID)+#39+' and last_active > '+#39+GetCurrentDateTimeDec(1)+#39);
+    SQL.Add('select pc,user_login_pc,last_active from active_session where user_id = '+#39+IntToStr(InUserID)+#39+' and last_active > '+#39+GetNowDateTimeDec(1)+#39);
 
     Active:=True;
 
@@ -4951,7 +4970,7 @@ begin
        eNumbers: begin
         if InClick then begin
           // сохраняем текущий выбор
-         saveIndividualSettingUser(SharedCurrentUserLogon.GetID,settingUsers_showStatisticsQueueDay,settingUsersStatus_DISABLED);
+         saveIndividualSettingUser(SharedCurrentUserLogon.GetID,settingUsers_showStatisticsQueueDay,paramStatus_DISABLED);
         end;
 
         PanelStatisticsQueue_Numbers.Visible:=True;
@@ -4963,7 +4982,7 @@ begin
        eGraph: begin
         if InClick then begin
          // сохраняем текущий выбор
-         saveIndividualSettingUser(SharedCurrentUserLogon.GetID,settingUsers_showStatisticsQueueDay,settingUsersStatus_ENABLED);
+         saveIndividualSettingUser(SharedCurrentUserLogon.GetID,settingUsers_showStatisticsQueueDay,paramStatus_ENABLED);
 
         end;
 
@@ -5040,6 +5059,21 @@ begin
 end;
 
 
+// текущее время начала дня (минус минуты)
+function GetNowDateTimeDec(DecMinutes:Integer):string;
+var
+  AdjustedTime: TDateTime;
+begin
+  AdjustedTime := IncMinute(Now, -DecMinutes);
+  Result := FormatDateTime('yyyy-mm-dd hh:nn:ss', AdjustedTime);
+end;
+
+
+// текущее время начала дня
+function GetNowDateTime:string;
+begin
+  Result:= FormatDateTime('yyyy-mm-dd 00:00:00', Now);
+end;
 
 
 // отрображение окна с ошибкой

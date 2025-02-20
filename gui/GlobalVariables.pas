@@ -24,7 +24,7 @@ var
   FOLDERPATH        :string;
 
   // Текущая версия GUID   ctrl+shift+G (GUID)
-  GUID_VESRION      :string = 'EB11A1B9';
+  GUID_VESRION      :string = '815126D5';
 
   // exe родителя
   DASHBOARD_EXE     :string = 'dashboard.exe';
@@ -78,7 +78,6 @@ var
   CONNECT_BD_ERROR        :Boolean = False;
 
 
-
   // загрузка DLL
   // --- core.dll ---
  type
@@ -90,8 +89,8 @@ var
   function GetUserAccessLocalChat(InUserID:Integer):Boolean;  stdcall;  external 'core.dll';       // есть ли доступ у пользователя к локальному чату
   function GetUserAccessReports(InUserID:Integer):Boolean;    stdcall;  external 'core.dll';       // есть ли доступ у пользователя к отчетам
   function GetUserAccessSMS(InUserID:Integer):Boolean;        stdcall;  external 'core.dll';       // есть ли доступ у пользователя к SMS отправке
-  function GetCurrentDateTimeDec(DecMinutes:Integer):PChar;   overload; stdcall; external 'core.dll';       // текущее начала дня минус -DecMinutes
-  function GetCurrentStartDateTime:PChar;                     overload; stdcall; external 'core.dll';       // текущее начала дня с минутами 00:00:00
+  //function GetCurrentDateTimeDec(DecMinutes:Integer):PChar;   overload; stdcall; external 'core.dll';       // текущее начала дня минус -DecMinutes
+  //function GetCurrentStartDateTime:PChar;                     overload; stdcall; external 'core.dll';       // текущее начала дня с минутами 00:00:00
   function GetCurrentTime:PChar;                              stdcall;  external 'core.dll';       // текущее время
   function GetLocalChatNameFolder:PChar;                      stdcall;  external 'core.dll';       // папка с локальным чатом
   function GetExtensionLog:PChar;                             stdcall;  external 'core.dll';       // папка с локальным чатом
@@ -104,7 +103,7 @@ var
   function GetCloneRun(InExeName:Pchar):Boolean;              stdcall;  external 'core.dll';       // проверка на 2ую запущенную копию
   function GetDateTimeToDateBD(InDateTime:string):PChar;      stdcall;  external 'core.dll';       // перевод даты и времени в ненормальный вид для BD
   function GetDateToDateBD(InDateTime:string):PChar;          stdcall;  external 'core.dll';       // перевод даты в ненормальный вид для BD
-  function GetTimeAnsweredToSeconds(InTimeAnswered:string):Integer; stdcall;  external 'core.dll'; // перевод времени разговора оператора типа 00:00:00 в секунды
+  function GetTimeAnsweredToSeconds(InTimeAnswered:string; isReducedTime:Boolean = False):Integer; stdcall;  external 'core.dll'; // перевод времени разговора оператора типа 00:00:00 в секунды
   function GetTimeAnsweredSecondsToString(InSecondAnswered:Integer):PChar; stdcall;  external 'core.dll'; // перевод времени разговора оператора типа из секунд в 00:00:00
   function GetIVRTimeQueue(InQueue:enumQueueCurrent):Integer;  stdcall;  external 'core.dll';      // время которое необходимо отнимать от текущего звонка в очереди
   function StringToTQueue(InQueueSTR:string):enumQueueCurrent; stdcall;  external 'core.dll';      // конвертер из string в TQueue

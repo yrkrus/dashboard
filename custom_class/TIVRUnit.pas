@@ -18,7 +18,9 @@ uses  System.Classes,
       Graphics,
       System.SyncObjs,
       IdException,
-      System.DateUtils;
+      System.DateUtils,
+      Vcl.ComCtrls,
+      TLogFileUnit;
 
   // class TIVRStruct
  type
@@ -52,13 +54,12 @@ uses  System.Classes,
 
       constructor Create;                   overload;
       destructor Destroy;                   override;
-
-
-      function Count                      : Integer;
+            function Count                      : Integer;
 
       procedure UpdateData;                             // обновление данных в массиве listActiveIVR
       function isExistActive(id:Integer)   :Boolean;   // проверка существует ли такой номер в отображении
       function isExistDropPhone(id:Integer): Boolean;  // проверка есть ли номер который сбросилс€ из IVR
+      procedure SaveToFile(p_ListView: TListView; path: string);                // сохранение в файл дл€ отладки
 
 
       private
@@ -252,7 +253,7 @@ begin
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
-      SQL.Add('select count(id) from ivr where to_queue=''0'' and date_time > '+#39+GetCurrentDateTimeDec(cTimeResponse)+#39+' and id='+#39+IntToStr(In_m_id)+#39);
+      SQL.Add('select count(id) from ivr where to_queue=''0'' and date_time > '+#39+GetNowDateTimeDec(cTimeResponse)+#39+' and id='+#39+IntToStr(In_m_id)+#39);
 
       Active:=True;
 
@@ -318,6 +319,34 @@ begin
 end;
 
 
+procedure TIVR.SaveToFile(p_ListView: TListView; path: string);
+var
+  i, j: Integer;
+  FileStream: TFileStream;
+  Line: string;
+begin
+  FileStream := TFileStream.Create(path, fmCreate);
+  try
+    for i := 0 to p_ListView.Items.Count - 1 do
+    begin
+      Line := '';
+      for j := 0 to 2 do
+      begin
+        Line := Line + p_ListView.Items[i].SubItems[j] + #9; // »спользуем табул€цию как разделитель
+      end;
+      // ƒобавл€ем основной текст элемента
+      Line := p_ListView.Items[i].Caption + #9 + Line;
+      // ”дал€ем последний разделитель
+      if Line.EndsWith(#9) then
+        SetLength(Line, Length(Line) - 1);
+      Line := Line + sLineBreak; // ƒобавл€ем перевод строки
+      FileStream.Write(Pointer(Line)^, Length(Line) * SizeOf(Char));
+    end;
+  finally
+    FileStream.Free;
+  end;
+end;
+
 
  procedure TIVR.UpdateData;
  const
@@ -332,6 +361,8 @@ end;
 
  freeIDStructIVR:Integer; // свободный ID
  currentIDStructIVR:Integer;  // текущий просматриваемый ID
+
+
  begin
   countIVR:=0;
 
@@ -346,10 +377,10 @@ end;
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
-      SQL.Add('select count(phone) from ivr where to_queue=''0'' and date_time > '+#39+GetCurrentDateTimeDec(cTimeResponse)+#39);
-
+      SQL.Add('select count(phone) from ivr where to_queue=''0'' and date_time > '+#39+GetNowDateTimeDec(cTimeResponse)+#39);
 
       Active:=True;
+
       if Fields[0].Value<>null then countIVR:=Fields[0].Value;
 
       try
@@ -369,7 +400,7 @@ end;
        if countIVR>=1 then begin
 
           SQL.Clear;
-          SQL.Add('select id,phone,waiting_time,trunk from ivr where to_queue=''0'' and  date_time > '+#39+GetCurrentDateTimeDec(cTimeResponse)+#39);
+          SQL.Add('select id,phone,waiting_time,trunk from ivr where to_queue=''0'' and  date_time > '+#39+GetNowDateTimeDec(cTimeResponse)+#39);
 
           Active:=True;
 

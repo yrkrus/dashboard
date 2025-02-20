@@ -248,7 +248,7 @@ begin
      with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
-      SQL.Add('select id from chat where channel = '+#39+EnumChannelToString(m_channel)+#39+' and date_time > '+#39+GetCurrentStartDateTime+#39+' order by date_time DESC limit 1');
+      SQL.Add('select id from chat where channel = '+#39+EnumChannelToString(m_channel)+#39+' and date_time > '+#39+GetNowDateTime+#39+' order by date_time DESC limit 1');
 
       Active:=True;
       if Fields[0].Value<>null then begin
@@ -284,7 +284,7 @@ begin
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
-      SQL.Add('select count(id) from chat where channel = '+#39+EnumChannelToString(m_channel)+#39+' and date_time > '+#39+GetCurrentStartDateTime+#39+' and id >'+#39+IntToStr(InLastIDMessage)+#39);
+      SQL.Add('select count(id) from chat where channel = '+#39+EnumChannelToString(m_channel)+#39+' and date_time > '+#39+GetNowDateTime+#39+' and id >'+#39+IntToStr(InLastIDMessage)+#39);
 
       Active:=True;
       if Fields[0].Value<>null then begin

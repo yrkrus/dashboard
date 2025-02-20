@@ -9,6 +9,7 @@ type
   Thread_IVR = class(TThread)
   messclass,mess: string;
 
+
   protected
     procedure Execute; override;
     procedure show(var p_SharedIVR: TIVR);     // переадача списка с данными по ссылке!!
@@ -65,6 +66,8 @@ begin
      // ListViewIVR.Clear;
 
       // Проходим по всем элементам списка
+
+
       for i:=Low(p_SharedIVR.listActiveIVR) to High(p_SharedIVR.listActiveIVR) do begin
         begin
           if p_SharedIVR.listActiveIVR[i].m_id=0 then Continue;
@@ -104,15 +107,20 @@ begin
         end;
       end;
 
-      // Удаляем элементы, которые отсутствуют в новых данных
       for i := ListViewIVR.Items.Count - 1 downto 0 do
       begin
         // убрались потому что ушлм в очередь
         if not p_SharedIVR.isExistActive(StrToInt(ListViewIVR.Items[i].Caption)) then ListViewIVR.Items.Delete(i);
 
-        // убрались потому что сбросились и не дошли до очереди
-        if p_SharedIVR.isExistDropPhone(StrToInt(ListViewIVR.Items[i].Caption)) then ListViewIVR.Items.Delete(i);
+        // i может указывать на элемент,
+        // который больше не существует после
+        // удаления элементов из ListViewIVR
+       if i >= ListViewIVR.Items.Count then Continue;
+
+       if p_SharedIVR.isExistDropPhone(StrToInt(ListViewIVR.Items[i].Caption)) then ListViewIVR.Items.Delete(i);
       end;
+
+
     except
         on E:Exception do
         begin
@@ -128,9 +136,8 @@ end;
 procedure Thread_IVR.show(var p_SharedIVR: TIVR);
 begin
   if not CONNECT_BD_ERROR then begin
-     p_SharedIVR.UpdateData;
-
-     showIVR(p_SharedIVR);
+      p_SharedIVR.UpdateData;
+      showIVR(p_SharedIVR);
   end;
 end;
 
@@ -167,6 +174,7 @@ begin
          Synchronize(CriticalError);
         end;
       end;
+
     end;
      if Duration<SLEEP_TIME then Sleep(SLEEP_TIME-Duration);
   end;

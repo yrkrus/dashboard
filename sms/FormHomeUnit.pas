@@ -57,9 +57,7 @@ type
     chkbox_SaveMyTemplate: TCheckBox;
     group_SendingSMS: TGroupBox;
     Label2: TLabel;
-    edtExcelSMS: TEdit;
     btnLoadFile: TBitBtn;
-    ProgressBar: TGauge;
     chkboxShowLog: TCheckBox;
     GroupBox1: TGroupBox;
     RELog: TRichEdit;
@@ -72,25 +70,15 @@ type
     st_ShowNotSendingSMS: TStaticText;
     st_PhoneInfo: TStaticText;
     chkbox_SaveGlobalTemplate: TCheckBox;
-    Button2: TButton;
-    PopMenu_AddressClinic: TPopupMenu;
-    r1: TMenuItem;
-    N1: TMenuItem;
-    N2: TMenuItem;
-    N3: TMenuItem;
-    N4: TMenuItem;
-    N5: TMenuItem;
-    N6: TMenuItem;
-    N7: TMenuItem;
+    popmenu_AddressClinic: TPopupMenu;
     chkbox_SignSMS: TCheckBox;
     st_ShowInfoAddAddressClinic: TStaticText;
+    lblNameExcelFile: TLabel;
     procedure ProcessCommandLineParams(DEBUG:Boolean = False);
     procedure FormCreate(Sender: TObject);
     procedure btnLoadFileClick(Sender: TObject);
     procedure btnSendSMSClick(Sender: TObject);
     procedure btnLoadFile2Click(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
     procedure page_TypesSMSChange(Sender: TObject);
     procedure btnSaveFirebirdSettingsClick(Sender: TObject);
     procedure chkboxShowLogClick(Sender: TObject);
@@ -155,7 +143,7 @@ cSLEEPNEXTSMS:Integer=150; // время задержки перед следующей отправкой смс
 implementation
 
 uses
-  FunctionUnit, GlobalVariables, TSendSMSUint, FormMyTemplateUnit, FormNotSendingSMSErrorUnit;
+  FunctionUnit, GlobalVariables, TSendSMSUint, FormMyTemplateUnit, FormNotSendingSMSErrorUnit, TCustomTypeUnit;
 
  {$R *.dfm}
 
@@ -261,7 +249,9 @@ begin
       begin
          FileExcelSMS:=FileName;
          while AnsiPos('\',FileExcelSMS)<>0 do System.Delete(FileExcelSMS,1,AnsiPos('\',FileExcelSMS));
-         edtExcelSMS.Text:=FileExcelSMS;
+         lblNameExcelFile.Caption:=FileExcelSMS;
+         lblNameExcelFile.Hint:=FileName;
+         lblNameExcelFile.Font.Color:=clGreen;
 
          FileExcelSMS:=FileName;
       end;
@@ -326,9 +316,14 @@ begin
       end;
     end;
     options_Sending:begin
+      ProgressStatusText.Caption:='Статус : Отправка';
       if not SendingMessage(currentOptions, error) then begin
         Screen.Cursor:=crDefault;
         MessageBox(Handle,PChar(error),PChar('Ошибка отправки'),MB_OK+MB_ICONERROR);
+      end
+      else begin
+       Screen.Cursor:=crDefault;
+       MessageBox(Handle,PChar('Отправлено'),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
       end;
     end;
    end;
@@ -337,23 +332,6 @@ begin
    ClearParamsForm(currentOptions);
    Screen.Cursor:=crDefault;
 end;
-
-procedure TFormHome.Button1Click(Sender: TObject);
-var
- test:TStringList;
-begin
-
- // test:=TStringList.Create;
-//  test.LoadFromFile('1.log');
-
- // ParsingResultStatusSMS(test.Text,'89093858545');
-end;
-
-procedure TFormHome.Button2Click(Sender: TObject);
-begin
-  CreateThreadSendind(MAX_COUNT_THREAD_SENDIND,0,0);
-end;
-
 
 
 procedure TFormHome.chkboxShowLogClick(Sender: TObject);
@@ -455,7 +433,7 @@ end;
 procedure TFormHome.st_ShowInfoAddAddressClinicClick(Sender: TObject);
 begin
  MessageBox(Handle,PChar('Для быстрой вставки адреса клинки необходимо'+#13#10+
-                         'кликнуть правой кл. мыши и выбрать нужный адрес из выпадающего меню'+#13#10+
+                         'кликнуть правой кл. мыши в любом месте и выбрать нужный адрес из выпадающего меню'+#13#10+
                          'и он вставиться в сообщение на месте где находится курсор'),PChar('Инфо'),MB_OK+MB_ICONINFORMATION);
 end;
 
@@ -510,6 +488,8 @@ procedure TFormHome.FormShow(Sender: TObject);
 var
  error:string;
 begin
+  Screen.Cursor:=crHourGlass;
+
   // debug node
   if DEBUG then STDEBUG.Visible:=True
   else begin
@@ -528,6 +508,8 @@ begin
 
   // проверка существует ли excel
   if not isExistExcel(error) then begin
+   Screen.Cursor:=crDefault;
+
    MessageBox(Handle,PChar('Excel не установлен'+#13#13+error),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
    KillProcessNow;
   end;
@@ -535,8 +517,13 @@ begin
   // возможность автоматически вставлять подпись в смс сообщение
   SignSMS;
 
+  // создание меню быстрого доступа к адресам клиник
+  CreatePopMenuAddressClinic(popmenu_AddressClinic, re_ManualSMS);
+
   // стартовая вкладка
   page_TypesSMS.ActivePage:=sheet_ManualSMS;
+
+  Screen.Cursor:=crDefault;
 end;
 
 procedure TFormHome.page_TypesSMSChange(Sender: TObject);

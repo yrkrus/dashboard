@@ -11,6 +11,7 @@ const
  DASHBOARD_EXE    :string = 'dashboard.exe';
  CHAT_EXE         :string = 'chat.exe';
  REPORT_EXE       :string = 'report.exe';
+ SMS_EXE          :string = 'sms.exe';
  UPDATE_EXE       :string = 'update.exe';
 
  UPDATE_BAT       :string = 'update.bat';

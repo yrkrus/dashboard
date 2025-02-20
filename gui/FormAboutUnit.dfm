@@ -5701,7 +5701,7 @@ object FormAbout: TFormAbout
     Visible = False
   end
   object PageInfo: TPageControl
-    Left = 113
+    Left = 121
     Top = 8
     Width = 555
     Height = 415
@@ -5833,7 +5833,6 @@ object FormAbout: TFormAbout
         ParentFont = False
         TabOrder = 0
         Transparent = False
-        ExplicitTop = 8
       end
       object Panel3: TPanel
         Left = 0
@@ -5862,6 +5861,57 @@ object FormAbout: TFormAbout
           TabOrder = 0
           Zoom = 100
         end
+      end
+    end
+    object sheetSMS: TTabSheet
+      Caption = 'SMS'
+      ImageIndex = 3
+      object Panel4: TPanel
+        Left = 0
+        Top = 18
+        Width = 547
+        Height = 363
+        Align = alBottom
+        BevelOuter = bvNone
+        TabOrder = 1
+        object REHistory_SMS: TRichEdit
+          Left = 0
+          Top = 0
+          Width = 547
+          Height = 363
+          Align = alClient
+          BevelInner = bvNone
+          BevelOuter = bvNone
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+          ReadOnly = True
+          ScrollBars = ssVertical
+          TabOrder = 0
+          Zoom = 100
+        end
+      end
+      object STInfoVersionSMS: TStaticText
+        Left = 0
+        Top = 0
+        Width = 547
+        Height = 16
+        Align = alTop
+        Alignment = taCenter
+        AutoSize = False
+        Caption = 'STInfoVersionSMS'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clNavy
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 0
+        Transparent = False
+        ExplicitTop = 8
       end
     end
   end

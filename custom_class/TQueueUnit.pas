@@ -168,7 +168,7 @@ end;
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
-      SQL.Add('select count(phone) from queue where date_time > '+#39+GetCurrentDateTimeDec(cTimeResponse)+#39+' and fail = ''0'' and sip = ''-1'' and hash is NULL');
+      SQL.Add('select count(phone) from queue where date_time > '+#39+GetNowDateTimeDec(cTimeResponse)+#39+' and fail = ''0'' and sip = ''-1'' and hash is NULL');
 
       Active:=True;
       if Fields[0].Value<>null then countQueue:=Fields[0].Value;
@@ -200,7 +200,7 @@ end;
        if countQueue<>0 then begin
 
           SQL.Clear;
-          SQL.Add('select id,phone,waiting_time,number_queue from queue where date_time > '+#39+GetCurrentDateTimeDec(cTimeResponse)+#39+' and fail = ''0'' and sip = ''-1'' and hash is NULL');
+          SQL.Add('select id,phone,waiting_time,number_queue from queue where date_time > '+#39+GetNowDateTimeDec(cTimeResponse)+#39+' and fail = ''0'' and sip = ''-1'' and hash is NULL');
 
           Active:=True;
 

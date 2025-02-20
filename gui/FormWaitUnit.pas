@@ -9,8 +9,9 @@ uses
 
 type
   TFormWait = class(TForm)
-    Label1: TLabel;
+    panel: TPanel;
     indicator: TActivityIndicator;
+    Label1: TLabel;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
 

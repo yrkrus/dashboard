@@ -106,6 +106,8 @@ begin
         end;
       end;
 
+      //TODO сделать по человечески через TThread переподключение, а не через timer!!!
+
   end
   else lblTime.Caption:='Переподключение через '+IntToStr(StartTime-Ostatok)+' сек';
 

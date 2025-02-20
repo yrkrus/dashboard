@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ComCtrls,
-  Vcl.ExtCtrls, Vcl.Grids,Data.Win.ADODB, Data.DB, IdException;
+  Vcl.ExtCtrls, Vcl.Grids,Data.Win.ADODB, Data.DB, IdException, TCustomTypeUnit;
 
 type
   TFormServersIK = class(TForm)
@@ -32,6 +32,8 @@ type
   panel_Server_addr:string;
   panel_Server_ID:string;
   panel_Server_Alias:string;
+  panel_Server_TypeClinic:enumTypeClinic;
+  panel_Server_ShowSMS:enumParamStatus;
 
 
   end;
@@ -81,7 +83,7 @@ begin
       with ado do begin
 
         SQL.Clear;
-        SQL.Add('select id,ip,alias,address from server_ik order by ip ASC');
+        SQL.Add('select id,ip,alias,address,type_clinik,showSMS from server_ik order by ip ASC');
         Active:=True;
 
          for i:=0 to countServers-1 do begin
@@ -89,6 +91,10 @@ begin
             Cells[1,i]:=Fields[1].Value;
             Cells[2,i]:=Fields[2].Value;
             Cells[3,i]:=Fields[3].Value;
+            Cells[4,i]:=Fields[4].Value;
+
+            if VarToStr(Fields[5].Value) ='1' then Cells[5,i]:='Да'
+            else Cells[5,i]:='Нет';
 
            ado.Next;
          end;
@@ -116,11 +122,15 @@ begin
     listSG_Servers_Footer.Cells[1,0]:='IP';
     listSG_Servers_Footer.Cells[2,0]:='Alias';
     listSG_Servers_Footer.Cells[3,0]:='Адрес';
+    listSG_Servers_Footer.Cells[4,0]:='Тип';
+    listSG_Servers_Footer.Cells[5,0]:='Показывать в SMS';
 
     panel_Server_IP:='';
     panel_Server_addr:='';
     panel_Server_ID:='';
     panel_Server_Alias:='';
+    panel_Server_TypeClinic:=eOther;
+    panel_Server_ShowSMS:=paramStatus_DISABLED;
 
      // прогрузка списка серверов
     loadPanel_Servers;
@@ -136,8 +146,8 @@ end;
 
 procedure TFormServersIK.btnDisableClick(Sender: TObject);
 var
- resultat:string;
  resultatDel:Word;
+ error:string;
 begin
   if (panel_Server_IP='') and
      (panel_Server_addr='') and
@@ -157,14 +167,19 @@ begin
  if resultatDel=mrNo then Exit;
 
 
-  // пробуем добавить
-  resultat:=FormServerIKEdit.getResponseBD(server_delete,panel_Server_IP,panel_Server_addr,panel_Server_Alias);
+  // удаляем
+  if not FormServerIKEdit.getResponseBD(server_delete,
+                                          panel_Server_IP,
+                                          panel_Server_addr,
+                                          panel_Server_Alias,
+                                          panel_Server_TypeClinic,
+                                          panel_Server_ShowSMS, error) then begin
 
-  if AnsiPos('ОШИБКА',resultat)<>0  then begin
-    // не удалось добавить
-    MessageBox(Handle,PChar(resultat),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    // не удалось
+    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
   end;
+
 
   // прогружаем сервера
   LoadSettings;
@@ -178,7 +193,7 @@ begin
      (panel_Server_addr='') and
      (panel_Server_ID='') and
      (panel_Server_Alias='')
-      then
+     then
   begin
    // не удалось добавить
     MessageBox(Handle,PChar('Не выбран сервер для редактирования'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
@@ -193,6 +208,8 @@ begin
     p_editAddress:=panel_Server_addr;
     p_editID:=panel_Server_ID;
     p_editAlias:=panel_Server_Alias;
+    p_editTypeClinic:=panel_Server_TypeClinic;
+    p_editShowSMS:=panel_Server_ShowSMS;
 
     ShowModal;
   end;
@@ -204,6 +221,8 @@ begin
   panel_Server_addr:='';
   panel_Server_ID:='';
   panel_Server_Alias:='';
+  panel_Server_TypeClinic:=eOther;
+  panel_Server_ShowSMS:=paramStatus_DISABLED;
 end;
 
 procedure TFormServersIK.FormCreate(Sender: TObject);
@@ -225,18 +244,24 @@ end;
 procedure TFormServersIK.listSG_ServersSelectCell(Sender: TObject; ACol,
   ARow: Integer; var CanSelect: Boolean);
 var
-ip,addr,id,alias:string;
+ip,addr,id,alias,type_clinic,show_sms:string;
 begin
    id:=listSG_Servers.Cells[0,ARow];
    ip:=listSG_Servers.Cells[1,ARow];
    alias:=listSG_Servers.Cells[2,ARow];
    addr:=listSG_Servers.Cells[3,ARow];
+   type_clinic:=listSG_Servers.Cells[4,ARow];
+   show_sms:=listSG_Servers.Cells[5,ARow];
+   if show_sms='' then show_sms:='0';
+
 
  // глобальные параметры
   panel_Server_ID:=id;
   panel_Server_IP:=ip;
   panel_Server_addr:=addr;
-  panel_Server_Alias:=alias
+  panel_Server_Alias:=alias;
+  panel_Server_TypeClinic:=StringToEnumTypeClinic(type_clinic);
+  panel_Server_ShowSMS:=StringToSettingParamsStatus(show_sms);
 end;
 
 end.

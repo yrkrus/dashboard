@@ -167,8 +167,6 @@ type
     procedure btnStatus_ITClick(Sender: TObject);
     procedure btnStatus_transferClick(Sender: TObject);
     procedure btnStatus_homeClick(Sender: TObject);
-    procedure listSG_ACTIVESIPDrawCell(Sender: TObject; ACol, ARow: Integer;
-      Rect: TRect; State: TGridDrawState);
     procedure btnStatus_reserveClick(Sender: TObject);
     procedure menu_ChangePasswordClick(Sender: TObject);
     procedure menu_About_VersionClick(Sender: TObject);
@@ -198,21 +196,22 @@ type
     procedure img_StatisticsQueue_GraphClick(Sender: TObject);
     procedure img_StatisticsQueue_NumbersClick(Sender: TObject);
     procedure img_SL_History_GraphClick(Sender: TObject);
-    procedure ListViewSIPData(Sender: TCustomListView;
-  ItemIndex: Integer; var ItemData: Pointer);
+//    procedure ListViewSIPData(Sender: TCustomListView;
+//  ItemIndex: Integer; var ItemData: Pointer);
     procedure menu_SMSClick(Sender: TObject);
     procedure ST_HelpStatusInfoMouseLeave(Sender: TObject);
     procedure ST_HelpStatusInfoMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure ST_HelpStatusInfoClick(Sender: TObject);
     procedure img_ShowOperatorStatusClick(Sender: TObject);
-
-
-
-
+    procedure ListViewSIPCustomDrawItem(Sender: TCustomListView;
+      Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
 
   private
     { Private declarations }
+
+
+
   public
     { Public declarations }
 
@@ -518,7 +517,7 @@ begin
       CanClose:= Application.MessageBox(PChar('Прежде чем закрыть, необходимо выбрать статус "Домой"'), 'Ошибка при выходе', MB_OK + MB_ICONERROR) = IDNO;
     end
     else begin
-      if getStatusIndividualSettingsUser(SharedCurrentUserLogon.GetID,settingUsers_noConfirmExit) = settingUsersStatus_DISABLED then begin
+      if getStatusIndividualSettingsUser(SharedCurrentUserLogon.GetID,settingUsers_noConfirmExit) = paramStatus_DISABLED then begin
 
         AMsgDialog := CreateMessageDialog('Вы действительно хотите завершить работу?', mtConfirmation, [mbYes, mbNo]);
         ACheckBox := TCheckBox.Create(AMsgDialog);
@@ -544,7 +543,7 @@ begin
           begin
             if ACheckBox.Checked then begin
               // созраняем параметр чтобы больше не показывать это окно
-              saveIndividualSettingUser(SharedCurrentUserLogon.GetID,settingUsers_noConfirmExit,settingUsersStatus_ENABLED);
+              saveIndividualSettingUser(SharedCurrentUserLogon.GetID,settingUsers_noConfirmExit,paramStatus_ENABLED);
             end;
 
             KillProcess;
@@ -584,6 +583,10 @@ begin
 
   // размер панели "Статусы операторов" по default
   PanelStatusIN.Height:=cPanelStatusHeight_default;
+
+
+  //ListViewIVR.OnCustomDraw := ListViewIVRCustomDraw;
+
 end;
 
 
@@ -614,7 +617,7 @@ begin
   ClientWidth:=1410;
 
 
-  // проверка установлен ли MySQL Connector  TODO включить
+  // проверка установлен ли MySQL Connector
   if not isExistMySQLConnector then begin
     error:='Не установлен MySQL Connector';
     ShowFormErrorMessage(error,SharedMainLog,'THomeForm.FormShow');
@@ -793,29 +796,71 @@ begin
   MessageBox(Handle,PChar('Дашборд обновляется автоматически'+#13#13+'Закройте окно дашборда и подождите около 30 сек'),PChar('Информация'),MB_OK+MB_ICONINFORMATION);
 end;
 
-procedure THomeForm.listSG_ACTIVESIPDrawCell(Sender: TObject; ACol,
-  ARow: Integer; Rect: TRect; State: TGridDrawState);
+procedure THomeForm.ListViewSIPCustomDrawItem(Sender: TCustomListView;
+  Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
+var
+ counts:Integer;
+ time_talk:Integer;
+ test:string;
+ longtalk:string;
 begin
-  { if AnsiPos('доступен',listSG_ACTIVESIP.Cells[ACol, ARow])<>0 then begin
-      listSG_ACTIVESIP.Canvas.Font.Color := clGreen;
+  if not Assigned(Item) then Exit;
 
+  try
+    counts:=Item.SubItems.Count; // TODO еще подумать как можно это улучшить
 
-      listSG_ACTIVESIP.Canvas.FillRect(Rect); // закрашивание ячейки выбранным цветом
-      //listSG_ACTIVESIP.Canvas.Font.Color := clBlack; // назначение цвета шрифта
-      listSG_ACTIVESIP.Canvas.TextOut(Rect.Left, Rect.Top, listSG_ACTIVESIP.Cells[ACol, ARow]);
-   end; }
+    if Item.SubItems.Count = 7 then // Проверяем, что есть достаточно SubItems
+    begin
+
+      if Item.SubItems.Strings[1] = 'доступен' then
+      begin
+        Sender.Canvas.Font.Color := clGreen;
+        Exit;
+      end;
+
+      if Item.SubItems.Strings[4] <> '---' then begin
+        test:=Item.SubItems.Strings[4];
+
+        time_talk:=GetTimeAnsweredToSeconds(Item.SubItems.Strings[4],True);
+
+        if (time_talk >= 180) and (time_talk <= 600)  then begin
+         Sender.Canvas.Font.Color := clRed;
+         Exit;
+        end else if time_talk > 600 then begin
+         Sender.Canvas.Font.Color := $0000008A;
+         Exit;
+        end;
+
+      end
+      else if AnsiPos('поствызов',Item.SubItems.Strings[1])<> 0 then begin
+        longtalk:=Item.SubItems.Strings[1];
+        System.Delete(longtalk, 1, AnsiPos('(',longtalk));
+        System.Delete(longtalk, AnsiPos(')',longtalk),Length(longtalk));
+
+        time_talk:=GetTimeAnsweredToSeconds(longtalk);
+
+        if time_talk >= 180 then begin
+         Sender.Canvas.Font.Color := clRed;
+         Exit;
+        end;
+      end;
+
+      if (AnsiPos('обед',Item.SubItems.Strings[1]) <> 0) or
+         (AnsiPos('перерыв',Item.SubItems.Strings[1]) <> 0) then
+      begin
+        Sender.Canvas.Font.Color := $00DDB897;
+        Exit;
+      end;
+    end;
+
+   Sender.Canvas.Font.Color := clBlack;
+  except
+    on E:Exception do
+    begin
+     SharedMainLog.Save('THomeForm.ListViewSIPCustomDrawItem. '+e.ClassName+' : '+e.Message, IS_ERROR);
+    end;
+  end;
 end;
-
-
-
-
-procedure THomeForm.ListViewSIPData(Sender: TCustomListView;
-  ItemIndex: Integer; var ItemData: Pointer);
-begin
-  ItemData := Pointer(ItemIndex);
-end;
-
-
 
 procedure THomeForm.menu_About_DebugClick(Sender: TObject);
 begin
@@ -882,5 +927,7 @@ procedure THomeForm.menu_ReportsClick(Sender: TObject);
 begin
   OpenReports;
 end;
+
+
 
 end.

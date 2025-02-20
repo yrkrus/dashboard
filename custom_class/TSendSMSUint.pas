@@ -115,13 +115,11 @@ type
       m_isExistAuth:Boolean;       // есть все авторизационные данные
       m_isDEBUG:Boolean;              // debug без отправки реальной смс
 
-
       function EncodeURL(const Value: AnsiString): AnsiString;
       function ResponceParsing(InServerOtvet:string; var _errorDescription:string):Boolean;  // парсинг ответа
-
       procedure SaveToBase(InServerOtvet:string; InMessage:string); // сохранение отправленной смс в базу
-
       function AddSign(InMessage:string):string; // добавление подписи к отправляемомй сообщению
+      function isExistSMS(InPhone:string;InChechMessage:string; var _errorDescription:string):Boolean; // проверка отправляли ли уже ранее такую смс
 
 
       end;
@@ -347,7 +345,8 @@ begin
      FreeAndNil(ado);
      Exit;
   end;
-
+//    phone:='+79093858545';
+//    sms_id:='1000';
   XmlDoc := TXMLDocument.Create(nil);
   try
     XmlDoc.LoadFromXML(InServerOtvet);
@@ -423,6 +422,7 @@ var
  HTTPGet:string;
  resultat:Word;
  sendMessage:string;
+ tmpPhone:string;
 begin
    Result:=False;
   _errorDescription:='';
@@ -437,6 +437,22 @@ begin
     sendMessage:=InMessage;
     if isAddSign then begin
      if m_Auth.m_sign <>'null' then sendMessage:=AddSign(sendMessage);
+    end;
+
+    // заменим 8 на +7
+    begin
+      tmpPhone:=InNumberPhone;
+      if tmpPhone.StartsWith('8') then
+      begin
+         // Заменяем '8' на '+7'
+        tmpPhone := '+7' + tmpPhone.Substring(1);
+      end;
+    end;
+
+
+    // проверяем ранее отправляли такое сообщение уже
+    if isExistSMS(tmpPhone,sendMessage,_errorDescription) then begin
+      Exit;
     end;
 
 
@@ -473,6 +489,11 @@ begin
 //            Exit;
 //          end;
 //        end;
+//          Result:=True;    //debug удалить
+//          SaveToBase(ServerOtvet,sendMessage);
+//
+//          Sleep(100);
+//          Exit;
 
         ServerOtvet:=Get(HTTPGet);
         // парсинг ответа, если ошибка false возвратит
@@ -483,7 +504,7 @@ begin
         end;
 
          // сохраняем в базу
-         SaveToBase(ServerOtvet,InMessage);
+         SaveToBase(ServerOtvet,sendMessage);
 
        except on E: EIdHTTPProtocolException do
           begin
@@ -531,6 +552,50 @@ begin
   begin
    Result:=InMessage+'. '+m_Auth.m_sign;
   end;
+end;
+
+// проверка отправляли ли уже ранее такую смс
+function TSendSMS.isExistSMS(InPhone:string;
+                             InChechMessage:string;
+                             var _errorDescription:string):Boolean;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+  Result:=False;
+  _errorDescription:='';
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select count(id) from sms_sending where message = '+#39+InChechMessage+#39
+                                                                  +' and phone = '+#39+InPhone+#39
+                                                                  +' and date_time > '+#39+GetCurrentStartDateTime+#39);
+
+      Active:=True;
+      if StrToInt(VarToStr(Fields[0].Value)) <> 0 then
+      begin
+        _errorDescription:='Cегодня такая SMS уже была отправлена на номер '+InPhone;
+        Result:=True;
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+     serverConnect.Close;
+     FreeAndNil(serverConnect);
+    end;
+  end;
+
 end;
 
 end.
