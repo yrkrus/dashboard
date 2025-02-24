@@ -13,6 +13,7 @@ interface
 uses
   SysUtils,
   Windows,
+  Classes,
   TCustomTypeUnit,
   TLogFileUnit,
   TPacientsListUnit;
@@ -62,6 +63,9 @@ var
   SharedPacientsList            : TPacients;
   SharedPacientsListNotSending  : TPacients;
 
+  // список с номерами тлф для ручной одиночной отправки
+  SharedSendindPhoneManualSMS   : TStringList;
+
   // Сохранение в глобальный шаблон
   ISGLOBAL_MESSAGE:Boolean = True;
 
@@ -107,6 +111,8 @@ initialization  // Инициализация
  SharedPacientsListNotSending :=TPacients.Create;
 
  SharedMainLog                :=TLoggingFile.Create('sms');   // лог работы формы
+ SharedSendindPhoneManualSMS  :=TStringList.Create;
+
 
  finalization
 

@@ -74,6 +74,8 @@ type
     chkbox_SignSMS: TCheckBox;
     st_ShowInfoAddAddressClinic: TStaticText;
     lblNameExcelFile: TLabel;
+    lblManualSMS_List: TLabel;
+    lblManualSMS_One: TLabel;
     procedure ProcessCommandLineParams(DEBUG:Boolean = False);
     procedure FormCreate(Sender: TObject);
     procedure btnLoadFileClick(Sender: TObject);
@@ -88,19 +90,14 @@ type
       X, Y: Integer);
     procedure st_ShowNotSendingSMSClick(Sender: TObject);
     procedure edtManualSMSClick(Sender: TObject);
-    procedure chkbox_SignSMSMouseLeave(Sender: TObject);
-    procedure chkbox_SignSMSMouseMove(Sender: TObject; Shift: TShiftState; X,
-      Y: Integer);
-    procedure chkbox_SaveMyTemplateMouseMove(Sender: TObject;
-      Shift: TShiftState; X, Y: Integer);
-    procedure chkbox_SaveMyTemplateMouseLeave(Sender: TObject);
-    procedure chkbox_SaveGlobalTemplateMouseMove(Sender: TObject;
-      Shift: TShiftState; X, Y: Integer);
-    procedure chkbox_SaveGlobalTemplateMouseLeave(Sender: TObject);
     procedure st_ShowInfoAddAddressClinicMouseLeave(Sender: TObject);
     procedure st_ShowInfoAddAddressClinicMouseMove(Sender: TObject;
       Shift: TShiftState; X, Y: Integer);
     procedure st_ShowInfoAddAddressClinicClick(Sender: TObject);
+    procedure lblManualSMS_ListClick(Sender: TObject);
+    procedure lblManualSMS_OneClick(Sender: TObject);
+    procedure edtManualSMSChange(Sender: TObject);
+    procedure edtManualSMSKeyPress(Sender: TObject; var Key: Char);
   private
     { Private declarations }
   public
@@ -143,7 +140,7 @@ cSLEEPNEXTSMS:Integer=150; // время задержки перед следующей отправкой смс
 implementation
 
 uses
-  FunctionUnit, GlobalVariables, TSendSMSUint, FormMyTemplateUnit, FormNotSendingSMSErrorUnit, TCustomTypeUnit;
+  FunctionUnit, GlobalVariables, TSendSMSUint, FormMyTemplateUnit, FormNotSendingSMSErrorUnit, TCustomTypeUnit, FormListSendingSMSUnit;
 
  {$R *.dfm}
 
@@ -277,6 +274,7 @@ var
  currentOptions:enumSendingOptions;
  error:string;
  SendindMessage:string;
+ i:Integer;
 begin
   // проверки
   Screen.Cursor:=crHourGlass;
@@ -285,6 +283,16 @@ begin
     case page_TypesSMS.ActivePage.PageIndex of
      0:begin                 // ручная отправка
       currentOptions:=options_Manual;
+
+      // добавим номера телефонов в список
+      SharedSendindPhoneManualSMS.Clear;
+      if Length(edtManualSMS.Text) <> 0 then SharedSendindPhoneManualSMS.Add(edtManualSMS.Text)
+      else begin
+        for i:=0 to FormListSendingSMS.re_ListSendingSMS.Lines.Count-1 do begin
+          SharedSendindPhoneManualSMS.Add(FormListSendingSMS.re_ListSendingSMS.Lines[i]);
+        end;
+      end;
+
      end;
      1:begin                  // рассылка
       currentOptions:=options_Sending;
@@ -312,7 +320,12 @@ begin
         if chkbox_SaveGlobalTemplate.Checked then SaveMyTemplateMesaage(re_ManualSMS.Text, ISGLOBAL_MESSAGE);
 
         Screen.Cursor:=crDefault;
-        MessageBox(Handle,PChar('Сообщение отправлено'),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
+        if SharedSendindPhoneManualSMS.Count > 1 then begin
+          MessageBox(Handle,PChar('Сообщение отправлено на все номера из списка'),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
+        end
+        else begin
+          MessageBox(Handle,PChar('Сообщение отправлено'),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
+        end;
       end;
     end;
     options_Sending:begin
@@ -323,7 +336,7 @@ begin
       end
       else begin
        Screen.Cursor:=crDefault;
-       MessageBox(Handle,PChar('Отправлено'),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
+       MessageBox(Handle,PChar('Отправлено'+#13+'Статус доставки доступен в отчетах'),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
       end;
     end;
    end;
@@ -340,37 +353,12 @@ begin
   else ShowOrHideLog(log_hide);
 end;
 
-procedure TFormHome.chkbox_SaveGlobalTemplateMouseLeave(Sender: TObject);
-begin
-  chkbox_SaveGlobalTemplate.Font.Style:=[];
-end;
 
-procedure TFormHome.chkbox_SaveGlobalTemplateMouseMove(Sender: TObject;
-  Shift: TShiftState; X, Y: Integer);
-begin
- chkbox_SaveGlobalTemplate.Font.Style:=[fsUnderline];
-end;
 
-procedure TFormHome.chkbox_SaveMyTemplateMouseLeave(Sender: TObject);
+procedure TFormHome.edtManualSMSChange(Sender: TObject);
 begin
- chkbox_SaveMyTemplate.Font.Style:=[];
-end;
-
-procedure TFormHome.chkbox_SaveMyTemplateMouseMove(Sender: TObject;
-  Shift: TShiftState; X, Y: Integer);
-begin
-  chkbox_SaveMyTemplate.Font.Style:=[fsUnderline];
-end;
-
-procedure TFormHome.chkbox_SignSMSMouseLeave(Sender: TObject);
-begin
-  chkbox_SignSMS.Font.Style:=[];
-end;
-
-procedure TFormHome.chkbox_SignSMSMouseMove(Sender: TObject; Shift: TShiftState;
-  X, Y: Integer);
-begin
- chkbox_SignSMS.Font.Style:=[fsUnderline];
+  lblManualSMS_List.Caption:='списком';
+  SharedSendindPhoneManualSMS.Clear;
 end;
 
 procedure TFormHome.edtManualSMSClick(Sender: TObject);
@@ -379,6 +367,14 @@ begin
 end;
 
 
+
+procedure TFormHome.edtManualSMSKeyPress(Sender: TObject; var Key: Char);
+begin
+  if not (Key in ['0'..'9', #8]) then  // #8 - Backspace, #13 - Enter
+  begin
+    Key := #0; // Отменяем ввод, если символ не является цифрой
+  end;
+end;
 
 procedure TFormHome.ProcessCommandLineParams(DEBUG:Boolean);
 var
@@ -524,6 +520,26 @@ begin
   page_TypesSMS.ActivePage:=sheet_ManualSMS;
 
   Screen.Cursor:=crDefault;
+end;
+
+procedure TFormHome.lblManualSMS_ListClick(Sender: TObject);
+var
+  MousePos: TPoint;
+begin
+  edtManualSMS.Text:='';
+
+  GetCursorPos(MousePos);
+
+  with FormListSendingSMS do begin
+    m_left := MousePos.X;
+    m_top := MousePos.Y;
+    ShowModal;
+  end;
+end;
+
+procedure TFormHome.lblManualSMS_OneClick(Sender: TObject);
+begin
+ ShowSendingManualPhone(sending_one);
 end;
 
 procedure TFormHome.page_TypesSMSChange(Sender: TObject);

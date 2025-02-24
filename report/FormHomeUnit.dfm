@@ -4,7 +4,7 @@ object FormHome: TFormHome
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = #1054#1090#1095#1077#1090#1099
-  ClientHeight = 364
+  ClientHeight = 386
   ClientWidth = 430
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
@@ -22,7 +22,7 @@ object FormHome: TFormHome
     Left = 7
     Top = 4
     Width = 410
-    Height = 56
+    Height = 71
     Caption = ' '#1044#1086#1089#1090#1091#1087#1085#1099#1077' '#1086#1090#1095#1077#1090#1099' '
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -31,6 +31,23 @@ object FormHome: TFormHome
     Font.Style = []
     ParentFont = False
     TabOrder = 0
+    object lblReportShowRingsOperators: TLabel
+      Left = 16
+      Top = 44
+      Width = 383
+      Height = 16
+      Cursor = crHandPoint
+      Caption = #1054#1090#1095#1077#1090' '#1087#1086' '#1082#1086#1083#1080#1095#1077#1089#1090#1074#1091' '#1079#1074#1086#1085#1082#1086#1074' '#1086#1087#1077#1088#1072#1090#1086#1088#1072#1084#1080' ('#1087#1086#1076#1088#1086#1073#1085#1099#1081')'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlue
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+      OnClick = lblReportShowRingsOperatorsClick
+      OnMouseMove = lblReportShowRingsOperatorsMouseMove
+      OnMouseLeave = lblReportShowRingsOperatorsMouseLeave
+    end
     object lblReportCountRingsOperators: TLabel
       Left = 16
       Top = 24
@@ -71,7 +88,7 @@ object FormHome: TFormHome
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 345
+    Top = 367
     Width = 430
     Height = 19
     Panels = <
@@ -83,9 +100,9 @@ object FormHome: TFormHome
   end
   object GroupBox1: TGroupBox
     Left = 7
-    Top = 84
+    Top = 85
     Width = 410
-    Height = 253
+    Height = 270
     Caption = ' '#1053#1077' '#1076#1086#1089#1090#1091#1087#1085#1099#1077' '#1086#1090#1095#1077#1090#1099' ('#1074' '#1088#1072#1079#1088#1072#1073#1086#1090#1082#1077') '
     Enabled = False
     Font.Charset = DEFAULT_CHARSET
@@ -241,6 +258,20 @@ object FormHome: TFormHome
       Width = 361
       Height = 16
       Caption = #1054#1090#1095#1077#1090' '#1087#1086' '#1074#1088#1077#1084#1077#1085#1080' '#1085#1072#1093#1086#1078#1076#1077#1085#1080#1103' '#1086#1087#1077#1088#1072#1090#1086#1088#1072#1084#1080' '#1074' OnHold'
+      Enabled = False
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlue
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+    end
+    object Label7: TLabel
+      Left = 16
+      Top = 244
+      Width = 195
+      Height = 16
+      Caption = #1054#1090#1095#1077#1090' '#1087#1086' '#1086#1090#1087#1088#1072#1074#1083#1077#1085#1085#1099#1084' SMS'
       Enabled = False
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlue

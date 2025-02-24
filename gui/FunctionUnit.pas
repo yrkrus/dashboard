@@ -41,7 +41,7 @@ function getUserID(InSIPNumber:integer):Integer; overload;                      
 procedure LoadPanel_Users(InUserRole:enumRole; InShowDisableUsers:Boolean = False);  // прогрузка спика пользвоателей
 procedure LoadPanel_Operators;                                                       // прогрузка спика пользвоателей (операторы)
 function GetCheckLogin(inLogin:string):Boolean;                                      // существует ли login пользвоателчя
-function DisableUser(InUserID:Integer):string;                                       // отключение пользователя
+function DisableUser(InUserID:Integer; var _errorDescription:string):Boolean;        // отключение пользователя
 procedure DeleteOperator(InUserID:Integer);                                          // удаление пользователя из таблицы operators
 procedure LoadUsersAuthForm;                                                         // прогрузка пользователей в форму авторизации
 function getUserPwd(InUserID:Integer):Integer;                                       // полчуение userPwd из userID
@@ -88,7 +88,7 @@ function getUserFamiliya(InUserID:Integer):string;                              
 function getUserNameBD(InUserID:Integer):string;                                     // полчуение имени пользователя из его UserID
 function UserIsOperator(InUserID:Integer):Boolean;                                   // проверка userID принадлежит оператору или нет TRUE - оператор
 procedure disableOperator(InUserId:Integer);                                         // отключение оператора и перенос его в таблицу operators_disable
-function EnableUser(InUserID:Integer):string;                                        // включение пользователя
+function EnableUser(InUserID:Integer; var _errorDescription:string):Boolean;             // включение пользователя
 function GetOperatorAccessDashboard(InSip:string):Boolean;                           // нахождение статуса доступен ли дашбор орератору или нет
 function isExistSettingUsers(InUserID:Integer):Boolean;                              // проверка существу.т ли индивидуальные настрокий пользователч true - существуют настроки
 procedure saveIndividualSettingUser(InUserID:Integer; settings:enumSettingUsers;
@@ -1184,7 +1184,7 @@ begin
                 end;
 
                 REHistory_GUI.SelStart:=0;
-                STInfoVersionGUI.Caption:=getVersion(GUID_VESRION,programm);
+                STInfoVersionGUI.Caption:=getVersion(GUID_VERSION,programm);
               end;
               eCHAT: begin
 
@@ -1202,7 +1202,7 @@ begin
                 end;
 
                 REHistory_CHAT.SelStart:=0;
-                STInfoVersionCHAT.Caption:=getVersion(GUID_VESRION,programm);
+                STInfoVersionCHAT.Caption:=getVersion(GUID_VERSION,programm);
               end;
               eREPORT:begin
                 REHistory_REPORT.Clear;
@@ -1219,7 +1219,7 @@ begin
                 end;
 
                 REHistory_REPORT.SelStart:=0;
-                STInfoVersionREPORT.Caption:=getVersion(GUID_VESRION,programm);
+                STInfoVersionREPORT.Caption:=getVersion(GUID_VERSION,programm);
               end;
               eSMS:begin
                 REHistory_SMS.Clear;
@@ -1236,7 +1236,7 @@ begin
                 end;
 
                 REHistory_SMS.SelStart:=0;
-                STInfoVersionSMS.Caption:=getVersion(GUID_VESRION,programm);
+                STInfoVersionSMS.Caption:=getVersion(GUID_VERSION,programm);
               end;
            end;
         end;
@@ -2434,18 +2434,20 @@ begin
 end;
 
 // отключение пользователя
-function DisableUser(InUserID:Integer):string;
+function DisableUser(InUserID:Integer; var _errorDescription:string):Boolean;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
- CodOshibki:string;
  error:string;
 begin
+  Result:=False;
+  _errorDescription:='';
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnectWithError(error);
 
   if not Assigned(serverConnect) then begin
+     _errorDescription:=error;
      ShowFormErrorMessage(error, SharedMainLog, 'DisableUser');
      FreeAndNil(ado);
      Exit;
@@ -2463,8 +2465,7 @@ begin
           ExecSQL;
       except
           on E:EIdException do begin
-             CodOshibki:=e.Message;
-             Result:='ОШИБКА! '+CodOshibki;
+             _errorDescription:='Не удалось отключить пользователя'+#13+e.Message;
               FreeAndNil(ado);
               if Assigned(serverConnect) then begin
                 serverConnect.Close;
@@ -2489,23 +2490,25 @@ begin
     end;
   end;
 
-  Result:='OK';
+  Result:=True;
 end;
 
 
 // включение пользователя
-function EnableUser(InUserID:Integer):string;
+function EnableUser(InUserID:Integer; var _errorDescription:string):Boolean;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
- CodOshibki:string;
  error:string;
 begin
+  Result:=False;
+  _errorDescription:='';
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnectWithError(error);
 
   if not Assigned(serverConnect) then begin
+     _errorDescription:=error;
      ShowFormErrorMessage(error, SharedMainLog, 'EnableUser');
      FreeAndNil(ado);
      Exit;
@@ -2523,8 +2526,7 @@ begin
           ExecSQL;
       except
           on E:EIdException do begin
-             CodOshibki:=e.Message;
-             Result:='ОШИБКА! '+CodOshibki;
+             _errorDescription:='Не удалось включить пользователя'+#13+e.Message;
               FreeAndNil(ado);
               if Assigned(serverConnect) then begin
                 serverConnect.Close;
@@ -2544,7 +2546,7 @@ begin
     end;
   end;
 
-  Result:='OK';
+  Result:=True;
 end;
 
 
@@ -2764,7 +2766,7 @@ begin
           ExecSQL;
       except
           on E:EIdException do begin
-             _errorDescription:='ОШИБКА! '+e.Message;
+             _errorDescription:='Не удалось обновить пароль'+#13+e.Message;
              FreeAndNil(ado);
              if Assigned(serverConnect) then begin
                serverConnect.Close;
@@ -3281,7 +3283,7 @@ var
 begin
   remoteVersion:=GetRemoteVersionDashboard;
 
-  if GUID_VESRION <> remoteVersion then begin
+  if GUID_VERSION <> remoteVersion then begin
 
    error:='Текущая версия дашборда отличается от актуальной версии'+#13#13
           +'Перезагрузите компьютер или перезапустите службу обновления ('+UPDATE_SERVICES+')'+#13#13
@@ -3299,10 +3301,10 @@ begin
    if FileExists(SETTINGS_XML) then begin
     XML:=TXML.Create(PChar(SETTINGS_XML));
     // обновляем текущий
-    XML.UpdateCurrentVersion(PChar(GUID_VESRION));
+    XML.UpdateCurrentVersion(PChar(GUID_VERSION));
    end
    else begin
-    XML:=TXML.Create(PChar(SETTINGS_XML),PChar(GUID_VESRION));
+    XML:=TXML.Create(PChar(SETTINGS_XML),PChar(GUID_VERSION));
    end;
    XML.Free;
   end;
@@ -4869,7 +4871,7 @@ var
  folderUpdate:string;
  XML:TXML;
 begin
-   folderUpdate:=FOLDERPATH+GetUpdateNameFolder;
+   folderUpdate:=FOLDERUPDATE;
   // удаляем сначало всю директорию
   if DirectoryExists(folderUpdate) then TDirectory.Delete(folderUpdate, True);
 
@@ -4879,11 +4881,11 @@ begin
 
     XML:=TXML.Create;
     XML.isUpdate('false');
-    XML.UpdateCurrentVersion(PChar(GUID_VESRION));
+    XML.UpdateCurrentVersion(PChar(GUID_VERSION));
     XML.Free;
 
     // показывем инфо о новой версии
-    ShowInfoNewVersionAfterUpdate(GUID_VESRION);
+    ShowInfoNewVersionAfterUpdate(GUID_VERSION);
   end;
 end;
 

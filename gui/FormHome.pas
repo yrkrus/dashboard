@@ -114,7 +114,6 @@ type
     chkboxGoHome: TCheckBox;
     ImgNewYear: TImage;
     ST_operatorsHideCount: TStaticText;
-    Button3: TButton;
     menu_Chat: TMenuItem;
     lblNewMessageLocalChat: TLabel;
     lblNewVersionDashboard: TLabel;
@@ -616,7 +615,6 @@ begin
   Height:=900; //1011
   ClientWidth:=1410;
 
-
   // проверка установлен ли MySQL Connector
   if not isExistMySQLConnector then begin
     error:='Не установлен MySQL Connector';
@@ -624,7 +622,7 @@ begin
   end;
 
   // отображение текущей версии  ctrl+shift+G (GUID) - от этого ID зависит актуальность еще
-  Caption:=Caption+' '+getVersion(GUID_VESRION,eGUI) + ' | '+'('+GUID_VESRION+')';
+  Caption:=Caption+' '+getVersion(GUID_VERSION,eGUI) + ' | '+'('+GUID_VERSION+')';
 
   // проверка на ткущую версию
   CheckCurrentVersion;
@@ -793,7 +791,7 @@ end;
 
 procedure THomeForm.lblNewVersionDashboardClick(Sender: TObject);
 begin
-  MessageBox(Handle,PChar('Дашборд обновляется автоматически'+#13#13+'Закройте окно дашборда и подождите около 30 сек'),PChar('Информация'),MB_OK+MB_ICONINFORMATION);
+  MessageBox(Handle,PChar('Для применения обновления закройте программу'+#13+'и подождите около 30 сек'),PChar('Информация'),MB_OK+MB_ICONINFORMATION);
 end;
 
 procedure THomeForm.ListViewSIPCustomDrawItem(Sender: TCustomListView;

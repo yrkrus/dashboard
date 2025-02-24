@@ -100,8 +100,7 @@ procedure TFormUsers.btnDisableClick(Sender: TObject);
 var
 resultat:Word;
 id:Integer;
-resulatat_str:string;
-
+ error:string;
 begin
  if currentEditUserId='1' then begin
     MessageBox(Handle,PChar('Разработчика нельзя отключить!'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
@@ -120,11 +119,11 @@ begin
 
 
   // отключаем
-  resulatat_str:=disableUser(id);
-  if AnsiPos('ОШИБКА',resulatat_str)<>0 then begin
-    MessageBox(Handle,PChar(resultat),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+  if not DisableUser(id, error) then begin
+    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
   end;
+
 
   // загружаем новые данные
     LoadSettings;
@@ -159,10 +158,9 @@ end;
 
 procedure TFormUsers.btnEnableClick(Sender: TObject);
 var
-resultat:Word;
-id:Integer;
-resulatat_str:string;
-
+  resultat:Word;
+  id:Integer;
+  error:string;
 begin
  if currentEditUserId='' then begin
     MessageBox(Handle,PChar('Не выбран пользователь'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
@@ -176,9 +174,8 @@ begin
 
 
   // включаем
-  resulatat_str:=enableUser(id);
-  if AnsiPos('ОШИБКА',resulatat_str)<>0 then begin
-    MessageBox(Handle,PChar(resultat),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+  if not EnableUser(id,error) then begin
+    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
   end;
 

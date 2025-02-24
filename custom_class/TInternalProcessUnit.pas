@@ -38,6 +38,7 @@ uses
       private
       m_userLogonID       :Integer;                       // текущий залогиненый пользователь
       function GetCurrentDateTimeWithTime:string;          // текущая дата + время
+      function isExistFileUpdate:Boolean;                 // загружен ли файл с обновлением
 
 
 
@@ -79,6 +80,24 @@ begin
   times:=Now;
 
   Result:=tmp_year+'-'+tmp_month+'-'+tmp_day+' '+TimeToStr(times);
+end;
+
+// загружен ли файл с обновлением
+function TInternalProcess.isExistFileUpdate:Boolean;
+var
+  XML:TXML;
+  test:string;
+begin
+  Result:=False;
+  if not DirectoryExists(FOLDERUPDATE) then Exit;
+  try
+    XML:=TXML.Create(PChar(SETTINGS_XML));
+    test:=FOLDERUPDATE+'\'+XML.GetRemoteVersion+'.zip';
+
+    if FileExists(FOLDERUPDATE+'\'+XML.GetRemoteVersion+'.zip') then Result:=True;
+  finally
+    XML.Free;
+  end;
 end;
 
 
@@ -151,19 +170,23 @@ end;
 // обновление времемни в settings.xml
 procedure TInternalProcess.XMLUpdateLastOnline;
 var
-XML:TXML;
+  XML:TXML;
 begin
   // текущая версия дашборда
   XML:=TXML.Create(PChar(SETTINGS_XML));
   XML.UpdateLastOnline;
 
-  if XML.isUpdate then begin
-   HomeForm.lblNewVersionDashboard.Visible:=True;
-   // подкрашиваем надпись
-   SetRandomFontColor(HomeForm.lblNewVersionDashboard);
-  end;
+  // TODO переделать!!! нужно еще проверятьб папку /update/new_vesrion.zip  что есть такой файл
 
-  XML.Free;
+  try
+   if (XML.isUpdate) and (isExistFileUpdate) then begin
+     HomeForm.lblNewVersionDashboard.Visible:=True;
+     // подкрашиваем надпись
+     SetRandomFontColor(HomeForm.lblNewVersionDashboard);
+   end;
+  finally
+   XML.Free;
+  end;
 end;
 
 end.

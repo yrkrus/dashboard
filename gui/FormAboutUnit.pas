@@ -36,6 +36,7 @@ type
     procedure TimerStartPashalka1Timer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure ShowVersion;
+    procedure lblDevelopClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -111,6 +112,11 @@ begin
    MessageBox(Handle,PChar('Ну хорошо, упортсво должны быть вознаграждено, напиши мне в телеграм @yrkrus кодовое слово "хочу мороженку" и я угощю тебя вкусной мороженкой'+#13+'Шутка, с меня конечно же вискарик!!!'),PChar('Мммм... мне бы твое терпение и упоротость'),MB_OK+MB_ICONERROR);
  end;
 
+end;
+
+procedure TFormAbout.lblDevelopClick(Sender: TObject);
+begin
+ lblDevelop.Visible:=False;
 end;
 
 procedure TFormAbout.TimerStartPashalka1Timer(Sender: TObject);

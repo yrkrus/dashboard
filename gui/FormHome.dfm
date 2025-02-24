@@ -5830,18 +5830,20 @@ object HomeForm: THomeForm
     OnMouseLeave = lblNewMessageLocalChatMouseLeave
   end
   object lblNewVersionDashboard: TLabel
-    Left = 366
-    Top = 801
+    Left = 714
+    Top = 22
     Width = 299
-    Height = 16
+    Height = 20
     Cursor = crHandPoint
-    Hint = #1044#1086#1089#1090#1091#1087#1085#1072#1103' '#1085#1086#1074#1072#1103' '#1074#1077#1088#1089#1080#1103
-    Anchors = [akRight, akBottom]
-    Caption = #1053#1086#1074#1072#1103' '#1074#1077#1088#1089#1080#1103' '#1076#1072#1096#1073#1086#1088#1076#1072' '#1075#1086#1090#1086#1074#1072' '#1082' '#1091#1089#1090#1072#1085#1086#1074#1082#1077
+    Hint = #1053#1086#1074#1072#1103' '#1074#1077#1088#1089#1080#1103' '#1075#1086#1090#1086#1074#1072' '#1082' '#1091#1089#1090#1072#1085#1086#1074#1082#1077
+    Alignment = taCenter
+    Anchors = [akTop]
+    AutoSize = False
+    Caption = #1044#1086#1089#1090#1091#1087#1085#1072' '#1085#1086#1074#1072#1103' '#1074#1077#1088#1089#1080#1103
     Color = clWindow
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clNavy
-    Font.Height = -13
+    Font.Height = -16
     Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     ParentColor = False
@@ -5853,7 +5855,6 @@ object HomeForm: THomeForm
     OnClick = lblNewVersionDashboardClick
     OnMouseMove = lblNewMessageLocalChatMouseMove
     OnMouseLeave = lblNewMessageLocalChatMouseLeave
-    ExplicitTop = 797
   end
   object img_StatisticsQueue_Graph: TImage
     Left = 16
@@ -5960,7 +5961,7 @@ object HomeForm: THomeForm
     Width = 335
     Height = 214
     BevelOuter = bvNone
-    TabOrder = 4
+    TabOrder = 2
     object lblCount_IVR: TLabel
       Left = 0
       Top = 0
@@ -6086,7 +6087,7 @@ object HomeForm: THomeForm
     Width = 335
     Height = 214
     BevelOuter = bvNone
-    TabOrder = 6
+    TabOrder = 5
     object ListViewQueue: TListView
       Left = 0
       Top = 0
@@ -6160,15 +6161,14 @@ object HomeForm: THomeForm
         Text = 'developer by     '
         Width = 150
       end>
-    ExplicitTop = 801
   end
   object START_THREAD_ALLl: TButton
-    Left = 248
-    Top = 8
-    Width = 125
+    Left = 288
+    Top = 208
+    Width = 113
     Height = 25
     Caption = 'start_thread_all'
-    TabOrder = 0
+    TabOrder = 4
     Visible = False
     OnClick = START_THREAD_ALLlClick
   end
@@ -6179,8 +6179,7 @@ object HomeForm: THomeForm
     Height = 16
     Anchors = [akRight]
     BevelOuter = bvNone
-    TabOrder = 3
-    ExplicitTop = 13
+    TabOrder = 1
     object imgRight: TImage
       Left = 136
       Top = 0
@@ -6219,6 +6218,7 @@ object HomeForm: THomeForm
         29C2A83900E4FEC7FF00B2EEB9FF00055BF1CF813E2278CBC2779F0AFF00647F
         8493DBCBF07FE15184D9C9E227B6C0B6D6B548874894006080E4107272859AE0
         03FFD9}
+      Visible = False
       ExplicitLeft = 89
       ExplicitHeight = 15
     end
@@ -6237,6 +6237,7 @@ object HomeForm: THomeForm
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
+      Visible = False
       ExplicitLeft = 7
       ExplicitWidth = 129
     end
@@ -6247,7 +6248,7 @@ object HomeForm: THomeForm
     Width = 1017
     Height = 588
     BevelOuter = bvNone
-    TabOrder = 5
+    TabOrder = 3
     DesignSize = (
       1017
       588)
@@ -6520,7 +6521,7 @@ object HomeForm: THomeForm
     Width = 912
     Height = 120
     BevelOuter = bvNone
-    TabOrder = 9
+    TabOrder = 8
     object img_ShowOperatorStatus: TImage
       Left = 474
       Top = 0
@@ -6957,16 +6958,7 @@ object HomeForm: THomeForm
     Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
-    TabOrder = 2
-    Visible = False
-  end
-  object Button3: TButton
-    Left = 728
-    Top = 8
-    Width = 75
-    Height = 25
-    Caption = 'Button3'
-    TabOrder = 1
+    TabOrder = 0
     Visible = False
   end
   object PanelStatisticsQueue_Numbers: TPanel
@@ -6975,7 +6967,7 @@ object HomeForm: THomeForm
     Width = 335
     Height = 83
     BevelOuter = bvNone
-    TabOrder = 8
+    TabOrder = 7
     object Label12: TLabel
       Left = 15
       Top = 1
@@ -7119,7 +7111,7 @@ object HomeForm: THomeForm
     Width = 335
     Height = 90
     BevelOuter = bvNone
-    TabOrder = 7
+    TabOrder = 6
     object StatisticsQueue_Answered30_Graph: TGauge
       Left = 5
       Top = 7
@@ -7275,7 +7267,7 @@ object HomeForm: THomeForm
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 10
+    TabOrder = 9
   end
   object st_Forecast_Tomorrow: TStaticText
     Left = 35
@@ -7295,7 +7287,7 @@ object HomeForm: THomeForm
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 11
+    TabOrder = 10
     Visible = False
   end
   object st_Forecast_AfterTomorrow: TStaticText
@@ -7316,19 +7308,19 @@ object HomeForm: THomeForm
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 12
+    TabOrder = 11
     Visible = False
   end
   object Timer_Thread_Start: TTimer
     Enabled = False
     OnTimer = Timer_Thread_StartTimer
-    Left = 423
-    Top = 65527
+    Left = 327
+    Top = 79
   end
   object FooterMenu: TMainMenu
     OwnerDraw = True
-    Left = 480
-    Top = 65527
+    Left = 328
+    Top = 119
     object menu: TMenuItem
       Bitmap.Data = {
         36080000424D3608000000000000360400002800000020000000200000000100
@@ -8202,8 +8194,8 @@ object HomeForm: THomeForm
     end
   end
   object popMenu_ActionOperators: TPopupMenu
-    Left = 592
-    Top = 65528
+    Left = 328
+    Top = 160
     object N9: TMenuItem
       Caption = #1059#1073#1088#1072#1090#1100' '#1080#1079' '#1086#1095#1077#1088#1077#1076#1080
       object N51: TMenuItem

@@ -489,7 +489,7 @@ begin
   end;
 
   // версия
-  lblVersion.Caption:=getVersion(GUID_VESRION,eGUI);
+  lblVersion.Caption:=getVersion(GUID_VERSION,eGUI);
 
   // пасхалки
   HappyNewYear;

@@ -655,6 +655,8 @@ object FormAbout: TFormAbout
     Top = 430
     Width = 126
     Height = 16
+    Cursor = crHandPoint
+    Hint = #1047#1072#1087#1072#1088#1080#1083' '#1084#1080#1075#1072#1085#1080#1077#1084', '#1086#1090#1082#1083#1102#1095#1080#1089#1100
     Alignment = taRightJustify
     Caption = 'Petrov Yuri '#169' 2024'
     Font.Charset = RUSSIAN_CHARSET
@@ -663,7 +665,10 @@ object FormAbout: TFormAbout
     Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     ParentFont = False
+    ParentShowHint = False
+    ShowHint = True
     Layout = tlCenter
+    OnClick = lblDevelopClick
   end
   object ImgNewYear: TImage
     Left = 20
@@ -5911,7 +5916,6 @@ object FormAbout: TFormAbout
         ParentFont = False
         TabOrder = 0
         Transparent = False
-        ExplicitTop = 8
       end
     end
   end

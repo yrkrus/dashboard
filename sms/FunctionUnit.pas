@@ -9,7 +9,8 @@ FormHomeUnit,
  Vcl.StdCtrls,System.Win.ComObj,System.StrUtils,math, IdHTTP,
  IdSSL,IdIOHandlerStack, IdSSLOpenSSL, System.DateUtils,System.IniFiles,
  Winapi.WinSock,  Vcl.ComCtrls, GlobalVariables, Vcl.Grids, Data.Win.ADODB,
- Data.DB, IdException, TPacientsListUnit, Vcl.Menus, System.SyncObjs;
+ Data.DB, IdException, TPacientsListUnit, Vcl.Menus, System.SyncObjs,
+ TCustomTypeUnit;
 
 
 function GetSMS(inPacientPhone:string):string; overload;                                      // отправка смс v2
@@ -28,6 +29,7 @@ function LoadData(InFileExcel:string; var _errorDescription:string;
 procedure OptionsStyle(InOptionsType:enumSendingOptions);                                     // выбор типа отправляемого смс
 function isCorrectNumberPhone(InNumberPhone:string; var _errorDescription:string):Boolean;    // проверка корректности номера телефона при вводе
 function CheckParamsBeforeSending(InOptionsType:enumSendingOptions; var _errorDescription:string):Boolean; // проверка данных перед отправкой
+function IsPunctuationOrDigit(ch: Char): Boolean;                                             // проверка на знак припенания или цифру
 function CreateSMSMessage(var InMessage:TRichEdit):string;                                    // правка сообщения чтобы оно было в 1 строку
 function SendingMessage(InOptionsType:enumSendingOptions; var _errorDescription:string):Boolean; // отправка сообщения
 procedure ClearParamsForm(InOptionsType:enumSendingOptions);                                  // очистка полей формы
@@ -48,6 +50,7 @@ procedure SaveMyTemplateMessage(id:Integer; InNewMessage:string; IsDelete:Boolea
 procedure SendingRemember(isShowLog:Boolean);                                                 // отправка рассылки sms о напоминании приема
 procedure SignSMS;                                                                            // есть ли возможность вставлять подпись в СМС сообщение
 procedure CreatePopMenuAddressClinic(var p_PopMenu:TPopupMenu; var p_Message:TRichEdit);      // создание списка с адресами клиник для быстрого доступа к ним
+procedure ShowSendingManualPhone(InSendingType:enumManualSMS);                                // выбор типа при ручной отправки SMS (1 SMS или списком)
 
 
 implementation
@@ -67,11 +70,6 @@ begin
 
   telefon:=InNumberPhone;
 
-   if telefon='' then begin
-    _errorDescription:='Пустой номер телефона';
-    Exit;
-   end;
-
    // номер должен начинаться с 8
    if telefon[1]<>'8' then begin
     _errorDescription:='Номер телефона "'+telefon+'" должен начинаться с 8';
@@ -88,10 +86,18 @@ begin
    Result:=True;
 end;
 
+
+// проверка на знак припенания или цифру
+function IsPunctuationOrDigit(ch: Char): Boolean;
+begin
+  Result := (ch in [',', '.', '!', '?', ';', ':', '-', '(', ')', '[', ']', '{', '}', '''', '"']) or
+            (ch >= '0') and (ch <= '9');
+end;
+
 // проверка данных перед отправкой
 function CheckParamsBeforeSending(InOptionsType:enumSendingOptions; var _errorDescription:string):Boolean;
 var
- t:Integer;
+ i:Integer;
 begin
   Result:=False;
   _errorDescription:='';
@@ -102,14 +108,27 @@ begin
         options_Manual:begin  // ручная отправка
 
          // телефон
-         if not isCorrectNumberPhone(edtManualSMS.Text,_errorDescription) then begin
+         if SharedSendindPhoneManualSMS.Count = 0 then begin
+            _errorDescription:='Пустой номер телефона';
             Exit;
          end;
 
-         // сообщение
-         if Length(re_ManualSMS.Text)=0 then begin
-           _errorDescription:='Пустое сообщение';
-           Exit;
+         for i:=0 to SharedSendindPhoneManualSMS.Count-1 do begin
+          if not isCorrectNumberPhone(SharedSendindPhoneManualSMS[i],_errorDescription) then begin
+            Exit;
+          end;
+         end;
+
+         if (IsPunctuationOrDigit(re_ManualSMS.Text[1])) or
+            (re_ManualSMS.Text[1] = ' ') then begin
+            _errorDescription:='Сообщение не может начинаться со знака припенания, пробела или цифры';
+            Exit;
+         end;
+
+         if (IsPunctuationOrDigit(re_ManualSMS.Text[Length(re_ManualSMS.Text)])) or
+             (re_ManualSMS.Text[Length(re_ManualSMS.Text)] = ' ') then begin
+            _errorDescription:='Сообщение не может заканчиваться знаком припенания, пробелом или цифрой';
+            Exit;
          end;
 
         end;
@@ -148,6 +167,9 @@ var
  phone:string;
  addSign:Boolean;
  showLog:Boolean;
+ sendindManualReportError:TStringList;
+ i:Integer;
+ isExistError:Boolean;
 begin
   Result:=False;
   _errorDescription:='';
@@ -163,19 +185,38 @@ begin
       // подправим сообщение чтобы оно было в одну строчку
       SMSMessage:=CreateSMSMessage(FormHome.re_ManualSMS);
 
-      // телефон
-      phone:=FormHome.edtManualSMS.Text;
+      sendindManualReportError:=TStringList.Create;
+      isExistError:=False;
 
-      if FormHome.chkbox_SignSMS.Checked then addSign:=True
-      else addSign:=False;
+      for i:=0 to SharedSendindPhoneManualSMS.Count-1 do begin
+        // телефон
+        phone:=SharedSendindPhoneManualSMS[i];
 
-      if not SMS.SendSMS(SMSMessage,phone,_errorDescription,addSign) then begin
-       SharedMainLog.Save('Не удалось отправить SMS на номер ('+phone+') : '+SMSMessage+'. ОШИБКА : '+_errorDescription, True);
-       Exit;
+        if FormHome.chkbox_SignSMS.Checked then addSign:=True
+        else addSign:=False;
+
+        if not SMS.SendSMS(SMSMessage,phone,_errorDescription,addSign) then begin
+
+         if not isExistError then begin
+          sendindManualReportError.Add('Не удалось отправить SMS');
+          isExistError:=True;
+         end;
+         sendindManualReportError.Add(phone+' '+_errorDescription);
+         SharedMainLog.Save('Не удалось отправить SMS на номер ('+phone+') : '+SMSMessage+'. ОШИБКА : '+_errorDescription, True);
+        end else begin
+          SharedMainLog.Save('Отправлено SMS на номер ('+phone+') : '+SMSMessage);
+        end;
       end;
 
-      SharedMainLog.Save('Отправлено SMS на номер ('+phone+') : '+SMSMessage);
+      if sendindManualReportError.Count <> 0 then
+      begin
+        _errorDescription:='Не удалось отправить сообщение на номера:'+#13#13;
+        for i:=0 to sendindManualReportError.Count-1 do begin
+         _errorDescription:=_errorDescription+sendindManualReportError[i]+#13;
+        end;
 
+        Exit;
+      end;
     end;
     options_Sending:begin  // рассылка
       SMS:=TSendSMS.Create(DEBUG);
@@ -244,7 +285,7 @@ begin
        btnSendSMS.Caption:=' &Отправить SMS';
 
        edtManualSMS.Text:='';                 // номер телефона
-       st_PhoneInfo.Visible:=True;            // инфо что телдефон должен начинаться с 8
+       //st_PhoneInfo.Visible:=True;            // инфо что телдефон должен начинаться с 8
        re_ManualSMS.Clear;                    // сообщение
 
        //chkbox_SignSMS.Checked:=True;          // подпись в конце SMS
@@ -252,6 +293,9 @@ begin
        chkbox_SaveGlobalTemplate.Checked:=False;  // сохранить сообщение в глобальные шаблоны
 
        st_ShowInfoAddAddressClinic.Visible:=True; // справка как добавить адрес клиники
+
+       SharedSendindPhoneManualSMS.Clear;
+       lblManualSMS_List.Caption:='списком';
 
       end;
       options_Sending: begin
@@ -1335,6 +1379,39 @@ procedure CreatePopMenuAddressClinic(var p_PopMenu:TPopupMenu; var p_Message:TRi
   address_clinic:TAddressClinicPopMenu;
 begin
   address_clinic:=TAddressClinicPopMenu.Create(p_PopMenu, p_Message);
+end;
+
+// выбор типа при ручной отправки SMS (1 SMS или списком)
+procedure ShowSendingManualPhone(InSendingType:enumManualSMS);
+begin
+  with FormHome do begin
+    case InSendingType of
+      sending_one: begin
+        lblManualSMS_One.Visible:=False;
+
+        edtManualSMS.Left:=13;
+        edtManualSMS.Visible:=True;
+
+        st_PhoneInfo.Left:=77;
+        st_PhoneInfo.Visible:=True;
+
+        lblManualSMS_List.Font.Size:=8;
+        lblManualSMS_List.left:=155;
+        lblManualSMS_List.top:=22;
+
+      end;
+      sending_list: begin
+
+          {
+              lblManualSMS_List.left:=129
+              lblManualSMS_List.top:=42;
+              lblManualSMS_List.Font.Size:=10;
+
+          }
+
+      end;
+    end;
+  end;
 end;
 
 

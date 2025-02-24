@@ -5,14 +5,14 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Samples.Gauges,
-  Vcl.WinXCtrls;
+  Vcl.WinXCtrls, Vcl.ExtCtrls;
 
 type
   TFormWait = class(TForm)
-    ProgressBar: TGauge;
+    panel: TPanel;
     ProgressStatusText: TStaticText;
     STEsc: TStaticText;
-    ActivityIndicator: TActivityIndicator;
+    ProgressBar: TGauge;
     procedure FormCreate(Sender: TObject);
     procedure STEscClick(Sender: TObject);
     procedure FormShow(Sender: TObject);

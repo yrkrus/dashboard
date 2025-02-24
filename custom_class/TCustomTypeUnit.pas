@@ -223,6 +223,10 @@ interface
                          eNeedReconnectNO);   // нет
 
 
+  type   // ручная отправка SMS
+  enumManualSMS = (sending_one,      // отпрвака на 1 номер
+                   sending_list);    // отпрвака на сножество номеров
+
  // =================== ПРОЕОБРАЗОВАНИЯ ===================
 
   // Boolean -> string
@@ -351,6 +355,7 @@ begin
    eGUI     :Result:='gui';
    eCHAT    :Result:='chat';
    eREPORT  :Result:='report';
+   eSMS     :Result:='sms';
   end;
 end;
 
@@ -370,7 +375,7 @@ end;
 // преобразование TAccessStatus --> Bool
 function TAccessStatusToBool(Status: enumAccessStatus): Boolean;
 begin
-  if Status = access_ENABLED then Result:=True;
+  if Status = access_ENABLED  then Result:=True;
   if Status = access_DISABLED then Result:=False;
 end;
 

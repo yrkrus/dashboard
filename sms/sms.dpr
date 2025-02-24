@@ -13,7 +13,8 @@ uses
   FormEditTemplateUnit in 'FormEditTemplateUnit.pas' {FormEditTemplate},
   TLogFileUnit in '..\custom_class\TLogFileUnit.pas',
   TAddressClinicPopMenuUnit in '..\custom_class\TAddressClinicPopMenuUnit.pas',
-  TThreadSendSMSUnit in '..\custom_class\TThreadSendSMSUnit.pas';
+  TThreadSendSMSUnit in '..\custom_class\TThreadSendSMSUnit.pas',
+  FormListSendingSMSUnit in 'FormListSendingSMSUnit.pas' {FormListSendingSMS};
 
 {$R *.res}
 
@@ -27,5 +28,6 @@ begin
   Application.CreateForm(TFormMyTemplate, FormMyTemplate);
   Application.CreateForm(TFormNotSendingSMSError, FormNotSendingSMSError);
   Application.CreateForm(TFormEditTemplate, FormEditTemplate);
+  Application.CreateForm(TFormListSendingSMS, FormListSendingSMS);
   Application.Run;
 end.

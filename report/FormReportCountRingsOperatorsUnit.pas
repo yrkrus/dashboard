@@ -29,8 +29,10 @@ type
     procedure chkboxUvolennieClick(Sender: TObject);
     procedure btnGenerateClick(Sender: TObject);
     procedure chkboxOnlyCurrentDayClick(Sender: TObject);
+    procedure SetDetailed(AValue:Boolean);
   private
     { Private declarations }
+    m_detailed:Boolean;    // детальный отчет
     procedure FormDefault;
     procedure FormShowOperators;
     procedure FormCenter;
@@ -41,6 +43,7 @@ type
     procedure AllCheckedListOperatorsSip;   // на случай если не выбрали параметр "выбрать операторов"
 
   public
+
     { Public declarations }
   end;
 
@@ -254,7 +257,7 @@ begin
 
 
   // создаем отчет
-  report:=TReportCountOperators.Create('ќтчет по количеству звонков операторами',dateStart,dateStop,onlyCurrentDay);
+  report:=TReportCountOperators.Create('ќтчет по количеству звонков операторами',dateStart,dateStop,onlyCurrentDay,m_detailed);
   report.ShowProgress; //показываем прогресс бар
   report.SetProgressStatusText('«агрузка данных с сервера ...');
 
@@ -298,6 +301,12 @@ begin
         Exit;
       end;
   end;
+end;
+
+// установка переменной (только подсчет кол-ва звонков)
+procedure TFormReportCountRingsOperators.SetDetailed(AValue:Boolean);
+begin
+  m_detailed:=AValue;
 end;
 
 procedure TFormReportCountRingsOperators.chkboxShowAllClick(Sender: TObject);

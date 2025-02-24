@@ -4,17 +4,17 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Buttons;
 
 type
   TFormRePassword = class(TForm)
     lblFooter: TLabel;
-    btnRePwd: TButton;
     Panel: TPanel;
     lblPwd_show: TLabel;
     edtPwdNew: TEdit;
     lblPwd2_show: TLabel;
     edtPwd2New: TEdit;
+    btnRePwd: TBitBtn;
     procedure btnRePwdClick(Sender: TObject);
     procedure edtPwd2NewKeyPress(Sender: TObject; var Key: Char);
     procedure FormShow(Sender: TObject);
@@ -45,29 +45,29 @@ var
 begin
    // проверки
     if edtPwdNew.Text='' then begin
-     MessageBox(Handle,PChar('ОШИБКА! Не заполнено поле "Пароль"'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+     MessageBox(Handle,PChar('Не заполнено поле "Новый пароль"'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
      Exit;
     end;
 
     if edtPwd2New.Text='' then begin
-     MessageBox(Handle,PChar('ОШИБКА! Не заполнено поле "Подтверждение"'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+     MessageBox(Handle,PChar('Не заполнено поле "Подтверждение"'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
      Exit;
     end;
 
     if edtPwdNew.Text <> edtPwd2New.Text then begin
-     MessageBox(Handle,PChar('ОШИБКА! Пароли не совпадают'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+     MessageBox(Handle,PChar('Пароли не совпадают'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
      Exit;
     end;
 
     if Length(edtPwdNew.Text)<=3 then begin
-     MessageBox(Handle,PChar('ОШИБКА! Длина пароля слишком короткая'+#13#13+'Минимальная длина пароля: '+IntToStr(cSIZE_PWD)+' символа'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+     MessageBox(Handle,PChar('Длина пароля слишком короткая'+#13#13+'Минимальная длина пароля: '+IntToStr(cSIZE_PWD)+' символа'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
      Exit;
     end;
 
     // меняем пароль
    pwd:=getHashPwd(edtPwdNew.Text);
 
-   if not updateUserPassword(SharedCurrentUserLogon.GetID,pwd, error) then begin
+   if not UpdateUserPassword(SharedCurrentUserLogon.GetID,pwd, error) then begin
     MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
    end;

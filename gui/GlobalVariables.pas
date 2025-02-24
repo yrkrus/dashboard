@@ -23,8 +23,11 @@ var
   // текущая директория откуда запускаем *.exe
   FOLDERPATH        :string;
 
+  // папка с обноалением
+  FOLDERUPDATE      :string;
+
   // Текущая версия GUID   ctrl+shift+G (GUID)
-  GUID_VESRION      :string = '815126D5';
+  GUID_VERSION      :string = 'AF2A42E3';
 
   // exe родителя
   DASHBOARD_EXE     :string = 'dashboard.exe';
@@ -127,7 +130,9 @@ implementation
 
 initialization  // Инициализация
   FOLDERPATH:=ExtractFilePath(ParamStr(0));
+  FOLDERUPDATE:=FOLDERPATH+GetUpdateNameFolder;
 
+ 
   SharedActiveSipOperators  := TActiveSIP.Create;
   SharedIVR                 := TIVR.Create;
   SharedMainLog             := TLoggingFile.Create('main');   // лог работы main формы

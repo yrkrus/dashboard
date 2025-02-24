@@ -2,7 +2,7 @@
 ///                                                                           ///
 ///                                                                           ///
 ///                  Класс для описания TReportCountOperators                 ///
-///                  "Отчет по количеству звонков операторами"                ///
+///          "Отчет по количеству звонков операторами (подробный)"            ///
 ///                                                                           ///
 ///                                                                           ///
 /////////////////////////////////////////////////////////////////////////////////
@@ -19,6 +19,7 @@ uses
   TAbstractReportUnit,
   Vcl.CheckLst,
   TQueueHistoryUnit,
+  TCountRingsOperatorsUnit,
   Data.Win.ADODB, Data.DB;
 
 
@@ -30,25 +31,30 @@ uses
 
       public
       constructor Create(InNameReports:string;                    // название отчета
-                         InDateStart,InDateStop:TDateTimePicker;   // даты отчета
-                         InOnlyCurrentDay:Boolean                // только текщий день
-                        );            overload;
+                         InDateStart,InDateStop:TDateTimePicker;  // даты отчета
+                         InOnlyCurrentDay:Boolean;                // только текщий день
+                         isDetailed:Boolean                      // подробный отчет
+                         );            overload;
 
       destructor Destroy;            override;
 
       procedure CreateReportExcel(const p_list:TCheckListBox); // создаем отчет
 
       private
-      m_nameReport        :string;     // название отчета
-      m_onlyCurrentDay    :Boolean;   // показ только текщего дня
-      m_queue             :array of TQueueHistory;   // список с данными истории
-      countQueue          :Integer;
+      m_nameReport              :string;     // название отчета
+      m_onlyCurrentDay          :Boolean;   // показ только текщего дня
+      m_queue                   :array of TQueueHistory;   // список с данными истории
+      countQueue                :Integer;
+      m_operatorsSipCountCall   :array of TCountRingsOperators; // список с данными по звонкам по дням
+      countOperators            :Integer;
+      m_detailed                :Boolean; // подробный отчет
 
       function GetOperatorsSIP(const p_list:TCheckListBox):TStringList;  // получение SIP операторов которые нужно в отчет впиндюрить
-
-      procedure GenerateExcel;  // формирование данных в excel
-
+      procedure GenerateExcelDetailed;  // формирование данных в excel(подробный)
       function FindFIO(InSipOperator:Integer;InCurrentDate:TDate):string;  // поиск фио оператора
+
+      procedure CreateReportDetailed(const p_list:string);    // создание отчета (подробный)
+      procedure CreateReportCount(const p_list:string);       // создание отчета (только кол-во)
 
       end;
    // class TReportCountOperators END
@@ -62,13 +68,18 @@ uses
 
 constructor TReportCountOperators.Create(InNameReports:string;
                                          InDateStart,InDateStop:TDateTimePicker;
-                                         InOnlyCurrentDay:Boolean);
+                                         InOnlyCurrentDay:Boolean;
+                                         isDetailed:Boolean);
 begin
   // инициализацуия родительского класса
   inherited Create(InDateStart.Date,InDateStop.Date);
 
   m_nameReport:=InNameReports;
   m_onlyCurrentDay:=InOnlyCurrentDay;
+  m_detailed:=isDetailed;
+
+  countQueue:=0;
+  countOperators:=0;
 end;
 
 
@@ -76,7 +87,14 @@ destructor TReportCountOperators.Destroy;
 var
  i:Integer;
 begin
-  for i:=Low(m_queue) to High(m_queue) do FreeAndNil(m_queue[i]);
+  if Assigned(m_queue) then begin
+    for i:=Low(m_queue) to High(m_queue) do FreeAndNil(m_queue[i]);
+  end;
+
+  if Assigned(m_operatorsSipCountCall) then begin
+   for i:=Low(m_operatorsSipCountCall) to High(m_operatorsSipCountCall) do FreeAndNil(m_operatorsSipCountCall[i]);
+  end;
+
   inherited Destroy;
 end;
 
@@ -106,11 +124,6 @@ var
  listSIP:TStringList;
  i:Integer;
  listOperators:string;
- ado:TADOQuery;
- serverConnect:TADOConnection;
- table:string;
- countData:Integer;
- procentLoad:Integer;
 begin
   // найдем список SIP для отчета
   listSIP:=GetOperatorsSIP(p_list);
@@ -125,13 +138,68 @@ begin
    else listOperators:=listOperators+','+#39+listSIP[i]+#39;
   end;
 
+   if m_detailed then begin
+     CreateReportDetailed(listOperators);
+   end
+   else begin
+      // создаем список sip
+      begin
+       SetLength(m_operatorsSipCountCall,listSIP.Count);
+       countOperators:=listSIP.Count;
+       for i:=0 to countOperators-1 do begin
+        m_operatorsSipCountCall[i]:=TCountRingsOperators.Create;
+        m_operatorsSipCountCall[i].m_sip:=StrToInt(listSIP[i]);
+       end;
+      end;
+
+     CreateReportCount(listOperators);
+   end;
+end;
+
+
+// поиск фио оператора
+function TReportCountOperators.FindFIO(InSipOperator:Integer;InCurrentDate:TDate):string;
+var
+ i:Integer;
+ isFinded:Boolean; // найдено фио
+begin
+
+  // TODO сделать !!! проверяем это уволенный сотрудник или нет
+
+
+
+  isFinded:=False;
+
+  for i:=0 to countQueue-1 do begin
+    if m_queue[i].sip = InSipOperator  then begin
+      if m_queue[i].userFIO <> '' then begin
+        isFinded:=True;
+
+        Result:=m_queue[i].userFIO;
+        Exit;
+      end;
+    end;
+  end;
+
+  if not isFinded then Result:=GetUserNameOperators(IntToStr(InSipOperator));
+end;
+
+// создание отчета (подробный)
+procedure TReportCountOperators.CreateReportDetailed(const p_list:string);
+var
+ i:Integer;
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ table:string;
+ countData:Integer;
+ procentLoad:Integer;
+begin
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
   if not Assigned(serverConnect) then begin
      FreeAndNil(ado);
      Exit;
   end;
-
 
   try
     // из какой таблицы брать данные
@@ -141,7 +209,7 @@ begin
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
-      SQL.Add('select count(id) from '+table+' where sip IN ('+listOperators+')' );
+      SQL.Add('select count(id) from '+table+' where sip IN ('+p_list+')' );
       if not m_onlyCurrentDay then SQL.Add(' and date_time >='+#39+GetDateToDateBD(GetDateStart)+' 00:00:00'+#39+' and date_time<='+#39+GetDateToDateBD(GetDateStop)+' 23:59:59'+#39+' order by date_time ASC');
 
       Active:=True;
@@ -164,7 +232,7 @@ begin
         for i:=0 to countData-1 do m_queue[i]:=TQueueHistory.Create;
 
         SQL.Clear;
-        SQL.Add('select id,number_queue,phone,waiting_time,date_time,sip,talk_time from '+table+' where sip IN ('+listOperators+')' );
+        SQL.Add('select id,number_queue,phone,waiting_time,date_time,sip,talk_time from '+table+' where sip IN ('+p_list+')' );
         if not m_onlyCurrentDay then SQL.Add(' and date_time >='+#39+GetDateToDateBD(GetDateStart)+' 00:00:00'+#39+' and date_time<='+#39+GetDateToDateBD(GetDateStop)+' 23:59:59'+#39+' order by date_time ASC');
 
         Active:=True;
@@ -211,40 +279,116 @@ begin
   end;
 
   // создем excel
-  GenerateExcel;
+  GenerateExcelDetailed;
 end;
 
-
-// поиск фио оператора
-function TReportCountOperators.FindFIO(InSipOperator:Integer;InCurrentDate:TDate):string;
+// создание отчета (только кол-во)
+procedure TReportCountOperators.CreateReportCount(const p_list:string);
 var
- i:Integer;
- isFinded:Boolean; // найдено фио
+ i,j:Integer;
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ table:string;
+ countData:Integer;
+ procentLoad:Integer;
 begin
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
 
-  // TODO сделать !!! проверяем это уволенный сотрудник или нет
 
+  try
+    // из какой таблицы брать данные
+    if m_onlyCurrentDay then table:='queue'
+    else table:='history_queue';
 
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select count(id) from '+table+' where sip IN ('+p_list+')' );
+      if not m_onlyCurrentDay then SQL.Add(' and date_time >='+#39+GetDateToDateBD(GetDateStart)+' 00:00:00'+#39+' and date_time<='+#39+GetDateToDateBD(GetDateStop)+' 23:59:59'+#39+' order by date_time ASC');
 
-  isFinded:=False;
+      Active:=True;
+      countData:=Fields[0].Value;
+      if countData=0 then begin
+        FreeAndNil(ado);
+        if Assigned(serverConnect) then begin
+          serverConnect.Close;
+          FreeAndNil(serverConnect);
+        end;
 
-  for i:=0 to countQueue-1 do begin
-    if m_queue[i].sip = InSipOperator  then begin
-      if m_queue[i].userFIO <> '' then begin
-        isFinded:=True;
-
-        Result:=m_queue[i].userFIO;
         Exit;
       end;
+
+      if countData<>0 then begin
+
+         for i:=0 to countOperators-1 do // смотрим по sip операторам
+         begin
+
+
+
+         end;
+
+
+
+
+            SQL.Clear;
+            SQL.Add('select id,number_queue,phone,waiting_time,date_time,sip,talk_time from '+table+' where sip IN ('+p_list+')' );
+            if not m_onlyCurrentDay then SQL.Add(' and date_time >='+#39+GetDateToDateBD(GetDateStart)+' 00:00:00'+#39+' and date_time<='+#39+GetDateToDateBD(GetDateStop)+' 23:59:59'+#39+' order by date_time ASC');
+
+            Active:=True;
+            for i:=0 to countData-1 do begin
+               if isESC then begin
+                 FreeAndNil(ado);
+                  if Assigned(serverConnect) then begin
+                    serverConnect.Close;
+                    FreeAndNil(serverConnect);
+                  end;
+
+                  Exit;
+               end;
+
+               procentLoad:=Trunc(i*100/countData);
+
+               SetProgressStatusText('Загрузка данных с сервера ['+IntToStr(procentLoad)+'%] ...');
+               SetProgressBar(procentLoad);
+
+
+               m_queue[i].id:=StrToInt(Fields[0].Value);
+               m_queue[i].number_queue:=StringToTQueue(Fields[1].Value);
+               m_queue[i].phone:=Fields[2].Value;
+              // m_queue[i].waiting_time:=Fields[3].Value;
+               m_queue[i].date_time:=StrToDateTime(Fields[4].Value);
+               m_queue[i].sip:=StrToInt(Fields[5].Value);
+               m_queue[i].talk_time:=Fields[6].Value;
+               m_queue[i].userFIO:=FindFIO(m_queue[i].sip,m_queue[i].date_time);
+
+               ado.Next;
+
+               // проверка вдруг отменили операцию
+               GetAbout;
+            end;
+      end;
+
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
     end;
   end;
 
-  if not isFinded then Result:=GetUserNameOperators(IntToStr(InSipOperator));
+  // создем excel
+  GenerateExcelDetailed;
 end;
 
 
-// формирование данных в excel
-procedure TReportCountOperators.GenerateExcel;
+// формирование данных в excel(подробный)
+procedure TReportCountOperators.GenerateExcelDetailed;
 var
  ColIndex:Integer;
  i:Integer;

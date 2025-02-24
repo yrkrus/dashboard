@@ -9,7 +9,7 @@ uses
 type
   TFormHome = class(TForm)
     GroupEnabledReports: TGroupBox;
-    lblReportCountRingsOperators: TLabel;
+    lblReportShowRingsOperators: TLabel;
     StatusBar: TStatusBar;
     GroupBox1: TGroupBox;
     Label1: TLabel;
@@ -24,9 +24,15 @@ type
     Label8: TLabel;
     Label9: TLabel;
     STDEBUG: TStaticText;
+    lblReportCountRingsOperators: TLabel;
+    Label7: TLabel;
     procedure ProcessCommandLineParams(DEBUG:Boolean = False);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure lblReportShowRingsOperatorsClick(Sender: TObject);
+    procedure lblReportShowRingsOperatorsMouseLeave(Sender: TObject);
+    procedure lblReportShowRingsOperatorsMouseMove(Sender: TObject;
+      Shift: TShiftState; X, Y: Integer);
     procedure lblReportCountRingsOperatorsClick(Sender: TObject);
     procedure lblReportCountRingsOperatorsMouseLeave(Sender: TObject);
     procedure lblReportCountRingsOperatorsMouseMove(Sender: TObject;
@@ -80,18 +86,40 @@ end;
 
 procedure TFormHome.lblReportCountRingsOperatorsClick(Sender: TObject);
 begin
-  FormReportCountRingsOperators.ShowModal;
+  with FormReportCountRingsOperators do begin
+    SetDetailed(False);
+    ShowModal;
+  end;
 end;
 
 procedure TFormHome.lblReportCountRingsOperatorsMouseLeave(Sender: TObject);
 begin
-  lblReportCountRingsOperators.Font.Style:=[fsBold];
+ lblReportCountRingsOperators.Font.Style:=[fsBold];
 end;
 
 procedure TFormHome.lblReportCountRingsOperatorsMouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
 begin
-  lblReportCountRingsOperators.Font.Style:=[fsUnderline,fsBold];
+ lblReportCountRingsOperators.Font.Style:=[fsUnderline,fsBold];
+end;
+
+procedure TFormHome.lblReportShowRingsOperatorsClick(Sender: TObject);
+begin
+   with FormReportCountRingsOperators do begin
+    SetDetailed(True);
+    ShowModal;
+  end;
+end;
+
+procedure TFormHome.lblReportShowRingsOperatorsMouseLeave(Sender: TObject);
+begin
+  lblReportShowRingsOperators.Font.Style:=[fsBold];
+end;
+
+procedure TFormHome.lblReportShowRingsOperatorsMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  lblReportShowRingsOperators.Font.Style:=[fsUnderline,fsBold];
 end;
 
 procedure TFormHome.ProcessCommandLineParams(DEBUG:Boolean);

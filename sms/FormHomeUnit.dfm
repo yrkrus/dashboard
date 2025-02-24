@@ -42,7 +42,7 @@ object FormHome: TFormHome
     Top = 8
     Width = 419
     Height = 302
-    ActivePage = sheet_SendingSMS
+    ActivePage = sheet_ManualSMS
     TabOrder = 0
     OnChange = page_TypesSMSChange
     object sheet_ManualSMS: TTabSheet
@@ -68,16 +68,56 @@ object FormHome: TFormHome
           Font.Style = [fsBold]
           ParentFont = False
         end
+        object lblManualSMS_List: TLabel
+          Left = 129
+          Top = 42
+          Width = 55
+          Height = 16
+          Cursor = crHandPoint
+          Hint = #1057#1087#1080#1089#1086#1082' '#1085#1086#1084#1077#1088#1086#1074' '#1076#1083#1103' '#1086#1090#1087#1088#1072#1074#1082#1080' '#1086#1076#1080#1085#1072#1082#1086#1074#1086#1081' SMS'
+          Alignment = taRightJustify
+          Caption = #1089#1087#1080#1089#1082#1086#1084
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clBlue
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ParentShowHint = False
+          ShowHint = True
+          OnClick = lblManualSMS_ListClick
+        end
+        object lblManualSMS_One: TLabel
+          Left = 20
+          Top = 42
+          Width = 82
+          Height = 16
+          Cursor = crHandPoint
+          Hint = #1054#1090#1087#1088#1072#1074#1082#1072' '#1085#1072' '#1086#1076#1080#1085' '#1085#1086#1084#1077#1088' '#1086#1076#1085#1086#1081' SMS'
+          Caption = #1086#1076#1080#1085' '#1085#1086#1084#1077#1088' '
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clBlue
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ParentShowHint = False
+          ShowHint = True
+          OnClick = lblManualSMS_OneClick
+        end
         object edtManualSMS: TEdit
-          Left = 12
+          Left = 151
           Top = 38
           Width = 197
           Height = 24
           TabOrder = 1
+          Visible = False
+          OnChange = edtManualSMSChange
           OnClick = edtManualSMSClick
+          OnKeyPress = edtManualSMSKeyPress
         end
         object btnSaveFirebirdSettings: TBitBtn
-          Left = 226
+          Left = 224
           Top = 24
           Width = 166
           Height = 47
@@ -204,7 +244,6 @@ object FormHome: TFormHome
           Top = 224
           Width = 375
           Height = 17
-          Cursor = crHandPoint
           Hint = 
             #1057#1086#1086#1073#1097#1077#1085#1080#1077' '#1084#1086#1078#1085#1086' '#1073#1091#1076#1077#1090' '#1074#1099#1073#1088#1072#1090#1100' '#1076#1083#1103' '#1087#1086#1074#1090#1086#1088#1085#1086#1081' '#1086#1090#1087#1088#1072#1074#1082#1080#13#10'('#1076#1086#1089#1090#1091#1087#1085#1086' ' +
             #1090#1086#1083#1100#1082#1086' '#1072#1074#1090#1086#1088#1091')'
@@ -212,11 +251,9 @@ object FormHome: TFormHome
           ParentShowHint = False
           ShowHint = True
           TabOrder = 6
-          OnMouseLeave = chkbox_SaveMyTemplateMouseLeave
-          OnMouseMove = chkbox_SaveMyTemplateMouseMove
         end
         object st_PhoneInfo: TStaticText
-          Left = 76
+          Left = 215
           Top = 42
           Width = 130
           Height = 17
@@ -229,13 +266,13 @@ object FormHome: TFormHome
           Font.Style = []
           ParentFont = False
           TabOrder = 2
+          Visible = False
         end
         object chkbox_SaveGlobalTemplate: TCheckBox
           Left = 12
           Top = 240
           Width = 375
           Height = 17
-          Cursor = crHandPoint
           Hint = 
             #1057#1086#1086#1073#1097#1077#1085#1080#1077' '#1084#1086#1078#1085#1086' '#1073#1091#1076#1077#1090' '#1074#1099#1073#1088#1072#1090#1100' '#1076#1083#1103' '#1087#1086#1074#1090#1086#1088#1085#1086#1081' '#1086#1090#1087#1088#1072#1074#1082#1080#13#10'('#1076#1086#1089#1090#1091#1087#1085#1086' ' +
             #1042#1057#1045#1052' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1103#1084', '#1088#1077#1076#1072#1082#1090#1080#1088#1091#1077#1090#1089#1103' '#1090#1086#1083#1100#1082#1086' "'#1042#1077#1076#1091#1097#1080#1084#1080' '#1086#1087#1077#1088#1072#1090#1086#1088#1072#1084#1080'")'
@@ -243,23 +280,18 @@ object FormHome: TFormHome
           ParentShowHint = False
           ShowHint = True
           TabOrder = 7
-          OnMouseLeave = chkbox_SaveGlobalTemplateMouseLeave
-          OnMouseMove = chkbox_SaveGlobalTemplateMouseMove
         end
         object chkbox_SignSMS: TCheckBox
           Left = 12
           Top = 208
           Width = 375
           Height = 17
-          Cursor = crHandPoint
           Caption = #1074#1089#1090#1072#1074#1080#1090#1100' '#1087#1086#1076#1087#1080#1089#1100' '#1074' '#1082#1086#1085#1094#1077' SMS'
           Checked = True
           ParentShowHint = False
           ShowHint = True
           State = cbChecked
           TabOrder = 5
-          OnMouseLeave = chkbox_SignSMSMouseLeave
-          OnMouseMove = chkbox_SignSMSMouseMove
         end
       end
     end
@@ -452,6 +484,7 @@ object FormHome: TFormHome
         Caption = #1054#1090#1086#1073#1088#1072#1078#1072#1090#1100' '#1093#1086#1076' '#1086#1090#1087#1088#1072#1074#1082#1080' ('#1086#1090#1082#1083#1102#1095#1077#1085#1086')'
         Enabled = False
         TabOrder = 3
+        Visible = False
         OnClick = chkboxShowLogClick
       end
       object ProgressStatusText: TStaticText
@@ -672,11 +705,11 @@ object FormHome: TFormHome
   object st_ShowInfoAddAddressClinic: TStaticText
     Left = 198
     Top = 115
-    Width = 197
+    Width = 202
     Height = 17
     Cursor = crHandPoint
     Hint = #1055#1086#1082#1072#1079#1072#1090#1100' '#1089#1087#1088#1072#1074#1082#1091
-    Caption = ' '#1050#1072#1082' '#1073#1099#1089#1090#1088#1086' '#1074#1089#1090#1072#1074#1080#1090#1100' '#1072#1076#1088#1077#1089' '#1082#1083#1080#1085#1080#1082#1080' '
+    Caption = ' '#1050#1072#1082' '#1073#1099#1089#1090#1088#1086' '#1074#1089#1090#1072#1074#1080#1090#1100' '#1072#1076#1088#1077#1089' '#1082#1083#1080#1085#1080#1082#1080'? '
     Color = clWindow
     DoubleBuffered = False
     Font.Charset = DEFAULT_CHARSET
