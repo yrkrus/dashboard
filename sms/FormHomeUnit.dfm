@@ -42,7 +42,7 @@ object FormHome: TFormHome
     Top = 8
     Width = 419
     Height = 302
-    ActivePage = sheet_ManualSMS
+    ActivePage = sheet_SendingSMS
     TabOrder = 0
     OnChange = page_TypesSMSChange
     object sheet_ManualSMS: TTabSheet

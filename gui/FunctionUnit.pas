@@ -58,7 +58,7 @@ procedure DeleteActiveSession(InSessionID:Integer);                             
 function GetActiveSessionUser(InUserID:Integer):Integer;                             // доставание ID активной сессии пользователя
 function isExistSipActiveOperator(InSip:string):Boolean;                             // проверка заведен ли уже ранее оператор под таким sip номером и он активен
 procedure accessRights(var p_TUser: TUser);                                          // права доступа
-function getCurrentUserNamePC:string;                                                // получение имени залогиненого пользователя
+// function GetCurrentUserNamePC:string;                                                // получение имени залогиненого пользователя
 function getComputerPCName: string;                                                  // функция получения имени ПК
 function getForceActiveSessionClosed(InUserID:Integer):Boolean;                      // проверка нужно ли закрыть активную сессию
 function GetSelectResponse(InStroka:string):Integer;                                 // запрос по статичтике данных
@@ -531,19 +531,19 @@ end;
 
 
 // получение имени залогиненого пользователя
-function getCurrentUserNamePC:string;
- const
-   cnMaxUserNameLen = 254;
- var
-   sUserName: string;
-   dwUserNameLen: DWORD;
-begin
-   dwUserNameLen := cnMaxUserNameLen - 1;
-   SetLength(sUserName, cnMaxUserNameLen);
-   GetUserName(PChar(sUserName), dwUserNameLen);
-   SetLength(sUserName, dwUserNameLen);
-   Result:= PChar(sUserName);
-end;
+//function GetCurrentUserNamePC:string;
+// const
+//   cnMaxUserNameLen = 254;
+// var
+//   sUserName: string;
+//   dwUserNameLen: DWORD;
+//begin
+//   dwUserNameLen := cnMaxUserNameLen - 1;
+//   SetLength(sUserName, cnMaxUserNameLen);
+//   GetUserName(PChar(sUserName), dwUserNameLen);
+//   SetLength(sUserName, dwUserNameLen);
+//   Result:= PChar(sUserName);
+//end;
 
 
 // запрос по статичтике данных
@@ -911,7 +911,7 @@ begin
   end;
 
   // переведем время в секунлы
-  correctTime:=getTimeAnsweredToSeconds(InTime)-delta_time;
+  correctTime:=getTimeAnsweredToSeconds(InTime) - delta_time;
 
   Result:=GetTimeAnsweredSecondsToString(correctTime);
 end;
@@ -962,7 +962,6 @@ begin
      FreeAndNil(ado);
      Exit;
   end;
-
 
  try
   with ado do begin

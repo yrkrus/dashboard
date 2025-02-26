@@ -236,11 +236,11 @@ begin
    for i:=0 to cGLOBAL_DEPTH-1 do avg:=avg+m_list[i];
    for i:=0 to cGLOBAL_DEPTH_CORRECT-1 do avgCorrect:=avgCorrect+m_listCorrect[i];
 
-   // TODO пока коррекцию отключил ее надо еще доработать
-//   if Round(avg/cGLOBAL_DEPTH) > Round(avgCorrect/cGLOBAL_DEPTH_CORRECT) then Result:=avg/cGLOBAL_DEPTH
-//   else begin
-//      Result:=(avgCorrect/cGLOBAL_DEPTH_CORRECT) + (Round(avgCorrect/cGLOBAL_DEPTH_CORRECT) - Round(avg/cGLOBAL_DEPTH));
-//   end;
+   // TODO надо еще доработать
+   if Round(avg/cGLOBAL_DEPTH) > Round(avgCorrect/cGLOBAL_DEPTH_CORRECT) then Result:=avg/cGLOBAL_DEPTH
+   else begin
+      Result:=(avgCorrect/cGLOBAL_DEPTH_CORRECT) + (Round(avgCorrect/cGLOBAL_DEPTH_CORRECT) - Round(avg/cGLOBAL_DEPTH));
+   end;
 
   Result:=avg/cGLOBAL_DEPTH;
 end;

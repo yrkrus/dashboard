@@ -17,7 +17,9 @@ type
   private
     { Private declarations }
 
-  procedure CreateLogAddColoredLine(var p_Log:TRichEdit; InMessage:string; InColor:TColor);
+  procedure CreateLogAddColoredLine(var p_Log: TRichEdit;
+                                    InMessageError: string; InColorError: TColor;
+                                    InMessage: string; InColor: TColor);
 
   procedure ShowError;
   function SaveFile(var _errorDescription:string):Boolean;
@@ -65,20 +67,35 @@ begin
 end;
 
 
-procedure TFormNotSendingSMSError.CreateLogAddColoredLine(var p_Log:TRichEdit; InMessage:string; InColor:TColor);
+procedure TFormNotSendingSMSError.CreateLogAddColoredLine(var p_Log: TRichEdit;
+                                  InMessageError: string; InColorError: TColor;
+                                  InMessage: string; InColor: TColor);
 begin
-  with p_Log do
+ with p_Log do
   begin
-    SelStart:= Length(Text);
-    SelAttributes.Color:=InColor;
-    SelAttributes.Size:=10;
-    SelAttributes.Name:='Tahoma';
-    Lines.Add(InMessage);
+    // Устанавливаем курсор в конец текста
+    SelStart := Length(Text);
 
-    Perform(EM_LINESCROLL,0,Lines.Count-1);
+    // Добавляем первое сообщение с первым цветом
+    SelAttributes.Color := InColorError;
+    SelAttributes.Size := 10;
+    SelAttributes.Name := 'Tahoma';
+    SelText := InMessageError; // Используем SelText для добавления текста
+
+    // Добавляем три пробела
+    SelText := '   ';
+
+    // Добавляем второе сообщение с вторым цветом
+    SelAttributes.Color := InColor;
+    SelText := InMessage; // Используем SelText для добавления текста
+
+    // Прокрутка к последней строке
+    Perform(EM_LINESCROLL, 0, Lines.Count - 1);
+    Lines.Add('');
     SetFocus;
   end;
 end;
+
 
 
 procedure TFormNotSendingSMSError.ShowError;
@@ -90,8 +107,9 @@ begin
 
   for i:=0 to SharedPacientsListNotSending.Count-1 do begin
 
-    CreateLogAddColoredLine(re_LogError,SharedPacientsListNotSending.GetErrorDescriptions(i),clRed);
-    CreateLogAddColoredLine(re_LogError,SharedPacientsListNotSending.ShowPacientInfo(i),clBlack);
+    CreateLogAddColoredLine(re_LogError,
+                            SharedPacientsListNotSending.GetErrorDescriptions(i),clRed,
+                            SharedPacientsListNotSending.ShowPacientInfo(i),clBlack);
   end;
 end;
 

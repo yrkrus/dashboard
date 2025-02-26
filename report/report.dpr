@@ -18,6 +18,9 @@ uses
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
+  Application.HintHidePause:=60000;
+  Application.HintPause:=100;
+
   Application.CreateForm(TFormHome, FormHome);
   Application.CreateForm(TFormReportCountRingsOperators, FormReportCountRingsOperators);
   Application.CreateForm(TFormWait, FormWait);

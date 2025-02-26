@@ -14,7 +14,8 @@ uses
   TLogFileUnit in '..\custom_class\TLogFileUnit.pas',
   TAddressClinicPopMenuUnit in '..\custom_class\TAddressClinicPopMenuUnit.pas',
   TThreadSendSMSUnit in '..\custom_class\TThreadSendSMSUnit.pas',
-  FormListSendingSMSUnit in 'FormListSendingSMSUnit.pas' {FormListSendingSMS};
+  FormListSendingSMSUnit in 'FormListSendingSMSUnit.pas' {FormListSendingSMS},
+  TXmlUnit in '..\custom_class\TXmlUnit.pas';
 
 {$R *.res}
 

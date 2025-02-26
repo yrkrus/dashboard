@@ -5,7 +5,7 @@ object FormNotSendingSMSError: TFormNotSendingSMSError
   BorderStyle = bsSingle
   Caption = #1054#1096#1080#1073#1082#1080
   ClientHeight = 404
-  ClientWidth = 367
+  ClientWidth = 609
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -20,16 +20,16 @@ object FormNotSendingSMSError: TFormNotSendingSMSError
   object panel_Error: TPanel
     Left = 7
     Top = 7
-    Width = 353
+    Width = 594
     Height = 332
     BevelInner = bvLowered
     TabOrder = 0
     object re_LogError: TRichEdit
-      Left = 2
-      Top = 2
-      Width = 349
-      Height = 328
-      Align = alClient
+      Left = 10
+      Top = 9
+      Width = 572
+      Height = 314
+      Align = alCustom
       BorderStyle = bsNone
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
@@ -40,12 +40,11 @@ object FormNotSendingSMSError: TFormNotSendingSMSError
       ScrollBars = ssVertical
       TabOrder = 0
       Zoom = 100
-      ExplicitWidth = 552
     end
   end
   object btnLoadFile: TBitBtn
-    Left = 86
-    Top = 348
+    Left = 208
+    Top = 346
     Width = 185
     Height = 47
     Caption = ' &'#1057#1086#1093#1088#1072#1085#1080#1090#1100' '#1074' '#1092#1072#1081#1083

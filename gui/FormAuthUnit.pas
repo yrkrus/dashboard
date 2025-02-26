@@ -110,7 +110,7 @@ begin
   Result:=False;
 
   // найдем Имя фамилию последнего успешного входа
-  userNameFamiliya:=getUserFamiliyaName_LastSuccessEnter(getCurrentUserNamePC,getComputerPCName);
+  userNameFamiliya:=getUserFamiliyaName_LastSuccessEnter(GetCurrentUserNamePC,getComputerPCName);
   if userNameFamiliya='null' then Exit;
 
   // найдем нужный items
@@ -304,7 +304,7 @@ begin
       re_password   := getUserRePassword(id);
       ip            := getLocalIP;
       pc            := getComputerPCName;
-      user_login_pc := getCurrentUserNamePC;
+      user_login_pc := GetCurrentUserNamePC;
      end;
 
      SharedCurrentUserLogon.UpdateParams(currentUser);

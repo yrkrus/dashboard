@@ -121,7 +121,7 @@ begin
 
          if (IsPunctuationOrDigit(re_ManualSMS.Text[1])) or
             (re_ManualSMS.Text[1] = ' ') then begin
-            _errorDescription:='Сообщение не может начинаться со знака припенания, пробела или цифры';
+            _errorDescription:='Сообщение не может начинаться со знака припенания, пробела или цифрой';
             Exit;
          end;
 
@@ -1031,7 +1031,8 @@ end;
 // проверка на корректность записи из excel файла
 function isValidPacientFields(var Pacient:TListPacients):Boolean;
 const
- cPHONE_ERROR:string = 'Некорректный номер телефона';
+ cPHONE_ERROR     :string  = 'Некорректный номер телефона';
+ cPACIENT_ERROR   :string  = 'Отсутствует Имя Отчевство у пациента';
 var
  i,j:Integer;
 
@@ -1063,11 +1064,18 @@ begin
     Pacient._errorDescriptions:=cPHONE_ERROR;
     Exit;
    end;
+
+   // и напоследок поиск самого долбанутого номера
+   if Pacient.Phone = '89999999999' then begin
+    Pacient._errorDescriptions:=cPHONE_ERROR;
+    Exit;
+   end;
+
   end;
 
   if Pacient.IO = '' then begin
-
-
+    Pacient._errorDescriptions:=cPACIENT_ERROR;
+    Exit;
   end;
 
 

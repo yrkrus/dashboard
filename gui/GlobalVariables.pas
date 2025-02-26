@@ -27,7 +27,7 @@ var
   FOLDERUPDATE      :string;
 
   // Текущая версия GUID   ctrl+shift+G (GUID)
-  GUID_VERSION      :string = 'AF2A42E3';
+  GUID_VERSION      :string = 'C60232FA';
 
   // exe родителя
   DASHBOARD_EXE     :string = 'dashboard.exe';
@@ -112,7 +112,7 @@ var
   function StringToTQueue(InQueueSTR:string):enumQueueCurrent; stdcall;  external 'core.dll';      // конвертер из string в TQueue
   function TQueueToString(InQueueSTR:enumQueueCurrent):PChar;  stdcall;  external 'core.dll';      // конвертер из TQueue в string
   function GetUserNameOperators(InSip:string):PChar;           stdcall;  external 'core.dll';      // полчуение имени пользователя из его SIP номера
-
+  function GetCurrentUserNamePC:PChar;                         stdcall;  external 'core.dll';      // получение имени залогиненого пользователя (из системы)
 
 
   // --- connect_to_server.dll ---

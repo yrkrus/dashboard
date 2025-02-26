@@ -59,6 +59,7 @@ object FormWait: TFormWait
       Width = 80
       Height = 17
       Cursor = crHandPoint
+      Hint = #1054#1090#1084#1077#1085#1080#1090#1100' '#1089#1086#1079#1076#1072#1085#1080#1077' '#1086#1090#1095#1077#1090#1072
       Caption = #1086#1090#1084#1077#1085#1072' (ESC)'
       Color = clWindow
       Font.Charset = DEFAULT_CHARSET
@@ -68,6 +69,8 @@ object FormWait: TFormWait
       Font.Style = [fsBold]
       ParentColor = False
       ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
       TabOrder = 1
       OnClick = STEscClick
     end

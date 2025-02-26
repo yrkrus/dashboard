@@ -337,6 +337,7 @@ procedure TSendSMS.SaveToBase(InServerOtvet:string; InMessage:string);
  ado:TADOQuery;
  serverConnect:TADOConnection;
  response:string;
+ user_login_pc:string;
 begin
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
@@ -372,10 +373,13 @@ begin
     // XMLDoc автоматически освобождается, если используется IXMLDocument
   end;
 
-  response:='insert into sms_sending (user_id,phone,message,sms_id) values ('+#39+IntToStr(USER_STARTED_SMS_ID)+#39+','
-                                                                             +#39+phone+#39+','
-                                                                             +#39+InMessage+#39+','
-                                                                             +#39+sms_id+#39+')';
+  user_login_pc:=GetCurrentUserNamePC;
+
+  response:='insert into sms_sending (user_id,phone,message,sms_id,user_login_pc) values ('+#39+IntToStr(USER_STARTED_SMS_ID)+#39+','
+                                                                                           +#39+phone+#39+','
+                                                                                           +#39+InMessage+#39+','
+                                                                                           +#39+sms_id+#39+','
+                                                                                           +#39+user_login_pc+#39+')';
    try
      with ado do begin
         ado.Connection:=serverConnect;
@@ -414,7 +418,9 @@ const
   CustomHeaders2  :string = 'Content-Type: application/x-www-form-urlencoded; charset=utf-8 ';
   CustomHeaders3  :string = 'Accept-Charset:utf-8';
   CustomHeaders4  :string = 'Accept:application/json, text/javascript, */*; q=0.01';
-  CustomUserAgent :string = 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:56.0) Gecko/20100101 Firefox/56.0';
+  //CustomUserAgent :string = 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:56.0) Gecko/20100101 Firefox/56.0';
+    CustomUserAgent :string = 'Wget/1.17.1 (linux-gnu)';
+
 var
  http:TIdHTTP;
  ssl:TIdSSLIOHandlerSocketOpenSSL;

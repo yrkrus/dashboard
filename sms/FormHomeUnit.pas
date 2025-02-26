@@ -140,7 +140,7 @@ cSLEEPNEXTSMS:Integer=150; // время задержки перед следующей отправкой смс
 implementation
 
 uses
-  FunctionUnit, GlobalVariables, TSendSMSUint, FormMyTemplateUnit, FormNotSendingSMSErrorUnit, TCustomTypeUnit, FormListSendingSMSUnit;
+  FunctionUnit, GlobalVariables, TSendSMSUint, FormMyTemplateUnit, FormNotSendingSMSErrorUnit, TCustomTypeUnit, FormListSendingSMSUnit, TXmlUnit;
 
  {$R *.dfm}
 
@@ -233,14 +233,22 @@ var
  TypeReport:Word;
  FileExcelSMS:string;
  error:string;
+ XML:TXML;
+ FindPath:string;
+ FullPath:string;
 begin
+  // ранее сохраненный путь
+  XML:=TXML.Create(PChar(SETTINGS_XML));
+  FindPath:=XML.GetFolderPathFindRemember;
+  if FindPath = 'null' then FindPath:=FOLDERPATH;
+
 
   with OpenDialog do begin
      Title:='Загрузка файла';
      DefaultExt:='xls';
      Filter:='Excel 2003 и старее | *.xls|Excel 2007 и новее| *.xlsx';
      FilterIndex:=1;
-     InitialDir:=FOLDERPATH;
+     InitialDir:=FindPath;
 
       if Execute then
       begin
@@ -251,6 +259,10 @@ begin
          lblNameExcelFile.Font.Color:=clGreen;
 
          FileExcelSMS:=FileName;
+
+         // сохраняем путь
+         FullPath:=ExtractFilePath(FileName);
+         XML.SetFolderPathFindRemember(FullPath);
       end;
   end;
 

@@ -42,6 +42,9 @@ uses
     procedure isUpdate(InValue:string); overload;           // установка параметра обновления
     function isUpdate:Boolean;         overload;            // текущее состояние (в обновлении или нет)
 
+    function GetFolderPathFindRemember: string;             // путь откуда будем забирать файл с смс рассылкой
+    procedure SetFolderPathFindRemember(const Path: string); // установка пути откуда будем забирать файл с смс рассылкой
+
 
   private
     m_fileSettings: string;                                 // путь с файлом настроек
@@ -178,9 +181,13 @@ begin
       // Добавляем узел <isUpdate> внутрь <Versions>
       m_ChildNode.AddChild('isUpdate').Text := 'false';
 
-
       // Добавляем узел <LastOnline>
       m_RootNode.AddChild('LastOnline'); // Добавляем LastOnline на тот же уровень, что и Versions
+
+
+      // Добавляем узел <SMS> и дочерний узел <FolderPathFindRemember>
+      m_ChildNode := m_RootNode.AddChild('SMS');
+      m_ChildNode.AddChild('FolderPathFindRemember').Text := 'null'; // Значение по умолчанию
 
       // Сохраняем новый XML-документ
       m_XMLDoc.SaveToFile(m_fileSettings);
@@ -194,24 +201,49 @@ end;
 
 // проверка существует ли новое значение
 procedure TXML.checkExistNodeFields(inRootNode,InChildNode,inDefaultValue:string);
+var
+ InChildNodeRef:IXMLNode;
 begin
- m_XMLDoc := LoadXMLDocument(m_fileSettings);
+  m_XMLDoc := LoadXMLDocument(m_fileSettings);
   try
     m_RootNode := m_XMLDoc.DocumentElement;
 
-    // Проверяем наличие узла 'InChildNode'
-    m_ChildNode := m_RootNode.ChildNodes.FindNode(inRootNode).ChildNodes.FindNode(InChildNode);
-
-    // Если узел 'InChildNode' не найден, создаем его
-    if not Assigned(m_ChildNode) then
+    // Проверяем наличие корневого узла
+    if Assigned(m_RootNode) then
     begin
-      m_ChildNode := m_RootNode.ChildNodes.FindNode(inRootNode).AddChild(InChildNode);
-      m_ChildNode.Text := inDefaultValue; // Устанавливаем значение по умолчанию
+      // Проверяем наличие узла 'inRootNode'
+      m_ChildNode := m_RootNode.ChildNodes.FindNode(inRootNode);
 
-      m_XMLDoc.SaveToFile(m_fileSettings);
+      // Если узел 'inRootNode' не найден, создаем его
+      if not Assigned(m_ChildNode) then
+      begin
+        m_ChildNode := m_RootNode.AddChild(inRootNode);
+      end;
+
+      // Проверяем наличие узла 'InChildNode'
+      InChildNodeRef := m_ChildNode.ChildNodes.FindNode(InChildNode);
+
+      // Если узел 'InChildNode' не найден, создаем его
+      if not Assigned(InChildNodeRef) then
+      begin
+        InChildNodeRef := m_ChildNode.AddChild(InChildNode);
+        InChildNodeRef.Text := inDefaultValue; // Устанавливаем значение по умолчанию
+      end;
+    end
+    else
+    begin
+      // Если корневой узел не найден, создаем его
+      m_RootNode := m_XMLDoc.AddChild(inRootNode);
+      m_ChildNode := m_RootNode.AddChild(InChildNode);
+
+      InChildNodeRef := m_ChildNode.AddChild(InChildNode);
+      InChildNodeRef.Text := inDefaultValue; // Устанавливаем значение по умолчанию;
     end;
+
+    // Сохраняем изменения в файл только один раз
+    m_XMLDoc.SaveToFile(m_fileSettings);
   finally
-    m_XMLDoc := nil;
+    m_XMLDoc := nil; // Освобождаем ресурс
   end;
 end;
 
@@ -385,5 +417,56 @@ begin
 end;
 
 
+function TXML.GetFolderPathFindRemember: string;
+begin
+  Result := 'null';
+
+  if not isExistSettingsFile then
+  begin
+    m_XMLDoc := nil; // Освобождаем ресурсы
+    Exit;
+  end;
+
+  // Загружаем XML-документ
+  m_XMLDoc:= LoadXMLDocument(m_fileSettings);
+  try
+    m_RootNode:= m_XMLDoc.DocumentElement;
+
+    // Проверяем наличие узла <SMS>
+    m_ChildNode := m_RootNode.ChildNodes.FindNode('SMS');
+    if Assigned(m_ChildNode) then
+    begin
+      // Проверяем наличие узла <FolderPathFindRemember>
+      m_ChildNode := m_ChildNode.ChildNodes.FindNode('FolderPathFindRemember');
+      if Assigned(m_ChildNode) then
+      begin
+        Result:= m_ChildNode.Text; // Возвращаем текст узла
+      end;
+    end;
+  finally
+    m_XMLDoc := nil; // Освобождаем ресурсы
+  end;
+end;
+
+
+procedure TXML.SetFolderPathFindRemember(const Path: string);
+begin
+  // Проверяем наличие узла
+  checkExistNodeFields('SMS', 'FolderPathFindRemember', Path);
+
+  m_XMLDoc := LoadXMLDocument(m_fileSettings);
+  try
+    m_RootNode := m_XMLDoc.DocumentElement;
+    m_ChildNode := m_RootNode.ChildNodes.FindNode('SMS').ChildNodes.FindNode('FolderPathFindRemember');
+
+    if Assigned(m_ChildNode) then
+    begin
+      m_ChildNode.Text := Path;
+      m_XMLDoc.SaveToFile(m_fileSettings);
+    end;
+  finally
+    m_XMLDoc := nil;
+  end;
+end;
 
 end.

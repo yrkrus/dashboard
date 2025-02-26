@@ -594,6 +594,29 @@ begin
   end;
 end;
 
+
+// получение имени залогиненого пользователя
+function GetCurrentUserNamePC_LOCAL:string;
+ const
+   cnMaxUserNameLen = 254;
+ var
+   sUserName: string;
+   dwUserNameLen: DWORD;
+begin
+   dwUserNameLen := cnMaxUserNameLen - 1;
+   SetLength(sUserName, cnMaxUserNameLen);
+   GetUserName(PChar(sUserName), dwUserNameLen);
+   SetLength(sUserName, dwUserNameLen);
+   Result:= PChar(sUserName);
+end;
+
+ // получение имени залогиненого пользователя (внешняя функция)
+function GetCurrentUserNamePC:PChar; stdcall; export;
+begin
+  Result:=PChar(GetCurrentUserNamePC_LOCAL);
+end;
+
+
 exports
   createServerConnect,
   createServerConnectWithError,
@@ -621,7 +644,8 @@ exports
   GetIVRTimeQueue,
   StringToTQueue,
   TQueueToString,
-  GetUserNameOperators;
+  GetUserNameOperators,
+  GetCurrentUserNamePC;
 
 begin
 end.

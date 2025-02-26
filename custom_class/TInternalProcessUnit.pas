@@ -86,14 +86,11 @@ end;
 function TInternalProcess.isExistFileUpdate:Boolean;
 var
   XML:TXML;
-  test:string;
 begin
   Result:=False;
   if not DirectoryExists(FOLDERUPDATE) then Exit;
   try
     XML:=TXML.Create(PChar(SETTINGS_XML));
-    test:=FOLDERUPDATE+'\'+XML.GetRemoteVersion+'.zip';
-
     if FileExists(FOLDERUPDATE+'\'+XML.GetRemoteVersion+'.zip') then Result:=True;
   finally
     XML.Free;
