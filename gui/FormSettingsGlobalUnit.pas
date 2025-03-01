@@ -69,7 +69,8 @@ var
 implementation
 
 uses
-  FormSettingsGlobal_addIVRUnit, FormSettingsGlobal_listIVRUnit, FormGlobalSettingCheckFirebirdConnectUnit, TCustomTypeUnit, GlobalVariables;
+  FormSettingsGlobal_addIVRUnit, FormSettingsGlobal_listIVRUnit,
+  FormGlobalSettingCheckFirebirdConnectUnit, TCustomTypeUnit, GlobalVariables, TSendSMSUint;
 
 {$R *.dfm}
 
@@ -166,6 +167,8 @@ var
  serverConnect:TADOConnection;
  isNewAuth:Boolean;
  error:string;
+
+ SMS:TSendSMS;
 begin
   Screen.Cursor:=crHourGlass;
 
@@ -178,15 +181,19 @@ begin
      Exit;
   end;
 
+
+
   try
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
 
-      if (GetSMSAuth(sms_server_addr)='null') and
-         (GetSMSAuth(sms_login)='null') and
-         (GetSMSAuth(sms_pwd)='null') and
-         (GetSMSAuth(sms_sign)='null')
+      SMS:=TSendSMS.Create(DEBUG);
+
+      if (SMS.GetAuthData(sms_server_addr)='null') and
+         (SMS.GetAuthData(sms_login)='null') and
+         (SMS.GetAuthData(sms_pwd)='null') and
+         (SMS.GetAuthData(sms_sign)='null')
       then begin
         SQL.Add('insert into sms_settings (url,sms_login,sms_pwd,sign) values ('+#39+reSmsURL.Text+#39+','+#39+edtLogin_SMS.Text+#39+','+#39+edtPassword_SMS.Text+#39+','+#39+edtSmsSign.Text+#39')');
         isNewAuth:=True;
@@ -254,6 +261,8 @@ end;
 
 // прогрузка текущих параметров
 procedure TFormSettingsGlobal.LoadSettings;
+var
+ SMS:TSendSMS;
 begin
    // корректировка времени
    lblQueue_5000.Caption:=IntToStr(GetIVRTimeQueue(queue_5000));
@@ -268,16 +277,18 @@ begin
    // проверка можно ли включить кнопку проверка подключения к серверу
    SetButtonCheckFirebirdServer;
 
+   SMS:=TSendSMS.Create(DEBUG);
+
    // подключение к SMS рассылке
-   if (GetSMSAuth(sms_server_addr)<>'null')  and
-      (GetSMSAuth(sms_login)<>'null') and
-      (GetSMSAuth(sms_pwd)<>'null')  and
-      (GetSMSAuth(sms_sign)<>'null')
+   if (SMS.GetAuthData(sms_server_addr)<>'null')  and
+      (SMS.GetAuthData(sms_login)<>'null') and
+      (SMS.GetAuthData(sms_pwd)<>'null')  and
+      (SMS.GetAuthData(sms_sign)<>'null')
    then begin
-     reSmsURL.Text:=GetSMSAuth(sms_server_addr);
-     edtLogin_SMS.Text:=GetSMSAuth(sms_login);
-     edtPassword_SMS.Text:=GetSMSAuth(sms_pwd);
-     edtSmsSign.Text:=GetSMSAuth(sms_sign);
+     reSmsURL.Text:=SMS.GetAuthData(sms_server_addr);
+     edtLogin_SMS.Text:=SMS.GetAuthData(sms_login);
+     edtPassword_SMS.Text:=SMS.GetAuthData(sms_pwd);
+     edtSmsSign.Text:=SMS.GetAuthData(sms_sign);
 
      btnCheckSMSSettings.Enabled:=True;
    end;

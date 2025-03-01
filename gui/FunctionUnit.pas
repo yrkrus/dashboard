@@ -60,7 +60,7 @@ function isExistSipActiveOperator(InSip:string):Boolean;                        
 procedure accessRights(var p_TUser: TUser);                                          // права доступа
 // function GetCurrentUserNamePC:string;                                                // получение имени залогиненого пользователя
 function getComputerPCName: string;                                                  // функция получения имени ПК
-function getForceActiveSessionClosed(InUserID:Integer):Boolean;                      // проверка нужно ли закрыть активную сессию
+function GetForceActiveSessionClosed(InUserID:Integer):Boolean;                      // проверка нужно ли закрыть активную сессию
 function GetSelectResponse(InStroka:string):Integer;                                 // запрос по статичтике данных
 procedure LoggingRemote(InLoggingID:enumLogging);                                    // логирование действий
 function GetUserFamiliyaName_LastSuccessEnter(InUser_login_pc,
@@ -103,7 +103,7 @@ function getCheckIP(InIPAdtress:string):Boolean;                                
 procedure CreateFormActiveSession;                                                   // создание окна активных сессий
 function getCheckAlias(InAlias:string):Boolean;                                      // проверка на существаование такого алиаса уже, он может быть только один!
 function GetFirbirdAuth(FBType:enumFirebirdAuth):string;                             // получение авторизационных данных при подключени к БД firebird
-function GetSMSAuth(SMSType:enumSMSAuth):string;                                     // получение авторизационных данных при отправке SMS
+//function GetSMSAuth(SMSType:enumSMSAuth):string;                                     // получение авторизационных данных при отправке SMS
 function GetStatusMonitoring(status:Integer):enumMonitoringTrunk;                    // мониторится ли транк
 function GetCountServersIK:Integer;                                                  // получение кол-ва серверов ИК
 procedure SetAccessMenu(InNameMenu:enumAccessList; InStatus: enumAccessStatus);      // установка разрешение\запрет на доступ к меню
@@ -133,6 +133,8 @@ procedure ShowFormErrorMessage(const _errorMessage:string;
 function GetNeedReconnectBase(const _errorMessage:string):enumNeedReconnectBD;       // проверка нужно ли перезапускать reconnect к базе
 function GetNowDateTimeDec(DecMinutes:Integer):string;                               // текущее время начала дня (минус минуты)
 function GetNowDateTime:string;                                                      // текущее время начала дня
+function GetFreeSpaсeDrive(InDrive:string):int64;                                    // функция проверки сколько есть свободного места на диске
+function isExistFreeSpaceDrive(var _errorDescription:string):Boolean;                // проверка есть ли свободное место на диске
 
 
 
@@ -476,7 +478,7 @@ begin
      if not CONNECT_BD_ERROR then begin
 
        // логирование (выход)  , через команду или руками
-       if getForceActiveSessionClosed(SharedCurrentUserLogon.GetID) then LoggingRemote(eLog_exit_force)
+       if GetForceActiveSessionClosed(SharedCurrentUserLogon.GetID) then LoggingRemote(eLog_exit_force)
        else
        begin
         // проверка на вдруг нажали просто отмена
@@ -3232,16 +3234,18 @@ end;
 
 
 // проверка нужно ли закрыть активную сессию
-function getForceActiveSessionClosed(InUserID:Integer):Boolean;
+function GetForceActiveSessionClosed(InUserID:Integer):Boolean;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
+ error:string;
 begin
   Result:=False;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(error);
   if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error, SharedMainLog, 'GetForceActiveSessionClosed');
      FreeAndNil(ado);
      Exit;
   end;
@@ -3284,7 +3288,7 @@ begin
 
   if GUID_VERSION <> remoteVersion then begin
 
-   error:='Текущая версия дашборда отличается от актуальной версии'+#13#13
+   error:='Текущая версия программы отличается от актуальной версии'+#13#13
           +'Перезагрузите компьютер или перезапустите службу обновления ('+UPDATE_SERVICES+')'+#13#13
           +'Имя ПК: '+getComputerPCName;
 
@@ -4481,55 +4485,55 @@ begin
 end;
 
 
-// получение авторизационных данных при отправке SMS
-function GetSMSAuth(SMSType:enumSMSAuth):string;   // TODO потом эти данные перенести в класс для отправки SMS
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
-begin
-   Result:='null';
-
-   ado:=TADOQuery.Create(nil);
-   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
-  end;
-
-  try
-    with ado do begin
-      ado.Connection:=serverConnect;
-      SQL.Clear;
-
-      case SMSType of
-       sms_server_addr:begin
-         SQL.Add('select url from sms_settings');
-       end;
-       sms_login:begin
-         SQL.Add('select sms_login from sms_settings');
-       end;
-       sms_pwd:begin
-         SQL.Add('select sms_pwd from sms_settings');
-       end;
-       sms_sign:begin
-         SQL.Add('select sign from sms_settings');
-       end;
-      end;
-
-      Active:=True;
-      if Fields[0].Value<>null then begin
-        if Length(VarToStr(Fields[0].Value)) <> 0 then Result:=VarToStr(Fields[0].Value);
-      end;
-
-    end;
-  finally
-    FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
-  end;
-end;
+//// получение авторизационных данных при отправке SMS
+//function GetSMSAuth(SMSType:enumSMSAuth):string;   // TODO потом эти данные перенести в класс для отправки SMS
+//var
+// ado:TADOQuery;
+// serverConnect:TADOConnection;
+//begin
+//   Result:='null';
+//
+//   ado:=TADOQuery.Create(nil);
+//   serverConnect:=createServerConnect;
+//  if not Assigned(serverConnect) then begin
+//     FreeAndNil(ado);
+//     Exit;
+//  end;
+//
+//  try
+//    with ado do begin
+//      ado.Connection:=serverConnect;
+//      SQL.Clear;
+//
+//      case SMSType of
+//       sms_server_addr:begin
+//         SQL.Add('select url from sms_settings');
+//       end;
+//       sms_login:begin
+//         SQL.Add('select sms_login from sms_settings');
+//       end;
+//       sms_pwd:begin
+//         SQL.Add('select sms_pwd from sms_settings');
+//       end;
+//       sms_sign:begin
+//         SQL.Add('select sign from sms_settings');
+//       end;
+//      end;
+//
+//      Active:=True;
+//      if Fields[0].Value<>null then begin
+//        if Length(VarToStr(Fields[0].Value)) <> 0 then Result:=VarToStr(Fields[0].Value);
+//      end;
+//
+//    end;
+//  finally
+//    FreeAndNil(ado);
+//    if Assigned(serverConnect) then begin
+//      serverConnect.Close;
+//      FreeAndNil(serverConnect);
+//    end;
+//  end;
+//end;
 
 
 // мониторится ли транк
@@ -5043,7 +5047,7 @@ begin
     Exit;
   end;
 
-  if AnsiPos('Текущая версия дашборда отличается от актуальной версии',_errorMessage)<>0 then begin
+  if AnsiPos('Текущая версия программы отличается от актуальной версии',_errorMessage)<>0 then begin
     Result:=eNeedReconnectNO;
     Exit;
   end;
@@ -5054,6 +5058,16 @@ begin
   end;
 
   if AnsiPos('Возникла критическая ошибка',_errorMessage)<>0 then begin
+    Result:=eNeedReconnectNO;
+    Exit;
+  end;
+
+  if AnsiPos('На диске осталось мало свободного места',_errorMessage)<>0 then begin
+    Result:=eNeedReconnectNO;
+    Exit;
+  end;
+
+  if AnsiPos('Превышено максимальное кол-во попыток входа',_errorMessage)<>0 then begin
     Result:=eNeedReconnectNO;
     Exit;
   end;
@@ -5105,6 +5119,54 @@ begin
 end;
 
 
+// функция проверки сколько есть свободного места на диске
+function GetFreeSpaсeDrive(InDrive:string):int64;
+var
+ FS:pLargeInteger;
+ F,T: int64;
+ tmp:string;
+ Space:int64;
+begin
+  InDrive:=Copy(InDrive,1,1);
 
+  if Length(InDrive)=1 then begin
+    try
+      if GetDiskFreeSpaceEx(Pchar(InDrive+':\'),F,T,@FS) then begin
+       Space:=F;
+       Space:=trunc(Space/1024/1024);
+
+       Result:=Space;
+      end
+      else Result:=-1;
+    except
+       Result:=-1;
+    end;
+  end
+  else Result:=-1;
+end;
+
+
+// проверка есть ли свободное место на диске
+function isExistFreeSpaceDrive(var _errorDescription:string):Boolean;
+ var
+  CurrentSpace:Integer;
+begin
+  Result:=False;
+  _errorDescription:='';
+
+  CurrentSpace:=GetFreeSpaсeDrive(FOLDERPATH);
+
+  if CurrentSpace = -1 then begin
+    Result:=True; // считаем что есть место на диске
+    Exit;
+  end;
+
+  if CurrentSpace<=FREE_SPACE_COUNT then begin
+    _errorDescription:='На диске осталось мало свободного места!'+#13+'Осталось '+IntToStr(CurrentSpace)+ ' Mb';
+    Exit;
+  end;
+
+  Result:=True;
+end;
 
 end.

@@ -5705,6 +5705,19 @@ object FormAbout: TFormAbout
     Stretch = True
     Visible = False
   end
+  object Label1: TLabel
+    Left = 27
+    Top = 126
+    Width = 59
+    Height = 19
+    Caption = #1043#1076#1077' '#1103'!?'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -16
+    Font.Name = 'Tahoma'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
   object PageInfo: TPageControl
     Left = 121
     Top = 8

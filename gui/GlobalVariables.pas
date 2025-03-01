@@ -27,7 +27,7 @@ var
   FOLDERUPDATE      :string;
 
   // Текущая версия GUID   ctrl+shift+G (GUID)
-  GUID_VERSION      :string = 'C60232FA';
+  GUID_VERSION      :string = 'A7F94472';
 
   // exe родителя
   DASHBOARD_EXE     :string = 'dashboard.exe';
@@ -45,6 +45,9 @@ var
   USER_ID_PARAM     :string = '--USER_ID';
   USER_ACCESS_PARAM :string = '--ACCESS';
 
+  // по умолчанию nullptr потом поменяем
+  USER_STARTED_SMS_ID :Integer;
+
   // служба обновления
   UPDATE_EXE        : string = 'update.exe';
   UPDATE_SERVICES   : string = 'update_dashboard';
@@ -53,6 +56,9 @@ var
   // иконка авторизации
   ICON_AUTH_USER          : string = 'user_icon_auth.png';
   ICON_AUTH_USER_ADMIN    : string = 'user_icon_auth_admin.png';
+
+  // размер остатка свободного места при котором дашборд не запуститься
+  FREE_SPACE_COUNT        :Integer = 100;
 
   ///////////////////// CLASSES /////////////////////
 
@@ -93,7 +99,7 @@ var
   function GetUserAccessReports(InUserID:Integer):Boolean;    stdcall;  external 'core.dll';       // есть ли доступ у пользователя к отчетам
   function GetUserAccessSMS(InUserID:Integer):Boolean;        stdcall;  external 'core.dll';       // есть ли доступ у пользователя к SMS отправке
   //function GetCurrentDateTimeDec(DecMinutes:Integer):PChar;   overload; stdcall; external 'core.dll';       // текущее начала дня минус -DecMinutes
-  //function GetCurrentStartDateTime:PChar;                     overload; stdcall; external 'core.dll';       // текущее начала дня с минутами 00:00:00
+  function GetCurrentStartDateTime:PChar;                     overload; stdcall; external 'core.dll';       // текущее начала дня с минутами 00:00:00
   function GetCurrentTime:PChar;                              stdcall;  external 'core.dll';       // текущее время
   function GetLocalChatNameFolder:PChar;                      stdcall;  external 'core.dll';       // папка с локальным чатом
   function GetExtensionLog:PChar;                             stdcall;  external 'core.dll';       // папка с локальным чатом

@@ -146,7 +146,7 @@ end;
 // нужно ли немедленно закрыть сессию и закрыть дашборд
 procedure TInternalProcess.CheckForceActiveSessionClosed;
 begin
-  if getForceActiveSessionClosed(m_userLogonID) then KillProcess;
+  if GetForceActiveSessionClosed(m_userLogonID) then KillProcess;
 end;
 
 // обновление текущего времени в окне дашборда

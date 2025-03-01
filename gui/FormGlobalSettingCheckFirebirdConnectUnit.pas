@@ -27,7 +27,7 @@ var
 implementation
 
 uses
-  FunctionUnit;
+  FunctionUnit, GlobalVariables;
 
 {$R *.dfm}
 
@@ -68,7 +68,7 @@ var
 begin
   Screen.Cursor:=crHourGlass;
 
-  servers:=TCheckServersIK.Create;
+  servers:=TCheckServersIK.Create(SharedMainLog);
 
   // заполним combox
   comboxServer.Items.Clear;

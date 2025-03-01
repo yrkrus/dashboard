@@ -22,6 +22,7 @@ uses  System.Classes,
       IdException,
       FIBDatabase,
       pFIBDatabase,
+      TLogFileUnit,
       Vcl.ExtCtrls,
       Vcl.Dialogs;
 
@@ -47,7 +48,6 @@ uses  System.Classes,
       m_mutex                               : TMutex;
 
 
-
       end;
    // class TStructServers END
 
@@ -62,7 +62,9 @@ uses  System.Classes,
       listServers             :array of TStructServers;
 
 
-      constructor Create;                   overload;
+      constructor Create(var p_Log:TLoggingFile);                   overload;
+
+
       destructor Destroy;                   override;
 
       function GetCount                     :Integer;
@@ -75,6 +77,8 @@ uses  System.Classes,
 
       private
       m_mutex                               : TMutex;
+      m_log                                 : TLoggingFile;
+
       count                                 : Integer;
       firebird_login                        : string;
       firebird_pwd                          : string;
@@ -112,10 +116,12 @@ constructor TStructServers.Create;
  end;
 
 
-constructor TCheckServersIK.Create;
+constructor TCheckServersIK.Create(var p_Log:TLoggingFile);
  begin
-    inherited;
+   // inherited;
     m_mutex:=TMutex.Create(nil, False, 'Global\TCheckServersIK');
+
+    m_log:=p_Log;
     firebirdConnect:=TpFIBDatabase.Create(nil);
     count:=0;
 
@@ -386,6 +392,8 @@ end;
 function TCheckServersIK.CheckServer(InServerIP,InServerID_Alias:string):Boolean;
  var
   isConnectedSQL:Boolean;
+  messclass,mess:string;
+
 begin
    isConnectedSQL:=False;
 
@@ -404,15 +412,23 @@ begin
       if Connected then isConnectedSQL:=True
       else isConnectedSQL:=False;
 
-    finally
-     Connected:=False;
-     Close;
+     except
+      on E:Exception do
+      begin
+       messclass:=e.ClassName;
+       mess:=e.Message;
+       m_log.Save(DBName+': '+messclass+'.'+mess,IS_ERROR);
+       Connected:=False;
+       Close;
+      end;
     end;
-  end;
 
+    Connected:=False;
+    Close;
+
+  end;
   if isConnectedSQL then Result:=True
   else Result:=False;
-
 end;
 
 

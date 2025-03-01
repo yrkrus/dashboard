@@ -52,7 +52,7 @@ begin
   Log:=TLoggingFile.Create('Thread_CheckServersIK');
 
   try
-   listServers:=TCheckServersIK.Create;
+   listServers:=TCheckServersIK.Create(Log);
   except
     on E:Exception do
     begin

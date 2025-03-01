@@ -10,7 +10,7 @@ FormHomeUnit,
  IdSSL,IdIOHandlerStack, IdSSLOpenSSL, System.DateUtils,System.IniFiles,
  Winapi.WinSock,  Vcl.ComCtrls, GlobalVariables, Vcl.Grids, Data.Win.ADODB,
  Data.DB, IdException, TPacientsListUnit, Vcl.Menus, System.SyncObjs,
- TCustomTypeUnit;
+ TCustomTypeUnit, Word_TLB, ActiveX;
 
 
 function GetSMS(inPacientPhone:string):string; overload;                                      // отправка смс v2
@@ -29,7 +29,10 @@ function LoadData(InFileExcel:string; var _errorDescription:string;
 procedure OptionsStyle(InOptionsType:enumSendingOptions);                                     // выбор типа отправляемого смс
 function isCorrectNumberPhone(InNumberPhone:string; var _errorDescription:string):Boolean;    // проверка корректности номера телефона при вводе
 function CheckParamsBeforeSending(InOptionsType:enumSendingOptions; var _errorDescription:string):Boolean; // проверка данных перед отправкой
-function IsPunctuationOrDigit(ch: Char): Boolean;                                             // проверка на знак припенания или цифру
+function IsPunctuationOrDigit(ch: Char;InCheckOnlyPunctuation:Boolean = False): Boolean;      // проверка на знак припенания или цифру
+function IsOnlyNumber(ch: Char): Boolean;                                                     // проверка только на цифру цифру
+function IsFirstCharUpperCyrillic(const S: string): Boolean;                                  // проверка что первая буква это заглавная буква
+function isExistSpaceWithLine(const S: string): Boolean;                                      // проверка на пробел в конце строки
 function CreateSMSMessage(var InMessage:TRichEdit):string;                                    // правка сообщения чтобы оно было в 1 строку
 function SendingMessage(InOptionsType:enumSendingOptions; var _errorDescription:string):Boolean; // отправка сообщения
 procedure ClearParamsForm(InOptionsType:enumSendingOptions);                                  // очистка полей формы
@@ -56,7 +59,7 @@ procedure ShowSendingManualPhone(InSendingType:enumManualSMS);                  
 implementation
 
 uses
-  FormMyTemplateUnit, TSendSMSUint, TAddressClinicPopMenuUnit, TThreadSendSMSUnit;
+  FormMyTemplateUnit, TSendSMSUint, TAddressClinicPopMenuUnit, TThreadSendSMSUnit, TSpellingUnit;
 
 
 
@@ -64,6 +67,7 @@ uses
 function isCorrectNumberPhone(InNumberPhone:string; var _errorDescription:string):Boolean;
 var
  telefon:string;
+ i:Integer;
 begin
   Result:=False;
   _errorDEscription:='';
@@ -83,21 +87,66 @@ begin
      Exit;
    end;
 
+   // проверка что бы были только цифры
+   for i:=1 to Length(telefon) do begin
+     if not IsOnlyNumber(telefon[i]) then begin
+       _errorDescription:='Номер телефона "'+telefon+'" должен содержать только цифры';
+        Exit;
+     end;
+   end;
+
+
    Result:=True;
 end;
 
 
 // проверка на знак припенания или цифру
-function IsPunctuationOrDigit(ch: Char): Boolean;
+function IsPunctuationOrDigit(ch: Char; InCheckOnlyPunctuation:Boolean = False): Boolean;
 begin
-  Result := (ch in [',', '.', '!', '?', ';', ':', '-', '(', ')', '[', ']', '{', '}', '''', '"']) or
+  if InCheckOnlyPunctuation then begin
+     Result := (ch in [',', '.', '!', '?', ';', ':', '-', '(', ')', '[', ']', '{', '}', '''', '"', '<', '>'])
+  end
+  else begin
+    Result := (ch in [',', '.', '!', '?', ';', ':', '-', '(', ')', '[', ']', '{', '}', '''', '"', '<', '>']) or
             (ch >= '0') and (ch <= '9');
+  end;
 end;
+
+// проверка на пробел в конце строки
+function isExistSpaceWithLine(const S: string): Boolean;
+begin
+  Result := EndsStr(' ', S);
+end;
+
+// проверка только на цифру цифру
+function IsOnlyNumber(ch: Char): Boolean;
+begin
+  Result := (ch in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0']);
+end;
+
+// проверка что первая буква это заглавная буква
+function IsFirstCharUpperCyrillic(const S: string): Boolean;
+var
+  FirstChar:Char;
+begin
+  Result:=False;
+
+  if Length(S) = 0 then Exit;
+  FirstChar:=S[1];
+
+  if (ord(FirstChar) >= 1040) and
+     (ord(FirstChar) <= 1071) then Result:=True;
+
+end;
+
 
 // проверка данных перед отправкой
 function CheckParamsBeforeSending(InOptionsType:enumSendingOptions; var _errorDescription:string):Boolean;
 var
  i:Integer;
+ temp_message:string;
+ SMS:TSendSMS;
+ Spelling:TSpelling;
 begin
   Result:=False;
   _errorDescription:='';
@@ -121,15 +170,52 @@ begin
 
          if (IsPunctuationOrDigit(re_ManualSMS.Text[1])) or
             (re_ManualSMS.Text[1] = ' ') then begin
-            _errorDescription:='Сообщение не может начинаться со знака припенания, пробела или цифрой';
+            _errorDescription:='Сообщение не должно начинаться со знака препинания, пробела или цифры';
             Exit;
          end;
 
-         if (IsPunctuationOrDigit(re_ManualSMS.Text[Length(re_ManualSMS.Text)])) or
-             (re_ManualSMS.Text[Length(re_ManualSMS.Text)] = ' ') then begin
-            _errorDescription:='Сообщение не может заканчиваться знаком припенания, пробелом или цифрой';
+         if (IsPunctuationOrDigit(re_ManualSMS.Text[Length(re_ManualSMS.Text)], True)) then begin
+            _errorDescription:='Сообщение не должно заканчиваться знаком препинания';
             Exit;
          end;
+
+         if isExistSpaceWithLine(re_ManualSMS.Text) then begin
+            _errorDescription:='Сообщение не должно заканчиваться пробелом';
+            Exit;
+         end;
+
+         // проверка сообщения чтобы не содержало с уважением
+         if chkbox_SignSMS.Checked then begin
+           temp_message:=AnsiLowerCase(re_ManualSMS.Text);
+           if AnsiPos('уважением',temp_message)<>0 then begin
+              _errorDescription:='Сообщение содержит подпись (с уважением)'+#13+
+                                 'Уберите подпись или снимите галку "вставить подпись в конце SMS"';
+              Exit;
+           end;
+         end;
+
+         // проверка чтобы собощение было с заглавной буквы
+         if not IsFirstCharUpperCyrillic(re_ManualSMS.Text) then begin
+           _errorDescription:='Сообщение должно начинаться с заглавной буквы';
+            Exit;
+         end;
+
+          // ну и новая фишка проверка орфографии
+          Spelling:=TSpelling.Create(re_ManualSMS);
+          if Spelling.isExistErrorSpelling then begin
+            _errorDescription:='В тексте сообщения присутствуют орфографические ошибки!';
+            Exit;
+          end;
+
+
+          // ну и на последок проверим длинну сообщения чтобы была не очень длинное
+          SMS:=TSendSMS.Create(DEBUG);
+          if SMS.IsMessageToLong(re_ManualSMS.Text) then begin
+            _errorDescription:='Кто ты воин!?'+#13+
+                               'Программа обалдела от такого длинного сообщения!'+#13#13+
+                               'крч, надо уменьшить длину сообщения до 670 символов именно столько максимально она может переварить';
+            Exit;
+          end;
 
         end;
         options_Sending:begin // рассылка
@@ -341,7 +427,6 @@ procedure SaveMyTemplateMessage(id:Integer; InNewMessage:string; IsDelete:Boolea
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
- response:string;
 begin
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
@@ -447,14 +532,14 @@ begin
         end;
       end;
 
-      // Здесь добавляем проверку статуса потоков
+      // добавляем проверку статуса потоков
       sending_end := True; // Предположим, что все потоки завершены
-      for i := 0 to MAX_COUNT_THREAD_SENDIND - 1 do
+      for i:= 0 to MAX_COUNT_THREAD_SENDIND - 1 do
       begin
         if Assigned(Threads[i]) and not isSending[i] then
         begin
           sending_end := False; // Если хотя бы один поток еще работает
-          Break;
+          //Break;
         end;
       end;
 
@@ -648,9 +733,6 @@ begin
    end;
 
   Excel.quit;
-  //CurrentPostAddColoredLine('Отчет загружен',clBlack);
-  //CurrentPostAddColoredLine('Кол-во сообщений на отправку: '+IntToStr(SharedPacientsList.Count), clGreen);
-  //CurrentPostAddColoredLine('Примерное время на отправку всех СМС: '+GetTimeDiff(SharedPacientsList.Count), clRed);
 
   p_Status.Caption:='Статус : Загружено, готово к отправке';
   p_CountSending.Caption:=IntToStr(SharedPacientsList.Count);

@@ -53,10 +53,13 @@ type
   private
     { Private declarations }
    usersListAdminRole:TStringList; // список с пользаками которые имеют админ права
+   countErrorAuth:Word; // кол-во попыток ввода пароля
 
    function showUserNameAuthForm:Boolean;   // отображение ранее входивщего пользователя в выборе вариантов пользователей
    function GetRoleUser(InIDCombBox:Integer):enumRole;
    procedure LoadIconListBox;    // загрузка иконок в лист бокс для последующего отображения в combobox
+
+
 
   public
     { Public declarations }
@@ -249,6 +252,7 @@ var
  user_pwd:Integer;
  currentUser:TUserList;
  activeSession:string;
+ error:string;
 begin
 
   successEnter:=False;
@@ -308,7 +312,7 @@ begin
      end;
 
      SharedCurrentUserLogon.UpdateParams(currentUser);
-
+     USER_STARTED_SMS_ID:=SharedCurrentUserLogon.GetID;
      currentUser.Free;
    end;
 
@@ -332,6 +336,13 @@ begin
    Screen.Cursor:=crDefault;
 
    FormSizeWithError('Ошибка авторизации, не верный пароль');
+   Inc(countErrorAuth);
+
+   if countErrorAuth >=4 then begin
+    error:='Превышено максимальное кол-во попыток входа';
+    ShowFormErrorMessage(error,SharedMainLog,'THomeForm.TFormAuth');
+   end;
+
    Exit;
   end;
 
@@ -464,6 +475,9 @@ begin
      end;
    end;
  end;
+
+  // кол-во попыток ввода пароля
+  countErrorAuth:=0;
 
   // размер окна по умолчанию
   DefaultFormSize;

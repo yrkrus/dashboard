@@ -109,6 +109,10 @@ type
       function isExistAuth:Boolean;                         // есть ли все авторизационные данные
       function GetSignSMS:string;                           // подпись в СМС сообщение
 
+      function GetAuthData(SMSType:enumSMSAuth):string;     // получение авторизационных данных
+
+      function IsMessageToLong(const InMessage:string):Boolean; // проверка слишком уж длинное сообщение или нет
+
       constructor Create(isDEBUG:Boolean);                    overload;
       private
       m_Auth      :TAuthSMS;        // авторизационные данные
@@ -120,6 +124,7 @@ type
       procedure SaveToBase(InServerOtvet:string; InMessage:string); // сохранение отправленной смс в базу
       function AddSign(InMessage:string):string; // добавление подписи к отправляемомй сообщению
       function isExistSMS(InPhone:string;InChechMessage:string; var _errorDescription:string):Boolean; // проверка отправляли ли уже ранее такую смс
+      function GetCountRealSMS(const InMessage:string):Integer;        // подсчет сколько реально смс ушло (UNICODE)
 
 
       end;
@@ -338,6 +343,7 @@ procedure TSendSMS.SaveToBase(InServerOtvet:string; InMessage:string);
  serverConnect:TADOConnection;
  response:string;
  user_login_pc:string;
+ countReal:Integer;
 begin
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
@@ -374,12 +380,14 @@ begin
   end;
 
   user_login_pc:=GetCurrentUserNamePC;
+  countReal:=GetCountRealSMS(InMessage);
 
-  response:='insert into sms_sending (user_id,phone,message,sms_id,user_login_pc) values ('+#39+IntToStr(USER_STARTED_SMS_ID)+#39+','
-                                                                                           +#39+phone+#39+','
-                                                                                           +#39+InMessage+#39+','
-                                                                                           +#39+sms_id+#39+','
-                                                                                           +#39+user_login_pc+#39+')';
+  response:='insert into sms_sending (user_id,phone,message,sms_id,user_login_pc,count_real_sms) values ('+#39+IntToStr(USER_STARTED_SMS_ID)+#39+','
+                                                                                                          +#39+phone+#39+','
+                                                                                                          +#39+InMessage+#39+','
+                                                                                                          +#39+sms_id+#39+','
+                                                                                                          +#39+user_login_pc+#39+','
+                                                                                                          +#39+ IntToStr(countReal)+#39+')';
    try
      with ado do begin
         ado.Connection:=serverConnect;
@@ -489,17 +497,12 @@ begin
       Request.UserAgent:=CustomUserAgent;
 
        try
-//        if m_isDEBUG then begin
-//          resultat:=MessageBox(0,PChar('===DEBUG MODE=== '+#13#13+'Cейчас будет отправлено SMS, отправлять?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
-//          if resultat=mrNo then begin
-//            Exit;
-//          end;
-//        end;
-//          Result:=True;    //debug удалить
-//          SaveToBase(ServerOtvet,sendMessage);
-//
-//          Sleep(100);
-//          Exit;
+        if m_isDEBUG then begin
+          resultat:=MessageBox(0,PChar('===DEBUG MODE=== '+#13#13+'Cейчас будет отправлено SMS, отправлять?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
+          if resultat=mrNo then begin
+            Exit;
+          end;
+        end;
 
         ServerOtvet:=Get(HTTPGet);
         // парсинг ответа, если ошибка false возвратит
@@ -540,6 +543,28 @@ function TSendSMS.GetSignSMS:string;
 begin
   Result:=m_Auth.m_sign;
 end;
+
+ // получение авторизационных данных
+function TSendSMS.GetAuthData(SMSType:enumSMSAuth):string;
+begin
+  case SMSType of
+   sms_server_addr  : Result:=m_Auth.m_URL;
+   sms_login        : Result:=m_Auth.m_login;
+   sms_pwd          : Result:=m_Auth.m_password;
+   sms_sign         : Result:=m_Auth.m_sign;
+  end;
+end;
+
+// проверка слишком уж длинное сообщение или нет
+function TSendSMS.IsMessageToLong(const InMessage:string):Boolean;
+var
+ count_sms:Integer;
+begin
+  Result:=False;
+  count_sms:=GetCountRealSMS(InMessage);
+  if count_sms = 0 then Result:=True;  // 0 это либо текта нет либо более 670 символов
+end;
+
 
 // добавление подписи к отправляемомй сообщению
 function TSendSMS.AddSign(InMessage:string):string;
@@ -601,7 +626,31 @@ begin
      FreeAndNil(serverConnect);
     end;
   end;
+end;
 
+ // подсчет сколько реально смс ушло (UNICODE)
+function TSendSMS.GetCountRealSMS(const InMessage:string):Integer;
+var
+ countSymbol:Integer;
+ i:Integer;
+begin
+ Result:=0;
+ countSymbol:=Length(InMessage);
+
+ case countSymbol of
+  0..70     :Result:=1;
+  71..134   :Result:=2;
+  135..201  :Result:=3;
+  202..268  :Result:=4;
+  269..335  :Result:=5;
+  336..402  :Result:=6;
+  403..469  :Result:=7;
+  470..536  :Result:=8;
+  537..603  :Result:=9;
+  604..670  :Result:=10;
+  else
+  Result := 0; // Значение по умолчанию для остальных случаев
+ end;
 end;
 
 end.

@@ -57,7 +57,8 @@ uses
   Thread_ForecastUnit in 'Thread\Thread_ForecastUnit.pas',
   TInternalProcessUnit in '..\custom_class\TInternalProcessUnit.pas',
   Thread_InternalProcessUnit in 'Thread\Thread_InternalProcessUnit.pas',
-  FormStatusInfoUnit in 'FormStatusInfoUnit.pas' {FormStatusInfo};
+  FormStatusInfoUnit in 'FormStatusInfoUnit.pas' {FormStatusInfo},
+  TSendSMSUint in '..\custom_class\TSendSMSUint.pas';
 
 {$R *.res}
 

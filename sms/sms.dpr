@@ -15,7 +15,8 @@ uses
   TAddressClinicPopMenuUnit in '..\custom_class\TAddressClinicPopMenuUnit.pas',
   TThreadSendSMSUnit in '..\custom_class\TThreadSendSMSUnit.pas',
   FormListSendingSMSUnit in 'FormListSendingSMSUnit.pas' {FormListSendingSMS},
-  TXmlUnit in '..\custom_class\TXmlUnit.pas';
+  TXmlUnit in '..\custom_class\TXmlUnit.pas',
+  TSpellingUnit in '..\custom_class\TSpellingUnit.pas';
 
 {$R *.res}
 

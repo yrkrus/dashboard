@@ -582,10 +582,6 @@ begin
 
   // размер панели "Статусы операторов" по default
   PanelStatusIN.Height:=cPanelStatusHeight_default;
-
-
-  //ListViewIVR.OnCustomDraw := ListViewIVRCustomDraw;
-
 end;
 
 
@@ -615,6 +611,11 @@ begin
   Height:=900; //1011
   ClientWidth:=1410;
 
+  // остаток свободного места на диске
+  if not isExistFreeSpaceDrive(error) then begin
+    ShowFormErrorMessage(error,SharedMainLog,'THomeForm.FormShow');
+  end;
+
   // проверка установлен ли MySQL Connector
   if not isExistMySQLConnector then begin
     error:='Не установлен MySQL Connector';
@@ -632,7 +633,7 @@ begin
 
    // проверка на 2ую копию дошборда
   if GetCloneRun(PChar(DASHBOARD_EXE)) then begin
-    MessageBox(HomeForm.Handle,PChar('Обнаружен запуск 2ой копии дашборда'+#13#13+
+    MessageBox(HomeForm.Handle,PChar('Обнаружен запуск 2ой копии программы'+#13#13+
                                      'Для продолжения закройте предыдущую копию'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
     KillProcess;
   end;
@@ -824,8 +825,11 @@ begin
         if (time_talk >= 180) and (time_talk <= 600)  then begin
          Sender.Canvas.Font.Color := clRed;
          Exit;
-        end else if time_talk > 600 then begin
+        end else if (time_talk > 600) and (time_talk <= 1200)  then begin
          Sender.Canvas.Font.Color := $0000008A;
+         Exit;
+        end else if time_talk >= 1200 then begin
+         Sender.Canvas.Font.Color := clBlue;
          Exit;
         end;
 

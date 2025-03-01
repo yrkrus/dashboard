@@ -35,10 +35,8 @@ object FormSettingsGlobal: TFormSettingsGlobal
     MultiLine = True
     ParentFont = False
     TabOrder = 0
-    ExplicitHeight = 190
     object Sheet_Queue: TTabSheet
       Caption = #1050#1086#1088#1088#1077#1082#1090#1080#1088#1086#1074#1082#1072' '#1074#1088#1077#1084#1077#1085#1080
-      ExplicitHeight = 159
       object PanelSettings: TPanel
         Left = 0
         Top = 1
@@ -301,7 +299,6 @@ object FormSettingsGlobal: TFormSettingsGlobal
     object Sheet_PasswordFirebird: TTabSheet
       Caption = #1055#1072#1088#1086#1083#1100' Firebird'
       ImageIndex = 1
-      ExplicitHeight = 159
       object Label1: TLabel
         Left = 81
         Top = 31
@@ -530,10 +527,10 @@ object FormSettingsGlobal: TFormSettingsGlobal
         OnClick = btnCheckFirebirdSettingsClick
       end
       object STFirebird_viewPwd: TStaticText
-        Left = 253
+        Left = 251
         Top = 68
         Width = 59
-        Height = 15
+        Height = 17
         Cursor = crHandPoint
         Caption = #1087#1086#1082#1072#1079#1072#1090#1100
         Font.Charset = DEFAULT_CHARSET
@@ -550,9 +547,6 @@ object FormSettingsGlobal: TFormSettingsGlobal
     object Sheet_SMS: TTabSheet
       Caption = 'SMS '#1086#1090#1087#1088#1072#1074#1082#1072
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 31
-      ExplicitHeight = 159
       object Label5: TLabel
         Left = 14
         Top = 3
@@ -624,7 +618,7 @@ object FormSettingsGlobal: TFormSettingsGlobal
         Left = 50
         Top = 66
         Width = 140
-        Height = 23
+        Height = 24
         TabOrder = 2
       end
       object edtPassword_SMS: TEdit
@@ -808,8 +802,8 @@ object FormSettingsGlobal: TFormSettingsGlobal
       object STSMS_viewPwd: TStaticText
         Left = 353
         Top = 68
-        Width = 57
-        Height = 15
+        Width = 59
+        Height = 17
         Cursor = crHandPoint
         Caption = #1087#1086#1082#1072#1079#1072#1090#1100
         Font.Charset = DEFAULT_CHARSET

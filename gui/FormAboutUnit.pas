@@ -30,6 +30,7 @@ type
     Panel4: TPanel;
     REHistory_SMS: TRichEdit;
     STInfoVersionSMS: TStaticText;
+    Label1: TLabel;
     procedure FormShow(Sender: TObject);
     procedure imgAboutClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);

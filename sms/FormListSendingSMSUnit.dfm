@@ -4,8 +4,8 @@ object FormListSendingSMS: TFormListSendingSMS
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = #1057#1087#1080#1089#1086#1082' '#1085#1086#1084#1077#1088#1086#1074
-  ClientHeight = 320
-  ClientWidth = 205
+  ClientHeight = 239
+  ClientWidth = 203
   Color = clWindow
   DefaultMonitor = dmDesktop
   Font.Charset = DEFAULT_CHARSET
@@ -19,9 +19,9 @@ object FormListSendingSMS: TFormListSendingSMS
   PixelsPerInch = 96
   TextHeight = 13
   object lblMsg: TLabel
-    Left = 8
-    Top = 5
-    Width = 183
+    Left = 15
+    Top = 2
+    Width = 173
     Height = 18
     Alignment = taCenter
     AutoSize = False
@@ -35,10 +35,10 @@ object FormListSendingSMS: TFormListSendingSMS
     WordWrap = True
   end
   object panel_ListSMS: TPanel
-    Left = 6
-    Top = 33
+    Left = 5
+    Top = 27
     Width = 190
-    Height = 275
+    Height = 206
     BevelInner = bvLowered
     BevelOuter = bvSpace
     TabOrder = 1
@@ -46,7 +46,7 @@ object FormListSendingSMS: TFormListSendingSMS
       Left = 7
       Top = 13
       Width = 173
-      Height = 254
+      Height = 190
       Align = alCustom
       BorderStyle = bsNone
       Font.Charset = RUSSIAN_CHARSET
@@ -64,7 +64,7 @@ object FormListSendingSMS: TFormListSendingSMS
   end
   object ST_StatusPanel: TStaticText
     Left = 21
-    Top = 25
+    Top = 19
     Width = 112
     Height = 18
     Alignment = taCenter

@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls, Vcl.Grids,
   Vcl.Samples.Gauges, Winapi.ShellAPI, Vcl.Imaging.jpeg, Vcl.ExtCtrls,
-  Vcl.Buttons, Vcl.Menus;
+  Vcl.Buttons, Vcl.Menus, ClipBrd, System.ImageList, Vcl.ImgList;
 
 
  // class TSMSMessage
@@ -98,14 +98,17 @@ type
     procedure lblManualSMS_OneClick(Sender: TObject);
     procedure edtManualSMSChange(Sender: TObject);
     procedure edtManualSMSKeyPress(Sender: TObject; var Key: Char);
+    procedure edtManualSMSKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure re_ManualSMSKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure SetSpelling(InValue:Boolean); // установка флага что есть орфографическая ошибка
+
   private
     { Private declarations }
+   isSpelling:Boolean;
   public
     { Public declarations }
-  //ParsingError:Boolean; // при разборе строк обнаружена ошибка при которой не было отправлено СМС оповещение
-  //SLParsingError:TStringList; // список с ошибками
-
-  //SLPArsingErorr:array of TErrorFileList;
 
   end;
 
@@ -120,21 +123,6 @@ cWIDTH_HIDELOG:Integer=440;
 cLOG_EXTENSION:string='.html';
 cWebApiSMS:string='https://a2p-sms-https.beeline.ru/proto/http/?user=%USERNAME&pass=%USERPWD&action=post_sms&message=%MESSAGE&target=%PHONENUMBER';
 cWebApiSMSstatusID:string='https://a2p-sms-https.beeline.ru/proto/http/?gzip=none&user=%USERNAME&pass=%USERPWD&action=status&date_from=%DATE_START+00:00:00&date_to=%DATE_STOP+23:59:59';
-
-cAUTHconf:string='auth.conf';
-
-
-cSLEEPNEXTSMS:Integer=150; // время задержки перед следующей отправкой смс
-
-// cMINIMALMESSAGESIZE:Word = 70; // минимальное кол-во симовлов в отправляемом сообщении
-
-//cMESSAGEBefor18:string='%FIO_Pacienta Вы записаны к доктору %FIO_Doctora (%Napravlenie) на %Data в %Time, %Address. При себе необходимо иметь паспорт и СНИЛС';
-//cMESSAGEAfter18:string='%FIO_Pacienta %записан(а) к доктору %FIO_Doctora (%Napravlenie) на %Data в %Time, %Address. Прием возможен в присутствии законного представителя ребенка';
-
-//cMESSAGEBefor18:string='%FIO_Pacienta Вы записаны к доктору %FIO_Doctora на %Data в %Time, %Address. При себе необходимо иметь паспорт и СНИЛС';
-//cMESSAGEAfter18:string='%FIO_Pacienta %записан(а) к доктору %FIO_Doctora на %Data в %Time, %Address. Прием возможен в присутствии законного представителя ребенка';
-
-
 
 
 implementation
@@ -187,6 +175,12 @@ uses
  end;
 
  // class TSMSMessage END
+
+// установка флага что есть орфографическая ошибка
+procedure TFormHome.SetSpelling(InValue:Boolean);
+begin
+  isSpelling:=InValue;
+end;
 
 
 procedure TFormHome.btnLoadFile2Click(Sender: TObject);
@@ -379,6 +373,28 @@ begin
 end;
 
 
+procedure TFormHome.edtManualSMSKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if (Shift = [ssCtrl]) then
+  begin
+    case Key of
+       86: // Ctrl + V
+        begin
+          // Вставляем текст из буфера обмена
+          edtManualSMS.Text := edtManualSMS.Text + Clipboard.AsText;
+          Key := 0; // Отменяем дальнейшую обработку клавиши
+        end;
+      88: // Ctrl + X
+        begin
+          // Копируем выделенный текст в буфер обмена и удаляем его из Edit
+          Clipboard.AsText := edtManualSMS.Text; // Если нужно, чтобы текст был скопирован
+          edtManualSMS.ClearSelection; // Удаляем выделение
+          Key := 0; // Отменяем дальнейшую обработку клавиши
+        end;
+    end;
+  end;
+end;
 
 procedure TFormHome.edtManualSMSKeyPress(Sender: TObject; var Key: Char);
 begin
@@ -436,6 +452,90 @@ begin
     end;
   end;
 end;
+
+
+function GetWordStart(const Text: string; CursorPos: Integer): Integer;
+var
+ size_result:Integer;
+begin
+
+  size_result := CursorPos;
+  while (size_result > 0) and (Text[size_result] <> ' ') do
+    Dec(size_result);
+  if (size_result < Length(Text)) and (Text[size_result] = ' ') then
+    Inc(size_result); // Сдвигаемся на один символ вправо, чтобы получить начало слова
+
+    Result:=size_result-1;
+end;
+
+function GetWordEnd(const Text: string; CursorPos: Integer): Integer;
+begin
+  Result := CursorPos;
+  while (Result < Length(Text)) and (Text[Result + 1] <> ' ') do
+    Inc(Result);
+  if (Result > 1) and (Text[Result + 1] = ' ') then
+    Dec(Result); // Сдвигаемся на один символ влево, чтобы получить конец слова
+end;
+
+
+procedure TFormHome.re_ManualSMSKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+var
+  CursorPos: Integer;
+  StartWord, EndWord: Integer;
+  Text: string;
+begin
+//  // Проверяем, нажата ли клавиша Backspace
+//  if Key = VK_BACK then
+//  begin
+//    // Получаем текст из редактора
+//    Text := re_ManualSMS.Text;
+//    CursorPos := re_ManualSMS.SelStart;
+//
+//    if isSpelling then
+//    begin
+//      // Проверяем стиль цвета слова под курсором
+//      StartWord := GetWordStart(Text, CursorPos);
+//      EndWord := GetWordEnd(Text, CursorPos);
+//
+//      // Устанавливаем выделение для слова
+//      re_ManualSMS.SelStart := StartWord;
+//      re_ManualSMS.SelLength := EndWord - StartWord + 1; // Увеличиваем длину на 1, чтобы включить последний символ
+//
+//      // Проверка на стиль clRed
+//      if re_ManualSMS.SelAttributes.Color = clRed then
+//      begin
+//        // Меняем цвет всего слова на clBlack
+//        re_ManualSMS.SelAttributes.Color := clBlack; // Меняем цвет
+//        re_ManualSMS.SelAttributes.Style:=[];
+//
+//        // Отменяем выделение, чтобы не удалять текст
+//        re_ManualSMS.SelLength := 0;
+//      end;
+//    end;
+//
+//    // Если есть выделенный текст, удаляем его
+//    if re_ManualSMS.SelLength > 0 then
+//    begin
+//      re_ManualSMS.SelText := ''; // Удаляем выделенный текст
+//    end
+//    else
+//    begin
+//      // Если курсор не в начале текста
+//      if CursorPos > 0 then
+//      begin
+//        // Удаляем символ перед курсором
+//        re_ManualSMS.SelStart := CursorPos - 1; // Перемещаем курсор на одну позицию влево
+//        re_ManualSMS.SelLength := 1; // Устанавливаем длину выделения в 1 символ
+//        re_ManualSMS.SelText := ''; // Удаляем выделенный текст (т.е. символ перед курсором)
+//      end;
+//    end;
+//
+//    // Отменяем стандартное действие Backspace
+//    Key := 0;
+//  end;
+end;
+
 
 
 procedure TFormHome.st_ShowInfoAddAddressClinicClick(Sender: TObject);
@@ -530,6 +630,7 @@ begin
 
   // стартовая вкладка
   page_TypesSMS.ActivePage:=sheet_ManualSMS;
+
 
   Screen.Cursor:=crDefault;
 end;

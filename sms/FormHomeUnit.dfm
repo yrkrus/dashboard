@@ -42,18 +42,18 @@ object FormHome: TFormHome
     Top = 8
     Width = 419
     Height = 302
-    ActivePage = sheet_SendingSMS
+    ActivePage = sheet_ManualSMS
     TabOrder = 0
     OnChange = page_TypesSMSChange
     object sheet_ManualSMS: TTabSheet
-      Caption = #1056#1091#1095#1085#1072#1103' '#1086#1090#1087#1088#1072#1074#1082#1072' SMS'
+      Caption = #1056#1091#1095#1085#1072#1103' '#1086#1090#1087#1088#1072#1074#1082#1072
       PopupMenu = popmenu_AddressClinic
       object group_ManualSMS: TGroupBox
         Left = 0
         Top = 3
         Width = 404
         Height = 262
-        Caption = ' '#1054#1076#1080#1085#1086#1095#1085#1072#1103' '#1086#1090#1087#1088#1072#1074#1082#1072' SMS '
+        Caption = ' '#1054#1076#1080#1085#1086#1095#1085#1072#1103' '#1086#1090#1087#1088#1072#1074#1082#1072' '
         TabOrder = 0
         object Label1: TLabel
           Left = 16
@@ -114,6 +114,7 @@ object FormHome: TFormHome
           Visible = False
           OnChange = edtManualSMSChange
           OnClick = edtManualSMSClick
+          OnKeyDown = edtManualSMSKeyDown
           OnKeyPress = edtManualSMSKeyPress
         end
         object btnSaveFirebirdSettings: TBitBtn
@@ -211,15 +212,16 @@ object FormHome: TFormHome
           BevelOuter = bvSpace
           TabOrder = 4
           object re_ManualSMS: TRichEdit
-            Left = 6
-            Top = 11
-            Width = 368
+            Left = 7
+            Top = 12
+            Width = 366
             Height = 104
             Align = alCustom
             BorderStyle = bsNone
             ScrollBars = ssVertical
             TabOrder = 0
             Zoom = 100
+            OnKeyDown = re_ManualSMSKeyDown
           end
         end
         object ST_StatusPanel: TStaticText
@@ -296,7 +298,7 @@ object FormHome: TFormHome
       end
     end
     object sheet_SendingSMS: TTabSheet
-      Caption = #1052#1072#1089#1089#1086#1074#1072#1103' '#1088#1072#1089#1089#1099#1083#1082#1072' SMS'
+      Caption = #1052#1072#1089#1089#1086#1074#1072#1103' '#1088#1072#1089#1089#1099#1083#1082#1072
       ImageIndex = 1
       object lblCountSendingSMS: TLabel
         Left = 320
@@ -703,13 +705,13 @@ object FormHome: TFormHome
     Visible = False
   end
   object st_ShowInfoAddAddressClinic: TStaticText
-    Left = 198
+    Left = 186
     Top = 115
-    Width = 202
+    Width = 208
     Height = 17
     Cursor = crHandPoint
     Hint = #1055#1086#1082#1072#1079#1072#1090#1100' '#1089#1087#1088#1072#1074#1082#1091
-    Caption = ' '#1050#1072#1082' '#1073#1099#1089#1090#1088#1086' '#1074#1089#1090#1072#1074#1080#1090#1100' '#1072#1076#1088#1077#1089' '#1082#1083#1080#1085#1080#1082#1080'? '
+    Caption = ' '#1040' '#1082#1072#1082' '#1073#1099#1089#1090#1088#1086' '#1074#1089#1090#1072#1074#1080#1090#1100' '#1072#1076#1088#1077#1089' '#1082#1083#1080#1085#1080#1082#1080'?'
     Color = clWindow
     DoubleBuffered = False
     Font.Charset = DEFAULT_CHARSET

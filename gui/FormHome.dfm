@@ -2,7 +2,7 @@ object HomeForm: THomeForm
   Left = 0
   Top = 0
   Caption = #1044#1072#1096#1073#1086#1088#1076' '#1050#1086#1083#1083#1062#1077#1085#1090#1088#1072
-  ClientHeight = 842
+  ClientHeight = 822
   ClientWidth = 1394
   Color = clWindow
   DefaultMonitor = dmDesktop
@@ -20,7 +20,7 @@ object HomeForm: THomeForm
   OnShow = FormShow
   DesignSize = (
     1394
-    842)
+    822)
   PixelsPerInch = 96
   TextHeight = 15
   object Label5: TLabel
@@ -457,7 +457,7 @@ object HomeForm: THomeForm
   end
   object ImageLogo: TImage
     Left = 1217
-    Top = 762
+    Top = 742
     Width = 157
     Height = 37
     Anchors = [akRight, akBottom]
@@ -619,6 +619,7 @@ object HomeForm: THomeForm
       0480338009155ECBE1BF87F4CD74EA96BA1E8F6DA9302A6EE2B28D26208C1CB8
       19E471D7A514500685A68D6BA7AC62DEDEDE011870823882EC0E773018E9B980
       27D4804D5AA28A00FFD9}
+    ExplicitTop = 762
   end
   object Label11: TLabel
     Left = 10
@@ -770,7 +771,7 @@ object HomeForm: THomeForm
   end
   object ImgNewYear: TImage
     Left = 1329
-    Top = 742
+    Top = 722
     Width = 55
     Height = 55
     Anchors = [akRight, akBottom]
@@ -5803,10 +5804,11 @@ object HomeForm: THomeForm
     ShowHint = False
     Stretch = True
     Visible = False
+    ExplicitTop = 742
   end
   object lblNewMessageLocalChat: TLabel
     Left = 1142
-    Top = 801
+    Top = 781
     Width = 243
     Height = 16
     Cursor = crHandPoint
@@ -5828,6 +5830,7 @@ object HomeForm: THomeForm
     OnClick = lblNewMessageLocalChatClick
     OnMouseMove = lblNewMessageLocalChatMouseMove
     OnMouseLeave = lblNewMessageLocalChatMouseLeave
+    ExplicitTop = 801
   end
   object lblNewVersionDashboard: TLabel
     Left = 714
@@ -6130,7 +6133,7 @@ object HomeForm: THomeForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 821
+    Top = 801
     Width = 1394
     Height = 21
     Panels = <
@@ -6174,7 +6177,7 @@ object HomeForm: THomeForm
   end
   object PanelShadowRight: TPanel
     Left = 1227
-    Top = 14
+    Top = 13
     Width = 153
     Height = 16
     Anchors = [akRight]
@@ -6980,7 +6983,7 @@ object HomeForm: THomeForm
       Font.Color = clWindowText
       Font.Height = -13
       Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
+      Font.Style = []
       ParentFont = False
       Layout = tlCenter
       WordWrap = True
@@ -6997,7 +7000,7 @@ object HomeForm: THomeForm
       Font.Color = clWindowText
       Font.Height = -13
       Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
+      Font.Style = []
       ParentFont = False
       Layout = tlCenter
       WordWrap = True
@@ -7014,7 +7017,7 @@ object HomeForm: THomeForm
       Font.Color = clWindowText
       Font.Height = -13
       Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
+      Font.Style = []
       ParentFont = False
       Layout = tlCenter
       WordWrap = True
@@ -7031,7 +7034,7 @@ object HomeForm: THomeForm
       Font.Color = clWindowText
       Font.Height = -13
       Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
+      Font.Style = []
       ParentFont = False
       Layout = tlCenter
       WordWrap = True
@@ -7048,7 +7051,7 @@ object HomeForm: THomeForm
       Font.Color = clWindowText
       Font.Height = -13
       Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
+      Font.Style = []
       ParentFont = False
       Layout = tlCenter
       WordWrap = True
@@ -7065,7 +7068,7 @@ object HomeForm: THomeForm
       Font.Color = clWindowText
       Font.Height = -13
       Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
+      Font.Style = []
       ParentFont = False
       Layout = tlCenter
       WordWrap = True
@@ -7082,7 +7085,7 @@ object HomeForm: THomeForm
       Font.Color = clWindowText
       Font.Height = -13
       Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
+      Font.Style = []
       ParentFont = False
       Layout = tlCenter
       WordWrap = True
@@ -7099,7 +7102,7 @@ object HomeForm: THomeForm
       Font.Color = clWindowText
       Font.Height = -13
       Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
+      Font.Style = []
       ParentFont = False
       Layout = tlCenter
       WordWrap = True
@@ -7181,7 +7184,7 @@ object HomeForm: THomeForm
       Font.Color = clWindowText
       Font.Height = -12
       Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
+      Font.Style = []
       ParentFont = False
       ParentShowHint = False
       ShowHint = True
@@ -7201,7 +7204,7 @@ object HomeForm: THomeForm
       Font.Color = clWindowText
       Font.Height = -12
       Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
+      Font.Style = []
       ParentFont = False
       ParentShowHint = False
       ShowHint = True
@@ -7221,7 +7224,7 @@ object HomeForm: THomeForm
       Font.Color = clWindowText
       Font.Height = -12
       Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
+      Font.Style = []
       ParentFont = False
       ParentShowHint = False
       ShowHint = True
@@ -7241,7 +7244,7 @@ object HomeForm: THomeForm
       Font.Color = clWindowText
       Font.Height = -12
       Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
+      Font.Style = []
       ParentFont = False
       ParentShowHint = False
       ShowHint = True
@@ -7287,7 +7290,7 @@ object HomeForm: THomeForm
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 10
+    TabOrder = 11
     Visible = False
   end
   object st_Forecast_AfterTomorrow: TStaticText
@@ -7308,7 +7311,7 @@ object HomeForm: THomeForm
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 11
+    TabOrder = 12
     Visible = False
   end
   object Timer_Thread_Start: TTimer
