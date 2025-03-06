@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls, Vcl.Grids,
   Vcl.Samples.Gauges, Winapi.ShellAPI, Vcl.Imaging.jpeg, Vcl.ExtCtrls,
-  Vcl.Buttons, Vcl.Menus, ClipBrd, System.ImageList, Vcl.ImgList;
+  Vcl.Buttons, Vcl.Menus, ClipBrd, System.ImageList, Vcl.ImgList,RichEdit;
 
 
  // class TSMSMessage
@@ -76,6 +76,8 @@ type
     lblNameExcelFile: TLabel;
     lblManualSMS_List: TLabel;
     lblManualSMS_One: TLabel;
+    popmenu_AddSpellnig: TPopupMenu;
+    menu_AddSpelling: TMenuItem;
     procedure ProcessCommandLineParams(DEBUG:Boolean = False);
     procedure FormCreate(Sender: TObject);
     procedure btnLoadFileClick(Sender: TObject);
@@ -93,7 +95,6 @@ type
     procedure st_ShowInfoAddAddressClinicMouseLeave(Sender: TObject);
     procedure st_ShowInfoAddAddressClinicMouseMove(Sender: TObject;
       Shift: TShiftState; X, Y: Integer);
-    procedure st_ShowInfoAddAddressClinicClick(Sender: TObject);
     procedure lblManualSMS_ListClick(Sender: TObject);
     procedure lblManualSMS_OneClick(Sender: TObject);
     procedure edtManualSMSChange(Sender: TObject);
@@ -102,13 +103,23 @@ type
       Shift: TShiftState);
     procedure re_ManualSMSKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure SetSpelling(InValue:Boolean); // установка флага что есть орфографическая ошибка
+    procedure SetSpelling(InValue:Boolean);
+    procedure st_ShowInfoAddAddressClinicMouseDown(Sender: TObject;
+      Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure re_ManualSMSMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure menu_AddSpellingClick(Sender: TObject);
+
+
 
   private
     { Private declarations }
    isSpelling:Boolean;
+   maybeDictionary:string; // слово которое моджет пойти в словарь
   public
     { Public declarations }
+  function IsExistSpellingColor(var _MaybeDictionaryWord:string):Boolean;   // проверка можно ли показать меню на добавление слова в словарь
+
 
   end;
 
@@ -128,7 +139,7 @@ cWebApiSMSstatusID:string='https://a2p-sms-https.beeline.ru/proto/http/?gzip=non
 implementation
 
 uses
-  FunctionUnit, GlobalVariables, TSendSMSUint, FormMyTemplateUnit, FormNotSendingSMSErrorUnit, TCustomTypeUnit, FormListSendingSMSUnit, TXmlUnit;
+  FunctionUnit, GlobalVariables, TSendSMSUint, FormMyTemplateUnit, FormNotSendingSMSErrorUnit, TCustomTypeUnit, FormListSendingSMSUnit, TXmlUnit, TSpellingUnit;
 
  {$R *.dfm}
 
@@ -180,6 +191,60 @@ uses
 procedure TFormHome.SetSpelling(InValue:Boolean);
 begin
   isSpelling:=InValue;
+end;
+
+
+// проверка можно ли показать меню на добавление слова в словарь
+function TFormHome.IsExistSpellingColor(var _MaybeDictionaryWord:string):Boolean;
+var
+  CursorPos: Integer;
+  StartPos, EndPos: Integer;
+  Word: string;
+  i: Integer;
+  IsRed: Boolean;
+  CharColor: TColor;
+begin
+ _MaybeDictionaryWord:='';
+ Result:=False;
+
+ // Получаем позицию курсора
+  CursorPos := re_ManualSMS.SelStart;
+
+  // Находим границы слова под курсором
+  StartPos := SendMessage(re_ManualSMS.Handle, EM_FINDWORDBREAK, WB_LEFT, CursorPos);
+  EndPos := SendMessage(re_ManualSMS.Handle, EM_FINDWORDBREAK, WB_RIGHT, CursorPos);
+
+  // Извлекаем слово
+  Word := Copy(re_ManualSMS.Text, StartPos + 1, EndPos - StartPos);
+
+  if Word = '' then begin
+    Exit;
+  end;
+
+  // Проверяем, не пустое ли слово
+  begin
+    IsRed := False; // Предполагаем, что слово не с ошибкой
+    for i := StartPos to EndPos - 1 do
+    begin
+      // Получаем цвет символа
+      SendMessage(re_ManualSMS.Handle, EM_SETSEL, i, i + 1);
+      CharColor := re_ManualSMS.SelAttributes.Color;
+
+      // Проверяем, является ли цвет символа красным
+      if CharColor = clRed then
+      begin
+        IsRed := True;
+        Break;
+      end;
+    end;
+
+    if IsRed then begin
+       Word:=StringReplace(Word,' ','',[rfReplaceAll]);
+
+      _MaybeDictionaryWord:=Word;
+      Result:=True;
+    end;
+  end;
 end;
 
 
@@ -353,6 +418,8 @@ begin
 end;
 
 
+
+
 procedure TFormHome.chkboxShowLogClick(Sender: TObject);
 begin
   if chkboxShowLog.Checked then ShowOrHideLog(log_show)
@@ -478,6 +545,8 @@ begin
 end;
 
 
+
+
 procedure TFormHome.re_ManualSMSKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 var
@@ -537,12 +606,30 @@ begin
 end;
 
 
-
-procedure TFormHome.st_ShowInfoAddAddressClinicClick(Sender: TObject);
+procedure TFormHome.re_ManualSMSMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
 begin
- MessageBox(Handle,PChar('Для быстрой вставки адреса клинки необходимо'+#13#10+
-                         'кликнуть правой кл. мыши в любом месте и выбрать нужный адрес из выпадающего меню'+#13#10+
-                         'и он вставиться в сообщение на месте где находится курсор'),PChar('Инфо'),MB_OK+MB_ICONINFORMATION);
+  // Проверяем, был ли клик правой кнопкой мыши
+  if Button = mbRight then
+  begin
+    if IsExistSpellingColor(maybeDictionary) then begin
+      popmenu_AddSpellnig.Items[0].Enabled:=True;
+    end
+    else begin
+     popmenu_AddSpellnig.Items[0].Enabled:=False;
+
+    end;
+  end;
+end;
+
+procedure TFormHome.st_ShowInfoAddAddressClinicMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  if Button = mbLeft then
+  begin
+    // Отображаем всплывающее меню
+    popmenu_AddressClinic.Popup(Mouse.CursorPos.X, Mouse.CursorPos.Y);
+  end;
 end;
 
 procedure TFormHome.st_ShowInfoAddAddressClinicMouseLeave(Sender: TObject);
@@ -653,6 +740,24 @@ end;
 procedure TFormHome.lblManualSMS_OneClick(Sender: TObject);
 begin
  ShowSendingManualPhone(sending_one);
+end;
+
+procedure TFormHome.menu_AddSpellingClick(Sender: TObject);
+var
+  resultat:Word;
+  Spelling:TSpelling;
+  error:string;
+begin
+  resultat:=MessageBox(Handle,PChar('Точно добавить слово "'+maybeDictionary+'" в словарь?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
+  if resultat=mrYes then begin
+    Spelling:=TSpelling.Create(re_ManualSMS, True);
+
+    if not Spelling.AddWordToDictionary(maybeDictionary,error) then begin
+      MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+      Exit;
+    end
+    else MessageBox(Handle,PChar(error),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
+  end;
 end;
 
 procedure TFormHome.page_TypesSMSChange(Sender: TObject);

@@ -291,6 +291,7 @@ begin
   end
   else begin
     lblS.Enabled:=True;
+
     dateStart.Enabled:=True;
     lblPo.Enabled:=True;
     dateStop.Enabled:=True;
@@ -347,6 +348,8 @@ begin
     MessageBox(Handle,PChar(_errorDescription),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
   end;
+
+  chkboxOnlyCurrentDay.Caption:='текущий день ('+DateToStr(now)+')';
 
   btnGenerate.SetFocus;
 end;

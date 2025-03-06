@@ -225,24 +225,26 @@ end;
 
 // среднее значение звонков
 function TForecastCalls.GetAvgCount:Double;
+const
+ procentCorrect:Word = 15; // корректтровка в % соотношении
 var
  i:Integer;
  avg:Integer;
  avgCorrect:Integer;
+ resultat:Double;
 begin
    avg:=0;
    avgCorrect:=0;
-   
+
    for i:=0 to cGLOBAL_DEPTH-1 do avg:=avg+m_list[i];
    for i:=0 to cGLOBAL_DEPTH_CORRECT-1 do avgCorrect:=avgCorrect+m_listCorrect[i];
 
-   // TODO надо еще доработать
-   if Round(avg/cGLOBAL_DEPTH) > Round(avgCorrect/cGLOBAL_DEPTH_CORRECT) then Result:=avg/cGLOBAL_DEPTH
+   if Round(avg/cGLOBAL_DEPTH) > Round(avgCorrect/cGLOBAL_DEPTH_CORRECT) then resultat:=avg/cGLOBAL_DEPTH
    else begin
-      Result:=(avgCorrect/cGLOBAL_DEPTH_CORRECT) + (Round(avgCorrect/cGLOBAL_DEPTH_CORRECT) - Round(avg/cGLOBAL_DEPTH));
+     resultat:=(((avgCorrect/cGLOBAL_DEPTH_CORRECT)*procentCorrect) / 100) + Round(avg/cGLOBAL_DEPTH);
    end;
 
-  Result:=avg/cGLOBAL_DEPTH;
+  Result:=resultat;
 end;
 
 end.

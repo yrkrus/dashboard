@@ -506,7 +506,7 @@ begin
   lblVersion.Caption:=getVersion(GUID_VERSION,eGUI);
 
   // пасхалки
-  HappyNewYear;
+  Egg;
 end;
 
 procedure TFormAuth.img_eay_closeClick(Sender: TObject);

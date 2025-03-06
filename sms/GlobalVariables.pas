@@ -20,12 +20,12 @@ uses
 
 
   type   // тип отправки
-   enumSendingOptions = (options_Manual,  // ручная отправка
-                         options_Sending); // рассылка
+   enumSendingOptions = (options_Manual,    // ручная отправка
+                         options_Sending);  // рассылка
 
   type  // тип показывать\скрывать лог
-  enumFormShowingLog = (log_show,     // лог показывать
-                        log_hide);    // лог скрывать
+  enumFormShowingLog = (log_show,           // лог показывать
+                        log_hide);          // лог скрывать
 
 
   type  // тип прогрузки шаблонов сообщений
@@ -37,13 +37,13 @@ var
                       DEBUG:Boolean = TRUE;
   // ****************** режим разработки ******************
 
-  SMS_EXE :string = 'sms.exe';
+  SMS_EXE           :string = 'sms.exe';
 
   // файл с настройками
   SETTINGS_XML      :string = 'settings.xml';
 
   // лог главной формы
-  SharedMainLog:TLoggingFile;
+  SharedMainLog     :TLoggingFile;
 
   // текущая директория откуда запускаем sms.exe
   FOLDERPATH:string;
@@ -84,6 +84,7 @@ var
   type
   p_TADOConnection = Pointer; // Указатель на TADOConnection
   function createServerConnect: p_TADOConnection;             stdcall;    external 'core.dll';          // Создание подключения к серверу
+  function createServerConnectWithError(var _errorDescriptions: string): p_TADOConnection; overload;             stdcall;  external 'core.dll';       // Создание подключения к серверу
   function GetCopyright:Pchar;                                stdcall;    external 'core.dll';          // copyright
   function GetUserNameFIO(InUserID:Integer):PChar;            stdcall;    external 'core.dll';          // полчуение имени пользователя из его UserID
   function GetUserAccessSMS(InUserID:Integer):Boolean;        stdcall;    external 'core.dll';          // есть ли доступ у пользователя к SMS отчетам
@@ -116,7 +117,6 @@ initialization  // Инициализация
 
  SharedMainLog                :=TLoggingFile.Create('sms');   // лог работы формы
  SharedSendindPhoneManualSMS  :=TStringList.Create;
-
 
  finalization
 

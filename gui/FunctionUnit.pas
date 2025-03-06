@@ -112,7 +112,10 @@ procedure ShowOperatorsStatus;                                                  
 procedure ResizeCentrePanelStatusOperators(WidthMainWindow:Integer);                 // изменение позиции панели статусы операторов в зависимости от размера главного окна
 procedure VisibleIconOperatorsGoHome(InStatus:enumHideShowGoHomeOperators;
                                      InClick:Boolean = False);                       // показывать\скрывать операторов ушедших домой
+
+procedure Egg;                                                                       // пасхалки
 procedure HappyNewYear;                                                              // пасхалка с новым годом
+procedure Mart8;                                                                     // пасхалка с 8 марта
 function GetExistAccessToLocalChat(InUserId:Integer):Boolean;                        // есть ли доступ к локальному чату
 procedure OpenLocalChat;                                                             // открытые exe локального чата
 procedure OpenReports;                                                               // открытые exe отчетов
@@ -127,7 +130,7 @@ procedure ShowInfoNewVersionAfterUpdate(InGUID:string);                         
 procedure ShowStatisticsCallsDay(InTypeStatisticsCalls: enumStatisticsCalls;         // отображение статистики ожидание в очереди за текущий день
                                  InClick:Boolean = False);
 function isExistMySQLConnector:Boolean;                                              // установлен ли MySQL COnnector
-procedure ShowFormErrorMessage(const _errorMessage:string;
+procedure ShowFormErrorMessage(_errorMessage:string;
                                var p_Log:TLoggingFile;
                                const __METHOD_NAME__:string);                        // отрображение окна с ошибкой
 function GetNeedReconnectBase(const _errorMessage:string):enumNeedReconnectBD;       // проверка нужно ли перезапускать reconnect к базе
@@ -4702,6 +4705,14 @@ begin
   end;
 end;
 
+// пасхалки
+procedure Egg;
+begin
+  HappyNewYear;
+  Mart8;
+end;
+
+
 // пасхалка с новым годом
 procedure HappyNewYear;
 var
@@ -4716,6 +4727,21 @@ begin
    HomeForm.ImgNewYear.Visible:=True;
    FormAbout.ImgNewYear.Visible:=True;
    FormAuth.ImgNewYear.Visible:=True;
+  end;
+end;
+
+// пасхалка с 8 марта
+procedure Mart8;
+var
+  DateMarch8: TDateTime;
+begin
+  // ќпредел€ем дату Ќового года
+   DateMarch8 := EncodeDate(YearOf(Now), 3, 8);
+
+  if IsSameDay(Now, DateMarch8) then
+  begin
+    HomeForm.ImageLogo.Visible := False;
+    HomeForm.Img8Mart.Visible:=True;
   end;
 end;
 
@@ -4871,12 +4897,12 @@ end;
 //  очистка от всего что осталось после обновлени€
 procedure ClearAfterUpdate;
 var
- folderUpdate:string;
+ folderUpdate_:string;
  XML:TXML;
 begin
-   folderUpdate:=FOLDERUPDATE;
+   folderUpdate_:=FOLDERUPDATE;
   // удал€ем сначало всю директорию
-  if DirectoryExists(folderUpdate) then TDirectory.Delete(folderUpdate, True);
+  if DirectoryExists(folderUpdate_) then TDirectory.Delete(folderUpdate_, True);
 
   if FileExists(FOLDERPATH+UPDATE_BAT) then begin
    // если есть файл с автообновлением значит было запущено обновление и нужно изменить версию
@@ -5092,7 +5118,7 @@ end;
 
 
 // отрображение окна с ошибкой
-procedure ShowFormErrorMessage(const _errorMessage:string;
+procedure ShowFormErrorMessage(_errorMessage:string;
                                var p_Log:TLoggingFile;
                                const __METHOD_NAME__:string);
 var
@@ -5104,11 +5130,11 @@ begin
   // проверим нужно ли перезапускать Reconnect
   needReconnect:=GetNeedReconnectBase(_errorMessage);
 
-  // TODO
-  {
-    есть така€ ошибка ’« что это такое, но будем пока считать это не ошибкой
-    check the manual that corresponds to your MySQL server version for the right syntax to use near
-  }
+  // ≈сть ошибка подключени€ к Ѕƒ
+  if AnsiPos('EDatabaseError',_errorMessage )<> 0 then begin
+    _errorMessage:='—ервер не доступен';
+  end;
+
 
   with FormError do begin
     if not Showing then begin

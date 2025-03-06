@@ -5706,14 +5706,14 @@ object FormAbout: TFormAbout
     Visible = False
   end
   object Label1: TLabel
-    Left = 27
+    Left = 31
     Top = 126
-    Width = 59
-    Height = 19
+    Width = 48
+    Height = 16
     Caption = #1043#1076#1077' '#1103'!?'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -16
+    Font.Height = -13
     Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     ParentFont = False

@@ -129,7 +129,7 @@ begin
       with ado do begin
 
         SQL.Clear;
-        SQL.Add('select * from settings order by date_time DESC');
+        SQL.Add('select id, queue_5000_time, queue_5050_time, date_time from settings order by date_time DESC');
 
         Active:=True;
 

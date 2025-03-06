@@ -67,9 +67,9 @@ object FormReportCountRingsOperators: TFormReportCountRingsOperators
     object chkboxOnlyCurrentDay: TCheckBox
       Left = 13
       Top = 52
-      Width = 150
+      Width = 189
       Height = 17
-      Caption = #1090#1086#1083#1100#1082#1086' '#1090#1077#1082#1091#1097#1080#1081' '#1076#1077#1085#1100
+      Caption = #1090#1077#1082#1091#1097#1080#1081' '#1076#1077#1085#1100
       TabOrder = 2
       OnClick = chkboxOnlyCurrentDayClick
     end

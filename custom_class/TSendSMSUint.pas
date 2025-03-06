@@ -387,7 +387,7 @@ begin
                                                                                                           +#39+InMessage+#39+','
                                                                                                           +#39+sms_id+#39+','
                                                                                                           +#39+user_login_pc+#39+','
-                                                                                                          +#39+ IntToStr(countReal)+#39+')';
+                                                                                                          +#39+IntToStr(countReal)+#39+')';
    try
      with ado do begin
         ado.Connection:=serverConnect;
@@ -498,7 +498,7 @@ begin
 
        try
         if m_isDEBUG then begin
-          resultat:=MessageBox(0,PChar('===DEBUG MODE=== '+#13#13+'Cейчас будет отправлено SMS, отправлять?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
+          resultat:=MessageBox(0,PChar('=== DEBUG MODE === '+#13#13+'Cейчас будет отправлено SMS, отправлять?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
           if resultat=mrNo then begin
             Exit;
           end;

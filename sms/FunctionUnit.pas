@@ -194,19 +194,29 @@ begin
            end;
          end;
 
+         // проверка чтобы не повторялось слово медси
+         if chkbox_SignSMS.Checked then begin
+            if AnsiPos('медси',temp_message)<>0 then begin
+              _errorDescription:='Сообщение содержит название компании "Медси"'+#13+
+                                 'при этом установлена галка "вставить подпись в конце SMS"'+#13+
+                                 'это приведет к лексической ошибке в сообщении'+'#13'+
+                                 'Уберите название или снимите галку "вставить подпись в конце SMS"';
+              Exit;
+           end;
+         end;
+
          // проверка чтобы собощение было с заглавной буквы
          if not IsFirstCharUpperCyrillic(re_ManualSMS.Text) then begin
            _errorDescription:='Сообщение должно начинаться с заглавной буквы';
             Exit;
          end;
 
-          // ну и новая фишка проверка орфографии
-          Spelling:=TSpelling.Create(re_ManualSMS);
+          // проверка орфографии
+          Spelling:=TSpelling.Create(re_ManualSMS, True);
           if Spelling.isExistErrorSpelling then begin
             _errorDescription:='В тексте сообщения присутствуют орфографические ошибки!';
             Exit;
           end;
-
 
           // ну и на последок проверим длинну сообщения чтобы была не очень длинное
           SMS:=TSendSMS.Create(DEBUG);
@@ -576,6 +586,8 @@ var
 
  NewPacient:TListPacients;
 
+ progress:Integer;
+
 begin
   Screen.Cursor:=crHourGlass;
 
@@ -666,6 +678,7 @@ begin
                              '10.DEPNAME'+#13+
                              '11.F_FILID'+#13+
                              '12.F_SHORTADDR';
+
         p_Status.Caption:='Статус : Ошибка, некорректный формат файла!';
         Application.ProcessMessages;
         lblNameExcelFile.Caption:=EXCEL_FILE_NOT_LOADED;
@@ -680,9 +693,12 @@ begin
 
      checkRows:=False;
      NewPacient:= TListPacients.Create;
+     progress:=0;
 
      for i:=1 to Rows do
      begin
+      p_Status.Caption:='Статус : Загрузка в память ['+IntToStr(progress)+'%]';
+
         if checkRows=False then begin
           if (FData[i,1]='PCODE')     and
              (FData[i,2]='PHONE')     and
@@ -729,6 +745,8 @@ begin
 
       NewPacient.Clear;
 
+      progress:=100-Round(Rows / (i*100));
+      Application.ProcessMessages;
      end;
    end;
 

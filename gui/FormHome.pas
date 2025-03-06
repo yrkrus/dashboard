@@ -145,6 +145,7 @@ type
     img_ShowOperatorStatus: TImage;
     st_Forecast_Tomorrow: TStaticText;
     st_Forecast_AfterTomorrow: TStaticText;
+    Img8Mart: TImage;
     procedure START_THREAD_ALLlClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -681,7 +682,7 @@ begin
   accessRights(SharedCurrentUserLogon);
 
   // пасхалки
-   HappyNewYear;
+   Egg;
 
   Screen.Cursor:=crDefault;
 
@@ -825,10 +826,10 @@ begin
         if (time_talk >= 180) and (time_talk <= 600)  then begin
          Sender.Canvas.Font.Color := clRed;
          Exit;
-        end else if (time_talk > 600) and (time_talk <= 1200)  then begin
+        end else if (time_talk > 600) and (time_talk <= 900)  then begin
          Sender.Canvas.Font.Color := $0000008A;
          Exit;
-        end else if time_talk >= 1200 then begin
+        end else if time_talk >= 900 then begin
          Sender.Canvas.Font.Color := clBlue;
          Exit;
         end;

@@ -147,9 +147,10 @@
         <UWP_DelphiLogo44>C:\Users\home0\Desktop\DASHBOARD\develop\gui\ico\diagram09(1).png</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>C:\Users\home0\Desktop\DASHBOARD\develop\gui\ico\diagram09.png</UWP_DelphiLogo150>
         <VerInfo_MinorVer>17</VerInfo_MinorVer>
-        <VerInfo_Keys>CompanyName=Petrov Yuri;FileDescription=Дашборд коллцентра;FileVersion=1.17.0.35;InternalName=;LegalCopyright=Petrov Yuri;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Дашборд коллцентра;ProductVersion=0.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petrov Yuri;FileDescription=Дашборд коллцентра;FileVersion=1.17.1.38;InternalName=;LegalCopyright=Petrov Yuri;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Дашборд коллцентра;ProductVersion=0.0.0.0;Comments=</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
-        <VerInfo_Build>35</VerInfo_Build>
+        <VerInfo_Build>38</VerInfo_Build>
+        <VerInfo_Release>1</VerInfo_Release>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
