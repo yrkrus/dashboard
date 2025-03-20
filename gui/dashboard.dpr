@@ -58,7 +58,13 @@ uses
   TInternalProcessUnit in '..\custom_class\TInternalProcessUnit.pas',
   Thread_InternalProcessUnit in 'Thread\Thread_InternalProcessUnit.pas',
   FormStatusInfoUnit in 'FormStatusInfoUnit.pas' {FormStatusInfo},
-  TSendSMSUint in '..\custom_class\TSendSMSUint.pas';
+  TSendSMSUint in '..\custom_class\TSendSMSUint.pas',
+  FormHistoryCallOperatorUnit in 'FormHistoryCallOperatorUnit.pas' {FormHistoryCallOperator},
+  TFontSizeUnit in '..\custom_class\TFontSizeUnit.pas',
+  FormChatNewMessageUnit in 'FormChatNewMessageUnit.pas' {FormChatNewMessage},
+  TAverageCalculatorUnit in '..\custom_class\debug_info\TAverageCalculatorUnit.pas',
+  TDebugCountResponseUnit in '..\custom_class\debug_info\TDebugCountResponseUnit.pas',
+  TDebugStructUnit in '..\custom_class\debug_info\TDebugStructUnit.pas';
 
 {$R *.res}
 
@@ -98,5 +104,7 @@ begin
   Application.CreateForm(TFormGlobalSettingCheckFirebirdConnect, FormGlobalSettingCheckFirebirdConnect);
   Application.CreateForm(TFormStatisticsChart, FormStatisticsChart);
   Application.CreateForm(TFormStatusInfo, FormStatusInfo);
+  Application.CreateForm(TFormHistoryCallOperator, FormHistoryCallOperator);
+  Application.CreateForm(TFormChatNewMessage, FormChatNewMessage);
   Application.Run;
 end.

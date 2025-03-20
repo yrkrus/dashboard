@@ -16,6 +16,7 @@ uses
   System.SyncObjs,
   XMLDoc,
   XMLIntf,
+  TCustomTypeUnit,
   GlobalVariables;
 
 
@@ -43,8 +44,16 @@ uses
     function isUpdate:Boolean;         overload;            // текущее состояние (в обновлении или нет)
 
     function GetFolderPathFindRemember: string;             // путь откуда будем забирать файл с смс рассылкой
-    procedure SetFolderPathFindRemember(const Path: string); // установка пути откуда будем забирать файл с смс рассылкой
+    procedure SetFolderPathFindRemember(const Path: string);// установка пути откуда будем забирать файл с смс рассылкой
 
+    function GetFontSize(_font:enumFontSize):Word;          // получение текущего размера шрифта
+    procedure SetFontSize(_font:enumFontSize; _value:Integer); // установка размера шрифта
+
+    function GetWindowState:string;                         // получение текущего размера окна главной формы
+    procedure SetWindowState(_state:string);                // установка размера окна главной формы
+
+    procedure ForceUpdate(InValue:string);                   // принудительное обновление
+    function  isForceUpdate:Boolean;        overload;       // текущее состояние (в принудительном обновлении)
 
   private
     m_fileSettings: string;                                 // путь с файлом настроек
@@ -59,6 +68,8 @@ uses
   end;
 
 implementation
+
+
 
 { TXMLSettings }
 
@@ -139,6 +150,28 @@ begin
     end;
 end;
 
+
+// принудительное обновление
+procedure TXML.ForceUpdate(InValue:string);
+begin
+  // проверяем есть ли параметр
+  checkExistNodeFields('Versions','ForceUpdate','InValue');
+
+   m_XMLDoc:= LoadXMLDocument(m_fileSettings);
+    try
+      m_RootNode := m_XMLDoc.DocumentElement;
+      m_ChildNode := m_RootNode.ChildNodes.FindNode('Versions').ChildNodes.FindNode('ForceUpdate');
+
+      if Assigned(m_ChildNode) then
+      begin
+        m_ChildNode.Text :=InValue;
+        m_XMLDoc.SaveToFile(m_fileSettings);
+      end;
+    finally
+     m_XMLDoc := nil;
+    end;
+end;
+
 // текущее состояние (в обновлении или нет)
 function TXML.isUpdate:Boolean;
 begin
@@ -149,6 +182,27 @@ begin
   try
     m_RootNode := m_XMLDoc.DocumentElement;
     m_ChildNode := m_RootNode.ChildNodes.FindNode('Versions').ChildNodes.FindNode('isUpdate');
+
+    if Assigned(m_ChildNode) then
+    begin
+      Result:= stringToBoolean(m_ChildNode.Text);
+    end;
+  finally
+    m_XMLDoc := nil;
+  end;
+end;
+
+
+// текущее состояние (в принудительном обновлении)
+function TXML.isForceUpdate:Boolean;
+begin
+  Result:=False;
+
+  m_XMLDoc:= LoadXMLDocument(m_fileSettings);
+
+  try
+    m_RootNode := m_XMLDoc.DocumentElement;
+    m_ChildNode := m_RootNode.ChildNodes.FindNode('Versions').ChildNodes.FindNode('ForceUpdate');
 
     if Assigned(m_ChildNode) then
     begin
@@ -181,13 +235,25 @@ begin
       // Добавляем узел <isUpdate> внутрь <Versions>
       m_ChildNode.AddChild('isUpdate').Text := 'false';
 
+      // Добавляем узел <isUpdate> внутрь <Versions>
+      m_ChildNode.AddChild('ForceUpdate').Text := 'false';
+
       // Добавляем узел <LastOnline>
       m_RootNode.AddChild('LastOnline'); // Добавляем LastOnline на тот же уровень, что и Versions
-
 
       // Добавляем узел <SMS> и дочерний узел <FolderPathFindRemember>
       m_ChildNode := m_RootNode.AddChild('SMS');
       m_ChildNode.AddChild('FolderPathFindRemember').Text := 'null'; // Значение по умолчанию
+
+      // Добавляем узел <Font> и дочерние узлы <ActiveSip> (отвечает за размер шрифта)
+      m_ChildNode := m_RootNode.AddChild('Font');
+      m_ChildNode.AddChild('ActiveSip').Text  := '10'; // Значение по умолчанию
+      m_ChildNode.AddChild('IVR').Text        := '10'; // Значение по умолчанию
+      m_ChildNode.AddChild('Queue').Text      := '10'; // Значение по умолчанию
+
+      // Добавляем узел <WindowState> и дочерний узел <State> (отвечает за состояние окна главной формы на весь экран или нет)
+      m_ChildNode := m_RootNode.AddChild('WindowState');
+      m_ChildNode.AddChild('State').Text      := 'wsMaximized'; // Значение по умолчанию
 
       // Сохраняем новый XML-документ
       m_XMLDoc.SaveToFile(m_fileSettings);
@@ -462,6 +528,112 @@ begin
     if Assigned(m_ChildNode) then
     begin
       m_ChildNode.Text := Path;
+      m_XMLDoc.SaveToFile(m_fileSettings);
+    end;
+  finally
+    m_XMLDoc := nil;
+  end;
+end;
+
+// получение текущего размера шрифта
+function TXML.GetFontSize(_font:enumFontSize):Word;
+begin
+  Result := 10;  // defaul value font size
+
+  if not isExistSettingsFile then
+  begin
+    m_XMLDoc := nil; // Освобождаем ресурсы
+    Exit;
+  end;
+
+  // Загружаем XML-документ
+  m_XMLDoc:= LoadXMLDocument(m_fileSettings);
+  try
+    m_RootNode:= m_XMLDoc.DocumentElement;
+
+    // Проверяем наличие узла <Font>
+    m_ChildNode := m_RootNode.ChildNodes.FindNode('Font');
+    if Assigned(m_ChildNode) then
+    begin
+      // Проверяем наличие узла <EnumFontSize>
+      m_ChildNode := m_ChildNode.ChildNodes.FindNode(EnumFontSizeToString(_font));
+      if Assigned(m_ChildNode) then
+      begin
+        Result:= StrToInt(m_ChildNode.Text); // Возвращаем текст узла
+      end;
+    end;
+  finally
+    m_XMLDoc := nil; // Освобождаем ресурсы
+  end;
+end;
+
+// установка размера шрифта
+procedure TXML.SetFontSize(_font:enumFontSize; _value:Integer);
+begin
+  // Проверяем наличие узла
+  checkExistNodeFields('Font', EnumFontSizeToString(_font), IntToStr(_value));
+
+  m_XMLDoc := LoadXMLDocument(m_fileSettings);
+  try
+    m_RootNode := m_XMLDoc.DocumentElement;
+    m_ChildNode := m_RootNode.ChildNodes.FindNode('Font').ChildNodes.FindNode(EnumFontSizeToString(_font));
+
+    if Assigned(m_ChildNode) then
+    begin
+      m_ChildNode.Text := IntToStr(_value);
+      m_XMLDoc.SaveToFile(m_fileSettings);
+    end;
+  finally
+    m_XMLDoc := nil;
+  end;
+end;
+
+// получение текущего размера окна главной формы
+function TXML.GetWindowState:string;
+begin
+   Result := 'wsMaximized';  // defaul value state
+
+  if not isExistSettingsFile then
+  begin
+    m_XMLDoc := nil; // Освобождаем ресурсы
+    Exit;
+  end;
+
+  // Загружаем XML-документ
+  m_XMLDoc:= LoadXMLDocument(m_fileSettings);
+  try
+    m_RootNode:= m_XMLDoc.DocumentElement;
+
+    // Проверяем наличие узла <WindowState>
+    m_ChildNode := m_RootNode.ChildNodes.FindNode('WindowState');
+    if Assigned(m_ChildNode) then
+    begin
+      // Проверяем наличие узла <EnumFontSize>
+      m_ChildNode := m_ChildNode.ChildNodes.FindNode('State');
+      if Assigned(m_ChildNode) then
+      begin
+        Result:= m_ChildNode.Text; // Возвращаем текст узла
+      end;
+    end;
+  finally
+    m_XMLDoc := nil; // Освобождаем ресурсы
+  end;
+end;
+
+// установка размера окна главной формы
+procedure TXML.SetWindowState(_state:string);
+begin
+ // Проверяем наличие узла
+  checkExistNodeFields('WindowState', 'State', 'wsMaximized');
+
+  m_XMLDoc := LoadXMLDocument(m_fileSettings);
+  try
+    m_RootNode := m_XMLDoc.DocumentElement;
+    m_ChildNode := m_RootNode.ChildNodes.FindNode('WindowState').ChildNodes.FindNode('State');
+
+    if Assigned(m_ChildNode) then
+    begin
+      m_ChildNode.Text := _state;
       m_XMLDoc.SaveToFile(m_fileSettings);
     end;
   finally

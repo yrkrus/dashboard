@@ -106,11 +106,12 @@ begin
   re_LogError.Clear;
 
   for i:=0 to SharedPacientsListNotSending.Count-1 do begin
-
     CreateLogAddColoredLine(re_LogError,
                             SharedPacientsListNotSending.GetErrorDescriptions(i),clRed,
                             SharedPacientsListNotSending.ShowPacientInfo(i),clBlack);
   end;
+
+  re_LogError.SelStart:=0;
 end;
 
 // сохранение файла

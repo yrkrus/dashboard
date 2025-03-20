@@ -22,7 +22,7 @@ type
 implementation
 
 uses
-  DMUnit, FormHome, FunctionUnit, FormDEBUGUnit, TCustomTypeUnit, GlobalVariables;
+  DMUnit, FormHome, FunctionUnit, TCustomTypeUnit, GlobalVariables, TDebugStructUnit;
 
 
 
@@ -82,15 +82,21 @@ end;
 procedure Thread_Statistics.Execute;
  const
  SLEEP_TIME:Word = 2000;
+ NAME_THREAD:string = 'Thread_Statistics';
  var
   StartTime, EndTime: Cardinal;
   Duration: Cardinal;
+
+  debugInfo: TDebugStruct;
 begin
 
   inherited;
   CoInitialize(Nil);
 
-  Log:=TLoggingFile.Create('Thread_Statistics');
+  Log:=TLoggingFile.Create(NAME_THREAD);
+  // вывод debug info
+  debugInfo:=TDebugStruct.Create(NAME_THREAD,Log);
+  SharedCountResponseThread.Add(debugInfo);
 
   while not Terminated do
   begin
@@ -104,7 +110,7 @@ begin
 
         EndTime:= GetTickCount;
         Duration:= EndTime - StartTime;
-        FormDEBUG.lblThread_Statistics.Caption:=IntToStr(Duration);
+        SharedCountResponseThread.SetCurrentResponse(NAME_THREAD,Duration);
       except
         on E:Exception do
         begin

@@ -118,8 +118,8 @@
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <VerInfo_MinorVer>12</VerInfo_MinorVer>
-        <VerInfo_Keys>CompanyName=Petrov Yuri;FileDescription=Дашбоард коллцентра;FileVersion=1.12.0.0;InternalName=;LegalCopyright=Petrov Yuri;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Дашбоард коллцентра;ProductVersion=1.12.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petrov Yuri;FileDescription=Дашборд коллцентра;FileVersion=0.0.0.0;InternalName=;LegalCopyright=Petrov Yuri;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Дашборд коллцентра;ProductVersion=0.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_MajorVer>0</VerInfo_MajorVer>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
@@ -270,6 +270,18 @@
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="..\custom_class\TSendSMSUint.pas"/>
+        <DCCReference Include="FormHistoryCallOperatorUnit.pas">
+            <Form>FormHistoryCallOperator</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\custom_class\TFontSizeUnit.pas"/>
+        <DCCReference Include="FormChatNewMessageUnit.pas">
+            <Form>FormChatNewMessage</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\custom_class\debug_info\TAverageCalculatorUnit.pas"/>
+        <DCCReference Include="..\custom_class\debug_info\TDebugCountResponseUnit.pas"/>
+        <DCCReference Include="..\custom_class\debug_info\TDebugStructUnit.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

@@ -16,7 +16,8 @@ uses
   TThreadSendSMSUnit in '..\custom_class\TThreadSendSMSUnit.pas',
   FormListSendingSMSUnit in 'FormListSendingSMSUnit.pas' {FormListSendingSMS},
   TXmlUnit in '..\custom_class\TXmlUnit.pas',
-  TSpellingUnit in '..\custom_class\TSpellingUnit.pas';
+  TSpellingUnit in '..\custom_class\TSpellingUnit.pas',
+  FormSendingSMSUnit in 'FormSendingSMSUnit.pas' {FormSendingSMS};
 
 {$R *.res}
 
@@ -31,5 +32,6 @@ begin
   Application.CreateForm(TFormNotSendingSMSError, FormNotSendingSMSError);
   Application.CreateForm(TFormEditTemplate, FormEditTemplate);
   Application.CreateForm(TFormListSendingSMS, FormListSendingSMS);
+  Application.CreateForm(TFormSendingSMS, FormSendingSMS);
   Application.Run;
 end.

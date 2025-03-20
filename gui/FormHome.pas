@@ -65,7 +65,6 @@ type
     menu_About_Version: TMenuItem;
     N1: TMenuItem;
     menu_About_Debug: TMenuItem;
-    img_statistics_QUEUE: TImage;
     ListViewIVR: TListView;
     ListViewQueue: TListView;
     Panel_SIP: TPanel;
@@ -146,6 +145,29 @@ type
     st_Forecast_Tomorrow: TStaticText;
     st_Forecast_AfterTomorrow: TStaticText;
     Img8Mart: TImage;
+    popMenu_ActionOperators_HistoryCallOperator: TMenuItem;
+    N3: TMenuItem;
+    N4: TMenuItem;
+    b1: TMenuItem;
+    N5: TMenuItem;
+    N6: TMenuItem;
+    N7: TMenuItem;
+    N8: TMenuItem;
+    N11: TMenuItem;
+    N12: TMenuItem;
+    N13: TMenuItem;
+    N14: TMenuItem;
+    C1: TMenuItem;
+    N15: TMenuItem;
+    N17: TMenuItem;
+    N18: TMenuItem;
+    img_DownFont_ActiveSIP: TImage;
+    img_UpFont_ActiveSIP: TImage;
+    img_UpFont_IVR: TImage;
+    img_DownFont_IVR: TImage;
+    img_UpFont_Queue: TImage;
+    img_DownFont_Queue: TImage;
+    Button1: TButton;
     procedure START_THREAD_ALLlClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -206,10 +228,27 @@ type
     procedure img_ShowOperatorStatusClick(Sender: TObject);
     procedure ListViewSIPCustomDrawItem(Sender: TCustomListView;
       Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
+    procedure popMenu_ActionOperators_HistoryCallOperatorClick(Sender: TObject);
+    procedure img_UpFont_ActiveSIPClick(Sender: TObject);
+    procedure img_DownFont_ActiveSIPClick(Sender: TObject);
+    procedure img_UpFont_IVRClick(Sender: TObject);
+    procedure img_DownFont_IVRClick(Sender: TObject);
+    procedure img_UpFont_QueueClick(Sender: TObject);
+    procedure img_DownFont_QueueClick(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
+    procedure PanelStatusINMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure PanelStatusINMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
+    procedure PanelStatusINMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
 
   private
     { Private declarations }
+   FDragging: Boolean;      // состояние что панель со статусами операторов перемещается
+   FMouseOffset: TPoint;
 
+   procedure WndProc(var Msg: TMessage); override;   // изменение размер шрифта по сочетанию  Ctrl + колесико
 
 
   public
@@ -238,6 +277,14 @@ type
   ///   asterisk -rx "queue add member Local/НОМЕР_ОПЕРАОРА@from-queue/n to НОМЕР_ОЧЕРЕДИ penalty 0 as НОМЕР_ОПЕРАТОРА state_interface hint:НОМЕР_ОПЕРАТОРА@ext-local"
   ///   asterisk -rx "queue remove member Local/НОМЕР_ОПЕРАОРА@from-queue/n from НОМЕР_ОЧЕРЕДИ"
 
+  const
+  FLASHW_STOP = $00000000; // Остановить мерцание
+  FLASHW_CAPTION = $00000001; // Мерцание заголовка окна
+  FLASHW_TRAY = $00000002; // Мерцание иконки в трее
+  FLASHW_ALL = FLASHW_CAPTION or FLASHW_TRAY; // Мерцание всего
+  FLASHW_TIMER = $00000004; // Использовать таймер для мерцания
+  FLASHW_TIMERNOFG = $00000008; // Использовать таймер, даже если окно не активно
+
 
 var
   HomeForm: THomeForm;
@@ -261,11 +308,6 @@ var
 
 
 
-  LastKernelTime: Int64 = 0;
-  LastUserTime: Int64 = 0;
-  LastCheckTime: Int64 = 0;
-
-
  const
   // Размер панели "Статусы операторов"
   cPanelStatusHeight_default:Word   = 72;
@@ -274,37 +316,17 @@ var
 implementation
 
 uses
-    DMUnit,
-    FunctionUnit,
-    FormPropushennieUnit,
-    FormSettingsUnit,
-    Thread_StatisticsUnit,
-    Thread_IVRUnit,
-    Thread_QUEUEUnit,
-    FormAboutUnit,
-    FormOperatorStatusUnit,
-    FormServerIKCheckUnit,
-    FormAuthUnit,
-    FormActiveSessionUnit,
-    FormRePasswordUnit,
-    Thread_AnsweredQueueUnit,
-    ReportsUnit,
-    Thread_ACTIVESIP_updatetalkUnit,
-    FormDEBUGUnit,
-    FormErrorUnit,
-    TCustomTypeUnit,
-    GlobalVariables,
-    FormUsersUnit,
-    FormServersIKUnit,
-    FormSettingsGlobalUnit,
-    FormTrunkUnit,
-    TFTPUnit,
-    TXmlUnit,
-    FormStatisticsChartUnit,
-    TForecastCallsUnit, FormStatusInfoUnit;
+    DMUnit, FunctionUnit, FormPropushennieUnit, FormSettingsUnit, Thread_StatisticsUnit, Thread_IVRUnit,
+    Thread_QUEUEUnit, FormAboutUnit, FormOperatorStatusUnit, FormServerIKCheckUnit, FormAuthUnit,
+    FormActiveSessionUnit, FormRePasswordUnit, Thread_AnsweredQueueUnit, ReportsUnit, Thread_ACTIVESIP_updatetalkUnit,
+    FormDEBUGUnit, FormErrorUnit, TCustomTypeUnit, GlobalVariables, FormUsersUnit, FormServersIKUnit, FormSettingsGlobalUnit,
+    FormTrunkUnit, TFTPUnit, TXmlUnit, FormStatisticsChartUnit, TForecastCallsUnit, FormStatusInfoUnit,
+    FormHistoryCallOperatorUnit, FormChatNewMessageUnit, TDebugStructUnit;
 
 
 {$R *.dfm}
+
+function FlashWindowEx(var pwfi: TFlashWindowInfo): BOOL; stdcall; external user32 name 'FlashWindowEx';
 
 procedure OnDevelop;
 begin
@@ -477,6 +499,45 @@ begin
  end;
 end;
 
+procedure THomeForm.Button1Click(Sender: TObject);
+var
+  ScreenRect: TRect;
+  TaskbarHeight: Integer;
+
+  FlashInfo: TFlashWindowInfo;
+
+  test: TDebugStruct;
+
+begin
+//  // Получаем размеры рабочего стола с учетом панели задач
+//  SystemParametersInfo(SPI_GETWORKAREA, 0, @ScreenRect, 0);
+//
+//  // Устанавливаем позицию формы
+//  FormChatNewMessage.Left := ScreenRect.Right - FormChatNewMessage.Width - 10; // 10 - отступ от края экрана
+//  FormChatNewMessage.Top := ScreenRect.Bottom - FormChatNewMessage.Height - 10; // 10 - отступ от края экрана
+//
+//  // Показываем форму
+//
+//
+//  FormChatNewMessage.Show;
+//
+//
+//
+//
+//  FlashInfo.cbSize := SizeOf(TFlashWindowInfo);
+//  FlashInfo.hwnd := Handle; // Указываем дескриптор окна
+//  FlashInfo.dwFlags := FLASHW_ALL; // Мерцание всего окна
+//  FlashInfo.uCount := 999999999; // Количество мерцаний
+//  FlashInfo.dwTimeout := 0; // Интервал между мерцаниями (0 - стандартный)
+//
+//  FlashWindowEx(FlashInfo);
+
+  // test:=TDebugStruct.Create('Thread_test');
+  // SharedCountResponseThread.Add(test);
+  // SharedCountResponseThread.SetCurrentResponse('Thread_test',100);
+
+end;
+
 procedure THomeForm.START_THREAD_ALLlClick(Sender: TObject);
 begin
   Timer_Thread_Start.Enabled:=True;
@@ -578,29 +639,37 @@ begin
     MessageBox(Handle,PChar('Не найдена папка с dll библиотеками'+#13#13+FolderDll),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     KillProcess; // Завершаем выполнение процедуры, чтобы не продолжать дальше
   end;
-  // очищаем все лист боксы
-  clearAllLists;
 
   // размер панели "Статусы операторов" по default
   PanelStatusIN.Height:=cPanelStatusHeight_default;
+  FDragging:=False;
 end;
 
 
 procedure THomeForm.FormResize(Sender: TObject);
-const
- cDefault_Panel_SIP:Word = 383; // разница между стандартным размером окна 1400 - 1017(форма на стартовом окне)
+var
+ XML:TXML;
 begin
  // изсеняем размер формы
  // активные операторы
-  clearList_SIP(Width - cDefault_Panel_SIP);
+  clearList_SIP(Width - DEFAULT_SIZE_PANEL_ACTIVESIP, SharedFontSize.GetSize(eActiveSip));
 
   if Assigned(SharedCurrentUserLogon) then begin
     if SharedCurrentUserLogon.GetIsOperator then begin
       // подгонем размер статусов оператора
-      ResizeCentrePanelStatusOperators(Width - cDefault_Panel_SIP);
+      ResizeCentrePanelStatusOperators(Width - DEFAULT_SIZE_PANEL_ACTIVESIP);
     end;
   end;
 
+  // сохраняем размер главной формы
+  begin
+    XML:=TXML.Create;
+    case WindowState of
+      wsNormal:     XML.SetWindowState('wsNormal');
+      wsMaximized:  XML.SetWindowState('wsMaximized');
+    end;
+    XML.Free;
+  end;
 end;
 
 procedure THomeForm.FormShow(Sender: TObject);
@@ -609,8 +678,6 @@ var
  error:string;
 begin
  try
-  Height:=900; //1011
-  ClientWidth:=1410;
 
   // остаток свободного места на диске
   if not isExistFreeSpaceDrive(error) then begin
@@ -684,6 +751,15 @@ begin
   // пасхалки
    Egg;
 
+  // линковка окна формы debug info в класс для подсчета статистики работы потоков
+  SharedCountResponseThread.SetAddForm(FormDEBUG);
+
+  // очищаем все лист боксы
+  clearAllLists;
+
+   // размер главной офрмы экрана
+  WindowStateInit;
+
   Screen.Cursor:=crDefault;
 
   // создаем все потоки
@@ -706,6 +782,45 @@ end;
 procedure THomeForm.menu_UsersClick(Sender: TObject);
 begin
   FormUsers.Show;
+end;
+
+procedure THomeForm.PanelStatusINMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  if Button = mbLeft then
+  begin
+    FDragging:= True;
+    // Сохраняем смещение мыши относительно панели
+    FMouseOffset:= Point(X, Y);
+  end;
+end;
+
+procedure THomeForm.PanelStatusINMouseMove(Sender: TObject; Shift: TShiftState;
+  X, Y: Integer);
+begin
+  if FDragging then
+  begin
+    // Перемещаем панель, учитывая смещение мыши
+    PanelStatus.Left := PanelStatus.Left + (Mouse.CursorPos.X - PanelStatus.Left - FMouseOffset.X);
+    PanelStatus.Top := PanelStatus.Top + (Mouse.CursorPos.Y - PanelStatus.Top - FMouseOffset.Y);
+    Screen.Cursor:=crHandPoint;
+  end;
+end;
+
+procedure THomeForm.PanelStatusINMouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  if Button = mbLeft then
+  begin
+    FDragging:= False;
+    Screen.Cursor:=crDefault;
+  end;
+end;
+
+procedure THomeForm.popMenu_ActionOperators_HistoryCallOperatorClick(
+  Sender: TObject);
+begin
+  FormHistoryCallOperator.ShowModal;
 end;
 
 procedure THomeForm.ST_StatusPanelWindowClick(Sender: TObject);
@@ -733,6 +848,21 @@ begin
   ShowStatisticsCallsDay(eNumbers, True);
 end;
 
+procedure THomeForm.img_DownFont_ActiveSIPClick(Sender: TObject);
+begin
+   ChangeFontSize(eFontDonw,eActiveSip);
+end;
+
+procedure THomeForm.img_DownFont_IVRClick(Sender: TObject);
+begin
+ ChangeFontSize(eFontDonw,eIvr);
+end;
+
+procedure THomeForm.img_DownFont_QueueClick(Sender: TObject);
+begin
+ ChangeFontSize(eFontDonw,eQueue);
+end;
+
 procedure THomeForm.img_goHome_NOClick(Sender: TObject);
 begin
   VisibleIconOperatorsGoHome(goHome_Show, True);
@@ -758,6 +888,21 @@ begin
   FormStatisticsChart.Show;
 end;
 
+procedure THomeForm.img_UpFont_ActiveSIPClick(Sender: TObject);
+begin
+ ChangeFontSize(eFontUP,eActiveSip);
+end;
+
+procedure THomeForm.img_UpFont_IVRClick(Sender: TObject);
+begin
+ ChangeFontSize(eFontUP,eIvr);
+end;
+
+procedure THomeForm.img_UpFont_QueueClick(Sender: TObject);
+begin
+  ChangeFontSize(eFontUP,eQueue);
+end;
+
 procedure THomeForm.lblCheckInfocilinikaServerAliveClick(Sender: TObject);
 begin
   FormServerIKCheck.Show;
@@ -765,13 +910,13 @@ end;
 
 procedure THomeForm.lblCheckInfocilinikaServerAliveMouseLeave(Sender: TObject);
 begin
-  lblCheckInfocilinikaServerAlive.Font.Style:=[fsBold];
+  lblCheckInfocilinikaServerAlive.Font.Style:=[];
 end;
 
 procedure THomeForm.lblCheckInfocilinikaServerAliveMouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
 begin
- lblCheckInfocilinikaServerAlive.Font.Style:=[fsUnderline,fsBold];
+ lblCheckInfocilinikaServerAlive.Font.Style:=[fsUnderline];
 end;
 
 procedure THomeForm.lblNewMessageLocalChatClick(Sender: TObject);
@@ -860,7 +1005,7 @@ begin
   except
     on E:Exception do
     begin
-     SharedMainLog.Save('THomeForm.ListViewSIPCustomDrawItem. '+e.ClassName+' : '+e.Message, IS_ERROR);
+     SharedMainLog.Save('THomeForm.ListViewSIPCustomDrawItem. '+e.ClassName+': '+e.Message, IS_ERROR);
     end;
   end;
 end;
@@ -931,6 +1076,44 @@ begin
   OpenReports;
 end;
 
+
+// изменение размер шрифта по сочетанию  Ctrl + колесико
+procedure THomeForm.WndProc(var Msg: TMessage);
+var
+  Shift: TShiftState;
+  WheelDelta: Integer;
+begin
+  inherited WndProc(Msg);
+
+  if Msg.Msg = WM_MOUSEWHEEL then
+  begin
+    // Получаем значение прокрутки
+    WheelDelta := Smallint(HIWORD(Msg.WParam));
+
+    // Определяем, находится ли курсор над ListView
+    if PtInRect(ListViewSIP.ClientRect, ListViewSIP.ScreenToClient(Mouse.CursorPos)) then
+    begin
+      // Получаем состояние клавиш
+      Shift := KeyDataToShiftState(Msg.WParam);
+
+      if (Shift * [ssCtrl] <> []) then
+      begin
+        if WheelDelta > 0 then
+        begin
+          // Ctrl + колесико вверх
+           ChangeFontSize(eFontUP,eActiveSip);
+        end
+        else
+        begin
+          // Ctrl + колесико вниз
+          ChangeFontSize(eFontDonw,eActiveSip);
+        end;
+        Msg.Result := 1; // Отметить, что событие обработано
+      end
+      else Msg.Result := 1; // Отметить, что событие обработано
+    end;
+  end;
+end;
 
 
 end.

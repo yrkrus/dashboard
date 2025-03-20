@@ -33,7 +33,7 @@ type
 implementation
 
 uses
-  GlobalVariables, FormDEBUGUnit;
+  GlobalVariables;
 
 //procedure Thread_InternalProcess.AddLogonUserID(InUserID:Integer);
 //begin
@@ -75,6 +75,7 @@ end;
 procedure Thread_InternalProcess.Execute;
  const
  SLEEP_TIME:Word = 1000;
+ //NAME_THREAD:string = 'Thread_Statistics';
  var
   StartTime, EndTime: Cardinal;
   Duration: Cardinal;
@@ -98,7 +99,7 @@ begin
         EndTime:= GetTickCount;
         Duration:= EndTime - StartTime;
 
-        FormDEBUG.lblThread_InternalProcess.Caption:=IntToStr(Duration);
+       // FormDEBUG.lblThread_InternalProcess.Caption:=IntToStr(Duration);
      except
         on E:Exception do
         begin

@@ -4,8 +4,8 @@ object FormDEBUG: TFormDEBUG
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'DEBUG '#1048#1085#1092#1086
-  ClientHeight = 289
-  ClientWidth = 572
+  ClientHeight = 327
+  ClientWidth = 591
   Color = clWindow
   DefaultMonitor = dmMainForm
   Font.Charset = DEFAULT_CHARSET
@@ -16,6 +16,7 @@ object FormDEBUG: TFormDEBUG
   OldCreateOrder = False
   Position = poScreenCenter
   OnCreate = FormCreate
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 16
   object Label1: TLabel
@@ -31,290 +32,10 @@ object FormDEBUG: TFormDEBUG
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object Label2: TLabel
-    Left = 16
-    Top = 40
-    Width = 110
-    Height = 16
-    Caption = 'Thread_ACTIVESIP'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label3: TLabel
-    Left = 16
-    Top = 60
-    Width = 172
-    Height = 16
-    Caption = 'Thread_ACTIVESIP_countTalk'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label4: TLabel
-    Left = 16
-    Top = 80
-    Width = 154
-    Height = 16
-    Caption = 'Thread_ACTIVESIP_Queue'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label5: TLabel
-    Left = 16
-    Top = 100
-    Width = 215
-    Height = 16
-    Caption = 'Thread_ACTIVESIP_updatePhoneTalk'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label6: TLabel
-    Left = 16
-    Top = 120
-    Width = 180
-    Height = 16
-    Caption = 'Thread_ACTIVESIP_updateTalk'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label7: TLabel
-    Left = 16
-    Top = 140
-    Width = 142
-    Height = 16
-    Caption = 'Thread_AnsweredQueue'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label8: TLabel
-    Left = 16
-    Top = 160
-    Width = 140
-    Height = 16
-    Caption = 'Thread_CHECKSERVERS'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label9: TLabel
-    Left = 16
-    Top = 180
-    Width = 68
-    Height = 16
-    Caption = 'Thread_IVR'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label10: TLabel
-    Left = 16
-    Top = 200
-    Width = 87
-    Height = 16
-    Caption = 'Thread_QUEUE'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label11: TLabel
-    Left = 16
-    Top = 220
-    Width = 99
-    Height = 16
-    Caption = 'Thread_Statistics'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-  end
-  object lblThread_ACTIVESIP: TLabel
-    Left = 250
-    Top = 40
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object lblThread_ACTIVESIP_countTalk: TLabel
-    Left = 250
-    Top = 60
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object lblThread_ACTIVESIP_Queue: TLabel
-    Left = 250
-    Top = 80
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object lblThread_ACTIVESIP_updatePhoneTalk: TLabel
-    Left = 250
-    Top = 100
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object lblThread_ACTIVESIP_updateTalk: TLabel
-    Left = 250
-    Top = 120
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object lblThread_AnsweredQueue: TLabel
-    Left = 250
-    Top = 140
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object lblThread_CHECKSERVERS: TLabel
-    Left = 250
-    Top = 160
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object lblThread_IVR: TLabel
-    Left = 250
-    Top = 180
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object lblThread_QUEUE: TLabel
-    Left = 250
-    Top = 200
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object lblThread_Statistics: TLabel
-    Left = 250
-    Top = 220
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
   object Label12: TLabel
     Left = 250
     Top = 16
-    Width = 105
+    Width = 100
     Height = 16
     Alignment = taCenter
     AutoSize = False
@@ -326,160 +47,10 @@ object FormDEBUG: TFormDEBUG
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object Label13: TLabel
-    Left = 350
-    Top = 40
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label14: TLabel
-    Left = 350
-    Top = 60
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label15: TLabel
-    Left = 350
-    Top = 80
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label16: TLabel
-    Left = 350
-    Top = 100
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label17: TLabel
-    Left = 350
-    Top = 120
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label18: TLabel
-    Left = 350
-    Top = 140
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label19: TLabel
-    Left = 350
-    Top = 160
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label20: TLabel
-    Left = 350
-    Top = 180
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label21: TLabel
-    Left = 350
-    Top = 200
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label22: TLabel
-    Left = 350
-    Top = 220
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
   object Label23: TLabel
-    Left = 350
+    Left = 356
     Top = 16
-    Width = 105
+    Width = 100
     Height = 16
     Alignment = taCenter
     AutoSize = False
@@ -491,160 +62,10 @@ object FormDEBUG: TFormDEBUG
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object Label24: TLabel
-    Left = 450
-    Top = 40
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label25: TLabel
-    Left = 450
-    Top = 60
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label26: TLabel
-    Left = 450
-    Top = 80
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label27: TLabel
-    Left = 450
-    Top = 100
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label28: TLabel
-    Left = 450
-    Top = 120
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label29: TLabel
-    Left = 450
-    Top = 140
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label30: TLabel
-    Left = 450
-    Top = 160
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label31: TLabel
-    Left = 450
-    Top = 180
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label32: TLabel
-    Left = 450
-    Top = 200
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label33: TLabel
-    Left = 450
-    Top = 220
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
   object Label34: TLabel
-    Left = 450
+    Left = 462
     Top = 16
-    Width = 105
+    Width = 100
     Height = 16
     Alignment = taCenter
     AutoSize = False
@@ -656,120 +77,70 @@ object FormDEBUG: TFormDEBUG
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object Label35: TLabel
+  object panel: TPanel
     Left = 16
-    Top = 240
-    Width = 74
-    Height = 16
-    Caption = 'Thread_Chat'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-  end
-  object lblThread_Chat: TLabel
-    Left = 250
-    Top = 240
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label37: TLabel
-    Left = 350
-    Top = 240
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label38: TLabel
-    Left = 450
-    Top = 240
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label36: TLabel
-    Left = 16
-    Top = 260
-    Width = 136
-    Height = 16
-    Caption = 'Thread_InternalProcess'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-  end
-  object lblThread_InternalProcess: TLabel
-    Left = 250
-    Top = 260
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label40: TLabel
-    Left = 350
-    Top = 260
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label41: TLabel
-    Left = 450
-    Top = 260
-    Width = 105
-    Height = 16
-    Alignment = taCenter
-    AutoSize = False
-    Caption = 'ms'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
+    Top = 38
+    Width = 561
+    Height = 275
+    BevelOuter = bvNone
+    TabOrder = 0
+    object Label2: TLabel
+      Left = 0
+      Top = 6
+      Width = 100
+      Height = 16
+      Caption = #1053#1072#1079#1074#1072#1085#1080#1077' '#1087#1086#1090#1086#1082#1072
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+    end
+    object lblThread_ACTIVESIP: TLabel
+      Left = 234
+      Top = 6
+      Width = 100
+      Height = 16
+      Alignment = taCenter
+      AutoSize = False
+      Caption = 'ms'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+    end
+    object Label13: TLabel
+      Left = 340
+      Top = 6
+      Width = 100
+      Height = 16
+      Alignment = taCenter
+      AutoSize = False
+      Caption = 'ms'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+    end
+    object Label24: TLabel
+      Left = 446
+      Top = 6
+      Width = 100
+      Height = 16
+      Alignment = taCenter
+      AutoSize = False
+      Caption = 'ms'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+    end
   end
 end

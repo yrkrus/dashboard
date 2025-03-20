@@ -21,7 +21,7 @@ type
 implementation
 
 uses
-  FunctionUnit, FormHome, FormDEBUGUnit, TCustomTypeUnit;
+  FunctionUnit, FormHome, TCustomTypeUnit, TDebugStructUnit;
 
 
  procedure Thread_ACTIVESIP_updatePhoneTalk.CriticalError;
@@ -42,15 +42,23 @@ end;
 procedure Thread_ACTIVESIP_updatePhoneTalk.Execute;
  const
  SLEEP_TIME:Word = 500;
+ NAME_THREAD:string = 'Thread_ActiveSip_updatePhone';
  var
   StartTime, EndTime: Cardinal;
   Duration: Cardinal;
+
+  debugInfo: TDebugStruct;
 begin
   inherited;
   CoInitialize(Nil);
   Sleep(1000);
 
-  Log:=TLoggingFile.Create('Thread_ActiveSip_updatePhone');
+  Log:=TLoggingFile.Create(NAME_THREAD);
+
+  // вывод debug info
+  debugInfo:=TDebugStruct.Create(NAME_THREAD,Log);
+  SharedCountResponseThread.Add(debugInfo);
+
 
   while not Terminated do
   begin
@@ -63,7 +71,8 @@ begin
 
         EndTime:= GetTickCount;
         Duration:= EndTime - StartTime;
-        FormDEBUG.lblThread_ACTIVESIP_updatePhoneTalk.Caption:=IntToStr(Duration);
+
+        SharedCountResponseThread.SetCurrentResponse(NAME_THREAD,Duration);
      except
         on E:Exception do
         begin

@@ -29,6 +29,8 @@ type
     combox_TypeClinic: TComboBox;
     Label4: TLabel;
     combox_ShowSMS: TComboBox;
+    Label5: TLabel;
+    combox_Status: TComboBox;
     procedure FormShow(Sender: TObject);
     procedure btnAddClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -39,6 +41,7 @@ type
                            InAlias:string;
                            InTypeCLinic:enumTypeClinic;
                            InShowSMS:enumParamStatus;
+                           InStatus:enumStatusJobClinic;
                            var _errorDescription:string):Boolean;
 
   private
@@ -46,14 +49,16 @@ type
   function getCheckFileds(var _errorDescription:string):Boolean;
   procedure AddBoxTypeClinic;   // заполнение данными списка типов
   procedure AddBoxShowSMS;      // заполнение данными списка показывать в SMS
+  procedure AddBoxStatus;       // заполнение данными списка Статус
 
   public
     { Public declarations }
     isEditForm:Boolean; // редактируется ли сервер сейчас
-    p_editIP,p_editAddress,p_editID,p_editAlias:string;
+    p_editID:Integer;
+    p_editIP,p_editAddress,p_editAlias:string;
     p_editTypeClinic:enumTypeClinic;
     p_editShowSMS:enumParamStatus;
-
+    p_editStatus:enumStatusJobClinic;
   end;
 
 var
@@ -72,6 +77,7 @@ function TFormServerIKEdit.getResponseBD(InTypePanel_Server:TypeResponse_Server;
                                          InAlias:string;
                                          InTypeCLinic:enumTypeClinic;
                                          InShowSMS:enumParamStatus;
+                                         InStatus:enumStatusJobClinic;
                                          var _errorDescription:string):Boolean;
 var
  ado:TADOQuery;
@@ -96,13 +102,13 @@ begin
 
       case InTypePanel_Server of
         server_add:begin
-          SQL.Add('insert into server_ik (ip,address,alias,type_clinik,showSMS) values ('+#39+InIP+#39+','
-                                                                                         +#39+InAddr+#39+','
-                                                                                         +#39+InAlias+#39+','
-                                                                                         +#39+EnumTypeClinicToString(InTypeCLinic)+#39+','
-                                                                                         +#39+IntToStr(SettingParamsStatusToInteger(InShowSMS))+#39+
-
-                                                                                            ')');
+          SQL.Add('insert into server_ik (ip,address,alias,type_clinik,showSMS,status) values ('+#39+InIP+#39+','
+                                                                                                +#39+InAddr+#39+','
+                                                                                                +#39+InAlias+#39+','
+                                                                                                +#39+EnumTypeClinicToString(InTypeCLinic)+#39+','
+                                                                                                +#39+IntToStr(SettingParamsStatusToInteger(InShowSMS))+#39+','
+                                                                                                +#39+IntToStr(EnumStatusJobClinicToInteger(InStatus))+#39+
+                                                                                              ')');
         end;
         server_delete:begin
           SQL.Add('delete from server_ik where ip='+#39+InIP+#39+' and address='+#39+InAddr+#39+' and alias = '+#39+InAlias+#39);
@@ -113,7 +119,8 @@ begin
                                               +', alias = '+#39+InAlias+#39
                                               +', type_clinik = '+#39+EnumTypeClinicToString(InTypeCLinic)+#39
                                               +', showSMS = '+#39+IntToStr(SettingParamsStatusToInteger(InShowSMS))+#39
-                                              +' where id = '+#39+FormServerIKEdit.p_editID+#39);
+                                              +', status = '+#39+IntToStr(EnumStatusJobClinicToInteger(InStatus))+#39
+                                              +' where id = '+#39+IntToStr(FormServerIKEdit.p_editID)+#39);
         end;
       end;
 
@@ -164,9 +171,19 @@ end;
 procedure TFormServerIKEdit.AddBoxShowSMS;
 begin
   combox_ShowSMS.Clear;
-  combox_ShowSMS.Items.Add('Нет');
-  combox_ShowSMS.Items.Add('Да');
+  combox_ShowSMS.Items.Add(EnumStatusToString(eNO));
+  combox_ShowSMS.Items.Add(EnumStatusToString(eYES));
 end;
+
+// заполнение данными списка Статус
+procedure TFormServerIKEdit.AddBoxStatus;
+begin
+  combox_Status.Clear;
+  combox_Status.Items.Add(EnumStatusJobClinicToString(eClose));
+  combox_Status.Items.Add(EnumStatusJobClinicToString(eOpen));
+end;
+
+
 
 
 function TFormServerIKEdit.getCheckFileds(var _errorDescription:string):Boolean;
@@ -236,6 +253,7 @@ var
  ip,addr,alias:string;
  type_clinic:enumTypeClinic;
  show_sms:enumParamStatus;
+ status:enumStatusJobClinic;
  error:string;
 begin
 
@@ -250,16 +268,17 @@ begin
 
    type_clinic:=StringToEnumTypeClinic(combox_TypeClinic.Items[combox_TypeClinic.ItemIndex]);
    show_sms:=StringToSettingParamsStatus(combox_ShowSMS.Items[combox_ShowSMS.ItemIndex]);
+   status:=StringToEnumStatusJobClinic(combox_Status.Items[combox_Status.ItemIndex]);
 
 
   // пробуем добавить
-  if not getResponseBD(server_add,ip,addr,alias,type_clinic,show_sms, error)  then begin
+  if not getResponseBD(server_add, ip, addr, alias, type_clinic, show_sms, status, error)  then begin
      MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
   end;
 
   // прогружаем сервера
-  FormServersIK.LoadSettings;
+  FormServersIK.Show;
 
   if chkboxCloseWindow.Checked then Close
   else clearPanel;
@@ -269,9 +288,10 @@ end;
 procedure TFormServerIKEdit.btnEditClick(Sender: TObject);
 var
  ip,addr,alias:string;
-  type_clinic:enumTypeClinic;
+ type_clinic:enumTypeClinic;
  show_sms:enumParamStatus;
-  error:string;
+ status:enumStatusJobClinic;
+ error:string;
 begin
 
    if not getCheckFileds(error) then begin
@@ -285,16 +305,17 @@ begin
 
    type_clinic:=StringToEnumTypeClinic(combox_TypeClinic.Items[combox_TypeClinic.ItemIndex]);
    show_sms:=StringToSettingParamsStatus(combox_ShowSMS.Items[combox_ShowSMS.ItemIndex]);
+   status:=StringToEnumStatusJobClinic(combox_Status.Items[combox_Status.ItemIndex]);
 
   // пробуем отредактировать
-  if not getResponseBD(server_edit,ip,addr,alias,type_clinic,show_sms, error) then begin
+  if not getResponseBD(server_edit, ip, addr, alias, type_clinic, show_sms, status, error) then begin
      // не удалось добавить
     MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
   end;
 
   // прогружаем сервера
-  FormServersIK.LoadSettings;
+  FormServersIK.Show;
 
   if chkboxCloseWindow.Checked then Close
   else clearPanel;
@@ -308,7 +329,7 @@ begin
 
   p_editIP:='';
   p_editAddress:='';
-  p_editID:='';
+  p_editID:=0;
   p_editAlias:='';
   p_editTypeClinic:=eOther;
   p_editShowSMS:=paramStatus_DISABLED;
@@ -316,7 +337,7 @@ begin
   with FormServersIK do begin
     panel_Server_IP:='';
     panel_Server_addr:='';
-    panel_Server_ID:='';
+    panel_Server_ID:=0;
     panel_Server_Alias:='';
     panel_Server_TypeClinic:=eOther;
     panel_Server_ShowSMS:=paramStatus_DISABLED;
@@ -329,6 +350,7 @@ const
 begin
    AddBoxTypeClinic;  // добавляем список типов
    AddBoxShowSMS;     // добавляем список показывать в SMS
+   AddBoxStatus;      // добавляем список статус
 
    if not isEditForm then begin  // новое добавление
      // очищаем данные
@@ -351,7 +373,7 @@ begin
      edtAlias.Text:=p_editAlias;
      combox_TypeClinic.ItemIndex:=combox_TypeClinic.Items.IndexOf(EnumTypeClinicToString(p_editTypeClinic));
      combox_ShowSMS.ItemIndex:=SettingParamsStatusToInteger(p_editShowSMS);
-
+     combox_Status.ItemIndex:=EnumStatusJobClinicToInteger(p_editStatus);
 
 
      btnEdit.Left:=cLeftButton;

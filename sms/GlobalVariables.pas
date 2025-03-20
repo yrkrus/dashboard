@@ -60,11 +60,14 @@ var
   INTERNAL_ERROR          :Boolean = False;
 
   // кол-во одновременных потоков для отправки рассылки SMS
-  MAX_COUNT_THREAD_SENDIND :Word = 10;
+  MAX_COUNT_THREAD_SENDIND :Word = 20;
 
   // список для СМС отправки
   SharedPacientsList            : TPacients;
   SharedPacientsListNotSending  : TPacients;
+
+  // кол-во номеров на отправку которое считается подозрительным
+  MAX_COUNT_PHONE_SENDING_WARNING :Word = 1000;
 
   // список с номерами тлф для ручной одиночной отправки
   SharedSendindPhoneManualSMS   : TStringList;

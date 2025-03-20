@@ -5,7 +5,8 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Menus, Vcl.Grids,
-  Vcl.ComCtrls, Data.DB, Vcl.DBGrids, Data.Win.ADODB;
+  Vcl.ComCtrls, Data.DB, Vcl.DBGrids, Data.Win.ADODB, System.ImageList,
+  Vcl.ImgList;
 
 type
   TFormMyTemplate = class(TForm)
@@ -23,6 +24,7 @@ type
     list_GlobalTemplate: TListView;
     editFindMessage: TEdit;
     st_FindMessage: TStaticText;
+    ImageList1: TImageList;
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure list_MyTemplateDblClick(Sender: TObject);

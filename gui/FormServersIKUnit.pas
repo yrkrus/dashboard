@@ -7,34 +7,55 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ComCtrls,
   Vcl.ExtCtrls, Vcl.Grids,Data.Win.ADODB, Data.DB, IdException, TCustomTypeUnit;
 
+ const
+  countEnumParseType:Word = 6;
+
+  type    // тип разбора при парсинге
+  enumParseType = (eIP,
+                   eAlias,
+                   eAddr,
+                   eTypeClinic,
+                   eShowSMS,
+                   eStatus);
+
 type
   TFormServersIK = class(TForm)
     PanelServers: TPanel;
-    listSG_Servers_Footer: TStringGrid;
-    listSG_Servers: TStringGrid;
     btnAddServer: TBitBtn;
     btnEditUser: TBitBtn;
     btnDisable: TBitBtn;
-    procedure LoadSettings;
+    list_Servers: TListView;
+    Button1: TButton;
+    procedure Show;
     procedure FormShow(Sender: TObject);
     procedure btnAddServerClick(Sender: TObject);
-    procedure listSG_ServersSelectCell(Sender: TObject; ACol, ARow: Integer;
-      var CanSelect: Boolean);
     procedure btnEditUserClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btnDisableClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
+    procedure list_ServersClick(Sender: TObject);
+    procedure list_ServersCustomDrawItem(Sender: TCustomListView;
+      Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
   private
     { Private declarations }
+  procedure ClearList;
+  procedure LoadServers(var p_ListView:TListView);
+
+  function ParseString(const p_ListView:TListItem;
+                       const p_ListViewID:Integer;
+                       typeParse:enumParseType;
+                       var _errorDescription:string):Boolean;
+
   public
     { Public declarations }
   panel_Server_IP:string;
   panel_Server_addr:string;
-  panel_Server_ID:string;
+  panel_Server_ID:Integer;
   panel_Server_Alias:string;
   panel_Server_TypeClinic:enumTypeClinic;
   panel_Server_ShowSMS:enumParamStatus;
-
+  panel_Server_Status:enumStatusJobClinic;
 
   end;
 
@@ -49,12 +70,141 @@ uses
 {$R *.dfm}
 
 
+function TFormServersIK.ParseString(const p_ListView:TListItem;
+                                    const p_ListViewID:Integer;
+                                   typeParse:enumParseType;
+                                   var _errorDescription:string):Boolean;
+var
+  Lines: TArray<string>;
+  i: Integer;
+  stroka:string;
+begin
+  Result:=False;
+  _errorDescription:='';
+
+  stroka:=p_ListView.SubItems.Text;
+  // Разделяем строку по символам #13 и #10
+  Lines := stroka.Split([#13, #10], TStringSplitOptions.ExcludeEmpty);
+
+  if Length(Lines) <> countEnumParseType then begin
+    _errorDescription:='Ошибка разбора строки';
+    Exit;
+  end;
+
+  panel_Server_ID:=p_ListViewID;
+
+  // Обрабатываем строку
+  case typeParse of
+   eIP          : panel_Server_IP:=Lines[0];
+   eAlias       : panel_Server_Alias:=Lines[1];
+   eAddr        : panel_Server_addr:=Lines[2];
+   eTypeClinic  : panel_Server_TypeClinic:=StringToEnumTypeClinic(Lines[3]);
+   eShowSMS     : panel_Server_ShowSMS:=StringToSettingParamsStatus(Lines[4]);
+   eStatus      : panel_Server_Status:=StringToEnumStatusJobClinic(Lines[5]);
+  end;
+
+  Result:=True;
+end;
+
+// очистка листа
+procedure TFormServersIK.ClearList;
+ const
+ cWidth_default         :Word = 951;
+ cProcentWidth_IP       :Word = 11;
+ cProcentWidth_Alias    :Word = 13;
+ cProcentWidth_Address  :Word = 39;
+ cProcentWidth_Type     :Word = 10;
+ cProcentWidth_ShowSMS  :Word = 14;
+ cProcentWidth_Status   :Word = 11;
+
+begin
+   with list_Servers do begin
+      Items.Clear;
+      Columns.Clear;
+
+      ViewStyle:= vsReport;
+
+      with Columns.Add do
+      begin
+        Caption:='ID';
+        Width:=0;
+      end;
+
+      with Columns.Add do
+      begin
+        Caption:='IP';
+        Width:=Round((cWidth_default*cProcentWidth_IP)/100);
+        Alignment:=taCenter;
+      end;
+
+      with Columns.Add do
+      begin
+        Caption:='Alias';
+        Width:=Round((cWidth_default*cProcentWidth_Alias)/100)-1;
+        Alignment:=taCenter;
+      end;
+
+      with Columns.Add do
+      begin
+        Caption:='Адрес';
+        Width:=Round((cWidth_default*cProcentWidth_Address)/100);
+        Alignment:=taCenter;
+      end;
+
+      with Columns.Add do
+      begin
+        Caption:='Тип';
+        Width:=Round((cWidth_default*cProcentWidth_Type)/100);
+        Alignment:=taCenter;
+      end;
+
+      with Columns.Add do
+      begin
+        Caption:='Показывать в SMS';
+        Width:=Round((cWidth_default*cProcentWidth_ShowSMS)/100);
+        Alignment:=taCenter;
+      end;
+
+       with Columns.Add do
+      begin
+        Caption:='Статус';
+        Width:=Round((cWidth_default*cProcentWidth_Status)/100);
+        Alignment:=taCenter;
+      end;
+   end;
+end;
+
+
+procedure TFormServersIK.Show;
+begin
+  // очищаем лист
+  ClearList;
+
+  // подгружаем сервера
+  LoadServers(list_Servers);
+
+  panel_Server_IP:='';
+  panel_Server_addr:='';
+  panel_Server_ID:=0;
+  panel_Server_Alias:='';
+  panel_Server_TypeClinic:=eOther;
+  panel_Server_ShowSMS:=paramStatus_DISABLED;
+  panel_Server_Status:=eOpen;
+end;
+
 // прогрузка серверов
-procedure loadPanel_Servers;
+procedure TFormServersIK.LoadServers(var p_ListView:TListView);
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  countServers,i:Integer;
+
+ ListItem: TListItem;
+ existingItem: TListItem;
+ idToFind:Integer;
+
+ id,ip,alias,address,type_clinik,showSMS,status:string;
+
 begin
   Screen.Cursor:=crHourGlass;
 
@@ -77,29 +227,79 @@ begin
       countServers:=Fields[0].Value;
     end;
 
-    with FormServersIK.listSG_Servers do begin
-     RowCount:=countServers;
 
-      with ado do begin
+    with ado do begin
 
-        SQL.Clear;
-        SQL.Add('select id,ip,alias,address,type_clinik,showSMS from server_ik order by ip ASC');
-        Active:=True;
+      SQL.Clear;
+      SQL.Add('select id,ip,alias,address,type_clinik,showSMS,status from server_ik order by ip ASC');
+      Active:=True;
 
-         for i:=0 to countServers-1 do begin
-            Cells[0,i]:=Fields[0].Value;
-            Cells[1,i]:=Fields[1].Value;
-            Cells[2,i]:=Fields[2].Value;
-            Cells[3,i]:=Fields[3].Value;
-            Cells[4,i]:=Fields[4].Value;
+       for i:=0 to countServers-1 do begin
 
-            if VarToStr(Fields[5].Value) ='1' then Cells[5,i]:='Да'
-            else Cells[5,i]:='Нет';
+          id          := VarToStr(Fields[0].Value);
+          ip          := VarToStr(Fields[1].Value);
+          alias       := VarToStr(Fields[2].Value);
+          address     := VarToStr(Fields[3].Value);
+          type_clinik := VarToStr(Fields[4].Value);
+          showSMS     := VarToStr(Fields[5].Value);
+          status      := VarToStr(Fields[6].Value);
 
-           ado.Next;
+
+         try
+            idToFind := StrToInt(id); // Получаем id
+            existingItem := nil;
+
+            // Поиск существующего элемента
+            for ListItem in p_ListView.Items do
+            begin
+              if ListItem.Caption = IntToStr(idToFind) then
+              begin
+                existingItem := ListItem;
+                ado.Next;
+                Continue;
+              end;
+            end;
+
+            if existingItem = nil then
+            begin
+              // Элемент не найден, добавляем новый
+              ListItem := p_ListView.Items.Add;
+              ListItem.Caption := id; // id
+
+              ListItem.SubItems.Add(ip);
+              ListItem.SubItems.Add(alias);
+              ListItem.SubItems.Add(address);
+              ListItem.SubItems.Add(type_clinik);
+              if showSMS = '0' then ListItem.SubItems.Add(EnumStatusToString(eNO));
+              if showSMS = '1' then ListItem.SubItems.Add(EnumStatusToString(eYES));
+
+              if status = '0' then ListItem.SubItems.Add(EnumStatusJobClinicToString(eClose));
+              if status = '1' then ListItem.SubItems.Add(EnumStatusJobClinicToString(eOpen));
+
+            end
+            else
+            begin
+              //correct_time:=correctTimeQueue(StringToTQueue(p_listQueue.listActiveQueue[i].waiting_time_start),p_listQueue.listActiveQueue[i].waiting_time_start);
+              //if correct_time<>'null' then existingItem.SubItems[1] := correct_time; // Время ожидания
+            end;
+
+
+//             // Удаляем элементы, которые отсутствуют в новых данных
+//            for i:= p_ListView.Items.Count - 1 downto 0 do
+//            begin
+//               if not p_listQueue.isExist(StrToInt(ListViewQueue.Items[i].Caption)) then
+//                ListViewQueue.Items.Delete(i);
+//            end;
+
+         finally
+           // ListViewQueue.Items.EndUpdate;
+            //ListViewQueue.Visible := True;
          end;
-      end;
+
+         ado.Next;
+       end;
     end;
+
   finally
     FreeAndNil(ado);
     if Assigned(serverConnect) then begin
@@ -112,33 +312,6 @@ begin
   Screen.Cursor:=crDefault;
 end;
 
-// прогрузка параметров
-procedure TFormServersIK.LoadSettings;
-begin
-  // PanelServers
-  begin
-    listSG_Servers_Footer.RowCount:=1;
-    listSG_Servers_Footer.Cells[0,0]:='ID';
-    listSG_Servers_Footer.Cells[1,0]:='IP';
-    listSG_Servers_Footer.Cells[2,0]:='Alias';
-    listSG_Servers_Footer.Cells[3,0]:='Адрес';
-    listSG_Servers_Footer.Cells[4,0]:='Тип';
-    listSG_Servers_Footer.Cells[5,0]:='Показывать в SMS';
-
-    panel_Server_IP:='';
-    panel_Server_addr:='';
-    panel_Server_ID:='';
-    panel_Server_Alias:='';
-    panel_Server_TypeClinic:=eOther;
-    panel_Server_ShowSMS:=paramStatus_DISABLED;
-
-     // прогрузка списка серверов
-    loadPanel_Servers;
-  end;
-end;
-
-
-
 procedure TFormServersIK.btnAddServerClick(Sender: TObject);
 begin
   FormServerIKEdit.ShowModal;
@@ -149,9 +322,9 @@ var
  resultatDel:Word;
  error:string;
 begin
-  if (panel_Server_IP='') and
-     (panel_Server_addr='') and
-     (panel_Server_ID='') and
+  if (panel_Server_IP='') or
+     (panel_Server_addr='') or
+     (panel_Server_ID=0) or
      (panel_Server_Alias='')
   then
   begin
@@ -173,7 +346,10 @@ begin
                                           panel_Server_addr,
                                           panel_Server_Alias,
                                           panel_Server_TypeClinic,
-                                          panel_Server_ShowSMS, error) then begin
+                                          panel_Server_ShowSMS,
+                                          panel_Server_Status,
+                                          error) then
+  begin
 
     // не удалось
     MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
@@ -182,17 +358,17 @@ begin
 
 
   // прогружаем сервера
-  LoadSettings;
+  Show;
 
   MessageBox(Handle,PChar('Сервер удален'),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
 end;
 
 procedure TFormServersIK.btnEditUserClick(Sender: TObject);
 begin
-  if (panel_Server_IP='') and
-     (panel_Server_addr='') and
-     (panel_Server_ID='') and
-     (panel_Server_Alias='')
+  if (Length(panel_Server_IP) = 0) or
+     (Length(panel_Server_addr)=0) or
+     (panel_Server_ID=0) or
+     (Length(panel_Server_Alias)=0)
      then
   begin
    // не удалось добавить
@@ -210,19 +386,45 @@ begin
     p_editAlias:=panel_Server_Alias;
     p_editTypeClinic:=panel_Server_TypeClinic;
     p_editShowSMS:=panel_Server_ShowSMS;
+    p_editStatus:=panel_Server_Status;
 
     ShowModal;
   end;
+end;
+
+procedure TFormServersIK.Button1Click(Sender: TObject);
+var
+ id,ip,alias,address,type_clinik,showSMS,status:Integer;
+begin
+  with list_Servers do begin
+     id:=Columns[0].Width;
+     ip:=Columns[1].Width;
+     alias:=Columns[2].Width;
+     address:=Columns[3].Width;
+     type_clinik:=Columns[4].Width;
+     showSMS:=Columns[5].Width;
+     status:=Columns[6].Width;
+  end;
+
+  ShowMessage('id = '+IntToStr(id)+#13+
+              'ip = '+IntToStr(ip)+#13+
+              'alias = '+IntToStr(alias)+#13+
+              'address = '+IntToStr(address)+#13+
+              'type_clinik ='+IntToStr(type_clinik)+#13+
+              'showSMS = '+ IntToStr(showSMS)+#13+
+              'status = '+IntToStr(status));
+
 end;
 
 procedure TFormServersIK.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   panel_Server_IP:='';
   panel_Server_addr:='';
-  panel_Server_ID:='';
+  panel_Server_ID:=0;
   panel_Server_Alias:='';
   panel_Server_TypeClinic:=eOther;
   panel_Server_ShowSMS:=paramStatus_DISABLED;
+  panel_Server_Status:=eOpen;
 end;
 
 procedure TFormServersIK.FormCreate(Sender: TObject);
@@ -230,38 +432,81 @@ begin
  SetWindowLong(Handle, GWL_EXSTYLE, GetWindowLong(Handle, GWL_EXSTYLE) or WS_EX_APPWINDOW);
 end;
 
+
+
+
+
 procedure TFormServersIK.FormShow(Sender: TObject);
 begin
   Screen.Cursor:=crHourGlass;
 
   // загружаем параметры
-  LoadSettings;
+  Show;
 
   Screen.Cursor:=crDefault;
 
 end;
 
-procedure TFormServersIK.listSG_ServersSelectCell(Sender: TObject; ACol,
-  ARow: Integer; var CanSelect: Boolean);
+procedure TFormServersIK.list_ServersClick(Sender: TObject);
 var
-ip,addr,id,alias,type_clinic,show_sms:string;
+  SelectedItem: TListItem;
+  error:string;
+  i:Integer;
+  parse:enumParseType;
+  id:Integer;
 begin
-   id:=listSG_Servers.Cells[0,ARow];
-   ip:=listSG_Servers.Cells[1,ARow];
-   alias:=listSG_Servers.Cells[2,ARow];
-   addr:=listSG_Servers.Cells[3,ARow];
-   type_clinic:=listSG_Servers.Cells[4,ARow];
-   show_sms:=listSG_Servers.Cells[5,ARow];
-   if show_sms='' then show_sms:='0';
+  // Получаем выбранный элемент
+  SelectedItem := list_Servers.Selected;
 
+  // Проверяем, выбран ли элемент
+  if not Assigned(SelectedItem) then begin
+   MessageBox(Handle,PChar('Не выбран сервер для редактирования'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+   Exit;
+  end;
 
- // глобальные параметры
-  panel_Server_ID:=id;
-  panel_Server_IP:=ip;
-  panel_Server_addr:=addr;
-  panel_Server_Alias:=alias;
-  panel_Server_TypeClinic:=StringToEnumTypeClinic(type_clinic);
-  panel_Server_ShowSMS:=StringToSettingParamsStatus(show_sms);
+  id:=StrToInt(SelectedItem.Caption);
+
+  for i:=Ord(Low(enumParseType)) to Ord(High(enumParseType)) do
+  begin
+    parse:=enumParseType(i);
+    if not ParseString(SelectedItem,id,parse,error) then begin
+      MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+      Exit;
+    end;
+  end;
 end;
+
+procedure TFormServersIK.list_ServersCustomDrawItem(Sender: TCustomListView;
+  Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
+var
+ counts:Integer;
+ time_talk:Integer;
+ test:string;
+ longtalk:string;
+begin
+  if not Assigned(Item) then Exit;
+  try
+    counts:=Item.SubItems.Count;
+
+    if Item.SubItems.Count = 6 then
+    begin
+      if Item.SubItems.Strings[5] = EnumStatusJobClinicToString(eClose) then
+      begin
+        Sender.Canvas.Font.Color := clRed;
+        Exit;
+      end;
+
+     Sender.Canvas.Font.Color := clBlack;
+     end;
+  except
+    on E:Exception do
+    begin
+     SharedMainLog.Save('TFormServersIK.list_ServersCustomDrawItem. '+e.ClassName+': '+e.Message, IS_ERROR);
+    end;
+  end;
+
+
+end;
+
 
 end.

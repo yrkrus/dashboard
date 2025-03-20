@@ -115,15 +115,16 @@ type
 
       constructor Create(isDEBUG:Boolean);                    overload;
       private
-      m_Auth      :TAuthSMS;        // авторизационные данные
-      m_isExistAuth:Boolean;       // есть все авторизационные данные
-      m_isDEBUG:Boolean;              // debug без отправки реальной смс
+      m_Auth            :TAuthSMS;        // авторизационные данные
+      m_isExistAuth     :Boolean;         // есть все авторизационные данные
+      m_isDEBUG         :Boolean;         // debug без отправки реальной смс
 
       function EncodeURL(const Value: AnsiString): AnsiString;
       function ResponceParsing(InServerOtvet:string; var _errorDescription:string):Boolean;  // парсинг ответа
       procedure SaveToBase(InServerOtvet:string; InMessage:string); // сохранение отправленной смс в базу
       function AddSign(InMessage:string):string; // добавление подписи к отправляемомй сообщению
       function isExistSMS(InPhone:string;InChechMessage:string; var _errorDescription:string):Boolean; // проверка отправляли ли уже ранее такую смс
+      function GetDataExistSMS(InPhone:string;InChechMessage:string; var _userID:integer; var _sendinDate:string):Boolean; // данные кто отправлял смс
       function GetCountRealSMS(const InMessage:string):Integer;        // подсчет сколько реально смс ушло (UNICODE)
 
 
@@ -165,7 +166,7 @@ begin
          SQL.Add('select url from sms_settings');
        end;
        sms_login:begin
-          SQL.Add('select sms_login from sms_settings');
+         SQL.Add('select sms_login from sms_settings');
        end;
        sms_pwd:begin
          SQL.Add('select sms_pwd from sms_settings');
@@ -592,6 +593,8 @@ function TSendSMS.isExistSMS(InPhone:string;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
+ userId:Integer;
+ sendindDate:string;
 begin
   Result:=False;
   _errorDescription:='';
@@ -615,7 +618,10 @@ begin
       Active:=True;
       if StrToInt(VarToStr(Fields[0].Value)) <> 0 then
       begin
-        _errorDescription:='Cегодня такая SMS уже была отправлена на номер '+InPhone;
+        if not GetDataExistSMS(InPhone,InChechMessage,userId,sendindDate) then begin
+          _errorDescription:='Cегодня такая SMS уже была отправлена на номер '+InPhone;
+        end
+        else _errorDescription:='Cегодня такая SMS уже была отправлена на номер '+InPhone+' (Отправлено: '+sendindDate+' '+GetUserNameFIO(userId)+')';
         Result:=True;
       end;
     end;
@@ -626,6 +632,50 @@ begin
      FreeAndNil(serverConnect);
     end;
   end;
+end;
+
+ // данные кто отправлял смс
+function TSendSMS.GetDataExistSMS(InPhone:string;InChechMessage:string;
+                          var _userID:integer;
+                          var _sendinDate:string):Boolean;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+  Result:=False;
+  _userID:=0;
+  _sendinDate:='';
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select user_id,date_time from sms_sending where message = '+#39+InChechMessage+#39
+                                                                  +' and phone = '+#39+InPhone+#39
+                                                                  +' and date_time > '+#39+GetCurrentStartDateTime+#39
+                                                                  +' order by date_time DESC limit 1');
+
+      Active:=True;
+      _userID:=StrToInt(VarToStr(Fields[0].Value));
+      _sendinDate:=VarToStr(Fields[1].Value);
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+     serverConnect.Close;
+     FreeAndNil(serverConnect);
+    end;
+  end;
+
+  Result:=True;
 end;
 
  // подсчет сколько реально смс ушло (UNICODE)

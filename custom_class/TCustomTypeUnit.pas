@@ -11,7 +11,18 @@ unit TCustomTypeUnit;
 interface
 
   uses
-  SysUtils;
+  SysUtils, Windows;
+
+
+  type
+  TFlashWindowInfo = record
+    cbSize: DWORD;
+    hwnd: HWND;
+    dwFlags: DWORD;
+    uCount: DWORD;
+    dwTimeout: DWORD;
+  end;
+
 
   type    // тип проверки мониториться ли транк или нет
   enumMonitoringTrunk = ( monitoring_DISABLE,
@@ -227,6 +238,27 @@ interface
   enumManualSMS = (sending_one,      // отпрвака на 1 номер
                    sending_list);    // отпрвака на сножество номеров
 
+
+  type   // статус Нет | Да
+  enumStatus = (eNO   = 0,
+                eYES  = 1);
+
+  type  // Статус клиники Закрыта | Работает
+  enumStatusJobClinic = ( eClose = 0,
+                          eOpen  = 1);
+
+
+  type // типа размера шрифтов
+  enumFontSize  = (eActiveSip,
+                   eIvr,
+                   eQueue);
+
+  type  // тип изменение размера шрифта
+  enumFontChange = (eFontUP,
+                    eFontDonw);
+
+
+
  // =================== ПРОЕОБРАЗОВАНИЯ ===================
 
   // Boolean -> string
@@ -252,6 +284,12 @@ interface
  function StringToEnumTypeClinic(typeClinic:string):enumTypeClinic;                // String -> EnumTypeClinic
  function StringToSettingParamsStatus(status:string):enumParamStatus;              // String (Да\Нет) --> SettingParamsStatus
  function StrToBoolean(InValue:string):Boolean;                                    // string -> boolean
+ function EnumStatusToString(InStatus:enumStatus):string;                          // enumStatus -> String
+ function StringToEnumStatus(InStatus:string):enumStatus;                          // String -> enumStatus
+ function EnumStatusJobClinicToString(InStatus:enumStatusJobClinic):string;        // enumStatusJobClinic -> String
+ function EnumStatusJobClinicToInteger(InStatus:enumStatusJobClinic):integer;      // enumStatusJobClinic -> Integer
+ function StringToEnumStatusJobClinic(InStatus:string):enumStatusJobClinic;        // String -> enumStatusJobClinic
+ function EnumFontSizeToString(InFont:enumFontSize):string;                        // enumFontSize -> String;
 
  // =================== ПРОЕОБРАЗОВАНИЯ ===================
  implementation
@@ -548,5 +586,55 @@ begin
   if tmp = 'true' then Result:=True;
 end;
 
+// enumStatus -> String
+function EnumStatusToString(InStatus:enumStatus):string;
+begin
+  case InStatus of
+    eNO:  Result:='Нет';
+    eYES: Result:='Да';
+  end;
+end;
+
+// String -> enumStatus
+function StringToEnumStatus(InStatus:string):enumStatus;
+begin
+  if InStatus = 'Нет'  then Result:=eNO;
+  if InStatus = 'Да'   then Result:=eYES;
+end;
+
+// enumStatusJobClinic -> String
+function EnumStatusJobClinicToString(InStatus:enumStatusJobClinic):string;
+begin
+   case InStatus of
+    eClose: Result:='Закрыто';
+    eOpen:  Result:='Работает';
+   end;
+end;
+
+// enumStatusJobClinic -> Integer
+function EnumStatusJobClinicToInteger(InStatus:enumStatusJobClinic):integer;
+begin
+  case InStatus of
+    eClose: Result:=0;
+    eOpen:  Result:=1;
+   end;
+end;
+
+// String -> enumStatusJobClinic
+function StringToEnumStatusJobClinic(InStatus:string):enumStatusJobClinic;
+begin
+  if InStatus = 'Закрыто'  then Result:=eClose;
+  if InStatus = 'Работает' then Result:=eOpen;
+end;
+
+// enumFontSize -> String;
+function EnumFontSizeToString(InFont:enumFontSize):string;
+begin
+  case InFont of
+    eActiveSip: Result:='ActiveSip';
+    eIvr:       Result:='IVR';
+    eQueue:     Result:='Queue';
+  end;
+end;
 
 end.

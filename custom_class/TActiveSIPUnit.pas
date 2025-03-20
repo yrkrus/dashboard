@@ -103,7 +103,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       procedure showActiveAndFreeOperatorsForm;           // показ на главной форме сколько сейчас есть активных и
       procedure showHideOperatorsForm;                    // показ на главной форме сколько сейчас скрытых операторов по статусу "ушли домой"
 
-      function  getCountSipOperators          : Word;     // кол-во операторов
+      function  GetCountSipOperators          : Word;     // кол-во операторов
       function  getCountSipOperatorsHide      : Word;     // кол-во операторов (скрытых)
 
 
@@ -268,7 +268,7 @@ uses
  end;
 
 
- function TActiveSIP.getCountSipOperators:Word;
+ function TActiveSIP.GetCountSipOperators:Word;
  begin
     if m_mutex.WaitFor(INFINITE) = wrSignaled  then begin
       try
@@ -497,7 +497,7 @@ begin
           userId:=StrToInt(VarToStr(Fields[0].Value));
 
            // проверим оператор ли
-          if UserIsOperator(userId) then begin
+          if IsUserOperator(userId) then begin
              // проверим его статус чтобы было статус "Домой"
             if getStatusOperator(userId) = eHome then begin
                // проверим время
@@ -1270,6 +1270,9 @@ procedure TActiveSIP.updateTalkTimeAll;
               serverConnect.Close;
               FreeAndNil(serverConnect);
             end;
+
+           // TODO попробуем вот так, т.к. ничего не хочет искать
+           if SharedActiveSipOperators.GetCountSipOperators = 0 then generateSipOperators(True,True);
 
            Exit;
          end;

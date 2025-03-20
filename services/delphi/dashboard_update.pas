@@ -240,6 +240,66 @@ begin
    Bat.SaveToFile(FOLDERPATH+UPDATE_BAT);
 end;
 
+
+// закрытие всех дочерних процессов
+procedure KillChildTask(var p_Log:TLoggingFile);
+var
+ countKillExe:Integer;
+begin
+   // закрываем chat_exe если открыт
+   countKillExe:=0;
+   p_Log.Save('Поиск процесса '+PChar(CHAT_EXE));
+   while GetTask(PChar(CHAT_EXE)) do begin
+     p_Log.Save('Закрытие процесса '+PChar(CHAT_EXE));
+     KillTask(PChar(CHAT_EXE));
+
+     // на случай если не удасться закрыть дочерний exe
+     Sleep(500);
+     Inc(countKillExe);
+     if countKillExe>10 then Break;
+   end;
+
+   // закрываем report_exe если открыт
+   countKillExe:=0;
+   p_Log.Save('Поиск процесса '+PChar(REPORT_EXE));
+   while GetTask(PChar(REPORT_EXE)) do begin
+     p_Log.Save('Закрытие процесса '+PChar(REPORT_EXE));
+     KillTask(PChar(REPORT_EXE));
+
+     // на случай если не удасться закрыть дочерний exe
+     Sleep(500);
+     Inc(countKillExe);
+     if countKillExe>10 then Break;
+   end;
+
+    // закрываем sms_exe если открыт
+   countKillExe:=0;
+   p_Log.Save('Поиск процесса '+PChar(SMS_EXE));
+   while GetTask(PChar(SMS_EXE)) do begin
+     p_Log.Save('Закрытие процесса '+PChar(SMS_EXE));
+     KillTask(PChar(SMS_EXE));
+
+     // на случай если не удасться закрыть дочерний exe
+     Sleep(500);
+     Inc(countKillExe);
+     if countKillExe>10 then Break;
+   end;
+
+     // закрываем sms_exe если открыт
+   countKillExe:=0;
+   p_Log.Save('Поиск процесса '+PChar(DASHBOARD_EXE));
+   while GetTask(PChar(DASHBOARD_EXE)) do begin
+     p_Log.Save('Закрытие процесса '+PChar(DASHBOARD_EXE));
+     KillTask(PChar(DASHBOARD_EXE));
+
+     // на случай если не удасться закрыть дочерний exe
+     Sleep(500);
+     Inc(countKillExe);
+     if countKillExe>10 then Break;
+   end;
+end;
+
+
 procedure Tupdate_dashboard.TimerMonitoringTimer(Sender: TObject);
 const
  cTIMER_ERROR   :Cardinal = 60000;  // 1 мин
@@ -250,7 +310,7 @@ var
  log:TLoggingFile;
  remoteVersion:string;
  SLFilesUpdateList:TStringList;   //  список файлов которые будем обновлять
-
+ error:string;
 begin
 // Sleep(3000);
  XML:=TXML.Create;
@@ -264,18 +324,25 @@ begin
     Exit;
   end;
 
- // проверка вдруг уже в настоящий момент обновлямся
- if XML.isUpdate then begin
-   log.Save('Обновление уже запущено, ожидание завершения процесса ... ',IS_ERROR);
-   log.Save('Следующая попытка проверки новой версии через 1 мин');
-   TimerMonitoring.Interval:=cTIMER_ERROR;
-   Exit;
- end;
+ // проверка вдруг уже в настоящий момент обновлямся (не качается если мы в принудительном обновлении)
+  if not XML.isForceUpdate then begin
+     if XML.isUpdate then begin
+       log.Save('Обновление уже запущено, ожидание завершения процесса ... ',IS_ERROR);
+       log.Save('Следующая попытка проверки новой версии через 1 мин');
+       TimerMonitoring.Interval:=cTIMER_ERROR;
+       Exit;
+     end;
+  end
+  else begin
+    // закрываем все дочерние процессы
+    log.Save('Обновление в принудительном режиме закрытие всех дочерних процессов ... ');
+    KillChildTask(log);
+  end;
 
   // найдем текущую версию
-  remoteVersion:=GetRemoteVersionDashboard;
+  remoteVersion:=GetRemoteVersionDashboard(error);
   if remoteVersion='null' then begin
-   log.Save('Не удается получить текущую версию дашборда', IS_ERROR);
+   log.Save('Не удается получить текущую версию дашборда. '+error, IS_ERROR);
    log.Save('Следующая попытка проверки новой версии через 1 мин');
    TimerMonitoring.Interval:=cTIMER_ERROR;
    Exit;
@@ -310,6 +377,8 @@ begin
    log.Save('Установка новой версии: <b>'+remoteVersion+'</b>');
 
    while GetTask(DASHBOARD_EXE) do begin
+    if XML.isForceUpdate then Break;
+
     log.Save('Запущен родительский процесс: <b>'+DASHBOARD_EXE+'</b>. Ожидание закрытия процесса ...');
     Sleep(Round( cTIMER_ERROR / 6));
    end;

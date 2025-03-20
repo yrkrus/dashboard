@@ -23,7 +23,7 @@ type
 implementation
 
 uses
-  FunctionUnit, FormHome, FormDEBUGUnit,GlobalVariables,TCustomTypeUnit;
+  FunctionUnit, FormHome, GlobalVariables,TCustomTypeUnit, TDebugStructUnit;
 
 
 procedure Thread_Chat.CriticalError;
@@ -43,15 +43,22 @@ end;
 procedure Thread_Chat.Execute;
  const
  SLEEP_TIME:Word = 500;
+ NAME_THREAD:string = 'Thread_OnlineChat';
  var
   StartTime, EndTime: Cardinal;
   Duration: Cardinal;
+
+  debugInfo: TDebugStruct;
 begin
   inherited;
   CoInitialize(Nil);
   Sleep(1000);
 
-  Log:=TLoggingFile.Create('Thread_OnlineChat');
+  Log:=TLoggingFile.Create(NAME_THREAD);
+
+  // вывод debug info
+  debugInfo:=TDebugStruct.Create(NAME_THREAD,Log);
+  SharedCountResponseThread.Add(debugInfo);
 
   LocalChat:=TChat.Create(eChatMain,ePublic);
 
@@ -66,7 +73,7 @@ begin
 
         EndTime:= GetTickCount;
         Duration:= EndTime - StartTime;
-        FormDEBUG.lblThread_Chat.Caption:=IntToStr(Duration);
+        SharedCountResponseThread.SetCurrentResponse(NAME_THREAD,Duration);
      except
         on E:Exception do
         begin

@@ -17,7 +17,6 @@ function GetSMS(inPacientPhone:string):string; overload;                        
 function GetSMSStatusID(inPacientPhone:string):string;                                        // проверка смс статуса
 procedure ParsingResultStatusSMS(ResultServer,inPacientPhone:string);                         // парсинг и создание формы инфо статуса сообщения
 function GetMsgCount(ResultServer,inPacientPhone:string):Integer;                             // кол-во смс которые были отправлены
-procedure ShowInfoMessage(arrMsg: array of TSMSMessage; arrCount:Integer);                    // отображение инфо об отправке
 
 
 
@@ -39,6 +38,7 @@ procedure ClearParamsForm(InOptionsType:enumSendingOptions);                    
 procedure ShowOrHideLog(InOptions:enumFormShowingLog);                                        // ототбражать или скрывать лог
 function isExistExcel(var _errorDescriptions:string):Boolean;                                 // проверка установлен ли excel
 procedure CreateCopyright;                                                                    // создание Copyright
+procedure ShowCountTodaySmsSending;                                                           // подсчет сколько за сегодня отправлено смс было
 procedure ShowSaveTemplateMessage(var p_PageControl:TPageControl;
                                   var p_ListView:TListView;
                                   InTemplate:enumTemplateMessage;
@@ -50,10 +50,11 @@ function isValidPacientFields(var Pacient:TListPacients):Boolean;               
 procedure ClearTabs(InOptionsType:enumSendingOptions);                                        // очистка окон после отправки
 procedure AddMessageFromTemplate(InMessage:string);                                           // добавление сообщения на отправку из шаблонов сообщений
 procedure SaveMyTemplateMessage(id:Integer; InNewMessage:string; IsDelete:Boolean = False);   // редактирование сообщения в сохраненных шаблонов
-procedure SendingRemember(isShowLog:Boolean);                                                 // отправка рассылки sms о напоминании приема
+procedure SendingRemember(isShowLog:Boolean; var _executeTime:Cardinal);                      // отправка рассылки sms о напоминании приема
 procedure SignSMS;                                                                            // есть ли возможность вставлять подпись в СМС сообщение
 procedure CreatePopMenuAddressClinic(var p_PopMenu:TPopupMenu; var p_Message:TRichEdit);      // создание списка с адресами клиник для быстрого доступа к ним
 procedure ShowSendingManualPhone(InSendingType:enumManualSMS);                                // выбор типа при ручной отправки SMS (1 SMS или списком)
+function GetCountSendingSMSToday:Integer;                                                     // кол-во отправленных за сегодня смс
 
 
 implementation
@@ -147,6 +148,7 @@ var
  temp_message:string;
  SMS:TSendSMS;
  Spelling:TSpelling;
+ resultat:Word;
 begin
   Result:=False;
   _errorDescription:='';
@@ -184,6 +186,16 @@ begin
             Exit;
          end;
 
+         if not chkbox_SignSMS.Checked then begin
+           resultat:=MessageBox(Handle,PChar('Не установлена галка "вставить подпись в конце SMS"'+#13#13+
+                                             'Это так и задумано?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
+
+           if resultat = mrNo then begin
+             _errorDescription:='Действие отменено';
+             Exit;
+           end;
+         end;
+
          // проверка сообщения чтобы не содержало с уважением
          if chkbox_SignSMS.Checked then begin
            temp_message:=AnsiLowerCase(re_ManualSMS.Text);
@@ -214,9 +226,13 @@ begin
           // проверка орфографии
           Spelling:=TSpelling.Create(re_ManualSMS, True);
           if Spelling.isExistErrorSpelling then begin
-            _errorDescription:='В тексте сообщения присутствуют орфографические ошибки!';
+            _errorDescription:='В тексте сообщения присутствуют орфографические ошибки!'+#13+
+                               'Если ошибки нет, добавьте слово в словарь'+#13#13#13+
+                               'Выберите слово, нажмите пр.кл.мыши и выбрите "добавить в словарь"';
             Exit;
           end;
+
+
 
           // ну и на последок проверим длинну сообщения чтобы была не очень длинное
           SMS:=TSendSMS.Create(DEBUG);
@@ -266,6 +282,7 @@ var
  sendindManualReportError:TStringList;
  i:Integer;
  isExistError:Boolean;
+ executionTime:Cardinal;
 begin
   Result:=False;
   _errorDescription:='';
@@ -323,7 +340,9 @@ begin
 
       // отправляем смс  (в потоке = MAX_COUNT_THREAD_SENDIND)
       showLog:=FormHome.chkboxShowLog.Checked;
-      SendingRemember(showLog);
+      SendingRemember(showLog,executionTime);
+      executionTime:= Round(executionTime/1000);
+      _errorDescription:='Отправлено за '+IntToStr(executionTime)+' сек';
     end;
   end;
 
@@ -401,9 +420,11 @@ begin
        lblNameExcelFile.Hint:='';
        lblNameExcelFile.Font.Color:=clRed;
 
-       lblCountSendingSMS.Caption:='null';    // кол-во смс на отправку
-       lblCountNotSendingSMS.Caption:='null';    // кол-во смс с ошибкой на отправку
-       st_ShowNotSendingSMS.Visible:=False;   // показ списка с данными которые не могут быть отправены в смс
+       lblCountSendingSMS.Caption:='-';          // кол-во смс на отправку
+       st_ShowSendingSMS.Visible:=False;      // показ списка с данными которые могут быть отправены в смс
+
+       lblCountNotSendingSMS.Caption:='-';       // кол-во смс с ошибкой на отправку
+       st_ShowNotSendingSMS.Visible:=False;      // показ списка с данными которые не могут быть отправены в смс
 
 
        st_ShowInfoAddAddressClinic.Visible:=False; // справка как добавить адрес клиники
@@ -481,10 +502,12 @@ begin
 end;
 
 // отправка рассылки sms о напоминании приема
-procedure SendingRemember(isShowLog:Boolean);
+procedure SendingRemember(isShowLog:Boolean; var _executeTime:Cardinal);
 var
  i:Integer;
  error:string;
+ StartTime, EndTime: Cardinal;
+
  StartValue, EndValue: Integer;
  BaseValue: Integer;
  Remainder: Integer;
@@ -494,44 +517,48 @@ var
  isSending: array of Boolean;
  sending_end:Boolean;      // закончилась ли отправка
 begin
+    // Вычисляем базовое значение для каждого потока
+    BaseValue := SharedPacientsList.Count div MAX_COUNT_THREAD_SENDIND;
+    Remainder := SharedPacientsList.Count mod MAX_COUNT_THREAD_SENDIND;
 
- // Вычисляем базовое значение для каждого потока
-  BaseValue := SharedPacientsList.Count div MAX_COUNT_THREAD_SENDIND;
-  Remainder := SharedPacientsList.Count mod MAX_COUNT_THREAD_SENDIND;
+    SetLength(Threads, MAX_COUNT_THREAD_SENDIND);
+    SetLength(isSending,MAX_COUNT_THREAD_SENDIND);
 
-  SetLength(Threads, MAX_COUNT_THREAD_SENDIND);
-  SetLength(isSending,MAX_COUNT_THREAD_SENDIND);
+    // Перебираем потоки
+    StartValue := 0;
+    for i := 0 to MAX_COUNT_THREAD_SENDIND - 1 do
+    begin
+      // Определяем конечное значение для потока
+      EndValue := StartValue + BaseValue - 1;
 
-  // Перебираем потоки
-  StartValue := 0;
-  for i := 0 to MAX_COUNT_THREAD_SENDIND - 1 do
-  begin
-    // Определяем конечное значение для потока
-    EndValue := StartValue + BaseValue - 1;
-
-    // Если это последний поток, добавляем остаток
-    if i = MAX_COUNT_THREAD_SENDIND - 1 then EndValue:= EndValue + Remainder;
+      // Если это последний поток, добавляем остаток
+      if i = MAX_COUNT_THREAD_SENDIND - 1 then EndValue:= EndValue + Remainder;
 
 
-    // Создаем поток
-    Threads[i]:= TThreadSendSMS.Create(i + 1, StartValue, EndValue, SharedPacientsList, FormHome.RELog,isShowLog);
-    Threads[i].Start;
-    isSending[i]:=False;
+      // Создаем поток
+      Threads[i]:= TThreadSendSMS.Create(i + 1, StartValue, EndValue, SharedPacientsList, FormHome.RELog, isShowLog);
+      Threads[i].Start;
+      isSending[i]:=False;
 
-    // Обновляем начальное значение для следующего потока
-    StartValue:= EndValue + 1;
-  end;
+      // Обновляем начальное значение для следующего потока
+      StartValue:= EndValue + 1;
+    end;
 
   // Ожидаем завершения всех потоков и освобождаем их
   try
+    StartTime:=GetTickCount;
+
     while not sending_end do begin
       Application.ProcessMessages;
+
       for i:=0 to MAX_COUNT_THREAD_SENDIND - 1 do  begin
+
         if Assigned(Threads[i]) then begin
           try
            if Threads[i].FThreadFinished.WaitFor(0) = wrSignaled then
             begin
               Threads[i].Free; // Освобождаем поток только после его завершения
+              Threads[i]:=nil;
               isSending[i]:=True;
             end;
            except on E: EIdException do
@@ -555,6 +582,9 @@ begin
 
       Sleep(1000);
     end;
+
+    EndTime:= GetTickCount;
+    _executeTime:= EndTime - StartTime;
   except on E: EIdException do
       begin
          ShowMessage(e.ClassName+': '+E.Message);
@@ -740,7 +770,7 @@ begin
         end;
 
         if isValidPacientFields(NewPacient) then SharedPacientsList.Add(NewPacient)
-        else SharedPacientsListNotSending.Add(NewPacient);
+        else SharedPacientsListNotSending.Add(NewPacient, True);
       end;
 
       NewPacient.Clear;
@@ -755,8 +785,9 @@ begin
   p_Status.Caption:='Статус : Загружено, готово к отправке';
   p_CountSending.Caption:=IntToStr(SharedPacientsList.Count);
   p_CountNotSending.Caption:=IntToStr(SharedPacientsListNotSending.Count);
+  if SharedPacientsList.Count>0 then FormHome.st_ShowSendingSMS.Visible:=True;
   if SharedPacientsListNotSending.Count>0 then FormHome.st_ShowNotSendingSMS.Visible:=True;
-  
+
 
   Result:=True;
 
@@ -841,31 +872,6 @@ begin
 end;
 
 
-// отображение инфо об отправке
-procedure ShowInfoMessage(arrMsg: array of TSMSMessage; arrCount:Integer);
-var
-  SLMsg:TStringList;
-  i:Integer;
-begin
-
-  SLMsg:=TStringList.Create;
-
-  for i:=0 to arrCount-1 do begin
-    SLMsg.Add('Время: '+DateToStr(arrMsg[i].getDate)+' '+TimeToStr(arrMsg[i].getTime));
-    SLMsg.Add('Номер телефона: '+arrMsg[i].getPhone);
-    SLMsg.Add('Статус сообщения: '+arrMsg[i].getCode+' ('+arrMsg[i].getStatus+')');
-    SLMsg.Add('');
-    SLMsg.Add('Текст сообщения: '+arrMsg[i].getMsg);
-    SLMsg.Add(' ================================================================= ');
-    SLMsg.Add('');
-    SLMsg.Add('');
-  end;
-
-  ShowMessage(SLMsg.Text);
-
-  if SLMsg<> nil then FreeAndNil(SLMsg);
-end;
-
 // кол-во смс которые были отправлены
 function GetMsgCount(ResultServer,inPacientPhone:string):Integer;
 var
@@ -894,7 +900,7 @@ const
 
   var
   numberPhoneCount:Integer;
-  listMsg:array of TSMSMessage;
+  //listMsg:array of TSMSMessage;
   i:Integer;
   tmp:string;
 
@@ -956,9 +962,9 @@ begin
    Exit;
  end;
 
- SetLength(listMsg,numberPhoneCount);
- for i:=0 to numberPhoneCount-1 do listMsg[i]:=TSMSMessage.Create;
- i:=0;
+// SetLength(listMsg,numberPhoneCount);
+// for i:=0 to numberPhoneCount-1 do listMsg[i]:=TSMSMessage.Create;
+// i:=0;
 
  oldLenghtResult:=Length(ResultServer);
 
@@ -975,45 +981,45 @@ begin
    System.Delete(tmp,AnsiPos(MSGSTOP,tmp),Length(tmp));
 
    // разбираем
-   if AnsiPos(inPacientPhone,tmp)<>0 then begin
-
-      if i<numberPhoneCount then listMsg[i].Phone:=inPacientPhone;
-
-      //ShowMessage(IntToStr(100-(Round(100*Length(ResultServer)/oldLenghtResult))));
-
-      SMS_ID:=tmp;
-      System.Delete(SMS_ID,1,AnsiPos('"',SMS_ID));
-      System.Delete(SMS_ID,AnsiPos('"',SMS_ID),Length(SMS_ID));
-      if i<numberPhoneCount then listMsg[i].SMS_ID:=SMS_ID;
-
-      CreatDate:=tmp;
-      System.Delete(CreatDate,1,AnsiPos('<CREATED>',CreatDate)+Length('<CREATED>')-1);
-      System.Delete(CreatDate,AnsiPos(' ',CreatDate),Length(CreatDate));
-      if i<numberPhoneCount then listMsg[i].CreatDate:=StrToDate(CreatDate);
-
-      CreatTime:=tmp;
-      System.Delete(CreatTime,1,AnsiPos('<CREATED>',CreatTime)+Length('<CREATED>')-1);
-      System.Delete(CreatTime,1,AnsiPos(' ',CreatTime));
-      System.Delete(CreatTime,AnsiPos('<',CreatTime),Length(CreatTime));
-      if i<numberPhoneCount then listMsg[i].CreatTime:=StrToTime(CreatTime);
-
-      MsgText:=tmp;
-      System.Delete(MsgText,1,AnsiPos('[CDATA[',MsgText)+Length('[CDATA[')-1);
-      System.Delete(MsgText,AnsiPos(']]></SMS_TEXT>',MsgText),Length(MsgText));
-      if i<numberPhoneCount then listMsg[i].MsgText:=MsgText;
-
-      Code:=tmp;
-      System.Delete(Code,1,AnsiPos('<SMSSTC_CODE>',Code)+Length('<SMSSTC_CODE>')-1);
-      System.Delete(Code,AnsiPos('</SMSSTC_CODE>',Code),Length(Code));
-      if i<numberPhoneCount then listMsg[i].Code:=Code;
-
-      Status:=tmp;
-      System.Delete(Status,1,AnsiPos('<SMS_STATUS>',Status)+Length('<SMS_STATUS>')-1);
-      System.Delete(Status,AnsiPos('</SMS_STATUS>',Status),Length(Status));
-      if i<numberPhoneCount then listMsg[i].Status:=Status;
-
-      Inc(i);
-   end;
+//   if AnsiPos(inPacientPhone,tmp)<>0 then begin
+//
+//      if i<numberPhoneCount then listMsg[i].Phone:=inPacientPhone;
+//
+//      //ShowMessage(IntToStr(100-(Round(100*Length(ResultServer)/oldLenghtResult))));
+//
+//      SMS_ID:=tmp;
+//      System.Delete(SMS_ID,1,AnsiPos('"',SMS_ID));
+//      System.Delete(SMS_ID,AnsiPos('"',SMS_ID),Length(SMS_ID));
+//      if i<numberPhoneCount then listMsg[i].SMS_ID:=SMS_ID;
+//
+//      CreatDate:=tmp;
+//      System.Delete(CreatDate,1,AnsiPos('<CREATED>',CreatDate)+Length('<CREATED>')-1);
+//      System.Delete(CreatDate,AnsiPos(' ',CreatDate),Length(CreatDate));
+//      if i<numberPhoneCount then listMsg[i].CreatDate:=StrToDate(CreatDate);
+//
+//      CreatTime:=tmp;
+//      System.Delete(CreatTime,1,AnsiPos('<CREATED>',CreatTime)+Length('<CREATED>')-1);
+//      System.Delete(CreatTime,1,AnsiPos(' ',CreatTime));
+//      System.Delete(CreatTime,AnsiPos('<',CreatTime),Length(CreatTime));
+//      if i<numberPhoneCount then listMsg[i].CreatTime:=StrToTime(CreatTime);
+//
+//      MsgText:=tmp;
+//      System.Delete(MsgText,1,AnsiPos('[CDATA[',MsgText)+Length('[CDATA[')-1);
+//      System.Delete(MsgText,AnsiPos(']]></SMS_TEXT>',MsgText),Length(MsgText));
+//      if i<numberPhoneCount then listMsg[i].MsgText:=MsgText;
+//
+//      Code:=tmp;
+//      System.Delete(Code,1,AnsiPos('<SMSSTC_CODE>',Code)+Length('<SMSSTC_CODE>')-1);
+//      System.Delete(Code,AnsiPos('</SMSSTC_CODE>',Code),Length(Code));
+//      if i<numberPhoneCount then listMsg[i].Code:=Code;
+//
+//      Status:=tmp;
+//      System.Delete(Status,1,AnsiPos('<SMS_STATUS>',Status)+Length('<SMS_STATUS>')-1);
+//      System.Delete(Status,AnsiPos('</SMS_STATUS>',Status),Length(Status));
+//      if i<numberPhoneCount then listMsg[i].Status:=Status;
+//
+//      Inc(i);
+//   end;
 
    // следующий разбор
     System.Delete(ResultServer,1,AnsiPos(MSGSTOP,ResultServer));
@@ -1030,7 +1036,7 @@ begin
   //FormHome.ProgressBar.Progress:=0;
 
   //отображаем найденное
-  if numberPhoneCount<>0 then ShowInfoMessage(listMsg,numberPhoneCount);
+
 
 
   //FormPleaseWait.Free;
@@ -1131,10 +1137,12 @@ end;
 // проверка на корректность записи из excel файла
 function isValidPacientFields(var Pacient:TListPacients):Boolean;
 const
- cPHONE_ERROR     :string  = 'Некорректный номер телефона';
- cPACIENT_ERROR   :string  = 'Отсутствует Имя Отчевство у пациента';
+ cPHONE_ERROR       :string  = 'Некорректный номер телефона';
+ cPACIENT_ERROR     :string  = 'Отсутствует Имя Отчевство у пациента';
+ cFIOVRACHA_ERROR   :string  = 'Не задана услуга или ФИО врача';
 var
  i,j:Integer;
+ tmp:string;
 
 begin
   Result:=False;
@@ -1178,6 +1186,13 @@ begin
     Exit;
   end;
 
+  // проверка корректности ФИО\услуги (были случаи когда писали МЕДСИ)
+  tmp:=AnsiLowerCase(Pacient.FIOVracha);
+  if AnsiPos('медси',tmp)<>0 then begin
+   Pacient._errorDescriptions:=cFIOVRACHA_ERROR;
+   Exit;
+  end;
+
 
   // проверим есть ли в строке буковка г.
   if (AnsiPos('г.',Pacient.ClinicAddress)=0) then Pacient.ClinicAddress:='г. '+Pacient.ClinicAddress;
@@ -1216,7 +1231,16 @@ end;
 procedure CreateCopyright;
 begin
   with FormHome.StatusBar do begin
-    Panels[0].Text:=GetCopyright;
+    Panels[1].Text:=GetCopyright;
+  end;
+end;
+
+
+// подсчет сколько за сегодня отправлено смс было
+procedure ShowCountTodaySmsSending;
+begin
+   with FormHome.StatusBar do begin
+    Panels[0].Text:='  За сегодня отправлено: '+IntToStr(GetCountSendingSMSToday);
   end;
 end;
 
@@ -1518,6 +1542,41 @@ begin
           }
 
       end;
+    end;
+  end;
+end;
+
+
+// кол-во отправленных за сегодня смс
+function GetCountSendingSMSToday:Integer;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+  Result:=0;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select count(id) from sms_sending where date_time > '+#39+GetCurrentStartDateTime+#39);
+
+      Active:=True;
+      Result:= StrToInt(VarToStr(Fields[0].Value));
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+     serverConnect.Close;
+     FreeAndNil(serverConnect);
     end;
   end;
 end;

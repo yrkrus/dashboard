@@ -11,21 +11,10 @@ unit TCheckServersUnit;
 
 interface
 
-uses  System.Classes,
-      Data.Win.ADODB,
-      Data.DB,
-      System.SysUtils,
-      Variants,
-      Graphics,
-      System.SyncObjs,
-      Vcl.StdCtrls,
-      IdException,
-      FIBDatabase,
-      pFIBDatabase,
-      TLogFileUnit,
-      Vcl.ExtCtrls,
-      Vcl.Dialogs;
-
+uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
+      Variants, Graphics, System.SyncObjs, Vcl.StdCtrls,
+      IdException, FIBDatabase, pFIBDatabase, TLogFileUnit,
+      Vcl.ExtCtrls, Vcl.Dialogs;
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -454,6 +443,10 @@ end;
 procedure TCheckServersIK.CheckServerFirebird;
 const
  countWarningsErrors:Word = 5;
+ colorError:TColor        = clRed;
+ colorWarning:TColor      = $0000D5D5;
+ colorOk:TColor           = clGreen;
+
 var
  i,j:Integer;
  countServers:Integer;
@@ -463,9 +456,13 @@ var
  viewErrors:Integer;
  connectBD_Firebird:Boolean;
  allCountErrors:Integer;
+ isWarningError:Boolean;  // есть кандидат на ошибку
+ isWarningErrorCount:Integer;
 begin
    if (firebird_login='') or (firebird_pwd='') then Exit;
    allCountErrors:=0; // общее кол-во серверов с ошибками
+   isWarningError:=False;
+   isWarningErrorCount:=0;
 
    for i:=0 to GetCount-1 do begin
 
@@ -504,17 +501,19 @@ begin
           if Components[j].Name='lbl_'+IntToStr(listServers[i].id) then begin
             if listServers[i].countErrors=0 then begin  // НЕТ ОШИБКИ!!
                (Components[j] as TLabel).Caption:='доступен';
-               (Components[j] as TLabel).Font.Color:=clGreen;
+               (Components[j] as TLabel).Font.Color:=colorOk;
             end
-            else begin                                // ЕСТЬ ОШИБКА!!!
+            else begin                                  // ЕСТЬ ОШИБКА!!!
               if listServers[i].countErrors<countWarningsErrors then begin
                 (Components[j] as TLabel).Caption:='проблема';
-                (Components[j] as TLabel).Font.Color:=$0000D5D5;
+                (Components[j] as TLabel).Font.Color:=colorWarning;
+                isWarningError:=True;
+                Inc(isWarningErrorCount);
               end;
 
               if listServers[i].countErrors=countWarningsErrors then begin
                 (Components[j] as TLabel).Caption:='не доступен';
-                (Components[j] as TLabel).Font.Color:=clRed;
+                (Components[j] as TLabel).Font.Color:=colorError;
               end;
             end;
           end;
@@ -536,11 +535,18 @@ begin
     for i:=0 to GetCount-1 do begin
 
       if allCountErrors = 0 then begin
-        lblCheckInfocilinikaServerAlive.Caption:='отсутствуют';
-        lblCheckInfocilinikaServerAlive.Font.Color:=clGreen;
+
+        if isWarningError then begin
+         lblCheckInfocilinikaServerAlive.Caption:='возможная проблема ('+IntToStr(isWarningErrorCount)+') (подробнее)';
+         lblCheckInfocilinikaServerAlive.Font.Color:=colorWarning;
+        end
+        else begin
+         lblCheckInfocilinikaServerAlive.Caption:='отсутствуют';
+         lblCheckInfocilinikaServerAlive.Font.Color:=colorOk;
+        end;
       end
       else begin
-        lblCheckInfocilinikaServerAlive.Font.Color:=clRed;
+        lblCheckInfocilinikaServerAlive.Font.Color:=colorError;
 
         case allCountErrors of
          1:begin

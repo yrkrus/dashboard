@@ -13,7 +13,9 @@ interface
 uses
   TActiveSIPUnit, TUserUnit, Data.Win.ADODB,
   Data.DB, SysUtils, Windows, TLogFileUnit,
-  TIVRUnit, TCustomTypeUnit;
+  TIVRUnit, TCustomTypeUnit, TFontSizeUnit,
+  TDebugCountResponseUnit;
+
 
 var
   // ****************** режим разработки ******************
@@ -60,6 +62,9 @@ var
   // размер остатка свободного места при котором дашборд не запуститься
   FREE_SPACE_COUNT        :Integer = 100;
 
+  // разница между стандартным размером окна 1400 - 1017(форма на стартовом окне)
+  DEFAULT_SIZE_PANEL_ACTIVESIP :Word = 383;
+
   ///////////////////// CLASSES /////////////////////
 
   // лог главной формы
@@ -74,8 +79,12 @@ var
   // список с текущим IVR кто звонит на линию
   SharedIVR: TIVR;
 
-  // внутренние процессы дашборда
- // SharedInternalProcess:TInternalProcess;
+  // размеры шрифтов на дашборде
+  SharedFontSize: TFontSize;
+
+  // список для отслеживания времени работы в потоках
+  SharedCountResponseThread:TDebugCountResponse;
+
 
  ///////////////////// CLASSES /////////////////////
 
@@ -105,7 +114,7 @@ var
   function GetExtensionLog:PChar;                             stdcall;  external 'core.dll';       // папка с локальным чатом
   function GetLogNameFolder:PChar;                            stdcall;  external 'core.dll';       // папка с логом
   function GetUpdateNameFolder:PChar;                         stdcall;  external 'core.dll';       // папка с update (обновленияем)
-  function GetRemoteVersionDashboard:PChar;                   stdcall;  external 'core.dll';       // текущая версия дашборда (БД)
+  function GetRemoteVersionDashboard(var _errorDescriptions:string):PChar;                   stdcall;  external 'core.dll';       // текущая версия дашборда (БД)
   function KillTask(ExeFileName:string):integer;              stdcall;  external 'core.dll';       // функция остановки exe
   procedure KillProcessNow;                                   stdcall;  external 'core.dll';       // немедленное звершение работы
   function GetTask(ExeFileName:string):Boolean;               stdcall;  external 'core.dll';       // проверка запущен ли процесс
@@ -134,14 +143,17 @@ var
 implementation
 
 
+
 initialization  // Инициализация
   FOLDERPATH:=ExtractFilePath(ParamStr(0));
   FOLDERUPDATE:=FOLDERPATH+GetUpdateNameFolder;
 
- 
+
   SharedActiveSipOperators  := TActiveSIP.Create;
   SharedIVR                 := TIVR.Create;
   SharedMainLog             := TLoggingFile.Create('main');   // лог работы main формы
+  SharedFontSize            := TFontSize.Create;
+  SharedCountResponseThread := TDebugCountResponse.Create;
 
 finalization
   // Освобождение памяти

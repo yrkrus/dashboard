@@ -148,9 +148,6 @@ Coordinates=1281,597,138,36
 [lblShadownRight]
 Coordinates=250,418,111,58
 
-[img_statistics_QUEUE]
-Coordinates=10,10,144,58
-
 []
 Coordinates=185,690,59,36
 Visible=True

@@ -15,19 +15,28 @@ type
     img_pashalka: TImage;
     Panel1: TPanel;
     lblErrorInfo: TLabel;
-    Label1: TLabel;
+    lblInfoErrorEgg: TLabel;
+    btnForceUpdate: TBitBtn;
     procedure btnCloseClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure TimerReconnectBDHostTimer(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
+    procedure btnForceUpdateClick(Sender: TObject);
   private
     m_messageError:string;    // сам текст который будем заполнять с ошибкой, он выводится пользователю
     m_timerStatus:Boolean;    // статус что нужно или нет запускать таймер на переподключение к БД
+    m_eggMessage:string;      // надпись пасхалочная
+    m_forceUpdate:Boolean;    // принудительное обновление
     { Private declarations }
+    function IsEmptyString(const AValue:string):Boolean;
+
   public
     { Public declarations }
-   procedure CreateSettings(inMessageError:string; isNeedReconnect: enumNeedReconnectBD = eNeedReconnectYES);
+   procedure CreateSettings(inMessageError:string;
+                            isNeedReconnect: enumNeedReconnectBD = eNeedReconnectYES;
+                            isForceUpdate:Boolean = False;
+                            EggMessage:string = '');
 
 
   end;
@@ -45,9 +54,32 @@ uses
 
 {$R *.dfm}
 
-procedure TFormError.CreateSettings(inMessageError:string;  isNeedReconnect: enumNeedReconnectBD = eNeedReconnectYES);
+function TFormError.IsEmptyString(const AValue: string):Boolean;
+begin
+  Result:=True;  // считаем что пустое по умолчанию
+
+  if Length(AValue) <> 0 then Result:=False;
+end;
+
+
+procedure TFormError.btnForceUpdateClick(Sender: TObject);
+begin
+  ForceUpdateDashboard(btnClose);
+end;
+
+procedure TFormError.CreateSettings(inMessageError:string;
+                                    isNeedReconnect: enumNeedReconnectBD = eNeedReconnectYES;
+                                    isForceUpdate:Boolean = False;
+                                    EggMessage:string = '');
 begin
   m_messageError:=inMessageError;   // текстовка ошибки
+  m_eggMessage:='';
+  m_forceUpdate:=isForceUpdate;
+
+  if not IsEmptyString(EggMessage) then begin
+   m_eggMessage:=EggMessage;
+  end;
+
   m_timerStatus:=EnumNeedReconnectBDToBoolean(isNeedReconnect);     // нужно ли запустить таймер на переподключение к БД
 end;
 
@@ -72,6 +104,17 @@ procedure TFormError.FormShow(Sender: TObject);
 begin
    CONNECT_BD_ERROR:=True;
    lblErrorInfo.Caption:=m_messageError;
+
+   if not IsEmptyString(m_eggMessage) then begin
+    lblInfoErrorEgg.Caption:=m_eggMessage;
+   end;
+
+   // принудительное обновление
+   if m_forceUpdate then begin
+     btnForceUpdate.Visible:=True;
+
+     btnClose.Width:=233;
+   end;
 
    //  смысл показывать реконнект если его не будет
    if not m_timerStatus then lblTime.Visible:=False

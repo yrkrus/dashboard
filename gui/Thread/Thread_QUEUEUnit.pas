@@ -32,9 +32,8 @@ implementation
 uses
   FunctionUnit,
   FormHome,
-  FormDEBUGUnit,
   GlobalVariables,
-  TCustomTypeUnit;
+  TCustomTypeUnit, TDebugStructUnit;
 
 
 { Thread_QUEUE }
@@ -156,14 +155,21 @@ end;
 procedure Thread_QUEUE.Execute;
 const
  SLEEP_TIME:Word = 1000;
+ NAME_THREAD:string = 'Thread_Queue';
  var
   StartTime, EndTime: Cardinal;
   Duration: Cardinal;
+
+  debugInfo: TDebugStruct;
 begin
   inherited;
   CoInitialize(Nil);
 
-   Log:=TLoggingFile.Create('Thread_Queue');
+  Log:=TLoggingFile.Create(NAME_THREAD);
+ // вывод debug info
+  debugInfo:=TDebugStruct.Create(NAME_THREAD,Log);
+  SharedCountResponseThread.Add(debugInfo);
+
 
   while not Terminated do
   begin
@@ -176,7 +182,8 @@ begin
 
           EndTime:= GetTickCount;
           Duration:= EndTime - StartTime;
-          FormDEBUG.lblThread_QUEUE.Caption:=IntToStr(Duration);
+
+          SharedCountResponseThread.SetCurrentResponse(NAME_THREAD,Duration);
         except
           on E:Exception do
           begin

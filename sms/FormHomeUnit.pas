@@ -9,33 +9,6 @@ uses
   Vcl.Buttons, Vcl.Menus, ClipBrd, System.ImageList, Vcl.ImgList,RichEdit;
 
 
- // class TSMSMessage
-type
-    TSMSMessage = class(TObject)
-
-    public
-    SMS_ID                                      : string;     // ID sms
-    CreatDate                                   : TDate;       // дата когда было создано сообщение
-    CreatTime                                   : TTime;       // время когда было создано сообщение
-    MsgText                                     : string;      // текст сообщения
-    Code                                        : string;      // код смс
-    Status                                      : string;      // статус смс
-    Phone                                       : string;      // номер телефона
-
-    constructor Create;                          overload;
-
-    function getID                              : string;
-    function getDate                            : TDate;
-    function getTime                            : TTime;
-    function getMsg                             : string;
-    function getCode                            : string;
-    function getStatus                          : string;
-    function getPhone                           : string;
-  end;
-
-  //class TSMSMessage END
-
-
 type
   TFormHome = class(TForm)
     GroupBox2: TGroupBox;
@@ -78,6 +51,8 @@ type
     lblManualSMS_One: TLabel;
     popmenu_AddSpellnig: TPopupMenu;
     menu_AddSpelling: TMenuItem;
+    ImageList1: TImageList;
+    st_ShowSendingSMS: TStaticText;
     procedure ProcessCommandLineParams(DEBUG:Boolean = False);
     procedure FormCreate(Sender: TObject);
     procedure btnLoadFileClick(Sender: TObject);
@@ -109,6 +84,10 @@ type
     procedure re_ManualSMSMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure menu_AddSpellingClick(Sender: TObject);
+    procedure st_ShowSendingSMSMouseLeave(Sender: TObject);
+    procedure st_ShowSendingSMSMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
+    procedure st_ShowSendingSMSClick(Sender: TObject);
 
 
 
@@ -139,51 +118,9 @@ cWebApiSMSstatusID:string='https://a2p-sms-https.beeline.ru/proto/http/?gzip=non
 implementation
 
 uses
-  FunctionUnit, GlobalVariables, TSendSMSUint, FormMyTemplateUnit, FormNotSendingSMSErrorUnit, TCustomTypeUnit, FormListSendingSMSUnit, TXmlUnit, TSpellingUnit;
+  FunctionUnit, GlobalVariables, TSendSMSUint, FormMyTemplateUnit, FormNotSendingSMSErrorUnit, TCustomTypeUnit, FormListSendingSMSUnit, TXmlUnit, TSpellingUnit, FormSendingSMSUnit;
 
  {$R *.dfm}
-
-
-// class TSMSMessage START
- constructor TSMSMessage.Create;
- begin
-   inherited;
- end;
-
- function TSMSMessage.getID:string;
- begin
-    Result:=SMS_ID;
- end;
-
- function TSMSMessage.getDate:TDate;
- begin
-    Result:=CreatDate;
- end;
-
- function TSMSMessage.getTime:TTime;
- begin
-    Result:=CreatTime;
- end;
-
- function TSMSMessage.getMsg:string;
- begin
-    Result:=MsgText;
- end;
-
- function TSMSMessage.getCode:string;
- begin
-    Result:=Code;
- end;
-
- function TSMSMessage.getStatus:string;
- begin
-    Result:=Status;
- end;
-
-  function TSMSMessage.getPhone:string;
- begin
-    Result:=Phone;
- end;
 
  // class TSMSMessage END
 
@@ -239,7 +176,8 @@ begin
     end;
 
     if IsRed then begin
-       Word:=StringReplace(Word,' ','',[rfReplaceAll]);
+       Word:=StringReplace(Word,' ','',[rfReplaceAll]);    // убираем пробел
+       Word:=StringReplace(Word, #13, '', [rfReplaceAll]); // убираем enter
 
       _MaybeDictionaryWord:=Word;
       Result:=True;
@@ -346,6 +284,7 @@ var
  error:string;
  SendindMessage:string;
  i:Integer;
+ resultat:Word;
 begin
   // проверки
   Screen.Cursor:=crHourGlass;
@@ -400,6 +339,13 @@ begin
       end;
     end;
     options_Sending:begin
+      // проверим кол-во
+      if SharedPacientsList.Count > MAX_COUNT_PHONE_SENDING_WARNING then begin
+        resultat:=MessageBox(Handle,PChar('В очереди на отправку больше '+IntToStr(MAX_COUNT_PHONE_SENDING_WARNING)+' номеров'+#13#13+
+                                          'Точно отправлять?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
+        if resultat = mrNo then Exit;
+      end;
+
       ProgressStatusText.Caption:='Статус : Отправка';
       if not SendingMessage(currentOptions, error) then begin
         Screen.Cursor:=crDefault;
@@ -407,13 +353,17 @@ begin
       end
       else begin
        Screen.Cursor:=crDefault;
-       MessageBox(Handle,PChar('Отправлено'+#13+'Статус доставки доступен в отчетах'),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
+       MessageBox(Handle,PChar('Статус доставки доступен в отчетах'+#13#13+error),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
       end;
     end;
    end;
 
    // очищаем данные формы
    ClearParamsForm(currentOptions);
+
+   // обновим счетчик сколько отправлено смс
+   ShowCountTodaySmsSending;
+
    Screen.Cursor:=crDefault;
 end;
 
@@ -659,6 +609,25 @@ begin
    st_ShowNotSendingSMS.Font.Style:=[fsUnderline];
 end;
 
+procedure TFormHome.st_ShowSendingSMSClick(Sender: TObject);
+begin
+  with FormSendingSMS do begin
+   Caption:='Сообщения на отправку ('+IntToStr(SharedPacientsList.Count)+')';
+   ShowModal;
+  end;
+end;
+
+procedure TFormHome.st_ShowSendingSMSMouseLeave(Sender: TObject);
+begin
+   st_ShowSendingSMS.Font.Style:=[];
+end;
+
+procedure TFormHome.st_ShowSendingSMSMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+begin
+ st_ShowSendingSMS.Font.Style:=[fsUnderline];
+end;
+
 procedure TFormHome.FormCreate(Sender: TObject);
 begin
 
@@ -698,8 +667,15 @@ begin
     end;
   end;
 
+  lblManualSMS_One.Font.Color:=clHighlight;
+  lblManualSMS_List.Font.Color:=clHighlight;
+
+
    // создатим copyright
   CreateCopyright;
+
+  // подсчет сколько за сегодня отправлено смс
+  ShowCountTodaySmsSending;
 
   // проверка существует ли excel
   if not isExistExcel(error) then begin

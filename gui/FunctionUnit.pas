@@ -13,16 +13,16 @@ interface
     Data.DB, IdIcmpClient, IdException, System.DateUtils,
     FIBDatabase, pFIBDatabase, TCustomTypeUnit, TUserUnit,
     Vcl.Menus, GlobalVariables, TActiveSIPUnit, System.IOUtils,
-    TLogFileUnit;
+    TLogFileUnit, Vcl.Buttons;
 
 
 procedure KillProcess;                                                               // принудительное завершение работы
 function GetStatistics_queue(InQueueNumber:enumQueueCurrent;InQueueType:enumQueueType):string;    // отображение инфо по очередеям
 function GetStatistics_day(inStatDay:enumStatistiscDay):string;                      // отображение инфо за день
 procedure clearAllLists;                                                             // очистка всех list's
-procedure clearList_IVR;                                                             // отображение листа с текущими звонками
-procedure clearList_QUEUE;                                                           // очистка listbox_QUEUE
-procedure clearList_SIP(InWidth:Integer);                                            // очистка listbox_SIP
+procedure clearList_IVR(InFontSize:Word);                                            // отображение листа с текущими звонками
+procedure clearList_QUEUE(InFontSize:Word);                                          // очистка listbox_QUEUE
+procedure clearList_SIP(InWidth:Integer;InFontSize:Word);                            // очистка listbox_SIP
 procedure clearList_Propushennie;                                                    // создание интерфейса пропущенные
 procedure updatePropushennie;                                                        // обновление пропущенных звонков форма
 procedure createThreadDashboard;                                                     // создание потоков
@@ -86,7 +86,7 @@ function getTranslate(Stroka: string):string;                                   
 //function getUserFIO(InUserID:Integer):string;                                      // полчуение имени пользователя из его UserID
 function getUserFamiliya(InUserID:Integer):string;                                   // полчуение фамилии пользователя из его UserID
 function getUserNameBD(InUserID:Integer):string;                                     // полчуение имени пользователя из его UserID
-function UserIsOperator(InUserID:Integer):Boolean;                                   // проверка userID принадлежит оператору или нет TRUE - оператор
+function IsUserOperator(InUserID:Integer):Boolean;                                   // проверка userID принадлежит оператору или нет TRUE - оператор
 procedure disableOperator(InUserId:Integer);                                         // отключение оператора и перенос его в таблицу operators_disable
 function EnableUser(InUserID:Integer; var _errorDescription:string):Boolean;             // включение пользователя
 function GetOperatorAccessDashboard(InSip:string):Boolean;                           // нахождение статуса доступен ли дашбор орератору или нет
@@ -132,12 +132,17 @@ procedure ShowStatisticsCallsDay(InTypeStatisticsCalls: enumStatisticsCalls;    
 function isExistMySQLConnector:Boolean;                                              // установлен ли MySQL COnnector
 procedure ShowFormErrorMessage(_errorMessage:string;
                                var p_Log:TLoggingFile;
-                               const __METHOD_NAME__:string);                        // отрображение окна с ошибкой
+                               const __METHOD_NAME__:string;
+                               forceUpdate:Boolean = False);                         // отрображение окна с ошибкой
 function GetNeedReconnectBase(const _errorMessage:string):enumNeedReconnectBD;       // проверка нужно ли перезапускать reconnect к базе
 function GetNowDateTimeDec(DecMinutes:Integer):string;                               // текущее время начала дня (минус минуты)
 function GetNowDateTime:string;                                                      // текущее время начала дня
 function GetFreeSpaсeDrive(InDrive:string):int64;                                    // функция проверки сколько есть свободного места на диске
 function isExistFreeSpaceDrive(var _errorDescription:string):Boolean;                // проверка есть ли свободное место на диске
+procedure ChangeFontSize(InChange:enumFontChange; InTypeFont:enumFontSize);          // изменение размера шрифта на главной форме в TListView
+procedure ForceUpdateDashboard(var p_ButtonClose:TBitBtn);                           // запуск принудительного обновления
+procedure WindowStateInit;                                                           // отображение главной формы окна при загрузке
+
 
 
 
@@ -720,14 +725,29 @@ end;
 
 // очистка всех list's
 procedure clearAllLists;
+var
+ XML:TXML;
+ i:Integer;
+ fontSize:enumFontSize;
 begin
-  clearList_IVR;
-  clearList_QUEUE;
-  clearList_SIP(HomeForm.Panel_SIP.Width);
+  // подгрузим текщие значения и обновим в памяти
+  begin
+    XML:=TXML.Create;
+    for i:=Ord(Low(enumFontSize)) to Ord(High(enumFontSize)) do
+    begin
+      fontSize:=enumFontSize(i);
+      SharedFontSize.SetSize(fontSize, XML.GetFontSize(fontSize));
+    end;
+    XML.Free;
+  end;
+
+  clearList_IVR(SharedFontSize.GetSize(eIvr));
+  clearList_QUEUE(SharedFontSize.GetSize(eQueue));
+  clearList_SIP(HomeForm.Panel_SIP.Width, SharedFontSize.GetSize(eActiveSip));
 end;
 
 // очистка listbox_IVR
-procedure clearList_IVR;
+procedure clearList_IVR(InFontSize:Word);
  const
  cWidth_default         :Word = 335;
  cProcentWidth_phone    :Word = 40;
@@ -739,31 +759,33 @@ begin
 
    lblCount_IVR.Caption:='IVR';
 
+   ListViewIVR.Columns.Clear;
+
    with ListViewIVR do begin
      ViewStyle:= vsReport;
+     Font.Size:=InFontSize;
 
-
-      with ListViewIVR.Columns.Add do
+      with Columns.Add do
       begin
         Caption:='ID';
         Width:=0;
       end;
 
-      with ListViewIVR.Columns.Add do
+      with Columns.Add do
       begin
         Caption:='Номер телефона';
         Width:=Round((cWidth_default*cProcentWidth_phone)/100);
         Alignment:=taCenter;
       end;
 
-      with ListViewIVR.Columns.Add do
+      with Columns.Add do
       begin
         Caption:='Время';
         Width:=Round((cWidth_default*cProcentWidth_waiting)/100)-1;
         Alignment:=taCenter;
       end;
 
-      with ListViewIVR.Columns.Add do
+      with Columns.Add do
       begin
         Caption:='Линия';
         Width:=Round((cWidth_default*cProcentWidth_trunk)/100);
@@ -775,7 +797,7 @@ end;
 
 
 // очистка listbox_SIP
-procedure clearList_SIP(InWidth:Integer);
+procedure clearList_SIP(InWidth:Integer; InFontSize:Word);
  const
  //cWidth_default           :Word = 1017;
  cProcentWidth_operator   :Word = 29;
@@ -796,56 +818,57 @@ begin
 
    with ListViewSIP do begin
      ViewStyle:= vsReport;
+     Font.Size:=InFontSize;
 
-      with ListViewSIP.Columns.Add do
+      with Columns.Add do
       begin
         Caption:='ID';
         Width:=0;
       end;
 
-      with ListViewSIP.Columns.Add do
+      with Columns.Add do
       begin
         Caption:='Оператор';
         Width:=Round((InWidth*cProcentWidth_operator)/100);
         Alignment:=taLeftJustify;
       end;
 
-      with ListViewSIP.Columns.Add do
+      with Columns.Add do
       begin
         Caption:='Статус';
         Width:=Round((InWidth*cProcentWidth_status)/100);
         Alignment:=taCenter;
       end;
 
-      with ListViewSIP.Columns.Add do
+      with Columns.Add do
       begin
         Caption:='Отвечено';
         Width:=Round((InWidth*cProcentWidth_responce)/100);
         Alignment:=taCenter;
       end;
 
-      with ListViewSIP.Columns.Add do
+      with Columns.Add do
       begin
         Caption:='Номер';
         Width:=Round((InWidth*cProcentWidth_phone)/100);
         Alignment:=taCenter;
       end;
 
-      with ListViewSIP.Columns.Add do
+      with Columns.Add do
       begin
         Caption:='Время разговора';
         Width:=Round((InWidth*cProcentWidth_talk)/100);
         Alignment:=taCenter;
       end;
 
-      with ListViewSIP.Columns.Add do
+      with Columns.Add do
       begin
         Caption:='Очередь';
         Width:=Round((InWidth*cProcentWidth_queue)/100);
         Alignment:=taCenter;
       end;
 
-      with ListViewSIP.Columns.Add do
+      with Columns.Add do
       begin
         Caption:='Сред. время | Общее';
         Width:=Round((InWidth*cProcentWidth_time)/100);
@@ -856,7 +879,7 @@ begin
 end;
 
 // очистка listbox_QUEUE
-procedure clearList_QUEUE;
+procedure clearList_QUEUE(InFontSize:Word);
  const
  cWidth_default         :Word = 335;
  cProcentWidth_phone    :Word = 40;
@@ -867,30 +890,33 @@ begin
 
    lblCount_QUEUE.Caption:='Очередь';
 
+   ListViewQueue.Columns.Clear;
+
    with ListViewQueue do begin
      ViewStyle:= vsReport;
+     Font.Size:=InFontSize;
 
-       with ListViewQueue.Columns.Add do
+      with Columns.Add do
       begin
         Caption:='ID';
         Width:=0;
       end;
 
-      with ListViewQueue.Columns.Add do
+      with Columns.Add do
       begin
         Caption:='Номер телефона';
         Width:=Round((cWidth_default*cProcentWidth_phone)/100);
         Alignment:=taCenter;
       end;
 
-      with ListViewQueue.Columns.Add do
+      with Columns.Add do
       begin
         Caption:='Ожидание';
         Width:=Round((cWidth_default*cProcentWidth_waiting)/100)-1;
         Alignment:=taCenter;
       end;
 
-      with ListViewQueue.Columns.Add do
+      with Columns.Add do
       begin
         Caption:='Очередь';
         Width:=Round((cWidth_default*cProcentWidth_queue)/100);
@@ -1369,7 +1395,7 @@ begin
         SetLength(lblIP,countServers);
 
         SQL.Clear;
-        SQL.Add('select id,ip,address from server_ik order by ip ASC');
+        SQL.Add('select id,ip,address,status from server_ik order by ip ASC');
 
         try
           Active:=True;
@@ -1417,7 +1443,13 @@ begin
             lblAddressServer[i]:=TLabel.Create(FormServerIKCheck);
             lblAddressServer[i].Name:='lblAddr_'+nameIP;
             lblAddressServer[i].Tag:=1;
-            lblAddressServer[i].Caption:=VarToStr(Fields[2].Value);
+
+            if VarToStr(Fields[3].Value) = '0' then begin  // закрыта ли клиника
+              lblAddressServer[i].Caption:=VarToStr(Fields[2].Value)+' ('+EnumStatusJobClinicToString(eClose) +')';
+              lblAddressServer[i].Font.Style:=[fsStrikeOut];
+            end
+            else lblAddressServer[i].Caption:=VarToStr(Fields[2].Value);
+
             lblAddressServer[i].Left:=90;
 
             if i=0 then lblAddressServer[i].Top:=cTOPSTART
@@ -2481,7 +2513,7 @@ begin
       end;
 
       // проверим пользователь принадлежит группе операторов
-      if UserIsOperator(InUserID) then begin
+      if IsUserOperator(InUserID) then begin
         disableOperator(InUserID);
         deleteOperator(InUserID);
       end;
@@ -3279,23 +3311,46 @@ begin
 end;
 
 
-
 // проверка на актуальную версию
 procedure CheckCurrentVersion;
 var
  remoteVersion:string;
  XML:TXML;
  error:string;
+ force_update:Boolean;
 begin
-  remoteVersion:=GetRemoteVersionDashboard;
+  remoteVersion:=GetRemoteVersionDashboard(error);
+
+  if remoteVersion = 'null' then begin
+   error:='Ошибка получения текущей версии дашборда'+#13#13+
+           error+#13#13+
+          'Имя ПК: '+getComputerPCName;
+
+   ShowFormErrorMessage(error,SharedMainLog,'CheckCurrentVersion');
+
+   KillProcess;
+  end;
 
   if GUID_VERSION <> remoteVersion then begin
 
-   error:='Текущая версия программы отличается от актуальной версии'+#13#13
-          +'Перезагрузите компьютер или перезапустите службу обновления ('+UPDATE_SERVICES+')'+#13#13
+    if GetStatusUpdateService then begin
+      error:='Текущая версия программы отличается от актуальной версии'+#13#13
+          +'Обратитесь в отдел ИТ или обновите вручную по кнопке'+#13
+          +'"Принудительное обновление"' +#13#13
           +'Имя ПК: '+getComputerPCName;
 
-   ShowFormErrorMessage(error,SharedMainLog,'CheckCurrentVersion');
+      force_update:=True;
+    end
+    else begin
+       error:='Текущая версия программы отличается от актуальной версии'+#13#13
+          +'Служба автоматического обновления не запущена'+#13
+          +'Обратитесь в отдел ИТ' +#13#13
+          +'Имя ПК: '+getComputerPCName;
+
+      force_update:=False;
+    end;
+
+   ShowFormErrorMessage(error,SharedMainLog,'CheckCurrentVersion',force_update);
 
    KillProcess;
   end;
@@ -4030,7 +4085,7 @@ begin
 end;
 
 // проверка userID принадлежит оператору или нет TRUE - оператор
-function UserIsOperator(InUserID:Integer):Boolean;
+function IsUserOperator(InUserID:Integer):Boolean;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -4679,7 +4734,7 @@ begin
         if img_goHome_YES.Visible then begin
          img_goHome_YES.Visible:=False;
          img_goHome_NO.Visible:=True;
-         img_goHome_NO.Left:=12;
+         img_goHome_NO.Left:=49;
         end;
 
       ST_operatorsHideCount.Visible:=True;
@@ -4696,7 +4751,7 @@ begin
         if img_goHome_NO.Visible then begin
          img_goHome_NO.Visible:=False;
          img_goHome_YES.Visible:=True;
-         img_goHome_YES.Left:=12;
+         img_goHome_YES.Left:=49;
         end;
 
        ST_operatorsHideCount.Visible:=False;
@@ -4910,6 +4965,7 @@ begin
 
     XML:=TXML.Create;
     XML.isUpdate('false');
+    XML.ForceUpdate('false');
     XML.UpdateCurrentVersion(PChar(GUID_VERSION));
     XML.Free;
 
@@ -5073,10 +5129,12 @@ begin
     Exit;
   end;
 
-  if AnsiPos('Текущая версия программы отличается от актуальной версии',_errorMessage)<>0 then begin
+  if (AnsiPos('Текущая версия программы отличается от актуальной версии',_errorMessage)<>0) or
+     (AnsiPos('Ошибка получения текущей версии дашборда',_errorMessage)<>0) then begin
     Result:=eNeedReconnectNO;
     Exit;
   end;
+
 
   if AnsiPos('Возникла ошибка при запросе на сервер!',_errorMessage)<>0 then begin
     Result:=eNeedReconnectNO;
@@ -5120,25 +5178,33 @@ end;
 // отрображение окна с ошибкой
 procedure ShowFormErrorMessage(_errorMessage:string;
                                var p_Log:TLoggingFile;
-                               const __METHOD_NAME__:string);
+                               const __METHOD_NAME__:string;
+                               forceUpdate:Boolean = False);
 var
   needReconnect:enumNeedReconnectBD;
+  EggMessage:string;
 begin
+  EggMessage:='';
   // записываем в Log
   if Assigned(p_Log) then p_Log.Save(__METHOD_NAME__+': '+ _errorMessage,IS_ERROR);
 
   // проверим нужно ли перезапускать Reconnect
   needReconnect:=GetNeedReconnectBase(_errorMessage);
 
+  if forceUpdate then begin
+    EggMessage:='Слыш,'+#13+'давай обновляйся!';
+  end;
+
   // Есть ошибка подключения к БД
   if AnsiPos('EDatabaseError',_errorMessage )<> 0 then begin
     _errorMessage:='Сервер не доступен';
+    EggMessage:='Слыш,'+#13+'давай поднимайся!';
   end;
 
 
   with FormError do begin
     if not Showing then begin
-     CreateSettings(_errorMessage,needReconnect);
+     CreateSettings(_errorMessage,needReconnect,forceUpdate,EggMessage);
      ShowModal;
     end;
   end;
@@ -5194,5 +5260,66 @@ begin
 
   Result:=True;
 end;
+
+// изменение размера шрифта на главной форме в TListView
+procedure ChangeFontSize(InChange:enumFontChange; InTypeFont:enumFontSize);
+var
+ NewSize:Word;
+ XML:TXML;
+begin
+  NewSize:=SharedFontSize.GetSize(InTypeFont);
+
+  case InChange of
+   eFontUP: Inc(NewSize);
+   eFontDonw: Dec(NewSize);
+  end;
+
+  // сохраняем значение
+  XML:=TXML.Create;
+  XML.SetFontSize(InTypeFont,NewSize);
+  XML.Free;
+
+  SharedFontSize.SetSize(InTypeFont,NewSize);
+
+  case InTypeFont of
+    eActiveSip: clearList_SIP(HomeForm.Width - DEFAULT_SIZE_PANEL_ACTIVESIP, SharedFontSize.GetSize(InTypeFont));
+    eIvr:       clearList_IVR(SharedFontSize.GetSize(InTypeFont));
+    eQueue:     clearList_QUEUE(SharedFontSize.GetSize(InTypeFont));
+  end;
+end;
+
+
+// запуск принудительного обновления
+procedure ForceUpdateDashboard(var p_ButtonClose:TBitBtn);
+var
+ XML:TXML;
+begin
+  p_ButtonClose.Enabled:=False;
+
+  XML:=TXML.Create;
+  XML.ForceUpdate('true');
+  XML.Free;
+
+  MessageBox(0,PChar('Обновление запущено оно займет около 1 мин'+#13#13+'Дашборд закроется автоматически'),PChar('Обновление запущено'),MB_OK+MB_ICONINFORMATION);
+end;
+
+
+// отображение главной формы окна при загрузке
+procedure WindowStateInit;
+var
+ XML:TXML;
+begin
+  XML:=TXML.Create;
+  with HomeForm do begin
+    if XML.GetWindowState = 'wsMaximized' then WindowState:=wsMaximized
+    else begin
+     WindowState  :=wsNormal;
+     Height       :=900; //1011  // default
+     ClientWidth  :=1410;        // default
+    end;
+  end;
+  XML.Free;
+end;
+
 
 end.

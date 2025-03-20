@@ -100,7 +100,7 @@ procedure TFormUsers.btnDisableClick(Sender: TObject);
 var
 resultat:Word;
 id:Integer;
- error:string;
+error:string;
 begin
  if currentEditUserId='1' then begin
     MessageBox(Handle,PChar('Разработчика нельзя отключить!'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
@@ -114,9 +114,16 @@ begin
 
  id:=StrToInt(currentEditUserId);
 
- resultat:=MessageBox(Handle,PChar('Точно отключить '+getUserNameFIO(id)+'?'),PChar('Уточнение'),MB_YESNO+MB_ICONWARNING);
- if resultat=mrNo then Exit;
+ // проверим операторская ли учетка
+ if not IsUserOperator(id) then begin
+   resultat:=MessageBox(Handle,PChar('Точно отключить '+getUserNameFIO(id)+'?'),PChar('Уточнение'),MB_YESNO+MB_ICONWARNING);
+ end
+ else begin
+   resultat:=MessageBox(Handle,PChar('Точно отключить '+getUserNameFIO(id)+'?'+#13#13+
+                                     'ВАЖНО! Отключенную учетную запись оператора не получится обратно восстановить' ),PChar('Уточнение'),MB_YESNO+MB_ICONWARNING);
+ end;
 
+ if resultat=mrNo then Exit;
 
   // отключаем
   if not DisableUser(id, error) then begin

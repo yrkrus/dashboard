@@ -13,7 +13,8 @@ interface
 uses
   System.SysUtils,
   System.Classes,
-  System.SyncObjs;
+  System.SyncObjs,
+  IdException;
 
 
    /////////////////////////////////////////////////////////////////////////////////////////
@@ -145,8 +146,6 @@ begin
 end;
 
 
-
-
 function TLoggingFile.GetPathToLogName:string;
 begin
   if m_mutex.WaitFor(INFINITE)=wrSignaled then
@@ -186,7 +185,6 @@ begin
     end;
   end;
 end;
-
 
 
 // инициализация лога на следующий день

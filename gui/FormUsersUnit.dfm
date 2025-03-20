@@ -32,10 +32,6 @@ object FormUsers: TFormUsers
     OnChange = PageControlChange
     object UsersAll: TTabSheet
       Caption = #1042#1089#1077' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1080
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object listSG_Users_Footer: TStringGrid
         Left = 0
         Top = 0
@@ -100,10 +96,6 @@ object FormUsers: TFormUsers
     object OnlyOPerators: TTabSheet
       Caption = #1054#1087#1077#1088#1072#1090#1086#1088#1099
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object listSG_Operators: TStringGrid
         Left = 0
         Top = 24

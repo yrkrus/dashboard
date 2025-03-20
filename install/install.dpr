@@ -34,8 +34,69 @@ var
  SLCopyList:TStringList;
  CurrentVersionDashboard:string;
  Command: string;
- TargetExe:string;  // Путь к exe файлу
+ TargetExe:string;   // Путь к exe файлу
  ShortcutExe:string; // Путь к ярлыку обязательно с *.lnk!!
+ error:string;
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+procedure SetConsoleColor(Color: Word);
+var
+  ConsoleHandle: THandle;
+  ConsoleMode: DWORD;
+begin
+  ConsoleHandle := GetStdHandle(STD_OUTPUT_HANDLE);
+  SetConsoleTextAttribute(ConsoleHandle, Color);
+end;
+
+
+procedure ProcessCommandLineParams;
+begin
+  // проверка на запуска 2ой копи
+  if GetCloneRun(Pchar(INSTALL_EXE)) then begin
+    SetConsoleColor(FOREGROUND_RED or FOREGROUND_INTENSITY);
+    Writeln('');
+    Writeln('  Обнаружен запуск 2ой копии приложения  ');
+    Writeln('  Для продолжения закройте предыдущую копию  ');
+    Writeln('');
+    Sleep(cSLEEP_ERRROR);
+  end;
+
+
+//  // нет параметров на
+//  if ParamCount = 0 then begin
+//    Exit;
+//  end;
+//
+//  for i:= 1 to ParamCount do
+//  begin
+//    if ParamStr(i) = USER_FORCE_UPDATE then
+//    begin
+//      if (i + 1 <= ParamCount) then
+//      begin
+//        params:= ParamStr(i + 1);
+//        if params = 'true' then Result:=True;
+//      end
+//      else
+//      begin
+//        SetConsoleColor(FOREGROUND_RED or FOREGROUND_INTENSITY);
+//        Writeln('');
+//        Writeln('  Слишком много параметров ');
+//        Writeln('');
+//        Sleep(cSLEEP_ERRROR);
+//      end;
+//    end;
+//
+//
+//  end;
+end;
+
+
 
 
 // проверка запущен ли install от имени администратора
@@ -91,14 +152,7 @@ begin
 end;
 
 
-procedure SetConsoleColor(Color: Word);
-var
-  ConsoleHandle: THandle;
-  ConsoleMode: DWORD;
-begin
-  ConsoleHandle := GetStdHandle(STD_OUTPUT_HANDLE);
-  SetConsoleTextAttribute(ConsoleHandle, Color);
-end;
+
 
 
 procedure CopyDirectory(const SourceDir, DestDir: string);
@@ -316,12 +370,16 @@ begin
    end;
 end;
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////// START PROGRAMM  ////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////
 
 begin
   try
     CoInitialize(nil);
+
+    ProcessCommandLineParams;
 
     { TODO -oUser -cConsole Main : Insert code here }
 
@@ -329,50 +387,51 @@ begin
      begin
       SetConsoleColor(FOREGROUND_RED or FOREGROUND_INTENSITY);
       Writeln('');
-      Writeln('     === ЗАПУСТИТЕ ОТ ИМЕНИ АДМИРИСТРАТОРА===      ');
+      Writeln('     === ЗАПУСТИТЕ ОТ ИМЕНИ АДМИНИСТРАТОРА ===      ');
       Writeln('');
       Sleep(cSLEEP_ERRROR);
      end;
 
+     Writeln('Проверка установки MySQL Connector');
 
-    Writeln('Проверка установки MySQL Connector');
+      //  ========= MYSQL CONNECTOR =========
+      begin
+        // проверяем установлен ли mysql коннектор
+        if not isInstallMySQLConnector then begin
+         SetConsoleColor(FOREGROUND_RED or FOREGROUND_INTENSITY);
+         Writeln('MySQL Connector НЕ УСТАНОВЛЕН');
+         Writeln('');
 
-    //  ========= MYSQL CONNECTOR =========
-    begin
-      // проверяем установлен ли mysql коннектор
-      if not isInstallMySQLConnector then begin
-       SetConsoleColor(FOREGROUND_RED or FOREGROUND_INTENSITY);
-       Writeln('MySQL Connector НЕ УСТАНОВЛЕН');
-       Writeln('');
+         SetConsoleColor(FOREGROUND_RED or FOREGROUND_GREEN or FOREGROUND_BLUE); //default белым ставим
+         Writeln('Скачивание MySQL Connector "'+CONNECTOR_INSTALL_X64+'"');
 
-       SetConsoleColor(FOREGROUND_RED or FOREGROUND_GREEN or FOREGROUND_BLUE); //default белым ставим
-       Writeln('Скачивание MySQL Connector "'+CONNECTOR_INSTALL_X64+'"');
+         // скачивание
+         DownloadFiles(CONNECTOR_INSTALL_X64,'mysql_connector');
+         Writeln('Скачивание MySQL Connector "'+CONNECTOR_INSTALL_X64+'" завершено');
 
-       // скачивание
-       DownloadFiles(CONNECTOR_INSTALL_X64,'mysql_connector');
-       Writeln('Скачивание MySQL Connector "'+CONNECTOR_INSTALL_X64+'" завершено');
+         // утсановка MySQL Connector
+         InstallMySQLConnector(CONNECTOR_INSTALL_X64);
 
-       // утсановка MySQL Connector
-       InstallMySQLConnector(CONNECTOR_INSTALL_X64);
-
-      end
-      else begin
-       SetConsoleColor(FOREGROUND_GREEN);
-       Writeln('MySQL Connector УСТАНОВЛЕН');
-       Writeln('');
+        end
+        else begin
+         SetConsoleColor(FOREGROUND_GREEN);
+         Writeln('MySQL Connector УСТАНОВЛЕН');
+         Writeln('');
+        end;
       end;
-    end;
-    //  ========= MYSQL CONNECTOR END =========
+      //  ========= MYSQL CONNECTOR END =========
+
 
     SetConsoleColor(FOREGROUND_RED or FOREGROUND_GREEN or FOREGROUND_BLUE); //default белым ставим
 
     //  ========= скачиваем актуальную версию дашборда  =========
     begin
-      CurrentVersionDashboard:=GetRemoteVersionDashboard;
+      CurrentVersionDashboard:=GetRemoteVersionDashboard(error);
       if CurrentVersionDashboard='null' then begin
        SetConsoleColor(FOREGROUND_RED or FOREGROUND_INTENSITY);
 
        Writeln('Не удается получить текущую версию dashboard');
+       Writeln(error);
        Writeln('');
        Writeln('УСТАНОВКА НЕ ВЫПОЛНЕНА!');
        Sleep(cSLEEP_ERRROR);
@@ -381,8 +440,6 @@ begin
       Writeln('Скачивание актуальной версии');
 
       DownloadFiles(CurrentVersionDashboard+'.zip','update');
-
-
 
       // распаковываем
       Writeln('Распаковка...');
@@ -393,22 +450,22 @@ begin
     //  ========= скачиваем актуальную версию дашборда END  =========
 
 
-    // путь установчный
-    if not DirectoryExists(INSTALL_DASHBOARD) then begin
-      if not CreateDir(INSTALL_DASHBOARD) then begin
-       SetConsoleColor(FOREGROUND_RED or FOREGROUND_INTENSITY);
+      // путь установчный
+      if not DirectoryExists(INSTALL_DASHBOARD) then begin
+        if not CreateDir(INSTALL_DASHBOARD) then begin
+         SetConsoleColor(FOREGROUND_RED or FOREGROUND_INTENSITY);
 
-       Writeln('Ошибка при создании директории '+INSTALL_DASHBOARD);
-       Writeln('');
-       Writeln('УСТАНОВКА НЕ ВЫПОЛНЕНА!');
-       Sleep(cSLEEP_ERRROR);
+         Writeln('Ошибка при создании директории '+INSTALL_DASHBOARD);
+         Writeln('');
+         Writeln('УСТАНОВКА НЕ ВЫПОЛНЕНА!');
+         Sleep(cSLEEP_ERRROR);
+        end;
       end;
-    end;
+
 
     // останавливаем служюу на всякий случай
     Command:='net stop '+SERVICE_NAME;
     ExecuteCommand(Command);
-
 
     Writeln('');
     Writeln('');

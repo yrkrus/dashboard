@@ -238,15 +238,16 @@ begin
 end;
 
 // текущая версия дашборда (БД)
-function GetRemoteVersionDashboard:PChar; stdcall;export;
+function GetRemoteVersionDashboard(var _errorDescriptions:string):PChar; stdcall;export;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
 begin
   Result:=Pchar('null');
+  _errorDescriptions:='';
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
+  serverConnect:=createServerConnectWithError(_errorDescriptions);
  if not Assigned(serverConnect) then begin
     FreeAndNil(ado);
     Exit;

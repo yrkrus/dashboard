@@ -18,7 +18,7 @@ uses
   System.SysUtils,System.SyncObjs, // для TEvent
   Vcl.Graphics, ActiveX, Vcl.ComCtrls,
   Vcl.Controls, Windows, TCustomTypeUnit, TSendSMSUint,
-  TPacientsListUnit;
+  TPacientsListUnit, IdException;
 
 
 
@@ -198,64 +198,73 @@ var
  i:Integer;
  error:string;
  SendingMessage:string;
-
  log_message:TStructMessage;
+ isError:Boolean;
 begin
-  inherited;
-  CoInitialize(Nil);
+    inherited;
+    CoInitialize(Nil);
 
-  log_message:=TStructMessage.Create;
+    log_message:=TStructMessage.Create;
 
-  // Устанавливаем событие, которое будет сигнализировать о завершении TThreadSendSMS
-  FThreadFinished.ResetEvent; // Сбрасываем событие перед выполнением
+    // Устанавливаем событие, которое будет сигнализировать о завершении TThreadSendSMS
+    FThreadFinished.ResetEvent; // Сбрасываем событие перед выполнением
 
-  potokName:='Поток['+IntToStr(m_threadID)+']: ';
-  error:='';
+    potokName:='Поток['+IntToStr(m_threadID)+']: ';
+    error:='';
 
-  SMS:=TSendSMS.Create(DEBUG);
-  if not SMS.isExistAuth then begin
-   log_message.m_message:=potokName+'Отсутствуют авторизационные данные для отправки SMS';
-   log_message.m_color:=clRed;
+    SMS:=TSendSMS.Create(DEBUG);
+    if not SMS.isExistAuth then begin
+     log_message.m_message:=potokName+'Отсутствуют авторизационные данные для отправки SMS';
+     log_message.m_color:=clRed;
 
-    m_messageSend.Add(log_message);
+      m_messageSend.Add(log_message);
 
-    Queue(SendSyncShowLog);
-
-    SharedMainLog.Save(log_message.m_message, True);
-
-    FThreadFinished.SetEvent;
-    Exit;
-  end;
-
-
-
-   for i:=m_RangeStart to m_RangeStop do begin
-     SendingMessage:=m_pacients.CreateMessage(i, REMEMBER_MESSAGE);
-
-     if not SMS.SendSMS(SendingMessage,m_pacients.GetPhone(i),error, cADDSIGN) then
-     begin
-      log_message.m_message:=potokName+'Не удалось отправить СМС на номер ('+m_pacients.GetPhone(i)+') '+error;
-      log_message.m_color:=clRed;
+      Queue(SendSyncShowLog);
 
       SharedMainLog.Save(log_message.m_message, True);
-     end
-     else begin
-      log_message.m_message:=potokName+'Отправлено СМС на номер ('+m_pacients.GetPhone(i)+') : '+SendingMessage;
-      log_message.m_color:=clGreen;
 
-      SharedMainLog.Save(log_message.m_message);
+      FThreadFinished.SetEvent;
+      Exit;
+    end;
+
+
+
+     for i:=m_RangeStart to m_RangeStop do begin
+       isError:=False;
+
+       SendingMessage:=m_pacients.CreateMessage(i, REMEMBER_MESSAGE);
+
+       try
+         if not SMS.SendSMS(SendingMessage,m_pacients.GetPhone(i),error, cADDSIGN) then
+         begin
+          log_message.m_message:=potokName+'Не удалось отправить СМС на номер ('+m_pacients.GetPhone(i)+') '+error;
+          log_message.m_color:=clRed;
+
+          SharedMainLog.Save(log_message.m_message, True);
+         end
+         else begin
+          log_message.m_message:=potokName+'Отправлено СМС на номер ('+m_pacients.GetPhone(i)+') : '+SendingMessage;
+          log_message.m_color:=clGreen;
+
+          SharedMainLog.Save(log_message.m_message);
+         end;
+       except on E: EIdException do
+          begin
+            isError:=True;
+            log_message.m_message:=E.ClassName+': '+E.Message;
+            log_message.m_color:=clRed;
+            m_messageSend.Add(log_message);
+          end;
+       end;
+       if not isError then m_messageSend.Add(log_message);
      end;
 
-     m_messageSend.Add(log_message);
-   end;
+     // показываем лог если это нужно
+     if m_showlog then Queue(SendSyncShowLog);
 
-   // показываем лог если это нужно
-   if m_showlog then Queue(SendSyncShowLog);
-
-   FThreadFinished.SetEvent;
-  // Ожидаем завершения SendThreadSMS
- // FThreadFinished.WaitFor(INFINITE); // Блокируем до тех пор, пока не будет установлено событие
-
+     FThreadFinished.SetEvent;
+    // Ожидаем завершения SendThreadSMS
+   // FThreadFinished.WaitFor(INFINITE); // Блокируем до тех пор, пока не будет установлено событие
 end;
 
 

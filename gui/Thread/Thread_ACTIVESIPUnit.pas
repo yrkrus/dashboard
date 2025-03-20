@@ -36,7 +36,7 @@ type
 implementation
 
 uses
-  FunctionUnit, FormHome, FormDEBUGUnit, GlobalVariables, FormOperatorStatusUnit, TCustomTypeUnit, TXmlUnit;
+  FunctionUnit, FormHome, GlobalVariables, FormOperatorStatusUnit, TCustomTypeUnit, TXmlUnit, TDebugStructUnit;
 
 
 
@@ -476,15 +476,23 @@ end;
 procedure Thread_ACTIVESIP.Execute;
 const
  SLEEP_TIME:Word = 1000;
+ NAME_THREAD:string = 'Thread_ActiveSip';
 var
   StartTime, EndTime  :Cardinal;
   Duration            :Cardinal;
+
+  debugInfo: TDebugStruct;
 begin
   inherited;
   CoInitialize(Nil);
   Sleep(100);
 
-  Log:=TLoggingFile.Create('Thread_ActiveSip');
+  Log:=TLoggingFile.Create(NAME_THREAD);
+
+  // вывод debug info
+  debugInfo:=TDebugStruct.Create(NAME_THREAD,Log);
+  SharedCountResponseThread.Add(debugInfo);
+
   // добавляем ссылку на Log в класс
   SharedActiveSipOperators.AddLinkLogFile(Log);
 
@@ -510,7 +518,8 @@ begin
 
         EndTime:= GetTickCount;
         Duration:= EndTime - StartTime;
-        FormDEBUG.lblThread_ACTIVESIP.Caption:=IntToStr(Duration);
+
+        SharedCountResponseThread.SetCurrentResponse(NAME_THREAD,Duration);
 
         // проверили орераторов
         if isCheckThreadSipOperators then isCheckThreadSipOperators:=False;

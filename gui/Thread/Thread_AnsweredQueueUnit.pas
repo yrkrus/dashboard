@@ -21,7 +21,7 @@ type
 implementation
 
 uses
-  FormHome, FunctionUnit, FormDEBUGUnit, GlobalVariables;
+  FormHome, FunctionUnit, GlobalVariables, TDebugStructUnit;
 
 { Thread_AnsweredQueue }
 
@@ -58,15 +58,22 @@ end;
 procedure Thread_AnsweredQueue.Execute;
 const
  SLEEP_TIME:Word = 3000;
+ NAME_THREAD:string = 'Thread_AnsweredQueue';
  var
   StartTime, EndTime: Cardinal;
   Duration: Cardinal;
   AnsweredQueue:TAnsweredQueue;
+
+  debugInfo: TDebugStruct;
 begin
    inherited;
    CoInitialize(Nil);
 
-   Log:=TLoggingFile.Create('Thread_AnsweredQueue');
+   Log:=TLoggingFile.Create(NAME_THREAD);
+
+  // вывод debug info
+  debugInfo:=TDebugStruct.Create(NAME_THREAD,Log);
+  SharedCountResponseThread.Add(debugInfo);
 
   // создание класса с данными по статистике принятых звонков из очереди
   AnsweredQueue:=TAnsweredQueue.Create;
@@ -83,7 +90,8 @@ begin
 
         EndTime:= GetTickCount;
         Duration:= EndTime - StartTime;
-        FormDEBUG.lblThread_AnsweredQueue.Caption:=IntToStr(Duration);
+
+        SharedCountResponseThread.SetCurrentResponse(NAME_THREAD,Duration);
 
         // переход в новый день
         if getCountAnsweredCallAll = 0 then AnsweredQueue.Clear;

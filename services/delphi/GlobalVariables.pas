@@ -13,6 +13,7 @@ const
  REPORT_EXE       :string = 'report.exe';
  SMS_EXE          :string = 'sms.exe';
  UPDATE_EXE       :string = 'update.exe';
+ INSTALL_EXE      :string = 'install.exe';
 
  UPDATE_BAT       :string = 'update.bat';
 
@@ -46,8 +47,9 @@ var
   function GetExtensionLog:PChar; stdcall; external 'core.dll';       // // тип лога
   function GetLogNameFolder:PChar; stdcall; external 'core.dll';       // // папка с логом
   function GetUpdateNameFolder:PChar; stdcall; external 'core.dll';       // // папка с update (обновленияем)
-  function GetRemoteVersionDashboard:PChar; stdcall;external 'core.dll';        // текущая версия дашборда (БД)
+  function GetRemoteVersionDashboard(var _errorDescriptions:string):PChar; stdcall;external 'core.dll';        // текущая версия дашборда (БД)
   function KillTask(ExeFileName:string):integer;  stdcall; external 'core.dll';        // функция остановки exe
+  function GetCloneRun(InExeName:Pchar):Boolean;              stdcall;    external 'core.dll';          // проверка на 2ую запущенную копию
   function GetTask(ExeFileName:string):Boolean;  stdcall; external 'core.dll';         // проверка запущен ли процесс
 
    // --- connect_to_server.dll ---

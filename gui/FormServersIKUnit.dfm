@@ -4,7 +4,7 @@ object FormServersIK: TFormServersIK
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = ' '#1057#1077#1088#1074#1077#1088#1072' '#1048#1085#1092#1086#1082#1083#1080#1085#1080#1082#1080
-  ClientHeight = 633
+  ClientHeight = 619
   ClientWidth = 956
   Color = clWindow
   DefaultMonitor = dmPrimary
@@ -24,81 +24,40 @@ object FormServersIK: TFormServersIK
     Left = 0
     Top = 0
     Width = 956
-    Height = 566
+    Height = 554
     Align = alTop
     BevelKind = bkTile
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitWidth = 808
-    object listSG_Servers_Footer: TStringGrid
+    object list_Servers: TListView
       Left = 0
       Top = 0
       Width = 952
-      Height = 24
-      Align = alTop
-      BorderStyle = bsNone
-      ColCount = 6
-      FixedColor = clWindow
-      FixedCols = 0
-      RowCount = 2
-      Font.Charset = RUSSIAN_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -13
-      Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
-      Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRowSelect]
-      ParentFont = False
-      ScrollBars = ssNone
-      TabOrder = 0
-      ExplicitWidth = 804
-      ColWidths = (
-        42
-        118
-        177
-        355
-        110
-        143)
-      RowHeights = (
-        24
-        24)
-    end
-    object listSG_Servers: TStringGrid
-      Left = 0
-      Top = 24
-      Width = 952
-      Height = 538
+      Height = 550
       Align = alClient
       BorderStyle = bsNone
-      ColCount = 6
-      FixedColor = clWindow
-      FixedCols = 0
-      RowCount = 1
-      FixedRows = 0
+      Columns = <>
+      DoubleBuffered = True
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
       Font.Name = 'Tahoma'
       Font.Style = []
-      Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRowSelect]
+      FlatScrollBars = True
+      ReadOnly = True
+      RowSelect = True
+      ParentDoubleBuffered = False
       ParentFont = False
-      ScrollBars = ssVertical
-      TabOrder = 1
-      OnSelectCell = listSG_ServersSelectCell
-      ExplicitWidth = 804
-      ColWidths = (
-        42
-        118
-        177
-        355
-        110
-        144)
-      RowHeights = (
-        24)
+      TabOrder = 0
+      ViewStyle = vsReport
+      OnClick = list_ServersClick
+      OnCustomDrawItem = list_ServersCustomDrawItem
+      ExplicitHeight = 562
     end
   end
   object btnAddServer: TBitBtn
     Left = 189
-    Top = 574
+    Top = 562
     Width = 166
     Height = 47
     Caption = '&'#1044#1086#1073#1072#1074#1080#1090#1100
@@ -183,7 +142,7 @@ object FormServersIK: TFormServersIK
   end
   object btnEditUser: TBitBtn
     Left = 375
-    Top = 574
+    Top = 562
     Width = 166
     Height = 47
     Caption = '&'#1056#1077#1076#1072#1082#1090#1080#1088#1086#1074#1072#1090#1100
@@ -268,7 +227,7 @@ object FormServersIK: TFormServersIK
   end
   object btnDisable: TBitBtn
     Left = 564
-    Top = 574
+    Top = 562
     Width = 166
     Height = 47
     Caption = '&'#1059#1076#1072#1083#1080#1090#1100
@@ -350,5 +309,15 @@ object FormServersIK: TFormServersIK
     TabOrder = 3
     WordWrap = True
     OnClick = btnDisableClick
+  end
+  object Button1: TButton
+    Left = 808
+    Top = 573
+    Width = 75
+    Height = 25
+    Caption = 'Button1'
+    TabOrder = 4
+    Visible = False
+    OnClick = Button1Click
   end
 end

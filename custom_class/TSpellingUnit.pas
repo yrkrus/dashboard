@@ -32,7 +32,7 @@ uses
       m_listWordInDictionary  :TStringList;  // лист со словами из словаря
       m_internalDictionary    :Boolean;   // использовать ли внутренний словать
 
-      function isExistSpelling:Boolean;  // есть ли ошибка
+      function isExistSpelling  :Boolean;  // есть ли орфографическая ошибка
       function isExistWordInDictionary(const AWord:string):Boolean;  // есть ли слово в словаре
 
       function GetCountictionary:Integer;
@@ -64,6 +64,8 @@ constructor TSpelling.Create(p_Text:TRichEdit; useInternalDictionary:Boolean);
    m_internalDictionary:=useInternalDictionary;
    m_listWordInDictionary:=GetWordToDictionary;
  end;
+
+
 
 // есть ли ошибка
 function TSpelling.isExistSpelling;
@@ -253,7 +255,10 @@ end;
 // true есть ошибка ? false нет ошибки прошли успешно
 function TSpelling.isExistErrorSpelling;
 begin
-  Result:=isExistSpelling;
+   Result := False;
+
+  // Сначала проверяем орфографию
+  if isExistSpelling then  Result:= True;
 end;
 
 

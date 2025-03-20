@@ -21,7 +21,7 @@ type
 implementation
 
 uses
-  FunctionUnit, FormHome, FormDEBUGUnit,GlobalVariables;
+  FunctionUnit, FormHome, GlobalVariables, TDebugStructUnit;
 
 
 procedure Thread_CHECKSERVERS.CriticalError;
@@ -40,16 +40,23 @@ end;
 procedure Thread_CHECKSERVERS.Execute;
 const
  SLEEP_TIME:Word = 5000;
+ NAME_THREAD:string = 'Thread_CheckServersIK';
  var
   StartTime, EndTime: Cardinal;
   Duration: Cardinal;
   listServers:TCheckServersIK;
 
+  debugInfo: TDebugStruct;
 begin
   inherited;
   CoInitialize(Nil);
 
-  Log:=TLoggingFile.Create('Thread_CheckServersIK');
+  Log:=TLoggingFile.Create(NAME_THREAD);
+
+  // вывод debug info
+  debugInfo:=TDebugStruct.Create(NAME_THREAD,Log);
+  SharedCountResponseThread.Add(debugInfo);
+
 
   try
    listServers:=TCheckServersIK.Create(Log);
@@ -77,7 +84,8 @@ begin
 
           EndTime:= GetTickCount;
           Duration:= EndTime - StartTime;
-          FormDEBUG.lblThread_CHECKSERVERS.Caption:=IntToStr(Duration);
+
+          SharedCountResponseThread.SetCurrentResponse(NAME_THREAD,Duration);
         except
           on E:Exception do
           begin

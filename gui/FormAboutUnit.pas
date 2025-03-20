@@ -5,7 +5,8 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.Imaging.jpeg,
-  Vcl.StdCtrls, Vcl.ComCtrls, Vcl.Imaging.pngimage;
+  Vcl.StdCtrls, Vcl.ComCtrls, Vcl.Imaging.pngimage, System.ImageList,
+  Vcl.ImgList;
 
 type
   TFormAbout = class(TForm)
@@ -31,6 +32,7 @@ type
     REHistory_SMS: TRichEdit;
     STInfoVersionSMS: TStaticText;
     Label1: TLabel;
+    ImageList1: TImageList;
     procedure FormShow(Sender: TObject);
     procedure imgAboutClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);

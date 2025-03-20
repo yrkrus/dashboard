@@ -34,6 +34,7 @@ TCustomTypeUnit;
        ServiceNapravlenie :string;
        ClinicAddress      :string;
 
+       //isService          :Boolean; // услуга (если улуга то формировать смс из ServiceNapravlenie, а не ФИО врача)
        _errorDescriptions : string; // лень делать отдельный класс, по этому запишем здесь (это для Drop номеров)
 
 
@@ -52,9 +53,9 @@ TCustomTypeUnit;
       TPacients = class
       public
 
-      function isExistList:Boolean;   // есть ли список с данными
-      procedure Add(NewPacient:TListPacients);  // добавление нового в список
-      function Count:Integer;         // кол-во записей на отправку
+      function isExistList:Boolean;             // есть ли список с данными
+      procedure Add(NewPacient:TListPacients; isCheckExist:Boolean = False);  // добавление нового в список
+      function Count:Integer;                   // кол-во записей на отправку
 
       function CreateMessage(id:Integer; InRemeberMessage:string):string; // создание смс сообщения
       function GetPhone(id:Integer):string;     // номер телефона
@@ -62,7 +63,7 @@ TCustomTypeUnit;
       constructor Create;            overload;
       destructor Destroy;            override;
 
-      procedure Clear;          // очистка
+      procedure Clear;                          // очистка
       function GetErrorDescriptions(id:Integer) :string;  // получение ошибки
       function ShowPacientInfo(id:Integer):string;        // отображение инфо о пациенте
 
@@ -71,6 +72,7 @@ TCustomTypeUnit;
        m_count     :Integer;
        m_lists     :array of TListPacients;
 
+      function IsExistPacient(NewPacient:TListPacients):Boolean;  // проверка есть ли уже такая запись
 
       end;
  // class TPacients END
@@ -98,6 +100,8 @@ constructor TListPacients.Create;
      FIOVracha:='';
      ServiceNapravlenie:='';
      ClinicAddress:='';
+    // isService:=False;
+
      _errorDescriptions:='';
    end;
  end;
@@ -118,6 +122,8 @@ begin
   Result.FIOVracha := Self.FIOVracha;
   Result.ServiceNapravlenie := Self.ServiceNapravlenie;
   Result.ClinicAddress := Self.ClinicAddress;
+  //Result.isService:= Self.isService;
+
   Result._errorDescriptions := Self._errorDescriptions;
 end;
 
@@ -154,10 +160,15 @@ begin
 end;
 
 
-procedure TPacients.Add(NewPacient: TListPacients);
+procedure TPacients.Add(NewPacient: TListPacients; isCheckExist:Boolean = False);
 var
   PacientCopy: TListPacients;
 begin
+  // проверка на дубль записи
+  if isCheckExist then begin
+    if IsExistPacient(NewPacient) then Exit;
+  end;
+
   // Создаем копию объекта
   PacientCopy := NewPacient.Clone;
   try
@@ -189,6 +200,21 @@ begin
           '('+DateToStr(Self.m_lists[id].Birthday)+')';
 end;
 
+
+// проверка есть ли уже такая запись
+function TPacients.IsExistPacient(NewPacient:TListPacients):Boolean;
+var
+ i:Integer;
+begin
+  Result:=False;
+
+  for i:=0 to m_count-1 do begin
+    if m_lists[i].PCODE = NewPacient.PCODE then begin
+      Result:=True;
+      Exit;
+    end;
+  end;
+end;
 
 // проверка это фио фрача или это услуга
 function isFIOVracha(FIOVracha:string):Boolean;

@@ -24,7 +24,7 @@ type
 implementation
 
 uses
-  FormHome, FunctionUnit, FormDEBUGUnit,GlobalVariables, TCustomTypeUnit;
+  FormHome, FunctionUnit, GlobalVariables, TCustomTypeUnit, TDebugStructUnit;
 
 { Thread_IVR }
 
@@ -144,15 +144,20 @@ end;
 procedure Thread_IVR.Execute;
 const
  SLEEP_TIME:Word = 1000;
+ NAME_THREAD:string = 'Thread_IVR';
  var
   StartTime, EndTime: Cardinal;
   Duration: Cardinal;
 
+  debugInfo: TDebugStruct;
 begin
    inherited;
    CoInitialize(Nil);
    Sleep(500);
-   Log:=TLoggingFile.Create('Thread_IVR');
+   Log:=TLoggingFile.Create(NAME_THREAD);
+    // вывод debug info
+    debugInfo:=TDebugStruct.Create(NAME_THREAD,Log);
+    SharedCountResponseThread.Add(debugInfo);
 
   while not Terminated do
   begin
@@ -165,7 +170,8 @@ begin
 
         EndTime:= GetTickCount;
         Duration:= EndTime - StartTime;
-        FormDEBUG.lblThread_IVR.Caption:=IntToStr(Duration);
+
+        SharedCountResponseThread.SetCurrentResponse(NAME_THREAD,Duration);
       except
         on E:Exception do
         begin
