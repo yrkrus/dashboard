@@ -52,7 +52,6 @@ object FormServersIK: TFormServersIK
       ViewStyle = vsReport
       OnClick = list_ServersClick
       OnCustomDrawItem = list_ServersCustomDrawItem
-      ExplicitHeight = 562
     end
   end
   object btnAddServer: TBitBtn

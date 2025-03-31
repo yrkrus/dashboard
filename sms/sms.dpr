@@ -17,7 +17,8 @@ uses
   FormListSendingSMSUnit in 'FormListSendingSMSUnit.pas' {FormListSendingSMS},
   TXmlUnit in '..\custom_class\TXmlUnit.pas',
   TSpellingUnit in '..\custom_class\TSpellingUnit.pas',
-  FormSendingSMSUnit in 'FormSendingSMSUnit.pas' {FormSendingSMS};
+  FormSendingSMSUnit in 'FormSendingSMSUnit.pas' {FormSendingSMS},
+  FormDictionaryUnit in 'FormDictionaryUnit.pas' {FormDictionary};
 
 {$R *.res}
 
@@ -33,5 +34,6 @@ begin
   Application.CreateForm(TFormEditTemplate, FormEditTemplate);
   Application.CreateForm(TFormListSendingSMS, FormListSendingSMS);
   Application.CreateForm(TFormSendingSMS, FormSendingSMS);
+  Application.CreateForm(TFormDictionary, FormDictionary);
   Application.Run;
 end.

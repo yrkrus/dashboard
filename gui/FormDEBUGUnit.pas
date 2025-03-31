@@ -17,8 +17,15 @@ type
     lblThread_ACTIVESIP: TLabel;
     Label13: TLabel;
     Label24: TLabel;
+    Label3: TLabel;
+    panel_program: TPanel;
+    Label4: TLabel;
+    lblUptime: TLabel;
+    Label5: TLabel;
+    lblProgramStarted: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
   public
@@ -35,6 +42,11 @@ uses
 
 {$R *.dfm}
 
+procedure TFormDEBUG.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  SharedCountResponseThread.ShowStop;
+end;
+
 procedure TFormDEBUG.FormCreate(Sender: TObject);
 begin
   SetWindowLong(0, GWL_EXSTYLE, GetWindowLong(Handle, GWL_EXSTYLE) or WS_EX_APPWINDOW);
@@ -43,8 +55,7 @@ end;
 procedure TFormDEBUG.FormShow(Sender: TObject);
 begin
   if not SharedCountResponseThread.CreatedForm then SharedCountResponseThread.CreateForm;
-
-  SharedCountResponseThread.ShowDebug;
+  SharedCountResponseThread.ShowStart;
 end;
 
 end.

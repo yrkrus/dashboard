@@ -53,6 +53,10 @@ type
     menu_AddSpelling: TMenuItem;
     ImageList1: TImageList;
     st_ShowSendingSMS: TStaticText;
+    menu_Dictionary: TMenuItem;
+    N1: TMenuItem;
+    menu_Paste: TMenuItem;
+    menu_Copy: TMenuItem;
     procedure ProcessCommandLineParams(DEBUG:Boolean = False);
     procedure FormCreate(Sender: TObject);
     procedure btnLoadFileClick(Sender: TObject);
@@ -76,8 +80,6 @@ type
     procedure edtManualSMSKeyPress(Sender: TObject; var Key: Char);
     procedure edtManualSMSKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure re_ManualSMSKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
     procedure SetSpelling(InValue:Boolean);
     procedure st_ShowInfoAddAddressClinicMouseDown(Sender: TObject;
       Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -88,6 +90,8 @@ type
     procedure st_ShowSendingSMSMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure st_ShowSendingSMSClick(Sender: TObject);
+    procedure menu_DictionaryClick(Sender: TObject);
+    procedure menu_CopyClick(Sender: TObject);
 
 
 
@@ -95,8 +99,13 @@ type
     { Private declarations }
    isSpelling:Boolean;
    maybeDictionary:string; // слово которое моджет пойти в словарь
+
+   procedure CopySelectedTextToClipboard; // копирование в буфер
+
   public
     { Public declarations }
+  isMedsiLinkTelegramBot:Boolean;  // отправляется ссылка на тедлеграм бот (MEDSI_CHAT_BOT_TELEGRAM)
+
   function IsExistSpellingColor(var _MaybeDictionaryWord:string):Boolean;   // проверка можно ли показать меню на добавление слова в словарь
 
 
@@ -118,7 +127,7 @@ cWebApiSMSstatusID:string='https://a2p-sms-https.beeline.ru/proto/http/?gzip=non
 implementation
 
 uses
-  FunctionUnit, GlobalVariables, TSendSMSUint, FormMyTemplateUnit, FormNotSendingSMSErrorUnit, TCustomTypeUnit, FormListSendingSMSUnit, TXmlUnit, TSpellingUnit, FormSendingSMSUnit;
+  FunctionUnit, GlobalVariables, TSendSMSUint, FormMyTemplateUnit, FormNotSendingSMSErrorUnit, TCustomTypeUnit, FormListSendingSMSUnit, TXmlUnit, TSpellingUnit, FormSendingSMSUnit, FormDictionaryUnit;
 
  {$R *.dfm}
 
@@ -130,6 +139,15 @@ begin
   isSpelling:=InValue;
 end;
 
+// копирование в буфер
+procedure TFormHome.CopySelectedTextToClipboard;
+begin
+  if re_ManualSMS.SelLength > 0 then // Проверяем, есть ли выделенный текст
+  begin
+    re_ManualSMS.CopyToClipboard; // Копируем выделенный текст в буфер обмена
+  end
+  else MessageBox(Handle,PChar('Нет выделенного текста для копирования'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+end;
 
 // проверка можно ли показать меню на добавление слова в словарь
 function TFormHome.IsExistSpellingColor(var _MaybeDictionaryWord:string):Boolean;
@@ -432,7 +450,7 @@ begin
   end;
 
   if ParamCount = 0 then begin
-   MessageBox(Handle,PChar('SMS рассылку можно запустить только из дашборда'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
+   MessageBox(Handle,PChar('SMS приложение можно запустить только из дашборда'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
    KillProcessNow;
   end;
 
@@ -494,66 +512,6 @@ begin
     Dec(Result); // Сдвигаемся на один символ влево, чтобы получить конец слова
 end;
 
-
-
-
-procedure TFormHome.re_ManualSMSKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
-var
-  CursorPos: Integer;
-  StartWord, EndWord: Integer;
-  Text: string;
-begin
-//  // Проверяем, нажата ли клавиша Backspace
-//  if Key = VK_BACK then
-//  begin
-//    // Получаем текст из редактора
-//    Text := re_ManualSMS.Text;
-//    CursorPos := re_ManualSMS.SelStart;
-//
-//    if isSpelling then
-//    begin
-//      // Проверяем стиль цвета слова под курсором
-//      StartWord := GetWordStart(Text, CursorPos);
-//      EndWord := GetWordEnd(Text, CursorPos);
-//
-//      // Устанавливаем выделение для слова
-//      re_ManualSMS.SelStart := StartWord;
-//      re_ManualSMS.SelLength := EndWord - StartWord + 1; // Увеличиваем длину на 1, чтобы включить последний символ
-//
-//      // Проверка на стиль clRed
-//      if re_ManualSMS.SelAttributes.Color = clRed then
-//      begin
-//        // Меняем цвет всего слова на clBlack
-//        re_ManualSMS.SelAttributes.Color := clBlack; // Меняем цвет
-//        re_ManualSMS.SelAttributes.Style:=[];
-//
-//        // Отменяем выделение, чтобы не удалять текст
-//        re_ManualSMS.SelLength := 0;
-//      end;
-//    end;
-//
-//    // Если есть выделенный текст, удаляем его
-//    if re_ManualSMS.SelLength > 0 then
-//    begin
-//      re_ManualSMS.SelText := ''; // Удаляем выделенный текст
-//    end
-//    else
-//    begin
-//      // Если курсор не в начале текста
-//      if CursorPos > 0 then
-//      begin
-//        // Удаляем символ перед курсором
-//        re_ManualSMS.SelStart := CursorPos - 1; // Перемещаем курсор на одну позицию влево
-//        re_ManualSMS.SelLength := 1; // Устанавливаем длину выделения в 1 символ
-//        re_ManualSMS.SelText := ''; // Удаляем выделенный текст (т.е. символ перед курсором)
-//      end;
-//    end;
-//
-//    // Отменяем стандартное действие Backspace
-//    Key := 0;
-//  end;
-end;
 
 
 procedure TFormHome.re_ManualSMSMouseDown(Sender: TObject; Button: TMouseButton;
@@ -734,6 +692,16 @@ begin
     end
     else MessageBox(Handle,PChar(error),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
   end;
+end;
+
+procedure TFormHome.menu_CopyClick(Sender: TObject);
+begin
+ CopySelectedTextToClipboard;
+end;
+
+procedure TFormHome.menu_DictionaryClick(Sender: TObject);
+begin
+  FormDictionary.Show;
 end;
 
 procedure TFormHome.page_TypesSMSChange(Sender: TObject);

@@ -39,14 +39,12 @@ object FormMyTemplate: TFormMyTemplate
     Top = 40
     Width = 800
     Height = 393
-    ActivePage = sheet_MyTemplate
+    ActivePage = sheet_GlobalTemplate
     Align = alCustom
     Images = ImageList1
     TabOrder = 2
     object sheet_MyTemplate: TTabSheet
       Caption = #1052#1086#1080' '#1089#1086#1093#1088#1072#1085#1077#1085#1085#1099#1077' '#1096#1072#1073#1083#1086#1085#1099
-      ExplicitTop = 27
-      ExplicitHeight = 362
       object list_MyTemplate: TListView
         Left = 0
         Top = 0
@@ -71,7 +69,6 @@ object FormMyTemplate: TFormMyTemplate
         ViewStyle = vsReport
         OnDblClick = list_MyTemplateDblClick
         OnMouseDown = list_MyTemplateMouseDown
-        ExplicitHeight = 362
       end
       object st_NoMessage_MyTemplate: TStaticText
         Left = 0
@@ -94,8 +91,6 @@ object FormMyTemplate: TFormMyTemplate
     object sheet_GlobalTemplate: TTabSheet
       Caption = #1043#1083#1086#1073#1072#1083#1100#1085#1099#1077' '#1096#1072#1073#1083#1086#1085#1099
       ImageIndex = 1
-      ExplicitTop = 27
-      ExplicitHeight = 362
       object list_GlobalTemplate: TListView
         Left = 0
         Top = 0
@@ -120,7 +115,6 @@ object FormMyTemplate: TFormMyTemplate
         ViewStyle = vsReport
         OnDblClick = list_GlobalTemplateDblClick
         OnMouseDown = list_GlobalTemplateMouseDown
-        ExplicitHeight = 362
       end
       object st_NoMessage_GlobalTemplate: TStaticText
         Left = 0
@@ -319,7 +313,7 @@ object FormMyTemplate: TFormMyTemplate
     Left = 704
     Top = 152
     Bitmap = {
-      494C010102005400700020002000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
+      494C0101020054007C0020002000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000800000002000000001002000000000000040
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -851,6 +845,7 @@ object FormMyTemplate: TFormMyTemplate
       C0000003FFFFC0030000000000000000C0000003FFFFE00F0000000000000000
       C0000003FFFFF01F0000000000000000FFFFFFFFFFFFF83F0000000000000000
       FFFFFFFFFFFFFFFF0000000000000000FFFFFFFFFFFFFFFF0000000000000000
-      FFFFFFFFFFFFFFFF0000000000000000}
+      FFFFFFFFFFFFFFFF000000000000000000000000000000000000000000000000
+      000000000000}
   end
 end

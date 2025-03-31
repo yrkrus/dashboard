@@ -142,8 +142,11 @@ function isExistFreeSpaceDrive(var _errorDescription:string):Boolean;           
 procedure ChangeFontSize(InChange:enumFontChange; InTypeFont:enumFontSize);          // изменение размера шрифта на главной форме в TListView
 procedure ForceUpdateDashboard(var p_ButtonClose:TBitBtn);                           // запуск принудительного обновления
 procedure WindowStateInit;                                                           // отображение главной формы окна при загрузке
-
-
+function GetProgrammUptime:int64;  overload;                                         // текущий uptime
+function GetProgrammUptime(_uptime:Int64):string;  overload;                         // текущий uptime
+function GetProgrammStarted:TDateTime;   overload;                                   // время запуска программы(текущий пользователь)
+function GetProgrammStarted(_userID:Integer):TDateTime;  overload;                   // время запуска программы(любой пользователь)
+function GetPhoneTrunkQueue(_phone:string;_timecall:string):string;                  // нахождение на какой транк звонил номер который ушел в очередь
 
 
 implementation
@@ -986,6 +989,8 @@ var
   ado:TADOQuery;
   serverConnect:TADOConnection;
 begin
+  Result:=0;
+
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
 
@@ -1001,8 +1006,8 @@ begin
     SQL.Add('select count(phone) from queue where date_time > '+#39+GetNowDateTime+#39+' and answered = ''1'' and fail = ''0'' and hash is not null' );
     Active:=True;
 
-    if Fields[0].Value<>null then Result:=Fields[0].Value
-    else Result:=0;
+    if Fields[0].Value<>null then Result:=Fields[0].Value;
+
   end;
  finally
   FreeAndNil(ado);
@@ -2458,7 +2463,7 @@ begin
       Active:=True;
 
       if Fields[0].Value<>null then Result:=VarToStr(Fields[0].Value)
-      else Result:='неизвестен';
+      else Result:='---';
     end;
   finally
     FreeAndNil(ado);
@@ -5197,7 +5202,7 @@ begin
 
   // Есть ошибка подключения к БД
   if AnsiPos('EDatabaseError',_errorMessage )<> 0 then begin
-    _errorMessage:='Сервер не доступен';
+    _errorMessage:='Сервер чёт приуныл и стал недоступным';
     EggMessage:='Слыш,'+#13+'давай поднимайся!';
   end;
 
@@ -5321,5 +5326,93 @@ begin
   XML.Free;
 end;
 
+
+// текущий uptime
+function GetProgrammUptime:int64;
+begin
+  Result:=PROGRAMM_UPTIME;
+end;
+
+// текущий uptime
+function GetProgrammUptime(_uptime:Int64):string;
+begin
+  Result:=GetTimeAnsweredSecondsToString(_uptime);
+end;
+
+// время запуска программы(текущий пользователь)
+function GetProgrammStarted:TDateTime;
+begin
+  Result:=PROGRAM_STARTED;
+end;
+
+// время запуска программы(любой пользователь)
+function GetProgrammStarted(_userID:Integer):TDateTime;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+  Result:=0;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select started_programm from active_session where user_id = '+#39+IntToStr(_userID)+#39);
+
+      Active:=True;
+      if Fields[0].Value<>null then begin
+       Result:=VarToDateTime(Fields[0].Value);
+      end;
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+// нахождение на какой транк звонил номер который ушел в очередь
+function GetPhoneTrunkQueue(_phone:string;_timecall:string):string;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+ Result:='null';
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select trunk from ivr where phone = '+#39+_phone+#39+' and date_time < '+#39+GetDateTimeToDateBD(_timecall)+#39+' and to_queue = 1 limit 1');
+
+      Active:=True;
+      if Fields[0].Value<>null then begin
+       Result:=VarToStr(Fields[0].Value);
+      end;
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
 
 end.

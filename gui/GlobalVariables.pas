@@ -29,7 +29,7 @@ var
   FOLDERUPDATE      :string;
 
   // “екуща€ верси€ GUID   ctrl+shift+G (GUID)
-  GUID_VERSION      :string = 'B83DB34E';
+  GUID_VERSION      :string = '425D7DB4';
 
   // exe родител€
   DASHBOARD_EXE     :string = 'dashboard.exe';
@@ -64,6 +64,10 @@ var
 
   // разница между стандартным размером окна 1400 - 1017(форма на стартовом окне)
   DEFAULT_SIZE_PANEL_ACTIVESIP :Word = 383;
+
+  // uptime
+  PROGRAMM_UPTIME:Int64 = 0;
+  PROGRAM_STARTED:TDateTime;
 
   ///////////////////// CLASSES /////////////////////
 
@@ -145,15 +149,14 @@ implementation
 
 
 initialization  // »нициализаци€
-  FOLDERPATH:=ExtractFilePath(ParamStr(0));
-  FOLDERUPDATE:=FOLDERPATH+GetUpdateNameFolder;
-
+  FOLDERPATH      :=ExtractFilePath(ParamStr(0));
+  FOLDERUPDATE    :=FOLDERPATH+GetUpdateNameFolder;
 
   SharedActiveSipOperators  := TActiveSIP.Create;
   SharedIVR                 := TIVR.Create;
   SharedMainLog             := TLoggingFile.Create('main');   // лог работы main формы
   SharedFontSize            := TFontSize.Create;
-  SharedCountResponseThread := TDebugCountResponse.Create;
+  SharedCountResponseThread := TDebugCountResponse.Create(SharedMainLog);
 
 finalization
   // ќсвобождение пам€ти

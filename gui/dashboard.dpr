@@ -62,9 +62,10 @@ uses
   FormHistoryCallOperatorUnit in 'FormHistoryCallOperatorUnit.pas' {FormHistoryCallOperator},
   TFontSizeUnit in '..\custom_class\TFontSizeUnit.pas',
   FormChatNewMessageUnit in 'FormChatNewMessageUnit.pas' {FormChatNewMessage},
-  TAverageCalculatorUnit in '..\custom_class\debug_info\TAverageCalculatorUnit.pas',
   TDebugCountResponseUnit in '..\custom_class\debug_info\TDebugCountResponseUnit.pas',
-  TDebugStructUnit in '..\custom_class\debug_info\TDebugStructUnit.pas';
+  TDebugStructUnit in '..\custom_class\debug_info\TDebugStructUnit.pas',
+  FormHistoryStatusOperatorUnit in 'FormHistoryStatusOperatorUnit.pas' {FormHistoryStatusOperator},
+  THistoryStatusOperatorsUnit in '..\custom_class\THistoryStatusOperatorsUnit.pas';
 
 {$R *.res}
 
@@ -106,5 +107,6 @@ begin
   Application.CreateForm(TFormStatusInfo, FormStatusInfo);
   Application.CreateForm(TFormHistoryCallOperator, FormHistoryCallOperator);
   Application.CreateForm(TFormChatNewMessage, FormChatNewMessage);
+  Application.CreateForm(TFormHistoryStatusOperator, FormHistoryStatusOperator);
   Application.Run;
 end.

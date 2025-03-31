@@ -168,6 +168,7 @@ type
     img_UpFont_Queue: TImage;
     img_DownFont_Queue: TImage;
     Button1: TButton;
+    popMenu_ActionOperators_HistoryStatusOPerators: TMenuItem;
     procedure START_THREAD_ALLlClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -242,11 +243,16 @@ type
       Y: Integer);
     procedure PanelStatusINMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure ListViewSIPMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure popMenu_ActionOperators_HistoryStatusOPeratorsClick(
+      Sender: TObject);
 
   private
     { Private declarations }
    FDragging: Boolean;      // состояние что панель со статусами операторов перемещается
    FMouseOffset: TPoint;
+   SelectedItemPopMenu: TListItem; // Переменная для хранения выбранного элемента(для popmenu_ActionOPerators)
 
    procedure WndProc(var Msg: TMessage); override;   // изменение размер шрифта по сочетанию  Ctrl + колесико
 
@@ -321,7 +327,7 @@ uses
     FormActiveSessionUnit, FormRePasswordUnit, Thread_AnsweredQueueUnit, ReportsUnit, Thread_ACTIVESIP_updatetalkUnit,
     FormDEBUGUnit, FormErrorUnit, TCustomTypeUnit, GlobalVariables, FormUsersUnit, FormServersIKUnit, FormSettingsGlobalUnit,
     FormTrunkUnit, TFTPUnit, TXmlUnit, FormStatisticsChartUnit, TForecastCallsUnit, FormStatusInfoUnit,
-    FormHistoryCallOperatorUnit, FormChatNewMessageUnit, TDebugStructUnit;
+    FormHistoryCallOperatorUnit, FormChatNewMessageUnit, TDebugStructUnit, FormHistoryStatusOperatorUnit;
 
 
 {$R *.dfm}
@@ -762,7 +768,10 @@ begin
 
   Screen.Cursor:=crDefault;
 
-  // создаем все потоки
+  // дата+время старта
+  PROGRAM_STARTED:=Now;
+
+  // создаем все потоки (ВСЕГДА ДОЛЖНЫ ПОСЛЕДНИМИ ИНИЦИАЛИЗИРОВАТЬСЯ!!)
   START_THREAD_ALLl.Click;
   except
   on E: Exception do begin
@@ -819,8 +828,50 @@ end;
 
 procedure THomeForm.popMenu_ActionOperators_HistoryCallOperatorClick(
   Sender: TObject);
+var
+ id_sip:Integer;
+ user_id:Integer;
 begin
-  FormHistoryCallOperator.ShowModal;
+  // Проверяем, был ли выбран элемент
+  if Assigned(SelectedItemPopMenu) then
+  begin
+    id_sip:=StrToInt(SelectedItemPopMenu.Caption);
+
+    // найдем id и передадим его дальше
+    user_id:=getUserID(id_sip);
+    FormHistoryCallOperator.SetID(user_id);
+    FormHistoryCallOperator.SetSip(id_sip);
+
+    FormHistoryCallOperator.ShowModal;
+  end
+  else
+  begin
+   MessageBox(Handle,PChar('Не выбран оператор'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+  end;
+end;
+
+procedure THomeForm.popMenu_ActionOperators_HistoryStatusOPeratorsClick(
+  Sender: TObject);
+var
+ id_sip:Integer;
+ user_id:Integer;
+begin
+  // Проверяем, был ли выбран элемент
+  if Assigned(SelectedItemPopMenu) then
+  begin
+    id_sip:=StrToInt(SelectedItemPopMenu.Caption);
+
+    // найдем id и передадим его дальше
+    user_id:=getUserID(id_sip);
+    FormHistoryStatusOperator.SetID(user_id);
+    FormHistoryStatusOperator.SetSip(id_sip);
+
+    FormHistoryStatusOperator.ShowModal;
+  end
+  else
+  begin
+   MessageBox(Handle,PChar('Не выбран оператор'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+  end;
 end;
 
 procedure THomeForm.ST_StatusPanelWindowClick(Sender: TObject);
@@ -959,7 +1010,7 @@ begin
 
       if Item.SubItems.Strings[1] = 'доступен' then
       begin
-        Sender.Canvas.Font.Color := clGreen;
+        Sender.Canvas.Font.Color := EnumColorStatusToTColor(color_Good);
         Exit;
       end;
 
@@ -969,13 +1020,13 @@ begin
         time_talk:=GetTimeAnsweredToSeconds(Item.SubItems.Strings[4],True);
 
         if (time_talk >= 180) and (time_talk <= 600)  then begin
-         Sender.Canvas.Font.Color := clRed;
+         Sender.Canvas.Font.Color := EnumColorStatusToTColor(color_NotBad);
          Exit;
         end else if (time_talk > 600) and (time_talk <= 900)  then begin
-         Sender.Canvas.Font.Color := $0000008A;
+         Sender.Canvas.Font.Color := EnumColorStatusToTColor(color_Bad);
          Exit;
         end else if time_talk >= 900 then begin
-         Sender.Canvas.Font.Color := clBlue;
+         Sender.Canvas.Font.Color := EnumColorStatusToTColor(color_Very_Bad);
          Exit;
         end;
 
@@ -988,7 +1039,7 @@ begin
         time_talk:=GetTimeAnsweredToSeconds(longtalk);
 
         if time_talk >= 180 then begin
-         Sender.Canvas.Font.Color := clRed;
+         Sender.Canvas.Font.Color := EnumColorStatusToTColor(color_NotBad);
          Exit;
         end;
       end;
@@ -996,17 +1047,28 @@ begin
       if (AnsiPos('обед',Item.SubItems.Strings[1]) <> 0) or
          (AnsiPos('перерыв',Item.SubItems.Strings[1]) <> 0) then
       begin
-        Sender.Canvas.Font.Color := $00DDB897;
+        Sender.Canvas.Font.Color := EnumColorStatusToTColor(color_Break);
         Exit;
       end;
     end;
 
-   Sender.Canvas.Font.Color := clBlack;
+   Sender.Canvas.Font.Color := EnumColorStatusToTColor(color_Default);
   except
     on E:Exception do
     begin
      SharedMainLog.Save('THomeForm.ListViewSIPCustomDrawItem. '+e.ClassName+': '+e.Message, IS_ERROR);
     end;
+  end;
+end;
+
+procedure THomeForm.ListViewSIPMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  // Проверяем, был ли клик правой кнопкой мыши
+  if Button = mbRight then
+  begin
+    // Получаем элемент, на который кликнули
+    SelectedItemPopMenu := ListViewSIP.GetItemAt(X, Y);
   end;
 end;
 

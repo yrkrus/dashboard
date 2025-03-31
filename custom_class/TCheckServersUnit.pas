@@ -544,6 +544,9 @@ begin
          lblCheckInfocilinikaServerAlive.Caption:='отсутствуют';
          lblCheckInfocilinikaServerAlive.Font.Color:=colorOk;
         end;
+
+        lblCheckInfocilinikaServerAlive.InitiateAction;
+        lblCheckInfocilinikaServerAlive.Repaint;
       end
       else begin
         lblCheckInfocilinikaServerAlive.Font.Color:=colorError;
@@ -553,6 +556,8 @@ begin
           for j:=0 to GetCount-1 do begin
             if listServers[j].countErrors>=countWarningsErrors then begin
               lblCheckInfocilinikaServerAlive.Caption:=listServers[j].address;
+              lblCheckInfocilinikaServerAlive.InitiateAction;
+              lblCheckInfocilinikaServerAlive.Repaint;
             end;
           end;
          end;
@@ -567,6 +572,9 @@ begin
               else begin
                 lblCheckInfocilinikaServerAlive.Caption:=lblCheckInfocilinikaServerAlive.Caption+' и '+listServers[j].address;
               end;
+
+              lblCheckInfocilinikaServerAlive.InitiateAction;
+              lblCheckInfocilinikaServerAlive.Repaint;
             end;
           end;
          end;
@@ -582,11 +590,16 @@ begin
                 lblCheckInfocilinikaServerAlive.Caption:=lblCheckInfocilinikaServerAlive.Caption+' и '+listServers[j].address;
                 inc(viewErrors);
               end;
+
+              lblCheckInfocilinikaServerAlive.InitiateAction;
+              lblCheckInfocilinikaServerAlive.Repaint;
             end;
           end;
 
           if viewErrors>=2 then begin
            lblCheckInfocilinikaServerAlive.Caption:=lblCheckInfocilinikaServerAlive.Caption+' и еще '+IntToStr(allCountErrors-2)+' (нажмите сюда для показа...)';
+           lblCheckInfocilinikaServerAlive.InitiateAction;
+           lblCheckInfocilinikaServerAlive.Repaint;
           end;
         end;
       end;

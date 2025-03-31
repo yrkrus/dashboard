@@ -22,6 +22,7 @@ type
   private
     Log:TLoggingFile;
     m_userLogonID:Integer;  // id залогиненного пользователя
+
     { Private declarations }
   public
   constructor Create(InUserID: Integer); reintroduce; // добавляем конструктор
@@ -33,18 +34,13 @@ type
 implementation
 
 uses
-  GlobalVariables;
+  GlobalVariables, TDebugStructUnit;
 
-//procedure Thread_InternalProcess.AddLogonUserID(InUserID:Integer);
-//begin
-// Self.m_userLogonID:=InUserID;
-//end;
 
 constructor Thread_InternalProcess.Create(InUserID: Integer);
 begin
   inherited Create(True); // Создаем поток в приостановленном состоянии
   m_userLogonID := InUserID; // инициализируем m_userLogonID
-  Log := TLoggingFile.Create('Thread_InternalProcess');
 end;
 
 
@@ -61,31 +57,39 @@ begin
    p_InternalProcess.UpdateTimeDashboard;
 
   if not CONNECT_BD_ERROR then begin
-    p_InternalProcess.CheckForceActiveSessionClosed;  // нужно ли немедленно закрыть сессию
-    p_InternalProcess.UpdateTimeActiveSession;        // обновление времени ондайна в БД
-
-    p_InternalProcess.CheckStatusUpdateService;       // проверка запущена ли служба обновления
-
-    p_InternalProcess.XMLUpdateLastOnline;            // обновление времемни в settings.xml
+    p_InternalProcess.CheckForceActiveSessionClosed;              // нужно ли немедленно закрыть сессию
+    p_InternalProcess.UpdateTimeActiveSession(PROGRAMM_UPTIME);   // обновление времени ондайна в БД
+    p_InternalProcess.CheckStatusUpdateService;                   // проверка запущена ли служба обновления
+    p_InternalProcess.XMLUpdateLastOnline;                        // обновление времемни в settings.xml
   end;
-
 
 end;
 
 procedure Thread_InternalProcess.Execute;
  const
  SLEEP_TIME:Word = 1000;
- //NAME_THREAD:string = 'Thread_Statistics';
+  NAME_THREAD:string = 'Thread_InternalProcess';
  var
   StartTime, EndTime: Cardinal;
   Duration: Cardinal;
   InternalProcess: TInternalProcess;
+
+  debugInfo: TDebugStruct;
 begin
   inherited;
   CoInitialize(Nil);
   Sleep(1000);
 
-  InternalProcess:=TInternalProcess.Create(m_userLogonID);
+  Log:=TLoggingFile.Create(NAME_THREAD);
+  // вывод debug info
+  debugInfo:=TDebugStruct.Create(NAME_THREAD,Log);
+  SharedCountResponseThread.Add(debugInfo);
+
+
+  InternalProcess:=TInternalProcess.Create(m_userLogonID,PROGRAM_STARTED);
+  // время запуска программы
+  InternalProcess.UpdateProgramStarted;
+
 
   while not Terminated do
   begin
@@ -99,7 +103,9 @@ begin
         EndTime:= GetTickCount;
         Duration:= EndTime - StartTime;
 
-       // FormDEBUG.lblThread_InternalProcess.Caption:=IntToStr(Duration);
+        Inc(PROGRAMM_UPTIME);
+
+        SharedCountResponseThread.SetCurrentResponse(NAME_THREAD,Duration);
      except
         on E:Exception do
         begin

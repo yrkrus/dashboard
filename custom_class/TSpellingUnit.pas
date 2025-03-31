@@ -94,8 +94,8 @@ begin
 
     // Сначала сбрасываем все атрибуты текста в RichEdit
     m_text.SelectAll;
-    m_text.SelAttributes.Color := clBlack; // Цвет текста по умолчанию
-    m_text.SelAttributes.Style := []; // Убираем все стили
+    m_text.SelAttributes.Color := clBlack;  // Цвет текста по умолчанию
+    m_text.SelAttributes.Style := [];       // Убираем все стили
 
     // Проходим по списку ошибок
     for i := 1 to MisspelledWords.Count do

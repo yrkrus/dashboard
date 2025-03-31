@@ -37,7 +37,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
 
       public
 
-      id                                     : Integer;
+      //id                                     : Integer;
       user_id                                : Integer;       // ID пользака в Ѕƒ users
       sip_number                             : string;        // номер оператора
       count_talk                             : integer;       // кол-во отвеченных вызовов
@@ -124,30 +124,31 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       procedure checkNewSipOperators(isDashStarted:Boolean = False);        // обновление списка активных операторов если увидили нового оператора
       // true только при первом запуске дашборда
 
-      function isExistOperatorInQueue(InSip:string):Boolean;      // проверка состо€ит ли оператор в какой либо очереди
-      function isExistOperator(InSip:string):Boolean;             // проверка есть ли оператор
+      function isExistOperatorInQueue(InSip:string):Boolean;        // проверка состо€ит ли оператор в какой либо очереди
+      function isExistOperator(InSip:string):Boolean;               // проверка есть ли оператор
       function isExistOperatorInLastActiveBD(InSip:string):Boolean; // проверка есть ли оператор в таблице active_session
 
 
 
       // методы TStructSIP
-      function GetListOperators_ID(id:Integer):Cardinal;             // listOperators.ID
-      function GetListOperators_UserID(id:Integer):Integer;          // listOperators.user_id
-      function GetListOperators_OperatorName(id:Integer):string;     // listOperators.operator_name
-      function GetListOperators_SipNumber(id:Integer):string;        // listOperators.sip_number
-      function GetListOperators_Status(id:Integer):enumStatusOperators;          // listOperators.status
-      function GetListOperators_AccessDashboad(id:Integer):Boolean;  // listOperators.access_dashboard
-      function GetListOperators_Queue(id:Integer):string;            // listOperators.queue
-      function GetListOperators_TalkTime(id:Integer):string;         // listOperators.talk_time
-      function GetListOperators_Phone(id:Integer):string;            // listOperators.phone
-      function GetListOperators_IsOnHold(id:Integer):Boolean;        // listOperators.isOnHold
-      function GetListOperators_OnHoldStartTime(id:Integer):string;  // listOperators.onHoldStartTime
-      function GetListOperators_CountTalk(id:Integer):Integer;       // listOperators.count_talk
-      function GetListOperators_CountProcentTalk(id:Integer):string; // listOperators.count_procent
-      function GetListOperators_TalkTimeAll(id:Integer):Integer;     // listOperators.list_talk_time_all
-      function GetListOperators_TalkTimeAvg(id:Integer):Integer;     // listOperators.list_talk_time_avf
-      function GetListOperators_OnlineHide(id:Integer):Boolean;      // listOperators.online.hide
+      function GetListOperators_ID(_sip:Integer):Cardinal;              // listOperators.ID
+      function GetListOperators_UserID(id:Integer):Integer;             // listOperators.user_id
+      function GetListOperators_OperatorName(id:Integer):string;        // listOperators.operator_name
+      function GetListOperators_SipNumber(id:Integer):string;           // listOperators.sip_number
+      function GetListOperators_Status(id:Integer):enumStatusOperators; // listOperators.status
+      function GetListOperators_AccessDashboad(id:Integer):Boolean;     // listOperators.access_dashboard
+      function GetListOperators_Queue(id:Integer):string;               // listOperators.queue
+      function GetListOperators_TalkTime(id:Integer; isReducedTime:Boolean):string;            // listOperators.talk_time
+      function GetListOperators_Phone(id:Integer):string;               // listOperators.phone
+      function GetListOperators_IsOnHold(id:Integer):Boolean;           // listOperators.isOnHold
+      function GetListOperators_OnHoldStartTime(id:Integer):string;     // listOperators.onHoldStartTime
+      function GetListOperators_CountTalk(id:Integer):Integer;          // listOperators.count_talk
+      function GetListOperators_CountProcentTalk(id:Integer):string;    // listOperators.count_procent
+      function GetListOperators_TalkTimeAll(id:Integer):Integer;        // listOperators.list_talk_time_all
+      function GetListOperators_TalkTimeAvg(id:Integer):Integer;        // listOperators.list_talk_time_avf
+      function GetListOperators_OnlineHide(id:Integer):Boolean;         // listOperators.online.hide
       // методы TStructSIP END
+
 
       end;
  // class TActiveSIP END
@@ -187,7 +188,7 @@ uses
    Self.status:= eUnknown;
    Self.access_dashboard:=False;
    Self.online:=TOnline.Create;
-   id:=0;
+   //id:=0;
    user_id:= -1;
  end;
 
@@ -1272,7 +1273,8 @@ procedure TActiveSIP.updateTalkTimeAll;
             end;
 
            // TODO попробуем вот так, т.к. ничего не хочет искать
-           if SharedActiveSipOperators.GetCountSipOperators = 0 then generateSipOperators(True,True);
+          // if SharedActiveSipOperators.GetCountSipOperators = 0 then generateSipOperators(True,True);
+           if SharedActiveSipOperators.GetCountSipOperators < 4 then generateSipOperators(True,True);
 
            Exit;
          end;
@@ -1390,11 +1392,18 @@ end;
 
  /////////////////////////////// ћ≈“ќƒџ listOPerators /////////////////////////////////////
 
-function TActiveSIP.GetListOperators_ID(id:Integer):Cardinal;
+function TActiveSIP.GetListOperators_ID(_sip:Integer):Cardinal;
+var
+ i:Integer;
 begin
   if m_mutex.WaitFor(INFINITE) = wrSignaled  then begin
     try
-      Result:=Self.listOperators[id].id;
+      for i:=0 to countSipOperators - 1 do begin
+        if listOperators[i].sip_number = IntToStr(_sip) then begin
+          Result:=i;
+          Break;
+        end;
+      end;
     finally
       m_mutex.Release;
     end;
@@ -1469,11 +1478,12 @@ begin
   end;
 end;
 
-function TActiveSIP.GetListOperators_TalkTime(id:Integer):string;
+function TActiveSIP.GetListOperators_TalkTime(id:Integer; isReducedTime:Boolean):string;
 begin
   if m_mutex.WaitFor(INFINITE) = wrSignaled  then begin
     try
-      Result:=Copy(Self.listOperators[id].talk_time, 4, 5);
+      if isReducedTime then Result:=Copy(Self.listOperators[id].talk_time, 4, 5)
+      else Result:=Self.listOperators[id].talk_time;
     finally
       m_mutex.Release;
     end;

@@ -106,7 +106,7 @@ end;
 procedure TFormMyTemplate.list_GlobalTemplateMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-   // Проверяем, был ли клик правой кнопкой мыши
+  // Проверяем, был ли клик правой кнопкой мыши
   if Button = mbRight then
   begin
     // Получаем элемент, на который кликнули

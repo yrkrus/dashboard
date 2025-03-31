@@ -197,6 +197,8 @@ end;
     with HomeForm do begin
        ST_SL.Caption:='SL: '+GetProcent(SL,False)+'%';
        ST_SL.Font.Color:=colorGood;
+       ST_SL.InitiateAction;
+       ST_SL.Repaint;
 
        // текстовое отображение
        lblStatistics_Answered30.Caption:='0';
@@ -378,6 +380,8 @@ begin
   // считаем SL
    with HomeForm do begin
      ST_SL.Caption:='SL: ' + currentStatusSL + GetProcent(SL,False)+'%';
+     ST_SL.InitiateAction;
+     ST_SL.Repaint;
 
      case Round(SL) of
        0..30: begin

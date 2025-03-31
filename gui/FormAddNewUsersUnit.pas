@@ -743,23 +743,18 @@ begin
     Exit;
   end;
 
-
   // добавляем нового пользака
   if not currentEditUsers then begin
-
     if not getResponseBD(user_add, error) then begin
       MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
       Exit;
     end;
-
   end
   else begin
-
     if not getResponseBD(user_update,error) then begin
       MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
       Exit;
     end;
-
   end;
 
 
@@ -772,8 +767,14 @@ begin
    // прогрузка списка пользователей (операторы) (False - не показывать отключенных пользователей)
    loadPanel_Operators;
 
-  if not currentEditUsers then MessageBox(Handle,PChar('Новый пользователь добавлен'),PChar('Успешно'),MB_OK+MB_ICONINFORMATION)
-  else MessageBox(Handle,PChar('Пользователь отредактирован'),PChar('Успешно'),MB_OK+MB_ICONINFORMATION)
+  if not currentEditUsers then begin
+   LoggingRemote(eLog_create_new_user);
+   MessageBox(Handle,PChar('Новый пользователь добавлен'),PChar('Успех'),MB_OK+MB_ICONINFORMATION)
+  end
+  else begin
+   LoggingRemote(eLog_edit_user);
+   MessageBox(Handle,PChar('Пользователь отредактирован'),PChar('Успех'),MB_OK+MB_ICONINFORMATION)
+  end;
 
 end;
 

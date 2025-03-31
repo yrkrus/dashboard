@@ -54,6 +54,8 @@ type
     { Private declarations }
    usersListAdminRole:TStringList; // список с пользаками которые имеют админ права
    countErrorAuth:Word; // кол-во попыток ввода пароля
+   isAutoUpdateNotRunning:Boolean; // не запушено автоматическое обновление
+
 
    function showUserNameAuthForm:Boolean;   // отображение ранее входивщего пользователя в выборе вариантов пользователей
    function GetRoleUser(InIDCombBox:Integer):enumRole;
@@ -319,7 +321,7 @@ begin
 
   if successEnter then begin
     if not DEBUG then begin
-      if lblInfoUpdateService.Visible then begin
+      if isAutoUpdateNotRunning then begin
        MessageBox(HomeForm.Handle,PChar('Служба автоматического обновления не работает'+#13#13+'Обратитесь в отдел ИТ если данное сообщение будет повторяться'),PChar('Информация'),MB_OK+MB_ICONINFORMATION);
       end;
     end;
@@ -465,14 +467,15 @@ procedure TFormAuth.FormShow(Sender: TObject);
 var
  i:Integer;
 begin
-  // debug node
+ // debug node
  begin
   if DEBUG then lblDEBUG.Visible:=True;
   // проверка запущена ли служба обновления
    if not DEBUG  then begin
      if not GetStatusUpdateService then begin
        TimerNotRunUpdate.Enabled:=True;
-     end;
+       isAutoUpdateNotRunning:=True;
+     end else isAutoUpdateNotRunning:=False;
    end;
  end;
 

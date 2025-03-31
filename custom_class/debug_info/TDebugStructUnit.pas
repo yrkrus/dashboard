@@ -1,7 +1,7 @@
- /////////////////////////////////////////////////////////////////////////////////
+п»ї /////////////////////////////////////////////////////////////////////////////////
 ///                                                                           ///
 ///                                                                           ///
-///     Класс для описания структуры подсчета выполнения в потоках            ///
+///     РљР»Р°СЃСЃ РґР»СЏ РѕРїРёСЃР°РЅРёСЏ СЃС‚СЂСѓРєС‚СѓСЂС‹ РїРѕРґСЃС‡РµС‚Р° РІС‹РїРѕР»РЅРµРЅРёСЏ РІ РїРѕС‚РѕРєР°С…            ///
 ///                                                                           ///
 ///                                                                           ///
 /////////////////////////////////////////////////////////////////////////////////
@@ -22,15 +22,15 @@ uses
   TIntegerArray = array[0..MaxInt div SizeOf(Integer) - 1] of Integer;
 
 
-// Класс TAverageCalculator
+// РљР»Р°СЃСЃ TAverageCalculator
 type
   TAverageCalculator = class(TThread)
   messclass,mess: string;
 
   private
     FAverage      :Integer;
-    m_array       :PIntegerArray; // Указатель на массив
-    m_count       :Integer;       // Количество элементов в массиве
+    m_array       :PIntegerArray; // РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РјР°СЃСЃРёРІ
+    m_count       :Integer;       // РљРѕР»РёС‡РµСЃС‚РІРѕ СЌР»РµРјРµРЅС‚РѕРІ РІ РјР°СЃСЃРёРІРµ
     Log           :TLoggingFile;
 
     m_nameStruct  :string;
@@ -46,9 +46,9 @@ type
     procedure SetLog(var p_Log:TLoggingFile);
 
   end;
-// Класс TAverageCalculator END
+// РљР»Р°СЃСЃ TAverageCalculator END
 
-// Класс TDebugStruct
+// РљР»Р°СЃСЃ TDebugStruct
 type
   TDebugStruct = class
   private
@@ -63,7 +63,7 @@ type
 
     Log                   :TLoggingFile;
 
-    FAverageCalculator    :TAverageCalculator; // Новый поток для вычисления среднего
+    FAverageCalculator    :TAverageCalculator; // РќРѕРІС‹Р№ РїРѕС‚РѕРє РґР»СЏ РІС‹С‡РёСЃР»РµРЅРёСЏ СЃСЂРµРґРЅРµРіРѕ
 
   public
     constructor Create(inNameThread: string; var p_Log:TLoggingFile); overload;
@@ -73,21 +73,25 @@ type
 
     procedure SetResponse(_value: Integer);
 
-    function isExistLog:Boolean;            // линковка лога успешна произошла или нет
-    procedure SendLog(_text:string);        // отправка сообщения в лог
+    function isExistLog:Boolean;            // Р»РёРЅРєРѕРІРєР° Р»РѕРіР° СѓСЃРїРµС€РЅР° РїСЂРѕРёР·РѕС€Р»Р° РёР»Рё РЅРµС‚
+    procedure SendLog(_text:string);        // РѕС‚РїСЂР°РІРєР° СЃРѕРѕР±С‰РµРЅРёСЏ РІ Р»РѕРі
 
-    property Name: string read m_name;
+    property Name:  string read m_name;
     property Mutex: TMutex read m_mutex;
+    property CurrentResponse: Integer read m_currentResponse;
+    property CurrentAverage:  Integer read m_average;
+    property CurrentMax:      Integer read m_currentMax;
+    property CurrentMaxTime:  TDateTime read m_currentMaxTime;
 
   end;
-// Класс TDebugStruct END
+// РљР»Р°СЃСЃ TDebugStruct END
 
 implementation
 
 
 constructor TAverageCalculator.Create(arrayAverage: PIntegerArray; count: Integer; _nameStruct:string);
 begin
-  inherited Create(True); // Создаем поток в приостановленном состоянии
+  inherited Create(True); // РЎРѕР·РґР°РµРј РїРѕС‚РѕРє РІ РїСЂРёРѕСЃС‚Р°РЅРѕРІР»РµРЅРЅРѕРј СЃРѕСЃС‚РѕСЏРЅРёРё
   m_array:=arrayAverage;
   m_count:=count;
   m_nameStruct:=_nameStruct;
@@ -106,7 +110,7 @@ procedure TAverageCalculator.CriticalError;
 const
  IS_ERROR:Boolean = True;
 begin
-   // записываем в лог
+   // Р·Р°РїРёСЃС‹РІР°РµРј РІ Р»РѕРі
    Log.Save(m_nameStruct+' --> '+ messclass+'.'+mess,IS_ERROR);
 end;
 
@@ -125,7 +129,7 @@ begin
          Synchronize(CriticalError);
         end;
     end;
-    Sleep(1000); // обновляем среднее значение каждую секунду
+    Sleep(1000); // РѕР±РЅРѕРІР»СЏРµРј СЃСЂРµРґРЅРµРµ Р·РЅР°С‡РµРЅРёРµ РєР°Р¶РґСѓСЋ СЃРµРєСѓРЅРґСѓ
   end;
 end;
 
@@ -153,7 +157,7 @@ begin
     Exit;
   end;
 
-  FAverage:= Round(Total / m_count); // Вычисляем среднее значение
+  FAverage:= Round(Total / m_count); // Р’С‹С‡РёСЃР»СЏРµРј СЃСЂРµРґРЅРµРµ Р·РЅР°С‡РµРЅРёРµ
 end;
 
 
@@ -176,21 +180,21 @@ begin
   countListAverage := 0;
   Log:=p_Log;
 
-  // Инициализация потока для вычисления среднего
-  FAverageCalculator := nil; // Изначально поток не создается
+  // РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РїРѕС‚РѕРєР° РґР»СЏ РІС‹С‡РёСЃР»РµРЅРёСЏ СЃСЂРµРґРЅРµРіРѕ
+  FAverageCalculator := nil; // РР·РЅР°С‡Р°Р»СЊРЅРѕ РїРѕС‚РѕРє РЅРµ СЃРѕР·РґР°РµС‚СЃСЏ
 end;
 
 destructor TDebugStruct.Destroy;
 begin
-  // Остановка потока перед уничтожением, если он был создан
+  // РћСЃС‚Р°РЅРѕРІРєР° РїРѕС‚РѕРєР° РїРµСЂРµРґ СѓРЅРёС‡С‚РѕР¶РµРЅРёРµРј, РµСЃР»Рё РѕРЅ Р±С‹Р» СЃРѕР·РґР°РЅ
   if Assigned(FAverageCalculator) then
   begin
     FAverageCalculator.Terminate;
-    FAverageCalculator.WaitFor; // Ждем, пока поток завершится
-    FAverageCalculator.Free; // Освобождаем поток
+    FAverageCalculator.WaitFor; // Р–РґРµРј, РїРѕРєР° РїРѕС‚РѕРє Р·Р°РІРµСЂС€РёС‚СЃСЏ
+    FAverageCalculator.Free; // РћСЃРІРѕР±РѕР¶РґР°РµРј РїРѕС‚РѕРє
   end;
 
-  m_mutex.Free; // Освобождаем mutex
+  m_mutex.Free; // РћСЃРІРѕР±РѕР¶РґР°РµРј mutex
   SetLength(m_listAverage, 0);
 
   inherited;
@@ -198,68 +202,68 @@ end;
 
 function TDebugStruct.Clone: TDebugStruct;
 begin
-  Result:= TDebugStruct.Create(m_name,Log); // Создаем новый объект с именем текущего
-  Result.m_currentResponse := Self.m_currentResponse; // Копируем текущее значение ответов
-  Result.m_currentMax := Self.m_currentMax; // Копируем текущее максимальное значение
-  Result.m_currentMaxTime := Self.m_currentMaxTime; // Копируем текущее время максимума
+  Result:= TDebugStruct.Create(m_name,Log); // РЎРѕР·РґР°РµРј РЅРѕРІС‹Р№ РѕР±СЉРµРєС‚ СЃ РёРјРµРЅРµРј С‚РµРєСѓС‰РµРіРѕ
+  Result.m_currentResponse := Self.m_currentResponse; // РљРѕРїРёСЂСѓРµРј С‚РµРєСѓС‰РµРµ Р·РЅР°С‡РµРЅРёРµ РѕС‚РІРµС‚РѕРІ
+  Result.m_currentMax := Self.m_currentMax; // РљРѕРїРёСЂСѓРµРј С‚РµРєСѓС‰РµРµ РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ
+  Result.m_currentMaxTime := Self.m_currentMaxTime; // РљРѕРїРёСЂСѓРµРј С‚РµРєСѓС‰РµРµ РІСЂРµРјСЏ РјР°РєСЃРёРјСѓРјР°
   Result.m_average:=Self.m_average;
   Result.Log:=Self.Log;
 
-  // Копируем массив m_listAverage
+  // РљРѕРїРёСЂСѓРµРј РјР°СЃСЃРёРІ m_listAverage
   SetLength(Result.m_listAverage, Length(Self.m_listAverage));
   if Length(Self.m_listAverage) > 0 then
     Move(Self.m_listAverage[0], Result.m_listAverage[0], Length(Self.m_listAverage) * SizeOf(Integer));
   Result.countListAverage := Self.countListAverage;
 
-  // Создаем новый экземпляр TMutex для клонированного объекта
+  // РЎРѕР·РґР°РµРј РЅРѕРІС‹Р№ СЌРєР·РµРјРїР»СЏСЂ TMutex РґР»СЏ РєР»РѕРЅРёСЂРѕРІР°РЅРЅРѕРіРѕ РѕР±СЉРµРєС‚Р°
   Result.m_mutex := TMutex.Create(nil, False, 'Global\TDebugCountResponse_' + m_name);
 end;
 
 
 procedure TDebugStruct.SetResponse(_value: Integer);
 const
-  MAX_LIST_AVERAGE: Word = 100;
+  MAX_LIST_AVERAGE: Word = 200;
 begin
-  // текущее значение
+  // С‚РµРєСѓС‰РµРµ Р·РЅР°С‡РµРЅРёРµ
   m_currentResponse := _value;
 
-  // максимальное значение
+  // РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ
   if m_currentResponse > m_currentMax then
   begin
     m_currentMax := m_currentResponse;
     m_currentMaxTime := Now;
   end;
 
-  // Добавляем новое значение в m_listAverage
+  // Р”РѕР±Р°РІР»СЏРµРј РЅРѕРІРѕРµ Р·РЅР°С‡РµРЅРёРµ РІ m_listAverage
   if countListAverage >= MAX_LIST_AVERAGE then
   begin
     countListAverage := 0;
     SetLength(m_listAverage, countListAverage);
   end;
 
-  SetLength(m_listAverage, countListAverage + 1); // Увеличиваем размер массива на 1
-  m_listAverage[countListAverage] := _value; // Добавляем новое значение в конец массива
+  SetLength(m_listAverage, countListAverage + 1); // РЈРІРµР»РёС‡РёРІР°РµРј СЂР°Р·РјРµСЂ РјР°СЃСЃРёРІР° РЅР° 1
+  m_listAverage[countListAverage] := _value; // Р”РѕР±Р°РІР»СЏРµРј РЅРѕРІРѕРµ Р·РЅР°С‡РµРЅРёРµ РІ РєРѕРЅРµС† РјР°СЃСЃРёРІР°
   Inc(countListAverage);
 
-  // Инициализация потока для вычисления среднего, если он еще не создан
+  // РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РїРѕС‚РѕРєР° РґР»СЏ РІС‹С‡РёСЃР»РµРЅРёСЏ СЃСЂРµРґРЅРµРіРѕ, РµСЃР»Рё РѕРЅ РµС‰Рµ РЅРµ СЃРѕР·РґР°РЅ
   if not Assigned(FAverageCalculator) then
   begin
-    FAverageCalculator:= TAverageCalculator.Create(@m_listAverage[0], countListAverage, m_name); // Передаем указатель на массив и его размер
+    FAverageCalculator:= TAverageCalculator.Create(@m_listAverage[0], countListAverage, m_name); // РџРµСЂРµРґР°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РјР°СЃСЃРёРІ Рё РµРіРѕ СЂР°Р·РјРµСЂ
     FAverageCalculator.SetLog(Log);
-    FAverageCalculator.Start; // Запуск потока
+    FAverageCalculator.Start; // Р—Р°РїСѓСЃРє РїРѕС‚РѕРєР°
   end
   else FAverageCalculator.UpdateArray(@m_listAverage[0],countListAverage);
 
   m_average:=FAverageCalculator.Average;
 end;
 
-// линковка лога успешна произошла или нет
+// Р»РёРЅРєРѕРІРєР° Р»РѕРіР° СѓСЃРїРµС€РЅР° РїСЂРѕРёР·РѕС€Р»Р° РёР»Рё РЅРµС‚
 function TDebugStruct.isExistLog:Boolean;
 begin
   Result:=Assigned(Log);
 end;
 
-// отправка сообщения в лог
+// РѕС‚РїСЂР°РІРєР° СЃРѕРѕР±С‰РµРЅРёСЏ РІ Р»РѕРі
 procedure TDebugStruct.SendLog(_text:string);
 begin
   if isExistLog then Log.Save(_text);

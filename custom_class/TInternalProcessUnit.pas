@@ -26,19 +26,25 @@ uses
   type
       TInternalProcess = class
       public
-      constructor Create(InUserLogonID:Integer);                   overload;
+      constructor Create(InUserLogonID:Integer;
+                         _startedProgrammDate:TDateTime);           overload;
 
-      procedure UpdateTimeActiveSession;                      // обновление времени активной сесии пользователя
+      procedure UpdateTimeActiveSession(uptime:Integer);      // обновление времени активной сесии пользователя
       procedure CheckForceActiveSessionClosed;
       procedure UpdateTimeDashboard;                          // обновление текущего времени в окне дашборда
       procedure CheckStatusUpdateService;                     // проверка работает ли служба обновления или нет
       procedure XMLUpdateLastOnline;                          // обновление времемни в settings.xml
+      procedure UpdateProgramStarted;                         // обновление времени запкуска программы
 
 
       private
       m_userLogonID       :Integer;                       // текущий залогиненый пользователь
+      m_startedProgrammDate: TDateTime;                   // время запуска программы
+      isSendingProgrammStarted:Boolean;                   // был ли отправлено инфо о времени запуска программы
+
       function GetCurrentDateTimeWithTime:string;          // текущая дата + время
       function isExistFileUpdate:Boolean;                 // загружен ли файл с обновлением
+
 
 
 
@@ -51,12 +57,14 @@ uses
   GlobalVariables, FunctionUnit, FormHome;
 
 
-constructor TInternalProcess.Create(InUserLogonID:Integer);
+constructor TInternalProcess.Create(InUserLogonID:Integer;
+                                    _startedProgrammDate:TDateTime);
  begin
   // inherited;
    m_userLogonID:=InUserLogonID;
+   m_startedProgrammDate:=_startedProgrammDate;
+   isSendingProgrammStarted:=False;
  end;
-
 
  // текущая дата + время
 function TInternalProcess.GetCurrentDateTimeWithTime:string;
@@ -99,12 +107,11 @@ end;
 
 
 // обновление времени активной сесии пользователя
-procedure TInternalProcess.UpdateTimeActiveSession;
+procedure TInternalProcess.UpdateTimeActiveSession(uptime:Integer);
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
 begin
-
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
   if not Assigned(serverConnect) then begin
@@ -117,7 +124,7 @@ begin
       ado.Connection:=serverConnect;
       SQL.Clear;
 
-      SQL.Add('update active_session set last_active = '+#39+GetCurrentDateTimeWithTime+#39+' where user_id = '+#39+IntToStr(m_userLogonID)+#39);
+      SQL.Add('update active_session set last_active = '+#39+GetCurrentDateTimeWithTime+#39+', uptime = '+#39+IntToStr(uptime)+#39+' where user_id = '+#39+IntToStr(m_userLogonID)+#39);
 
       try
           ExecSQL;
@@ -140,6 +147,52 @@ begin
       FreeAndNil(serverConnect);
     end;
   end;
+end;
+
+// обновление времени запкуска программы
+procedure TInternalProcess.UpdateProgramStarted;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+  if isSendingProgrammStarted then Exit;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('update active_session set started_programm = '+#39+GetDateTimeToDateBD(DateTimeToStr(m_startedProgrammDate))+#39+' where user_id = '+#39+IntToStr(m_userLogonID)+#39);
+
+      try
+          ExecSQL;
+      except
+          on E:EIdException do begin
+             FreeAndNil(ado);
+             if Assigned(serverConnect) then begin
+               serverConnect.Close;
+               FreeAndNil(serverConnect);
+             end;
+
+             Exit;
+          end;
+      end;
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+
+  isSendingProgrammStarted:=True;
 end;
 
 
@@ -172,8 +225,6 @@ begin
   // текущая версия дашборда
   XML:=TXML.Create(PChar(SETTINGS_XML));
   XML.UpdateLastOnline;
-
-  // TODO переделать!!! нужно еще проверятьб папку /update/new_vesrion.zip  что есть такой файл
 
   try
    if (XML.isUpdate) and (isExistFileUpdate) then begin

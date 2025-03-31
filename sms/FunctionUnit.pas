@@ -28,10 +28,14 @@ function LoadData(InFileExcel:string; var _errorDescription:string;
 procedure OptionsStyle(InOptionsType:enumSendingOptions);                                     // выбор типа отправляемого смс
 function isCorrectNumberPhone(InNumberPhone:string; var _errorDescription:string):Boolean;    // проверка корректности номера телефона при вводе
 function CheckParamsBeforeSending(InOptionsType:enumSendingOptions; var _errorDescription:string):Boolean; // проверка данных перед отправкой
-function IsPunctuationOrDigit(ch: Char;InCheckOnlyPunctuation:Boolean = False): Boolean;      // проверка на знак припенания или цифру
+function IsPunctuationOrDigit(ch: Char;
+                              InCheckOnlyPunctuation:Boolean = False;
+                              InCheckMinimalPunctuation:Boolean=False): Boolean;      // проверка на знак припенания или цифру
 function IsOnlyNumber(ch: Char): Boolean;                                                     // проверка только на цифру цифру
+function IsLetter(ch: Char): Boolean;                                                         // проверка только на букву
 function IsFirstCharUpperCyrillic(const S: string): Boolean;                                  // проверка что первая буква это заглавная буква
 function isExistSpaceWithLine(const S: string): Boolean;                                      // проверка на пробел в конце строки
+function isWordExistPunctuation(var _stroka:TRichEdit; var _errorDescription:string):Boolean; // проверка чтобы не было типа таких слов (Алексеевна,добрый | ,Огуречников | г.Волжском)
 function CreateSMSMessage(var InMessage:TRichEdit):string;                                    // правка сообщения чтобы оно было в 1 строку
 function SendingMessage(InOptionsType:enumSendingOptions; var _errorDescription:string):Boolean; // отправка сообщения
 procedure ClearParamsForm(InOptionsType:enumSendingOptions);                                  // очистка полей формы
@@ -102,14 +106,15 @@ end;
 
 
 // проверка на знак припенания или цифру
-function IsPunctuationOrDigit(ch: Char; InCheckOnlyPunctuation:Boolean = False): Boolean;
+function IsPunctuationOrDigit(ch: Char; InCheckOnlyPunctuation:Boolean = False; InCheckMinimalPunctuation:Boolean=False): Boolean;
 begin
   if InCheckOnlyPunctuation then begin
-     Result := (ch in [',', '.', '!', '?', ';', ':', '-', '(', ')', '[', ']', '{', '}', '''', '"', '<', '>'])
+     if not InCheckMinimalPunctuation then Result := (ch in [',', '.', '!', '?', ';', ':', '-', '(', ')', '[', ']', '{', '}', '''', '"', '<', '>'])
+     else Result := (ch in [',', '.', '!', '?']);
   end
   else begin
     Result := (ch in [',', '.', '!', '?', ';', ':', '-', '(', ')', '[', ']', '{', '}', '''', '"', '<', '>']) or
-            (ch >= '0') and (ch <= '9');
+              (ch >= '0') and (ch <= '9');
   end;
 end;
 
@@ -125,6 +130,17 @@ begin
   Result := (ch in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0']);
 end;
 
+
+// проверка только на букву
+function IsLetter(ch: Char): Boolean;
+var
+  code: Integer;
+begin
+  code:=Ord(ch);     // А-1040  Я-1071   а-1072   я-1103
+  Result:=((code >= 1040) or (code <= 1103));
+end;
+
+
 // проверка что первая буква это заглавная буква
 function IsFirstCharUpperCyrillic(const S: string): Boolean;
 var
@@ -139,6 +155,107 @@ begin
      (ord(FirstChar) <= 1071) then Result:=True;
 
 end;
+
+
+function GetWordAtPosition(const S: string; pos: Integer): string;
+var
+  countPos: Integer;
+  startPosition:Integer;
+begin
+  // Проверяем, что позиция находится в пределах строки
+  if (pos < 1) or (pos > Length(S)) then
+  begin
+    Result := '';
+    Exit;
+  end;
+
+  // Находим конец слова
+  countPos := 0;
+  startPosition:=pos;
+  while IsLetter(S[startPosition]) and not isExistSpaceWithLine(S[startPosition]) do begin
+   Inc(countPos);
+   Inc(startPosition);
+  end;
+
+  // Извлекаем слово
+  Result := Copy(S, pos+1, countPos-1);
+end;
+
+// проверка чтобы не было типа таких слов (Алексеевна,добрый | ,Огуречников | г.Волжском)
+function isWordExistPunctuation(var _stroka:TRichEdit; var _errorDescription:string):Boolean;
+var
+  i,startPos: Integer;
+  message_tmp,word: string;
+begin
+  Result := True;  // По умолчанию считаем, что есть ошибки
+  _errorDescription := '';
+
+  // Подправим сообщение, чтобы оно было в одну строчку
+  message_tmp := CreateSMSMessage(_stroka);
+
+  // Проверка на пустую строку
+  if Trim(message_tmp) = '' then
+  begin
+    _errorDescription := 'Сообщение не должно быть пустым';
+    Exit;
+  end;
+
+   // Сначала сбрасываем все атрибуты текста в RichEdit
+  _stroka.SelectAll;
+  _stroka.SelAttributes.Color := clBlack; // Цвет текста по умолчанию
+  _stroka.SelAttributes.Style := [];      // Убираем все стили
+
+  // проверяем содержит ли текст ссылку на чат бот хирургии
+  if FormHome.isMedsiLinkTelegramBot then begin
+    // пропускаем это сообщение
+    Result := False;
+    Exit;
+  end;
+
+  for i := 1 to Length(message_tmp) do
+  begin
+     if isExistSpaceWithLine(message_tmp[i]) then Continue;
+
+    // Проверяем, если текущий символ — буква
+    if IsLetter(message_tmp[i]) then
+    begin
+      // Проверяем, если следующий символ — не пробел, а за ним знак препинания
+      if (i < Length(message_tmp)) then
+      begin
+        if (not isExistSpaceWithLine(message_tmp[i+1])) and
+           IsPunctuationOrDigit(message_tmp[i],True,True) then
+        begin
+          // Извлекаем словосочетание
+           word :=  GetWordAtPosition(message_tmp, i);
+          _errorDescription := Format('Между словом "%s" и знаком препинания "%s" должен быть пробел',
+                                      [word, message_tmp[i]]);
+
+          // Подкрашиваем слово
+          startPos := i - 1; // чтобы захватить и знак препинания   // Позиция начала слова
+          _stroka.SelStart := startPos;           // Устанавливаем начало выделения
+          _stroka.SelLength := Length(word)+1;      // Устанавливаем длину выделения
+          _stroka.SelAttributes.Color := clBlue;  // Устанавливаем цвет слова
+          _stroka.SelAttributes.Style := [fsBold];
+
+          Exit;
+        end;
+      end;
+    end;
+
+    // Проверка на конец сообщения
+    if (i = Length(message_tmp)) then
+    begin
+      if IsPunctuationOrDigit(message_tmp[i], True) then
+      begin
+        _errorDescription := 'Сообщение не должно заканчиваться знаком препинания';
+        Exit;
+      end;
+    end;
+  end;
+
+  Result := False; // Если ошибок не найдено, возвращаем False
+end;
+
 
 
 // проверка данных перед отправкой
@@ -186,6 +303,26 @@ begin
             Exit;
          end;
 
+         // проверка чтобы собощение было с заглавной буквы
+         if not IsFirstCharUpperCyrillic(re_ManualSMS.Text) then begin
+           _errorDescription:='Сообщение должно начинаться с заглавной буквы';
+            Exit;
+         end;
+
+         // проверка чтобы не отправили ссылку на телеграм бот хириургии не из шаблона
+         if not isMedsiLinkTelegramBot then begin
+           temp_message:=AnsiLowerCase(re_ManualSMS.Text);
+           if AnsiPos(MEDSI_CHAT_BOT_TELEGRAM,temp_message)<>0 then begin
+              _errorDescription:='Ссылку на чат бот Центра хирургии Медси-Диалайн нужно отправлять через глобальные шаблоны';
+              Exit;
+           end;
+         end;
+
+         // проверка чтобы не было типа таких соощений (Алексеевна,добрый | ,Огуречников | г.Волжском)
+         if isWordExistPunctuation(re_ManualSMS, _errorDescription) then begin
+           Exit;
+         end;
+
          if not chkbox_SignSMS.Checked then begin
            resultat:=MessageBox(Handle,PChar('Не установлена галка "вставить подпись в конце SMS"'+#13#13+
                                              'Это так и задумано?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
@@ -208,30 +345,26 @@ begin
 
          // проверка чтобы не повторялось слово медси
          if chkbox_SignSMS.Checked then begin
-            if AnsiPos('медси',temp_message)<>0 then begin
-              _errorDescription:='Сообщение содержит название компании "Медси"'+#13+
-                                 'при этом установлена галка "вставить подпись в конце SMS"'+#13+
-                                 'это приведет к лексической ошибке в сообщении'+'#13'+
-                                 'Уберите название или снимите галку "вставить подпись в конце SMS"';
-              Exit;
+           if not isMedsiLinkTelegramBot then begin // проверка вдруг отправляется ссылка на телеграм
+             if AnsiPos('медси',temp_message)<>0 then begin
+                _errorDescription:='Сообщение содержит название компании "Медси"'+#13+
+                                   'при этом установлена галка "вставить подпись в конце SMS"'+#13+
+                                   'это приведет к лексической ошибке в сообщении'+#13#13+
+                                   'Уберите название или снимите галку "вставить подпись в конце SMS"';
+                Exit;
+             end;
            end;
-         end;
-
-         // проверка чтобы собощение было с заглавной буквы
-         if not IsFirstCharUpperCyrillic(re_ManualSMS.Text) then begin
-           _errorDescription:='Сообщение должно начинаться с заглавной буквы';
-            Exit;
          end;
 
           // проверка орфографии
           Spelling:=TSpelling.Create(re_ManualSMS, True);
           if Spelling.isExistErrorSpelling then begin
             _errorDescription:='В тексте сообщения присутствуют орфографические ошибки!'+#13+
-                               'Если ошибки нет, добавьте слово в словарь'+#13#13#13+
+                               'Если ошибки нет, добавьте слово в словарь'+#13+
+                               'ВАЖНО! Не нужно бездумно все слова добавлять'+#13#13#13+
                                'Выберите слово, нажмите пр.кл.мыши и выбрите "добавить в словарь"';
             Exit;
           end;
-
 
 
           // ну и на последок проверим длинну сообщения чтобы была не очень длинное
@@ -412,6 +545,7 @@ begin
        SharedSendindPhoneManualSMS.Clear;
        lblManualSMS_List.Caption:='списком';
 
+       isMedsiLinkTelegramBot:=False;
       end;
       options_Sending: begin
        btnSendSMS.Caption:=' &Запустить SMS рассылку';
@@ -445,8 +579,16 @@ end;
 
 // добавление сообщения на отправку из шаблонов сообщений
 procedure AddMessageFromTemplate(InMessage:string);
+var
+ tmp:string;
 begin
   with FormHome do begin
+    // проверка отпавка ссылки на чат бот медси хирургии
+    begin
+      tmp:=AnsiLowerCase(InMessage);
+      if AnsiPos(MEDSI_CHAT_BOT_TELEGRAM,tmp)<>0 then isMedsiLinkTelegramBot:=True;
+    end;
+
     re_ManualSMS.Clear;
     re_ManualSMS.Text:=InMessage;
   end;
@@ -1138,11 +1280,13 @@ end;
 function isValidPacientFields(var Pacient:TListPacients):Boolean;
 const
  cPHONE_ERROR       :string  = 'Некорректный номер телефона';
- cPACIENT_ERROR     :string  = 'Отсутствует Имя Отчевство у пациента';
+ cPACIENT_ERROR     :string  = 'Отсутствует Имя Отчеcтво у пациента';
+ cPACIENT_ERROR2    :string  = 'Отсутствует Отчеcтво у пациента';
  cFIOVRACHA_ERROR   :string  = 'Не задана услуга или ФИО врача';
 var
  i,j:Integer;
  tmp:string;
+ exist_space:Boolean;
 
 begin
   Result:=False;
@@ -1185,6 +1329,23 @@ begin
     Pacient._errorDescriptions:=cPACIENT_ERROR;
     Exit;
   end;
+
+  // проверка чтобы был пробел
+  begin
+    exist_space:=False;
+    for i:=1 to Length(Pacient.IO)-1 do begin
+      tmp:=Pacient.IO[i];
+      if tmp = ' ' then begin
+        exist_space:=True;
+      end;
+    end;
+
+    if not exist_space then begin
+     Pacient._errorDescriptions:=cPACIENT_ERROR2;
+     Exit;
+    end;
+  end;
+
 
   // проверка корректности ФИО\услуги (были случаи когда писали МЕДСИ)
   tmp:=AnsiLowerCase(Pacient.FIOVracha);
@@ -1256,13 +1417,17 @@ begin
  with p_ListView do begin
    ViewStyle:= vsReport;
 
-    with p_ListView.Columns.Add do
+   Items.Clear;
+   Columns.Clear;
+   ViewStyle:= vsReport;
+
+    with Columns.Add do
     begin
       Caption:='ID';
       Width:=0;
     end;
 
-    with p_ListView.Columns.Add do
+    with Columns.Add do
     begin
       Caption:=' Шаблон сообщения';
       Width:=cWidth_default;

@@ -82,6 +82,10 @@ var
    // сообщение когда не прогружен excel файл
    EXCEL_FILE_NOT_LOADED:string ='не загружен';
 
+   // статичная ссылка на чат бот хирургии
+   MEDSI_CHAT_BOT_TELEGRAM:string = 'medsidialine_lor_bot';
+
+
   // загрузка DLL
   // --- core.dll ---
   type

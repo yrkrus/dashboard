@@ -98,21 +98,21 @@ begin
          if p_ActiveSipOperators.GetListOperators_AccessDashboad(i) then begin
             // проверим вдруг разговаривал оператор и просто ушел домой
             if isOperatorGoHome(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i)))) then ListItem.SubItems.Add(getStatus(eHome))
-            else ListItem.SubItems.Add('неизвестен');
+            else ListItem.SubItems.Add('---');
 
             if p_ActiveSipOperators.GetListOperators_OperatorName(i) = SharedCurrentUserLogon.GetFamiliya+' '+SharedCurrentUserLogon.GetName then begin
              // для привязвнной форме
-             HomeForm.lblCurrentStatus.Caption:='неизвестен';
+             HomeForm.lblCurrentStatus.Caption:='---';
 
              // для отвязанонй формы
-             FormOperatorStatus.Caption:='Текущий статус: неизвестен';
+             FormOperatorStatus.Caption:='Текущий статус: ---';
             end;
          end
          else begin // доступа к дашборду нет значит это  тип "операторы (доступ без дашборда)"
 
             // находится ли в очереди
             if p_ActiveSipOperators.GetListOperators_Queue(i) <> '' then begin
-               if p_ActiveSipOperators.GetListOperators_TalkTime(i) <>'' then begin
+               if p_ActiveSipOperators.GetListOperators_TalkTime(i,True) <>'' then begin
                  ListItem.SubItems.Add('разговор');
 
                end
@@ -209,8 +209,8 @@ begin
 
     // ===== ВРЕМЯ РАЗГОВОРА =====
     begin
-     if p_ActiveSipOperators.GetListOperators_TalkTime(i) = '' then ListItem.SubItems.Add('---')
-     else ListItem.SubItems.Add(p_ActiveSipOperators.GetListOperators_TalkTime(i));
+     if p_ActiveSipOperators.GetListOperators_TalkTime(i,True) = '' then ListItem.SubItems.Add('---')
+     else ListItem.SubItems.Add(p_ActiveSipOperators.GetListOperators_TalkTime(i,True));
     end;
 
     // ===== ОЧЕРЕДЬ =====
@@ -260,21 +260,21 @@ begin
            if p_ActiveSipOperators.GetListOperators_AccessDashboad(i) then begin
               // проверим вдруг разговаривал оператор и просто ушел домой
               if isOperatorGoHome(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i)))) then ListItem.SubItems[1]:=getStatus(eHome)
-              else ListItem.SubItems[1]:='неизвестен';
+              else ListItem.SubItems[1]:='---';
 
               if p_ActiveSipOperators.GetListOperators_OperatorName(i) = SharedCurrentUserLogon.GetFamiliya+' '+SharedCurrentUserLogon.GetName then begin
                  // для привязвнной форме
-                 HomeForm.lblCurrentStatus.Caption:='неизвестен';
+                 HomeForm.lblCurrentStatus.Caption:='---';
 
                  // для отвязанонй формы
-                 FormOperatorStatus.Caption:='Текущий статус: неизвестен';
+                 FormOperatorStatus.Caption:='Текущий статус: ---';
               end;
            end
            else begin // доступа к дашборду нет значит это  тип "операторы (доступ без дашборда)"
 
               // находится ли в очереди
               if p_ActiveSipOperators.GetListOperators_Queue(i) <> '' then begin
-                 if p_ActiveSipOperators.GetListOperators_TalkTime(i) <>'' then begin
+                 if p_ActiveSipOperators.GetListOperators_TalkTime(i,True) <>'' then begin
                    ListItem.SubItems[1]:='разговор';
 
                  end
@@ -374,8 +374,8 @@ begin
 
       // ===== ВРЕМЯ РАЗГОВОРА =====
       begin
-       if p_ActiveSipOperators.GetListOperators_TalkTime(i) = '' then ListItem.SubItems[4]:='---'
-       else ListItem.SubItems[4]:=p_ActiveSipOperators.GetListOperators_TalkTime(i);
+       if p_ActiveSipOperators.GetListOperators_TalkTime(i,True) = '' then ListItem.SubItems[4]:='---'
+       else ListItem.SubItems[4]:=p_ActiveSipOperators.GetListOperators_TalkTime(i,True);
       end;
 
       // ===== ОЧЕРЕДЬ =====

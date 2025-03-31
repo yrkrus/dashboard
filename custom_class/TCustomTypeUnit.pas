@@ -11,7 +11,7 @@ unit TCustomTypeUnit;
 interface
 
   uses
-  SysUtils, Windows;
+  SysUtils, Windows, Graphics;
 
 
   type
@@ -113,7 +113,9 @@ interface
                     eLog_studies              = 16,        // учеба
                     eLog_IT                   = 17,        // ИТ
                     eLog_transfer             = 18,        // переносы
-                    eLog_reserve              = 19         // резерв
+                    eLog_reserve              = 19,        // резерв
+                    eLog_create_new_user      = 20,        // создание нового пользователя
+                    eLog_edit_user            = 21         // редактирование пользователя
                 );
 
    type   // текущие статусы операторов
@@ -258,6 +260,13 @@ interface
                     eFontDonw);
 
 
+   type // тип для окрашивание цветого статуса оператора
+   enumColorStatus = (color_Default,        // по умолчаниюю
+                      color_Good,           // доступен
+                      color_NotBad,         // разговор от 3мин до 10мин  | поствызов >= 3мин
+                      color_Bad,            // разговор от 10мин до 15мин
+                      color_Very_Bad,       // разговор >= 15мин
+                      color_Break);         // обед или перерыв
 
  // =================== ПРОЕОБРАЗОВАНИЯ ===================
 
@@ -266,6 +275,7 @@ interface
 
  function TLoggingToInteger(InTLogging:enumLogging):Integer;                       // проеобразование из TLogging в Integer
  function IntegerToTLogging(InLogging:Integer):enumLogging;                        // преобразование из Integer в TLogging
+ function EnumLoggingToString(_logging:enumLogging):string;                        // EnumLogging -> String
  function StringToTRole(InRole:string):enumRole;                                   // string -> TRole
  function TRoleToString(InRole:enumRole):string;                                   // TRole -> string
  function EnumProgrammToString(InEnumProgram:enumProrgamm):string;                 // enumProgramm -> string
@@ -290,6 +300,7 @@ interface
  function EnumStatusJobClinicToInteger(InStatus:enumStatusJobClinic):integer;      // enumStatusJobClinic -> Integer
  function StringToEnumStatusJobClinic(InStatus:string):enumStatusJobClinic;        // String -> enumStatusJobClinic
  function EnumFontSizeToString(InFont:enumFontSize):string;                        // enumFontSize -> String;
+ function EnumColorStatusToTColor(_statusColor:enumColorStatus):TColor;            // enumColorStatus -> TColor
 
  // =================== ПРОЕОБРАЗОВАНИЯ ===================
  implementation
@@ -328,6 +339,8 @@ begin
     eLog_IT:                  Result:=17;       // ИТ
     eLog_transfer:            Result:=18;       // переносы
     eLog_reserve:             Result:=19;       // резерв
+    eLog_create_new_user:     Result:=20;       // создание нового пользователя
+    eLog_edit_user:           Result:=21;       // редактирование пользователя
   end;
 end;
 
@@ -356,9 +369,41 @@ begin
     17:   Result:=eLog_IT;                  // ИТ
     18:   Result:=eLog_transfer;            // переносы
     19:   Result:=eLog_reserve;             // резерв
+    20:   Result:=eLog_create_new_user;     // создание нового пользователя
+    21:   Result:=eLog_edit_user;           // редактирование пользователя
   end;
 end;
 
+
+// EnumLogging -> String
+function EnumLoggingToString(_logging:enumLogging):string;
+begin
+  case _logging of
+    eLog_unknown:             Result:='Неизвестный статус';
+    eLog_enter:               Result:='Вход';
+    eLog_exit:                Result:='Выход';
+    eLog_auth_error:          Result:='Не успешная авторизация';
+    eLog_exit_force:          Result:='Выход (через команду force_closed)';
+    eLog_add_queue_5000:      Result:='Добавление в очередь 5000';
+    eLog_add_queue_5050:      Result:='Добавление в очередь 5050';
+    eLog_add_queue_5000_5050: Result:='Добавление в очередь 5000 и 5050';
+    eLog_del_queue_5000:      Result:='Удаление из очереди 5000';
+    eLog_del_queue_5050:      Result:='Удаление из очереди 5050';
+    eLog_del_queue_5000_5050: Result:='Даление из очереди 5000 и 5050';
+    eLog_available:           Result:='Доступен';
+    eLog_home:                Result:='Домой';
+    eLog_exodus:              Result:='Исход';
+    eLog_break:               Result:='Перерыв';
+    eLog_dinner:              Result:='Обед';
+    eLog_postvyzov:           Result:='Поствызов';
+    eLog_studies:             Result:='Учеба';
+    eLog_IT:                  Result:='ИТ';
+    eLog_transfer:            Result:='Переносы';
+    eLog_reserve:             Result:='Резерв';
+    eLog_create_new_user:     Result:='Создание нового пользователя';
+    eLog_edit_user:           Result:='Редактирование пользователя';
+  end;
+end;
 
 // string -> TRole
 function StringToTRole(InRole:string):enumRole;
@@ -636,5 +681,21 @@ begin
     eQueue:     Result:='Queue';
   end;
 end;
+
+ // enumColorStatus -> TColor
+function EnumColorStatusToTColor(_statusColor:enumColorStatus):TColor;
+begin
+  case _statusColor of
+    color_Default:    Result := clBlack;    // по умолчанию
+    color_Good:       Result := clGreen;    // доступен
+    color_NotBad:     Result := clRed;      // разговор от 3мин до 10мин  | поствызов >= 3мин
+    color_Bad:        Result := $0000008A;  // разговор от 10мин до 15мин
+    color_Very_Bad:   Result := clBlue;     // разговор >= 15мин
+    color_Break:      Result := $00DDB897;  // обед или перерыв
+  else
+    Result := clBlack;
+  end;
+end;
+
 
 end.
