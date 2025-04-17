@@ -18,26 +18,10 @@ uses  System.Classes,
       Graphics,
       System.SyncObjs,
       IdException,
+      TUserAccessUnit,
       TCustomTypeUnit;
 
 
-
-/////////////////////////////////////////////////////////////////////////////////////////
-// class TUserAccess
-  type
-    TUserAccess = class
-  public
-   menu_settings_users                        : Boolean;
-   menu_settings_serversik                    : Boolean;
-   menu_settings_siptrunk                     : Boolean;
-   menu_settings_global                       : Boolean;
-   menu_active_session                        : Boolean;
-
-  constructor Create(InGroupRole:enumRole);      overload;
-  private
-  procedure LoadAccess(var p_InRole: enumRole);
-  end;
- // class TUserAccess END
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -95,6 +79,7 @@ uses  System.Classes,
       isAccessLocalChat                       : Boolean;   // есть ли доступ в локальному чату
       isAccessReports                         : Boolean;   // есть ли доступ к отчетам
       isAccessSMS                             : Boolean;   // есть ли доступ к sms рассылке
+      isAccessService                         : Boolean;   // есть ли доступ к  услугам
 
 
       function GetRoleIsOperator(InRole:enumRole)     :Boolean;   // проверка роль пользователя это операторская роль
@@ -110,67 +95,7 @@ uses  System.Classes,
 implementation
 
 uses
-  FunctionUnit, GlobalVariables;
-
-//uses
-//  FunctionUnit;
-
-// class TUserAccess START
- constructor TUserAccess.Create(InGroupRole:enumRole);
- begin
-   //inherited;
-   menu_settings_users                      :=  False;
-   menu_settings_serversik                  :=  False;
-   menu_settings_siptrunk                   :=  False;
-   menu_settings_global                     :=  False;
-   menu_active_session                      :=  False;
-
-   LoadAccess(InGroupRole);
- end;
-
-
- procedure TUserAccess.LoadAccess(var p_InRole: enumRole);
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
- //test:string;
-begin
-
- ado:=TADOQuery.Create(nil);
- serverConnect:=createServerConnect;
- if not Assigned(serverConnect) then begin
-   FreeAndNil(ado);
-   Exit;
- end;
-
- try
-  with ado do begin
-    ado.Connection:=serverConnect;
-
-    SQL.Clear;
-    SQL.Add('select menu_users,menu_serversik,menu_siptrunk,');
-    SQL.Add('menu_settings_global,menu_active_session ');
-    SQL.Add('from access_panel where role = '+#39+IntToStr(GetRoleID(TRoleToString(p_InRole)))+#39);
-
-    Active:=True;
-
-    if StrToInt(VarToStr(Fields[0].Value))=1 then menu_settings_users:=True;
-    if StrToInt(VarToStr(Fields[1].Value))=1 then menu_settings_serversik:=True;
-    if StrToInt(VarToStr(Fields[2].Value))=1 then menu_settings_siptrunk:=True;
-    if StrToInt(VarToStr(Fields[3].Value))=1 then menu_settings_global:=True;
-    if StrToInt(VarToStr(Fields[4].Value))=1 then menu_active_session:=True;
-
-  end;
- finally
-   FreeAndNil(ado);
-   if Assigned(serverConnect) then begin
-     serverConnect.Close;
-     FreeAndNil(serverConnect);
-   end;
- end;
-end;
-
-// class TUserAccess END
+  FunctionUnit, GlobalVariables, GlobalVariablesLinkDLL;
 
 
 // class TUserList START
@@ -449,6 +374,9 @@ end;
     end;
     menu_active_session:begin
       if Access.menu_active_session then Result:=access_ENABLED;
+    end;
+    menu_service:begin
+      if Access.menu_service then Result:=access_ENABLED;
     end;
    end;
  end;

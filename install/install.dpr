@@ -370,6 +370,72 @@ begin
    end;
 end;
 
+// очисткаот settings.xml
+procedure ClearSettingsXMLFile;
+var
+ f_dest: string;
+begin
+  f_dest:=INSTALL_DASHBOARD+'\'+SETTINGS_XML;
+  if FileExists(f_dest) then DeleteFile(PChar(f_dest));
+end;
+
+
+// закрытие всех дочерних процессов
+procedure KillChildTask;
+var
+ countKillExe:Integer;
+begin
+   Writeln('Поиск дочерних процессов');
+   // закрываем chat_exe если открыт
+   countKillExe:=0;
+   while GetTask(PChar(CHAT_EXE)) do begin
+     Writeln('Закрытие процесса '+PChar(CHAT_EXE));
+     KillTask(PChar(CHAT_EXE));
+
+     // на случай если не удасться закрыть дочерний exe
+     Sleep(500);
+     Inc(countKillExe);
+     if countKillExe>10 then Break;
+   end;
+
+   // закрываем report_exe если открыт
+   countKillExe:=0;
+   while GetTask(PChar(REPORT_EXE)) do begin
+     Writeln('Закрытие процесса '+PChar(REPORT_EXE));
+     KillTask(PChar(REPORT_EXE));
+
+     // на случай если не удасться закрыть дочерний exe
+     Sleep(500);
+     Inc(countKillExe);
+     if countKillExe>10 then Break;
+   end;
+
+    // закрываем sms_exe если открыт
+   countKillExe:=0;
+   while GetTask(PChar(SMS_EXE)) do begin
+    Writeln('Закрытие процесса '+PChar(SMS_EXE));
+     KillTask(PChar(SMS_EXE));
+
+     // на случай если не удасться закрыть дочерний exe
+     Sleep(500);
+     Inc(countKillExe);
+     if countKillExe>10 then Break;
+   end;
+
+     // закрываем sms_exe если открыт
+   countKillExe:=0;
+   while GetTask(PChar(DASHBOARD_EXE)) do begin
+     Writeln('Закрытие процесса '+PChar(DASHBOARD_EXE));
+     KillTask(PChar(DASHBOARD_EXE));
+
+     // на случай если не удасться закрыть дочерний exe
+     Sleep(500);
+     Inc(countKillExe);
+     if countKillExe>10 then Break;
+   end;
+end;
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////// START PROGRAMM  ////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -424,6 +490,10 @@ begin
 
     SetConsoleColor(FOREGROUND_RED or FOREGROUND_GREEN or FOREGROUND_BLUE); //default белым ставим
 
+     // закрытые дочерних процессов
+     // ==============================================
+     KillChildTask;
+
     //  ========= скачиваем актуальную версию дашборда  =========
     begin
       CurrentVersionDashboard:=GetRemoteVersionDashboard(error);
@@ -466,6 +536,12 @@ begin
     // останавливаем служюу на всякий случай
     Command:='net stop '+SERVICE_NAME;
     ExecuteCommand(Command);
+
+
+    // удаление старого settings.xml
+    // ==============================================
+    ClearSettingsXMLFile;
+
 
     Writeln('');
     Writeln('');

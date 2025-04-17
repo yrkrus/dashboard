@@ -54,7 +54,7 @@ uses
 implementation
 
 uses
-  GlobalVariables, FunctionUnit, FormHome;
+  GlobalVariables, GlobalVariablesLinkDLL, FunctionUnit, FormHome;
 
 
 constructor TInternalProcess.Create(InUserLogonID:Integer;

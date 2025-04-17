@@ -4,7 +4,7 @@ object FormServersIK: TFormServersIK
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = ' '#1057#1077#1088#1074#1077#1088#1072' '#1048#1085#1092#1086#1082#1083#1080#1085#1080#1082#1080
-  ClientHeight = 619
+  ClientHeight = 585
   ClientWidth = 956
   Color = clWindow
   DefaultMonitor = dmPrimary
@@ -24,7 +24,7 @@ object FormServersIK: TFormServersIK
     Left = 0
     Top = 0
     Width = 956
-    Height = 554
+    Height = 521
     Align = alTop
     BevelKind = bkTile
     BevelOuter = bvNone
@@ -33,7 +33,7 @@ object FormServersIK: TFormServersIK
       Left = 0
       Top = 0
       Width = 952
-      Height = 550
+      Height = 517
       Align = alClient
       BorderStyle = bsNone
       Columns = <>
@@ -55,8 +55,8 @@ object FormServersIK: TFormServersIK
     end
   end
   object btnAddServer: TBitBtn
-    Left = 189
-    Top = 562
+    Left = 196
+    Top = 529
     Width = 166
     Height = 47
     Caption = '&'#1044#1086#1073#1072#1074#1080#1090#1100
@@ -140,8 +140,8 @@ object FormServersIK: TFormServersIK
     OnClick = btnAddServerClick
   end
   object btnEditUser: TBitBtn
-    Left = 375
-    Top = 562
+    Left = 382
+    Top = 529
     Width = 166
     Height = 47
     Caption = '&'#1056#1077#1076#1072#1082#1090#1080#1088#1086#1074#1072#1090#1100
@@ -225,8 +225,8 @@ object FormServersIK: TFormServersIK
     OnClick = btnEditUserClick
   end
   object btnDisable: TBitBtn
-    Left = 564
-    Top = 562
+    Left = 571
+    Top = 529
     Width = 166
     Height = 47
     Caption = '&'#1059#1076#1072#1083#1080#1090#1100
@@ -311,7 +311,7 @@ object FormServersIK: TFormServersIK
   end
   object Button1: TButton
     Left = 808
-    Top = 573
+    Top = 542
     Width = 75
     Height = 25
     Caption = 'Button1'

@@ -4,7 +4,7 @@ object FormServerIKEdit: TFormServerIKEdit
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = #1044#1086#1073#1072#1074#1083#1077#1085#1080#1077' '#1089#1077#1088#1074#1077#1088#1072
-  ClientHeight = 287
+  ClientHeight = 305
   ClientWidth = 434
   Color = clWindow
   DefaultMonitor = dmPrimary
@@ -21,7 +21,7 @@ object FormServerIKEdit: TFormServerIKEdit
   TextHeight = 15
   object btnAdd: TBitBtn
     Left = 137
-    Top = 229
+    Top = 251
     Width = 160
     Height = 47
     Caption = '   &'#1044#1086#1073#1072#1074#1080#1090#1100
@@ -107,7 +107,7 @@ object FormServerIKEdit: TFormServerIKEdit
   end
   object btnEdit: TBitBtn
     Left = 444
-    Top = 229
+    Top = 251
     Width = 160
     Height = 47
     Caption = #1056#1077#1076#1072#1082#1090#1080#1088#1086#1074#1072#1090#1100
@@ -193,9 +193,9 @@ object FormServerIKEdit: TFormServerIKEdit
   end
   object chkboxCloseWindow: TCheckBox
     Left = 8
-    Top = 206
-    Width = 223
-    Height = 17
+    Top = 225
+    Width = 272
+    Height = 16
     Caption = #1079#1072#1082#1088#1099#1090#1100' '#1086#1082#1085#1086' '#1087#1086#1089#1083#1077' '#1076#1086#1073#1072#1074#1083#1077#1085#1080#1103
     Checked = True
     Font.Charset = RUSSIAN_CHARSET
@@ -207,19 +207,18 @@ object FormServerIKEdit: TFormServerIKEdit
     State = cbChecked
     TabOrder = 1
   end
-  object panel: TPanel
+  object GroupBox1: TGroupBox
     Left = 8
-    Top = 8
+    Top = 6
     Width = 417
-    Height = 193
-    BevelInner = bvLowered
+    Height = 218
     TabOrder = 0
-    object Label8: TLabel
-      Left = 86
-      Top = 15
-      Width = 13
+    object Label1: TLabel
+      Left = 57
+      Top = 71
+      Width = 42
       Height = 16
-      Caption = 'IP'
+      Caption = #1040#1076#1088#1077#1089
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
@@ -233,19 +232,6 @@ object FormServerIKEdit: TFormServerIKEdit
       Width = 31
       Height = 16
       Caption = 'Alias'
-      Font.Charset = RUSSIAN_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -13
-      Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-    object Label1: TLabel
-      Left = 57
-      Top = 71
-      Width = 42
-      Height = 16
-      Caption = #1040#1076#1088#1077#1089
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
@@ -296,40 +282,61 @@ object FormServerIKEdit: TFormServerIKEdit
       ParentFont = False
       WordWrap = True
     end
-    object edtIP: TEdit
-      Left = 113
-      Top = 13
-      Width = 133
-      Height = 23
-      TabOrder = 0
-    end
-    object edtAlias: TEdit
-      Left = 113
-      Top = 41
-      Width = 133
-      Height = 23
-      TabOrder = 1
-    end
-    object edtAddress: TEdit
-      Left = 113
-      Top = 69
-      Width = 281
-      Height = 23
-      TabOrder = 2
-    end
-    object combox_TypeClinic: TComboBox
-      Left = 113
-      Top = 98
-      Width = 154
-      Height = 24
-      Style = csDropDownList
+    object lblWorkingTimeLabel: TLabel
+      Left = 10
+      Top = 190
+      Width = 89
+      Height = 16
+      Alignment = taRightJustify
+      Caption = #1063#1072#1089#1099' '#1088#1072#1073#1086#1090#1099
       Font.Charset = RUSSIAN_CHARSET
-      Font.Color = clBlack
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+      WordWrap = True
+    end
+    object lblStatusWorkingTime: TLabel
+      Left = 227
+      Top = 191
+      Width = 122
+      Height = 16
+      Caption = #1089#1090#1072#1090#1091#1089' '#1095#1072#1089#1086#1074' '#1088#1072#1073#1086#1090#1099
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
       Font.Height = -13
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
-      TabOrder = 3
+    end
+    object Label8: TLabel
+      Left = 86
+      Top = 15
+      Width = 13
+      Height = 16
+      Caption = 'IP'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+    end
+    object btnWorkingTime: TButton
+      Left = 112
+      Top = 189
+      Width = 104
+      Height = 21
+      Caption = #1088#1077#1076#1072#1082#1090#1080#1088#1086#1074#1072#1090#1100
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 6
+      OnClick = btnWorkingTimeClick
     end
     object combox_ShowSMS: TComboBox
       Left = 113
@@ -358,6 +365,41 @@ object FormServerIKEdit: TFormServerIKEdit
       Font.Style = []
       ParentFont = False
       TabOrder = 5
+    end
+    object combox_TypeClinic: TComboBox
+      Left = 113
+      Top = 98
+      Width = 154
+      Height = 24
+      Style = csDropDownList
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clBlack
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 3
+    end
+    object edtAddress: TEdit
+      Left = 113
+      Top = 69
+      Width = 281
+      Height = 23
+      TabOrder = 2
+    end
+    object edtAlias: TEdit
+      Left = 113
+      Top = 41
+      Width = 133
+      Height = 23
+      TabOrder = 1
+    end
+    object edtIP: TEdit
+      Left = 113
+      Top = 13
+      Width = 133
+      Height = 23
+      TabOrder = 0
     end
   end
 end

@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.Imaging.jpeg,
   Vcl.StdCtrls, Vcl.ComCtrls, Vcl.Imaging.pngimage, System.ImageList,
-  Vcl.ImgList;
+  Vcl.ImgList,GlobalVariablesLinkDLL;
 
 type
   TFormAbout = class(TForm)

@@ -17,7 +17,8 @@ uses  System.Classes,
       Variants,
       Graphics,
       System.SyncObjs,
-      IdException;
+      IdException,
+      GlobalVariablesLinkDLL;
 
   // class TQueueStruct
  type

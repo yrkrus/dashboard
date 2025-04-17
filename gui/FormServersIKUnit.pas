@@ -8,7 +8,7 @@ uses
   Vcl.ExtCtrls, Vcl.Grids,Data.Win.ADODB, Data.DB, IdException, TCustomTypeUnit;
 
  const
-  countEnumParseType:Word = 6;
+  countEnumParseType:Word = 7;
 
   type    // тип разбора при парсинге
   enumParseType = (eIP,
@@ -16,6 +16,7 @@ uses
                    eAddr,
                    eTypeClinic,
                    eShowSMS,
+                   eWorkingTime,
                    eStatus);
 
 type
@@ -26,7 +27,6 @@ type
     btnDisable: TBitBtn;
     list_Servers: TListView;
     Button1: TButton;
-    procedure Show;
     procedure FormShow(Sender: TObject);
     procedure btnAddServerClick(Sender: TObject);
     procedure btnEditUserClick(Sender: TObject);
@@ -49,13 +49,17 @@ type
 
   public
     { Public declarations }
+
   panel_Server_IP:string;
   panel_Server_addr:string;
   panel_Server_ID:Integer;
   panel_Server_Alias:string;
   panel_Server_TypeClinic:enumTypeClinic;
   panel_Server_ShowSMS:enumParamStatus;
+  panel_Server_WorkingTime:enumParamStatus;
   panel_Server_Status:enumStatusJobClinic;
+
+  procedure Show;
 
   end;
 
@@ -65,15 +69,15 @@ var
 implementation
 
 uses
-  FunctionUnit, FormServerIKEditUnit, GlobalVariables;
+  FunctionUnit, FormServerIKEditUnit, GlobalVariables, GlobalVariablesLinkDLL;
 
 {$R *.dfm}
 
 
 function TFormServersIK.ParseString(const p_ListView:TListItem;
                                     const p_ListViewID:Integer;
-                                   typeParse:enumParseType;
-                                   var _errorDescription:string):Boolean;
+                                    typeParse:enumParseType;
+                                    var _errorDescription:string):Boolean;
 var
   Lines: TArray<string>;
   i: Integer;
@@ -100,7 +104,8 @@ begin
    eAddr        : panel_Server_addr:=Lines[2];
    eTypeClinic  : panel_Server_TypeClinic:=StringToEnumTypeClinic(Lines[3]);
    eShowSMS     : panel_Server_ShowSMS:=StringToSettingParamsStatus(Lines[4]);
-   eStatus      : panel_Server_Status:=StringToEnumStatusJobClinic(Lines[5]);
+   eWorkingTime : panel_Server_WorkingTime:=StringToSettingParamsStatus(Lines[5]);
+   eStatus      : panel_Server_Status:=StringToEnumStatusJobClinic(Lines[6]);
   end;
 
   Result:=True;
@@ -109,13 +114,14 @@ end;
 // очистка листа
 procedure TFormServersIK.ClearList;
  const
- cWidth_default         :Word = 951;
- cProcentWidth_IP       :Word = 11;
- cProcentWidth_Alias    :Word = 13;
- cProcentWidth_Address  :Word = 39;
- cProcentWidth_Type     :Word = 10;
- cProcentWidth_ShowSMS  :Word = 14;
- cProcentWidth_Status   :Word = 11;
+ cWidth_default             :Word = 951;
+ cProcentWidth_IP           :Word = 11;
+ cProcentWidth_Alias        :Word = 13;
+ cProcentWidth_Address      :Word = 29;
+ cProcentWidth_Type         :Word = 10;
+ cProcentWidth_ShowSMS      :Word = 14;
+ cProcentWidth_WorkingTime  :Word = 10;
+ cProcentWidth_Status       :Word = 11;
 
 begin
    with list_Servers do begin
@@ -167,6 +173,13 @@ begin
 
        with Columns.Add do
       begin
+        Caption:='Время работы';
+        Width:=Round((cWidth_default*cProcentWidth_WorkingTime)/100);
+        Alignment:=taCenter;
+      end;
+
+       with Columns.Add do
+      begin
         Caption:='Статус';
         Width:=Round((cWidth_default*cProcentWidth_Status)/100);
         Alignment:=taCenter;
@@ -189,6 +202,7 @@ begin
   panel_Server_Alias:='';
   panel_Server_TypeClinic:=eOther;
   panel_Server_ShowSMS:=paramStatus_DISABLED;
+  panel_Server_WorkingTime:=paramStatus_DISABLED;
   panel_Server_Status:=eOpen;
 end;
 
@@ -273,23 +287,13 @@ begin
               if showSMS = '0' then ListItem.SubItems.Add(EnumStatusToString(eNO));
               if showSMS = '1' then ListItem.SubItems.Add(EnumStatusToString(eYES));
 
+              if IsServerIkExistWorkingTime(StrToInt(id)) then ListItem.SubItems.Add(EnumStatusToString(eYES))
+              else ListItem.SubItems.Add(EnumStatusToString(eNO));
+
               if status = '0' then ListItem.SubItems.Add(EnumStatusJobClinicToString(eClose));
               if status = '1' then ListItem.SubItems.Add(EnumStatusJobClinicToString(eOpen));
 
-            end
-            else
-            begin
-              //correct_time:=correctTimeQueue(StringToTQueue(p_listQueue.listActiveQueue[i].waiting_time_start),p_listQueue.listActiveQueue[i].waiting_time_start);
-              //if correct_time<>'null' then existingItem.SubItems[1] := correct_time; // Время ожидания
             end;
-
-
-//             // Удаляем элементы, которые отсутствуют в новых данных
-//            for i:= p_ListView.Items.Count - 1 downto 0 do
-//            begin
-//               if not p_listQueue.isExist(StrToInt(ListViewQueue.Items[i].Caption)) then
-//                ListViewQueue.Items.Delete(i);
-//            end;
 
          finally
            // ListViewQueue.Items.EndUpdate;
@@ -342,13 +346,14 @@ begin
 
   // удаляем
   if not FormServerIKEdit.getResponseBD(server_delete,
-                                          panel_Server_IP,
-                                          panel_Server_addr,
-                                          panel_Server_Alias,
-                                          panel_Server_TypeClinic,
-                                          panel_Server_ShowSMS,
-                                          panel_Server_Status,
-                                          error) then
+                                        panel_Server_ID,
+                                        panel_Server_IP,
+                                        panel_Server_addr,
+                                        panel_Server_Alias,
+                                        panel_Server_TypeClinic,
+                                        panel_Server_ShowSMS,
+                                        panel_Server_Status,
+                                        error) then
   begin
 
     // не удалось
@@ -386,6 +391,7 @@ begin
     p_editAlias:=panel_Server_Alias;
     p_editTypeClinic:=panel_Server_TypeClinic;
     p_editShowSMS:=panel_Server_ShowSMS;
+    p_editWorkingTime:=panel_Server_WorkingTime;
     p_editStatus:=panel_Server_Status;
 
     ShowModal;
@@ -433,9 +439,6 @@ begin
 end;
 
 
-
-
-
 procedure TFormServersIK.FormShow(Sender: TObject);
 begin
   Screen.Cursor:=crHourGlass;
@@ -444,7 +447,6 @@ begin
   Show;
 
   Screen.Cursor:=crDefault;
-
 end;
 
 procedure TFormServersIK.list_ServersClick(Sender: TObject);

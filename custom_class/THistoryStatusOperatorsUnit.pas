@@ -97,7 +97,7 @@ uses
 implementation
 
 uses
-  GlobalVariables;
+  GlobalVariables, GlobalVariablesLinkDLL;
 
 
 constructor TStatusDuration.Create;
@@ -194,7 +194,7 @@ begin
    eLog_studies       :countTime := m_status.m_studies;          // учеба
    eLog_IT            :countTime := m_status.m_IT;               // »“
    eLog_transfer      :countTime := m_status.m_transfer;         // переносы
-   eLog_reserve       :countTime:=m_status.m_reserve;            // резерв
+   eLog_reserve       :countTime := m_status.m_reserve;          // резерв
   else
     Exit;
   end;
@@ -248,7 +248,7 @@ begin
 
       for i := 0 to m_countHistory - 1 do
       begin
-        action       :=IntegerToTLogging(StrToInt(VarToStr(Fields[0].Value)));
+        action       :=IntegerToEnumLogging(StrToInt(VarToStr(Fields[0].Value)));
         actionTime   :=StrToDateTime(VarToStr(Fields[1].Value));
 
         m_history[i].m_status:=action;
@@ -325,16 +325,16 @@ begin
     eLog_del_queue_5050       :Exit;         // удаление из очереди 5050  (не считаем)
     eLog_del_queue_5000_5050  :Exit;         // удаление из очереди 5000 и 5050(не считаем)
     eLog_available            :m_status.m_available := m_status.m_available + _count;         // доступен
-    eLog_home                 :m_status.m_home := m_status.m_home + _count;                   // домой
-    eLog_exodus               :m_status.m_exodus := m_status.m_exodus + _count;               // исход
-    eLog_break                :m_status.m_break := m_status.m_break + _count;                 // перерыв
-    eLog_dinner               :m_status.m_dinner := m_status.m_dinner + _count;               // обед
+    eLog_home                 :m_status.m_home      := m_status.m_home + _count;              // домой
+    eLog_exodus               :m_status.m_exodus    := m_status.m_exodus + _count;            // исход
+    eLog_break                :m_status.m_break     := m_status.m_break + _count;             // перерыв
+    eLog_dinner               :m_status.m_dinner    := m_status.m_dinner + _count;            // обед
     eLog_postvyzov            :m_status.m_postvyzov := m_status.m_postvyzov + _count;         // поствызов
-    eLog_studies              :m_status.m_studies := m_status.m_studies + _count;             // учеба
-    eLog_IT                   :m_status.m_IT := m_status.m_IT + _count;                       // »“
-    eLog_transfer             :m_status.m_transfer := m_status.m_transfer + _count;           // переносы
-    eLog_reserve              :m_status.m_reserve := m_status.m_reserve + _count;             // резерв
-    eLog_create_new_user      :Exit;        // создание нового пользовател€  (не считаем)
+    eLog_studies              :m_status.m_studies   := m_status.m_studies + _count;           // учеба
+    eLog_IT                   :m_status.m_IT        := m_status.m_IT + _count;                // »“
+    eLog_transfer             :m_status.m_transfer  := m_status.m_transfer + _count;          // переносы
+    eLog_reserve              :m_status.m_reserve   := m_status.m_reserve + _count;           // резерв
+    eLog_create_new_user      :Exit;         // создание нового пользовател€  (не считаем)
     eLog_edit_user            :Exit;         // редактирование пользовател€  (не считаем)
   end;
 end;

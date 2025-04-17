@@ -11,7 +11,8 @@ unit TActiveSIPUnit;
 interface
 
 uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
-     Variants, Graphics, System.SyncObjs, IdException, TUserUnit, TCustomTypeUnit, TLogFileUnit;
+     Variants, Graphics, System.SyncObjs, IdException, TUserUnit,
+     TCustomTypeUnit, TLogFileUnit;
 
   // class TOnline
 
@@ -42,6 +43,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       sip_number                             : string;        // номер оператора
       count_talk                             : integer;       // кол-во отвеченных вызовов
       count_procent                          : Double;        // % отвеченных звонков от общего кол-ва звонков
+      trunk                                  : string;        // транк с которого пришел звонок
       phone                                  : string;        // номер телефона
       talk_time                              : string;        // время разговора
       queue                                  : string;        // какая очередь
@@ -112,6 +114,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
 
       procedure updateCountTalk;                        // обновление кол-ва отвеченных вызовов
       procedure updatePhoneTalk;                        // обновление с кем ведется сейчас разговор
+      procedure updateTrunkTalk;                        // обновление с какой линии пришел звонок
       procedure updateQueue;                            // обновление текущей очереди
       procedure updateTalkTime;                         // обновление времени разговора
       procedure updateTalkTimeAll;                      // обновление времени разговора (общее)
@@ -139,6 +142,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       function GetListOperators_AccessDashboad(id:Integer):Boolean;     // listOperators.access_dashboard
       function GetListOperators_Queue(id:Integer):string;               // listOperators.queue
       function GetListOperators_TalkTime(id:Integer; isReducedTime:Boolean):string;            // listOperators.talk_time
+      function GetListOperators_Trunk(id:Integer):string;               // listOperators.trunk
       function GetListOperators_Phone(id:Integer):string;               // listOperators.phone
       function GetListOperators_IsOnHold(id:Integer):Boolean;           // listOperators.isOnHold
       function GetListOperators_OnHoldStartTime(id:Integer):string;     // listOperators.onHoldStartTime
@@ -157,7 +161,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
 implementation
 
 uses
-  FunctionUnit, FormHome, GlobalVariables;
+  FunctionUnit, FormHome, GlobalVariables, GlobalVariablesLinkDLL;
 
 
 // class TOnline START
@@ -204,6 +208,7 @@ uses
    Self.sip_number:='';
    Self.count_talk:=0;
    Self.count_procent:=0;
+   Self.trunk:='';
    Self.phone:='';
    Self.talk_time:='';
    Self.queue:='';
@@ -232,9 +237,9 @@ uses
    countSipOperators:=0;
    countSIpOPeratorsHide:=0;
 
-   countActiveCalls:=0;   // кол-во активных звонков
-   countFreeOperators:=0; // кол-во свободных операторов
-   countAllTalkCalls:=0;       // общее кол-во отвеченных звонков операторами
+   countActiveCalls:=0;         // кол-во активных звонков
+   countFreeOperators:=0;       // кол-во свободных операторов
+   countAllTalkCalls:=0;        // общее кол-во отвеченных звонков операторами
 
 
    // генерация листа с актиыными операторами
@@ -885,6 +890,57 @@ end;
  end;
 
 
+ // обновление с какой линии пришел звонок
+ procedure TActiveSIP.updateTrunkTalk;
+ var
+  i:Integer;
+  ado:TADOQuery;
+  serverConnect:TADOConnection;
+ begin
+  if getCountSipOperators=0 then Exit;
+
+   ado:=TADOQuery.Create(nil);
+   serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+
+       for i:=0 to Length(listOperators)-1 do begin
+          if Active then Active:=False;
+          if listOperators[i].sip_number<>'' then begin
+
+              if listOperators[i].phone = '' then begin
+                listOperators[i].trunk:='';
+                Continue;
+              end;
+
+              // нет смысла еще раз проверять т.к. разговор то один
+              if listOperators[i].trunk = '' then begin
+                SQL.Clear;
+                SQL.Add('select trunk from ivr where date_time > '+#39+GetNowDateTime+#39+' and phone = '+#39+listOperators[i].phone+#39+' and to_queue = ''1'' order by date_time DESC limit 1');
+                Active:=True;
+
+                if Fields[0].Value = null then listOperators[i].trunk:='mayby_lisa'
+                else listOperators[i].trunk:=VarToStr(Fields[0].Value);
+              end;
+          end;
+       end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+ end;
+
+
  procedure TActiveSIP.updateQueue;
   var
   i,j,countQueue:Integer;
@@ -1484,6 +1540,18 @@ begin
     try
       if isReducedTime then Result:=Copy(Self.listOperators[id].talk_time, 4, 5)
       else Result:=Self.listOperators[id].talk_time;
+    finally
+      m_mutex.Release;
+    end;
+  end;
+end;
+
+
+function TActiveSIP.GetListOperators_Trunk(id:Integer):string;
+begin
+  if m_mutex.WaitFor(INFINITE) = wrSignaled  then begin
+    try
+      Result:=Self.listOperators[id].trunk;
     finally
       m_mutex.Release;
     end;

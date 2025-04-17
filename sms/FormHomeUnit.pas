@@ -57,6 +57,13 @@ type
     N1: TMenuItem;
     menu_Paste: TMenuItem;
     menu_Copy: TMenuItem;
+    TabSheet1: TTabSheet;
+    Label5: TLabel;
+    Edit1: TEdit;
+    StaticText1: TStaticText;
+    Label6: TLabel;
+    Label7: TLabel;
+    btnGenerateMessage: TBitBtn;
     procedure ProcessCommandLineParams(DEBUG:Boolean = False);
     procedure FormCreate(Sender: TObject);
     procedure btnLoadFileClick(Sender: TObject);
@@ -92,6 +99,7 @@ type
     procedure st_ShowSendingSMSClick(Sender: TObject);
     procedure menu_DictionaryClick(Sender: TObject);
     procedure menu_CopyClick(Sender: TObject);
+    procedure btnGenerateMessageClick(Sender: TObject);
 
 
 
@@ -127,7 +135,7 @@ cWebApiSMSstatusID:string='https://a2p-sms-https.beeline.ru/proto/http/?gzip=non
 implementation
 
 uses
-  FunctionUnit, GlobalVariables, TSendSMSUint, FormMyTemplateUnit, FormNotSendingSMSErrorUnit, TCustomTypeUnit, FormListSendingSMSUnit, TXmlUnit, TSpellingUnit, FormSendingSMSUnit, FormDictionaryUnit;
+  FunctionUnit, GlobalVariables, TSendSMSUint, FormMyTemplateUnit, FormNotSendingSMSErrorUnit, TCustomTypeUnit, FormListSendingSMSUnit, TXmlUnit, TSpellingUnit, FormSendingSMSUnit, FormDictionaryUnit, FormGenerateSMSUnit;
 
  {$R *.dfm}
 
@@ -203,6 +211,11 @@ begin
   end;
 end;
 
+
+procedure TFormHome.btnGenerateMessageClick(Sender: TObject);
+begin
+  FormGenerateSMS.ShowModal;
+end;
 
 procedure TFormHome.btnLoadFile2Click(Sender: TObject);
 var
@@ -309,7 +322,7 @@ begin
 
   begin
     case page_TypesSMS.ActivePage.PageIndex of
-     0:begin                 // ручная отправка
+     1:begin                 // ручная отправка
       currentOptions:=options_Manual;
 
       // добавим номера телефонов в список
@@ -322,7 +335,7 @@ begin
       end;
 
      end;
-     1:begin                  // рассылка
+     2:begin                  // рассылка
       currentOptions:=options_Sending;
      end;
     end;
@@ -588,7 +601,6 @@ end;
 
 procedure TFormHome.FormCreate(Sender: TObject);
 begin
-
   // проверка на запуска 2ой копи
   if GetCloneRun(Pchar(SMS_EXE)) then begin
     MessageBox(Handle,PChar('Обнаружен запуск 2ой копии sms рассылки'+#13#13+
@@ -708,10 +720,10 @@ procedure TFormHome.page_TypesSMSChange(Sender: TObject);
 begin
   case page_TypesSMS.ActivePage.PageIndex of
 
-   0:begin                 // ручная отправка
+   1:begin                 // ручная отправка
     OptionsStyle(options_Manual);
    end;
-   1:begin                  // рассылка
+   2:begin                  // рассылка
     OptionsStyle(options_Sending);
    end;
   end;

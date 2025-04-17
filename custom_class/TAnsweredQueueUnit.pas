@@ -106,7 +106,7 @@ const
 implementation
 
 uses
-  FunctionUnit, FormHome, GlobalVariables;
+  FunctionUnit, FormHome, GlobalVariables, GlobalVariablesLinkDLL;
 
 
  constructor TStructAnswered_list.Create;

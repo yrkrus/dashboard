@@ -57,6 +57,7 @@ type
    isAutoUpdateNotRunning:Boolean; // не запушено автоматическое обновление
 
 
+   procedure LoadUsersAuthForm;  // прогрузка пользователей в форму авторизации
    function showUserNameAuthForm:Boolean;   // отображение ранее входивщего пользователя в выборе вариантов пользователей
    function GetRoleUser(InIDCombBox:Integer):enumRole;
    procedure LoadIconListBox;    // загрузка иконок в лист бокс для последующего отображения в combobox
@@ -76,7 +77,8 @@ var
 implementation
 
 uses
-  FunctionUnit, DMUnit, FormHome, FormWaitUnit, TTranslirtUnit, GlobalVariables;
+  FunctionUnit, DMUnit, FormHome, FormWaitUnit, TTranslirtUnit,
+  GlobalVariables, GlobalVariablesLinkDLL, GlobalImageDestination;
 
 {$R *.dfm}
 
@@ -90,9 +92,12 @@ begin
   Result:=role_operator_no_dash; // default
 
   userName:=comboxUser.Items[InIDCombBox];
+  userName:=Copy(userName,2,Length(userName));
+
   System.Delete(userName,1,AnsiPos(' ',userName));
 
   userFamiliya:=comboxUser.Items[InIDCombBox];
+  userFamiliya:=Copy(userFamiliya,2,Length(userFamiliya));
   System.Delete(userFamiliya, AnsiPos(' ',userFamiliya),Length(userFamiliya));
 
   if usersListAdminRole.Count=0 then Exit;
@@ -119,7 +124,7 @@ begin
   if userNameFamiliya='null' then Exit;
 
   // найдем нужный items
-  comboxUser.ItemIndex:=comboxUser.Items.IndexOf(userNameFamiliya);
+  comboxUser.ItemIndex:=comboxUser.Items.IndexOf(' '+userNameFamiliya);
   comboxUser.SetFocus;
   edtPassword.SetFocus;
 
@@ -164,7 +169,7 @@ begin
      pngbmp:=TPngImage.Create;
      bmp:=TBitmap.Create;
 
-     pngbmp.LoadFromFile(FOLDERPATH+ICON_AUTH_USER);
+     pngbmp.LoadFromFile(ICON_AUTH_USER);
 
       // сжимаем иконку до размера 16х16
       with bmp do begin
@@ -176,7 +181,7 @@ begin
       ImageListIcon.Add(bmp, nil);
 
       // подгрузим еще одну иконку
-      pngbmp.LoadFromFile(FOLDERPATH+ICON_AUTH_USER_ADMIN);
+      pngbmp.LoadFromFile(ICON_AUTH_USER_ADMIN);
       // сжимаем иконку до размера 16х16
       with bmp do begin
        Height:=SIZE_ICON;
@@ -265,7 +270,7 @@ begin
         Exit;
       end;
       current_user:=comboxUser.Items[comboxUser.ItemIndex];
-
+      current_user:=Copy(current_user,2, Length(current_user)); // т.к. в combox заносится пробел+ФИО (для удобной визуализации сделано)
 
       current_pwd:=edtPassword.Text;
       if current_pwd = '' then begin
@@ -340,7 +345,7 @@ begin
    FormSizeWithError('Ошибка авторизации, не верный пароль');
    Inc(countErrorAuth);
 
-   if countErrorAuth >=4 then begin
+   if countErrorAuth >= 4 then begin
     error:='Превышено максимальное кол-во попыток входа';
     ShowFormErrorMessage(error,SharedMainLog,'THomeForm.TFormAuth');
    end;
@@ -432,6 +437,87 @@ begin
   end;
 end;
 
+
+// прогрузка пользователей в форму авторизации
+procedure TFormAuth.LoadUsersAuthForm;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ CodOshibki:string;
+ countUsers,i:Integer;
+ error:string;
+begin
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnectWithError(error);
+
+  if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage('Возникла ошибка при запросе на сервер!'+#13+error, SharedMainLog, 'LoadUsersAuthForm');
+     FreeAndNil(ado);
+     KillProcess;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select count(id) from users where disabled = ''0'' and role <> ''6'' ');
+
+      try
+          Active:=True;
+      except
+          on E:EIdException do begin
+             CodOshibki:=e.Message;
+             MessageBox(FormAuth.Handle,PChar('Возникла ошибка при запросе на сервер!'+#13#13+CodOshibki),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+             FreeAndNil(ado);
+             if Assigned(serverConnect) then begin
+               serverConnect.Close;
+               FreeAndNil(serverConnect);
+             end;
+
+             KillProcess;
+          end;
+      end;
+
+      countUsers:=Fields[0].Value;
+
+      SQL.Clear;
+      SQL.Add('select familiya,name from users where disabled = ''0'' and role <> ''6'' order by familiya');
+
+      try
+          Active:=True;
+      except
+          on E:EIdException do begin
+             CodOshibki:=e.Message;
+             MessageBox(FormAuth.Handle,PChar('Возникла ошибка при запросе на сервер!'+#13#13+CodOshibki),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+             FreeAndNil(ado);
+             if Assigned(serverConnect) then begin
+               serverConnect.Close;
+               FreeAndNil(serverConnect);
+             end;
+
+             KillProcess;
+          end;
+      end;
+
+       with FormAuth.comboxUser do begin
+
+        Clear;
+
+         for i:=0 to countUsers-1 do begin
+          Items.Add(' '+Fields[0].Value+' '+Fields[1].Value);
+          ado.Next;
+         end;
+       end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
 
 procedure createIconPassword;
 begin

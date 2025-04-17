@@ -11,7 +11,7 @@ unit TCustomTypeUnit;
 interface
 
   uses
-  SysUtils, Windows, Graphics;
+  SysUtils, Windows, Vcl.Graphics;
 
 
   type
@@ -157,7 +157,8 @@ interface
                      menu_settings_serversik,                   // Меню-СервераИК
                      menu_settings_siptrunk,                    // Меню-Sip_транки
                      menu_settings_global,                      // Меню-Глобальные_настройки
-                     menu_active_session                        // Меню-Активные сессии
+                     menu_active_session,                       // Меню-Активные сессии
+                     menu_service                               // Меню-Услуги
                      );
 
 
@@ -268,13 +269,76 @@ interface
                       color_Very_Bad,       // разговор >= 15мин
                       color_Break);         // обед или перерыв
 
+
+   type // тип причины отправки смс
+   enumReasonSmsMessage = (reason_OtmenaPriema                        = 0,  // Отмена приема врача, перенос
+                           reason_NapominanieOPrieme                  = 1,  // Напоминание о приеме
+                           reason_NapominanieOPrieme_do15             = 2,  // Напоминание о приеме (до 15 лет)
+                           reason_NapominanieOPrieme_OMS              = 3,  // Напоминание о приеме (ОМС)
+                           reason_IstekaetSrokGotovnostiBIOMateriala  = 4,  // Истекает срок годности биоматериала
+                           reason_AnalizNaPereustanovke               = 5,  // Анализ на переустановке
+                           reason_UvelichilsyaSrokIssledovaniya       = 6,  // Увеличился срок выполнения лабораторных исследований по тех. причинам
+                           reason_Perezabor                           = 7,  // Требуется перезабор крови (хилез, сгусток, недостаточно биоматериала)
+                           reason_Critical                            = 8,  // Получено письмо из лаборатории о критических значениях
+                           reason_ReadyDiagnostic                     = 9,  // Готов результат диагностики (например,  ХОЛТЕРа, СМАДа)
+                           reason_ReadyNalog                          = 10, // Готова справка в налоговую
+                           reason_ReadyDocuments                      = 11, // Готова копия мед. документации, выписка, справка
+                           reason_NeedDocumentsLVN                    = 12, // Необходимо предоставить данные для открытия ЛВН (СНИЛС)
+                           reason_NeedDocumentsDMS                    = 13, // Проинформировать о согласовании услуг по ДМС (когда обещали)
+                           reason_VneplanoviiPriem                    = 14, // Согласован внеплановый прием (обозначить время)
+                           reason_ReturnMoney                         = 15, // Пригласить за возвратом ДС
+                           reason_ReturnMoneyInfo                     = 16, // Проинформировать об осуществлении возврата ДС
+                           reason_ReturnDiagnostic                    = 17  // Пригласить за гистологическим (цитологическим) материалом
+                          );
+   type  // шаблон сообщения в зависимости от типа отправки
+   enumReasonSmsMessageTemplate = (
+                           reasonTemplate_OtmenaPriema                        = 0,  // Отмена приема врача, перенос
+                           reasonTemplate_NapominanieOPrieme                  = 1,  // Напоминание о приеме
+                           reasonTemplate_NapominanieOPrieme_do15             = 2,  // Напоминание о приеме (до 15 лет)
+                           reasonTemplate_NapominanieOPrieme_OMS              = 3,  // Напоминание о приеме (ОМС)
+                           reasonTemplate_IstekaetSrokGotovnostiBIOMateriala  = 4,  // Истекает срок годности биоматериала
+                           reasonTemplate_AnalizNaPereustanovke               = 5,  // Анализ на переустановке
+                           reasonTemplate_UvelichilsyaSrokIssledovaniya       = 6,  // Увеличился срок выполнения лабораторных исследований по тех. причинам
+                           reasonTemplate_Perezabor                           = 7,  // Требуется перезабор крови (хилез, сгусток, недостаточно биоматериала)
+                           reasonTemplate_Critical                            = 8,  // Получено письмо из лаборатории о критических значениях
+                           reasonTemplate_ReadyDiagnostic                     = 9,  // Готов результат диагностики (например,  ХОЛТЕРа, СМАДа)
+                           reasonTemplate_ReadyNalog                          = 10, // Готова справка в налоговую
+                           reasonTemplate_ReadyDocuments                      = 11, // Готова копия мед. документации, выписка, справка
+                           reasonTemplate_NeedDocumentsLVN                    = 12, // Необходимо предоставить данные для открытия ЛВН (СНИЛС)
+                           reasonTemplate_NeedDocumentsDMS                    = 13, // Проинформировать о согласовании услуг по ДМС (когда обещали)
+                           reasonTemplate_VneplanoviiPriem                    = 14, // Согласован внеплановый прием (обозначить время)
+                           reasonTemplate_ReturnMoney                         = 15, // Пригласить за возвратом ДС
+                           reasonTemplate_ReturnMoneyInfo                     = 16, // Проинформировать об осуществлении возврата ДС
+                           reasonTemplate_ReturnDiagnostic                    = 17  // Пригласить за гистологическим (цитологическим) материалом
+     );
+
+
+
+    type  // параметры глобальных настроек
+    enumTreeSettings =(
+                        tree_queue,            // корректировка времени
+                        tree_firebird,         // пароль firebird
+                        tree_sms,              // настройка sms
+                        tree_access            // разграничение прав групп на меню
+                      );
+
+    type // параметры дней недели
+     enumWorkingTime = ( workingtime_Monday,
+                         workingtime_Tuesday,
+                         workingtime_Wednesday,
+                         workingtime_Thursday,
+                         workingtime_Friday,
+                         workingtime_Saturday,
+                         workingtime_Sunday
+                        );
+
  // =================== ПРОЕОБРАЗОВАНИЯ ===================
 
   // Boolean -> string
  function BooleanToString(InValue:Boolean):string;
 
- function TLoggingToInteger(InTLogging:enumLogging):Integer;                       // проеобразование из TLogging в Integer
- function IntegerToTLogging(InLogging:Integer):enumLogging;                        // преобразование из Integer в TLogging
+ function EnumLoggingToInteger(_logging:enumLogging):Integer;                      // проеобразование из EnumLogging в Integer
+ function IntegerToEnumLogging(_logging:Integer):enumLogging;                      // преобразование из Integer в EnumLogging
  function EnumLoggingToString(_logging:enumLogging):string;                        // EnumLogging -> String
  function StringToTRole(InRole:string):enumRole;                                   // string -> TRole
  function TRoleToString(InRole:enumRole):string;                                   // TRole -> string
@@ -287,7 +351,7 @@ interface
  function IntegerToEnumStatusOperators(InStatusId:Integer):enumStatusOperators;    // Integer -> enumStatusOperators
  function EnumStatusOperatorsToInteger(InStatus:enumStatusOperators):Integer;      // enumStatusOperators -> integer
  function EnumNeedReconnectBDToBoolean(inStatusReconnect:enumNeedReconnectBD):Boolean;   // enumNeedReconnectBD -> Boolean
- function StatusOperatorToTLogging(InOperatorStatus:Integer):enumLogging;          // преобразование текущего статуса оператора из int в TLogging
+ function StatusOperatorToEnumLogging(_operatorStatus:Integer):enumLogging;          // преобразование текущего статуса оператора из int в EnumLogging
  function SettingParamsStatusToInteger(status:enumParamStatus):Integer;            // SettingParamsStatus --> Int
  function IntegerToSettingParamsStatus(status:Integer):enumParamStatus;            // Int --> SettingParamsStatus
  function EnumTypeClinicToString(typeClinic:enumTypeClinic):string;                // EnumTypeClinic -> String
@@ -301,6 +365,12 @@ interface
  function StringToEnumStatusJobClinic(InStatus:string):enumStatusJobClinic;        // String -> enumStatusJobClinic
  function EnumFontSizeToString(InFont:enumFontSize):string;                        // enumFontSize -> String;
  function EnumColorStatusToTColor(_statusColor:enumColorStatus):TColor;            // enumColorStatus -> TColor
+ function EnumReasonSmsMessageToString(_reasonSmsMessage:enumReasonSmsMessage):string; // enumReasonSmsMessage -> String
+ function StringToEnumReasonSmsMessage(InStatus:string):enumReasonSmsMessage;      // String -> enumReasonSmsMessage
+ function EnumReasonSmsMessageToEnumReasonSmsMessageTemplate(_reasonSmsMessage:enumReasonSmsMessage):EnumReasonSmsMessageTemplate; // enumReasonSmsMessage -> enumReasonSmsMessageTemplate
+ function EnumReasonSmsMessageTemplateToString(_reasonSmsMessageTemplate:enumReasonSmsMessageTemplate):TStringBuilder; // EnumReasonSmsMessageTemplate -> String
+ function EnumTreeSettingsToString(_enumTreeSettings:enumTreeSettings):string;       // enumTreeSettings -> String
+ function StringToEnumTreeSettings(_status:string):enumTreeSettings;                 // String -> enumTreeSettings
 
  // =================== ПРОЕОБРАЗОВАНИЯ ===================
  implementation
@@ -314,10 +384,10 @@ begin
 end;
 
 
-// проеобразование из TLogging в Integer
-function TLoggingToInteger(InTLogging:enumLogging):Integer;
+// проеобразование из EnumLoggin в Integer
+function EnumLoggingToInteger(_logging:enumLogging):Integer;
 begin
-  case InTLogging of
+  case _logging of
     eLog_unknown:             Result:=-1;       // неизвестный статус
     eLog_enter:               Result:=0;        // вход
     eLog_exit:                Result:=1;        // выход
@@ -345,9 +415,9 @@ begin
 end;
 
 // преобразование из Integer в TLogging
-function IntegerToTLogging(InLogging:Integer):enumLogging;
+function IntegerToEnumLogging(_logging:Integer):enumLogging;
 begin
-  case InLogging of
+  case _logging of
    -1:    Result:=eLog_unknown;             // неизвестный статус
     0:    Result:=eLog_enter;               // вход
     1:    Result:=eLog_exit;                // выход
@@ -451,6 +521,7 @@ begin
     menu_settings_siptrunk:     Result:='menu_SIPtrunk';
     menu_settings_global:       Result:='menu_GlobalSettings';
     menu_active_session:        Result:='menu_activeSession';
+    menu_service:               Result:='menu_service';
   end;
 end;
 
@@ -551,10 +622,10 @@ begin
 end;
 
 
-// преобразование текущего статуса оператора из int в TLogging
-function StatusOperatorToTLogging(InOperatorStatus:Integer):enumLogging;
+// преобразование текущего статуса оператора из int в EnumLogging
+ function StatusOperatorToEnumLogging(_operatorStatus:Integer):enumLogging;
 begin
-  case InOperatorStatus of
+  case  _operatorStatus of
      1: Result:=eLog_available;
      2: Result:=eLog_home;
      3: Result:=eLog_exodus;
@@ -697,5 +768,183 @@ begin
   end;
 end;
 
+
+// enumReasonSmsMessage -> String
+function EnumReasonSmsMessageToString(_reasonSmsMessage:enumReasonSmsMessage):string;
+begin
+  case _reasonSmsMessage of
+     reason_OtmenaPriema                        :Result:='Отмена приема врача, перенос';
+     reason_NapominanieOPrieme                  :Result:='Напоминание о приеме';
+     reason_NapominanieOPrieme_do15             :Result:='Напоминание о приеме (до 15 лет)';
+     reason_NapominanieOPrieme_OMS              :Result:='Напоминание о приеме (ОМС)';
+     reason_IstekaetSrokGotovnostiBIOMateriala  :Result:='Истекает срок годности биоматериала';
+     reason_AnalizNaPereustanovke               :Result:='Анализ на переустановке';
+     reason_UvelichilsyaSrokIssledovaniya       :Result:='Увеличился срок выполнения лабораторных исследований по тех. причинам';
+     reason_Perezabor                           :Result:='Требуется перезабор крови (хилез, сгусток, недостаточно биоматериала)';
+     reason_Critical                            :Result:='Получено письмо из лаборатории о критических значениях';
+     reason_ReadyDiagnostic                     :Result:='Готов результат диагностики (например,  ХОЛТЕРа, СМАДа)';
+     reason_ReadyNalog                          :Result:='Готова справка в налоговую';
+     reason_ReadyDocuments                      :Result:='Готова копия мед. документации, выписка, справка';
+     reason_NeedDocumentsLVN                    :Result:='Необходимо предоставить данные для открытия ЛВН (СНИЛС)';
+     reason_NeedDocumentsDMS                    :Result:='Проинформировать о согласовании услуг по ДМС (когда обещали)';
+     reason_VneplanoviiPriem                    :Result:='Согласован внеплановый прием (обозначить время)';
+     reason_ReturnMoney                         :Result:='Пригласить за возвратом ДС';
+     reason_ReturnMoneyInfo                     :Result:='Проинформировать об осуществлении возврата ДС';
+     reason_ReturnDiagnostic                    :Result:='Пригласить за гистологическим (цитологическим) материалом';
+  end;
+end;
+
+// String -> enumReasonSmsMessage
+function StringToEnumReasonSmsMessage(InStatus:string):enumReasonSmsMessage;
+var
+ i:Integer;
+ reason:enumReasonSmsMessage;
+begin
+  for i:=Ord(Low(enumReasonSmsMessage)) to Ord(High(enumReasonSmsMessage)) do
+  begin
+    reason:=enumReasonSmsMessage(i);
+    if EnumReasonSmsMessageToString(reason) = InStatus then begin
+     Result:=reason;
+     Break;
+    end;
+  end;
+end;
+
+// enumReasonSmsMessage -> enumReasonSmsMessageTemplate
+function EnumReasonSmsMessageToEnumReasonSmsMessageTemplate(_reasonSmsMessage:enumReasonSmsMessage):EnumReasonSmsMessageTemplate;
+var
+ i:Integer;
+ reason:enumReasonSmsMessage;
+begin
+ for i:=Ord(Low(enumReasonSmsMessage)) to Ord(High(enumReasonSmsMessage)) do
+  begin
+    reason:=enumReasonSmsMessage(i);
+    if reason = _reasonSmsMessage then begin
+      Result:=enumReasonSmsMessageTemplate(i);
+      Break;
+    end;
+  end;
+end;
+
+
+// EnumReasonSmsMessageTemplate -> String
+function EnumReasonSmsMessageTemplateToString(_reasonSmsMessageTemplate:enumReasonSmsMessageTemplate):TStringBuilder;
+begin
+  Result:=TStringBuilder.Create;
+
+  case _reasonSmsMessageTemplate of
+   reasonTemplate_OtmenaPriema                        : begin // Отмена приема врача, перенос
+     Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
+     Result.Append('Сообщаем, что мы вынуждены перенести Вашу запись к врачу. ');
+     Result.Append('Свяжитесь, пожалуйста, с нами для выбора удобного времени посещения клиники по номеру +7(8442)220-220 или +7(8443)450-450. ');
+   end;
+   reasonTemplate_NapominanieOPrieme                  : begin  // Напоминание о приеме
+    Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, ');
+    Result.Append('Вы записаны к доктору на %date% в %time% в клинику по адресу %address%. ');
+   end;
+   reasonTemplate_NapominanieOPrieme_do15             : begin // Напоминание о приеме (до 15 лет)
+     Result.Append('Здравствуйте! %name% %otchestvo% %pol% к доктору на %date% в %time% ');
+     Result.Append('в клинику по адресу %address%. Прием возможен в присутствии законного представителя ребенка. ');
+   end;
+   reasonTemplate_NapominanieOPrieme_OMS              : begin // Напоминание о приеме (ОМС)
+     Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, ');
+     Result.Append('Вы записаны к доктору на %date% в %time% в клинику по адресу %address%. ');
+     Result.Append('При себе необходимо иметь паспорт, СНИЛС и полис ОМС. ');
+   end;
+   reasonTemplate_IstekaetSrokGotovnostiBIOMateriala  : begin // Истекает срок годности биоматериала
+     Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, у Вас есть неоформленные лабораторные исследования. ');
+     Result.Append('До %date% %time% свяжитесь, пожалуйста, с нами для уточнения деталей по номеру +7(8442)220-220 или +7(8443)450-450. ');
+     Result.Append('После указанного времени мы утилизируем биоматериал ');
+     Result.Append('и для выполнения исследования Вам необходимо будет сдать биоматериал повторно. ');
+   end;
+   reasonTemplate_AnalizNaPereustanovke               : begin // Анализ на переустановке
+      Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
+      Result.Append('Срок готовности лабораторных анализов увеличивается, просьба связаться с нами для уточнения деталей. ');
+   end;
+   reasonTemplate_UvelichilsyaSrokIssledovaniya       : begin // Увеличился срок выполнения лабораторных исследований по тех. причинам
+     Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
+     Result.Append('Сообщаем Вам, что в связи с техническим сбоем выдача результатов лабораторных исследований задерживается ');
+     Result.Append('на срок %date%. Приносим извинения за доставленные неудобства. ');  // TODO срок как часы так и дни!!
+   end;
+   reasonTemplate_Perezabor                           : begin // Требуется перезабор крови (хилез, сгусток, недостаточно биоматериала)
+    Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
+    Result.Append('Сообщаем Вам, что %count_labs% %count_study% не %maybe% быть %done% по причине %prochina%. ');
+    Result.Append('Приглашаем Вас для перезабора биоматериала в клинику по адресу %address% ');
+    Result.Append('или просим связаться с нами по номеру +7(8442)220-220 или +7(8443)450-450. ');
+   end;
+   reasonTemplate_Critical                            : begin // Получено письмо из лаборатории о критических значениях
+    Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
+    Result.Append('Сообщаем Вам, что по результатам лабораторных исследований Вам необходимо как можно быстрее обратиться к врачу ');
+    Result.Append('или связаться с нами по номеру +7(8442)220-220 или +7(8443)450-450. ');
+   end;
+   reasonTemplate_ReadyDiagnostic                     : begin // Готов результат диагностики (например,  ХОЛТЕРа, СМАДа)
+    Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, результат Вашей функциональной диагностики готов. ');
+    Result.Append('Забрать заключение Вы можете в часы работы клиники по адресу %address%. ');
+   end;
+   reasonTemplate_ReadyNalog                          : begin // Готова справка в налоговую
+    Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, Ваша справка об оплате медицинских услуг для получения социального налогового вычета готова. ');
+    Result.Append('Забрать документ Вы можете в часы работы клиники по адресу %address%. ');
+   end;
+   reasonTemplate_ReadyDocuments                      : begin // Готова копия мед. документации, выписка, справка
+    Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, запрашиваемая Вами медицинская документация готова. ');
+    Result.Append('Забрать документ Вы можете в часы работы клиники по адресу %address%. ');
+   end;
+   reasonTemplate_NeedDocumentsLVN                    : begin // Необходимо предоставить данные для открытия ЛВН (СНИЛС)
+    Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
+    Result.Append('Сообщаем, что для открытия листа временной нетрудоспособности Вам необходимо предоставить данные Вашего СНИЛСа. ');
+    Result.Append('Просим Вас обратиться в клинику по адресу %address% или связаться с нами по номеру +7(8442)220-220 или +7(8443)450-450. ');
+   end;
+   reasonTemplate_NeedDocumentsDMS                    : begin // Проинформировать о согласовании услуг по ДМС (когда обещали)
+    Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться по вопросу согласования услуг в рамках программы ДМС. ');
+    Result.Append('Просим Вас связаться с нами по номеру +7(8442)220-220 или +7(8443)450-450. ');
+   end;
+   reasonTemplate_VneplanoviiPriem                    : begin // Согласован внеплановый прием (обозначить время)
+    Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
+    Result.Append('Доктор сможет принять Вас внепланово сегодня в %time% в клинике по адресу %address%. ');
+    Result.Append('Просим связаться с нами по номеру +7(8442)220-220 или +7(8443)450-450 для подтверждения или отмены записи. ');
+   end;
+   reasonTemplate_ReturnMoney                         : begin // Пригласить за возвратом ДС
+    // Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться.
+    // Сообщаем, что Вам согласован возврат денежных средств за __________________ (услуга) в размере_____________________ руб. Для осуществления возврата Вы можете обратиться в клинику по адресу:___________________________. При себе необходимо иметь паспорт (банковскую карту, по которой осуществлялась оплата). С заботой о Вашем здоровье, Медси-Волгоград.
+   end;
+   reasonTemplate_ReturnMoneyInfo                     : begin // Проинформировать об осуществлении возврата ДС
+//     Здравствуйте! Уважаемый (-ая) ИО, к сожалению, мы не смогли до Вас дозвониться.
+//     Сообщаем, что _______________ (дата) осуществлен возврат денежных средств на Ваш расчетный счет за __________________(услуга) в размере_____________________руб . С заботой о Вашем здоровье, Медси-Волгоград.
+   end;
+   reasonTemplate_ReturnDiagnostic                    : begin // Пригласить за гистологическим (цитологическим) материалом
+     Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
+     Result.Append('Сообщаем, что из лаборатории поступил Ваш гистологический (цитологический) материал. ');
+     Result.Append('Забрать его Вы можете в клинике по адресу: %address%. При себе необходимо иметь паспорт. ');
+   end;
+  end;
+end;
+
+
+// enumTreeSettings -> String
+function EnumTreeSettingsToString(_enumTreeSettings:enumTreeSettings):string;
+begin
+  case _enumTreeSettings of
+    tree_queue:     Result:='Корректировка времени';
+    tree_firebird:  Result:='Пароль firebird';
+    tree_sms:       Result:='Настройка SMS';
+    tree_access:    Result:='Права групп на меню';
+  end;
+end;
+
+// String -> enumTreeSettings
+function StringToEnumTreeSettings(_status:string):enumTreeSettings;
+var
+ i:Integer;
+ tree_settings:enumTreeSettings;
+begin
+  for i:=Ord(Low(enumTreeSettings)) to Ord(High(enumTreeSettings)) do
+  begin
+    tree_settings:=enumTreeSettings(i);
+    if EnumTreeSettingsToString(tree_settings) = _status then begin
+     Result:=tree_settings;
+     Break;
+    end;
+  end;
+end;
 
 end.

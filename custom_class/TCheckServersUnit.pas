@@ -85,7 +85,7 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
 implementation
 
 uses
-  FunctionUnit, FormHome, FormServerIKCheckUnit, GlobalVariables, TCustomTypeUnit;
+  FunctionUnit, FormHome, FormServerIKCheckUnit, GlobalVariables, TCustomTypeUnit, GlobalVariablesLinkDLL;
 
 
 constructor TStructServers.Create;

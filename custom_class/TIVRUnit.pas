@@ -81,7 +81,7 @@ uses  System.Classes,
 implementation
 
 uses
-  FunctionUnit, GlobalVariables;
+  FunctionUnit, GlobalVariables, GlobalVariablesLinkDLL;
 
 
 

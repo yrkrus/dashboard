@@ -37,9 +37,6 @@ Coordinates=837,282,114,58
 [Label13]
 Coordinates=343,622,60,58
 
-[PanelShadowRight]
-Coordinates=73,282,124,58
-
 [N2]
 Coordinates=0,137,40,36
 
@@ -69,9 +66,6 @@ Coordinates=441,418,60,58
 
 [lblStstatisc_Queue5000_No_Answered]
 Coordinates=137,554,238,58
-
-[imgRight]
-Coordinates=10,486,65,58
 
 [panel_IVR]
 Coordinates=10,78,74,58
@@ -145,11 +139,8 @@ Coordinates=234,350,201,58
 [menu_About_Version]
 Coordinates=1281,597,138,36
 
-[lblShadownRight]
-Coordinates=250,418,111,58
-
 []
-Coordinates=185,690,59,36
+Coordinates=73,282,124,58
 Visible=True
 
 [Timer_Thread_Start]

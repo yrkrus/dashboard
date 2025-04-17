@@ -82,7 +82,7 @@ const
 implementation
 
 uses
-  FunctionUnit, DMUnit, FormSettingsUnit, FormUsersUnit, GlobalVariables;
+  FunctionUnit, DMUnit, FormSettingsUnit, FormUsersUnit, GlobalVariables, GlobalVariablesLinkDLL;
 
 {$R *.dfm}
 

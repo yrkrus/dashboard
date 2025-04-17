@@ -50,7 +50,7 @@ var
 implementation
 
 uses
-  FunctionUnit, FormHome, GlobalVariables;
+  FunctionUnit, FormHome, GlobalVariables, GlobalVariablesLinkDLL;
 
 {$R *.dfm}
 

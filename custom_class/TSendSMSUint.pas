@@ -134,7 +134,7 @@ type
 implementation
 
 uses
-  GlobalVariables;
+  GlobalVariables, GlobalVariablesLinkDLL;
 
 
 constructor TAuthSMS.Create;

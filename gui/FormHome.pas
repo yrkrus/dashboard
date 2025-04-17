@@ -56,9 +56,6 @@ type
     Label11: TLabel;
     Label17: TLabel;
     Label19: TLabel;
-    PanelShadowRight: TPanel;
-    imgRight: TImage;
-    lblShadownRight: TLabel;
     menu_ChangePassword: TMenuItem;
     Label23: TLabel;
     Label24: TLabel;
@@ -169,6 +166,8 @@ type
     img_DownFont_Queue: TImage;
     Button1: TButton;
     popMenu_ActionOperators_HistoryStatusOPerators: TMenuItem;
+    N19: TMenuItem;
+    menu_service: TMenuItem;
     procedure START_THREAD_ALLlClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -247,6 +246,7 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure popMenu_ActionOperators_HistoryStatusOPeratorsClick(
       Sender: TObject);
+    procedure menu_serviceClick(Sender: TObject);
 
   private
     { Private declarations }
@@ -327,7 +327,7 @@ uses
     FormActiveSessionUnit, FormRePasswordUnit, Thread_AnsweredQueueUnit, ReportsUnit, Thread_ACTIVESIP_updatetalkUnit,
     FormDEBUGUnit, FormErrorUnit, TCustomTypeUnit, GlobalVariables, FormUsersUnit, FormServersIKUnit, FormSettingsGlobalUnit,
     FormTrunkUnit, TFTPUnit, TXmlUnit, FormStatisticsChartUnit, TForecastCallsUnit, FormStatusInfoUnit,
-    FormHistoryCallOperatorUnit, FormChatNewMessageUnit, TDebugStructUnit, FormHistoryStatusOperatorUnit;
+    FormHistoryCallOperatorUnit, FormChatNewMessageUnit, TDebugStructUnit, FormHistoryStatusOperatorUnit, GlobalVariablesLinkDLL;
 
 
 {$R *.dfm}
@@ -684,7 +684,6 @@ var
  error:string;
 begin
  try
-
   // остаток свободного места на диске
   if not isExistFreeSpaceDrive(error) then begin
     ShowFormErrorMessage(error,SharedMainLog,'THomeForm.FormShow');
@@ -697,7 +696,10 @@ begin
   end;
 
   // отображение текущей версии  ctrl+shift+G (GUID) - от этого ID зависит актуальность еще
-  Caption:=Caption+' '+getVersion(GUID_VERSION,eGUI) + ' | '+'('+GUID_VERSION+')';
+  if DEBUG then Caption:='    ===== DEBUG =====    ' + Caption+' '+getVersion(GUID_VERSION,eGUI) + ' | '+'('+GUID_VERSION+')' + '    ===== DEBUG ===== '
+  else Caption:=Caption+' '+getVersion(GUID_VERSION,eGUI) + ' | '+'('+GUID_VERSION+')';
+
+
 
   // проверка на ткущую версию
   CheckCurrentVersion;
@@ -1005,7 +1007,7 @@ begin
   try
     counts:=Item.SubItems.Count; // TODO еще подумать как можно это улучшить
 
-    if Item.SubItems.Count = 7 then // ѕровер€ем, что есть достаточно SubItems
+    if Item.SubItems.Count = 8 then // ѕровер€ем, что есть достаточно SubItems
     begin
 
       if Item.SubItems.Strings[1] = 'доступен' then
@@ -1014,10 +1016,10 @@ begin
         Exit;
       end;
 
-      if Item.SubItems.Strings[4] <> '---' then begin
-        test:=Item.SubItems.Strings[4];
+      if Item.SubItems.Strings[5] <> '---' then begin
+        test:=Item.SubItems.Strings[5];
 
-        time_talk:=GetTimeAnsweredToSeconds(Item.SubItems.Strings[4],True);
+        time_talk:=GetTimeAnsweredToSeconds(Item.SubItems.Strings[5],True);
 
         if (time_talk >= 180) and (time_talk <= 600)  then begin
          Sender.Canvas.Font.Color := EnumColorStatusToTColor(color_NotBad);
@@ -1108,6 +1110,11 @@ end;
 procedure THomeForm.menu_ServersIKClick(Sender: TObject);
 begin
   FormServersIK.ShowModal;
+end;
+
+procedure THomeForm.menu_serviceClick(Sender: TObject);
+begin
+ OpenService;
 end;
 
 procedure THomeForm.menu_SIPtrunkClick(Sender: TObject);

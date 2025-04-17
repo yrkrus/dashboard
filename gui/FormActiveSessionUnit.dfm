@@ -4,7 +4,7 @@ object FormActiveSession: TFormActiveSession
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = #1040#1082#1090#1080#1074#1085#1099#1077' '#1089#1077#1089#1089#1080#1080
-  ClientHeight = 400
+  ClientHeight = 603
   ClientWidth = 1124
   Color = clWindow
   DefaultMonitor = dmMainForm
@@ -198,7 +198,7 @@ object FormActiveSession: TFormActiveSession
     Left = 6
     Top = 29
     Width = 1111
-    Height = 364
+    Height = 566
     BevelInner = bvLowered
     TabOrder = 2
   end

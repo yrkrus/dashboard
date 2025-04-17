@@ -65,7 +65,13 @@ uses
   TDebugCountResponseUnit in '..\custom_class\debug_info\TDebugCountResponseUnit.pas',
   TDebugStructUnit in '..\custom_class\debug_info\TDebugStructUnit.pas',
   FormHistoryStatusOperatorUnit in 'FormHistoryStatusOperatorUnit.pas' {FormHistoryStatusOperator},
-  THistoryStatusOperatorsUnit in '..\custom_class\THistoryStatusOperatorsUnit.pas';
+  THistoryStatusOperatorsUnit in '..\custom_class\THistoryStatusOperatorsUnit.pas',
+  GlobalImageDestination in 'GlobalImageDestination.pas',
+  FormServerIKWorkingTimeUnit in 'FormServerIKWorkingTimeUnit.pas' {FormServerIKWorkingTime},
+  TWorkingTimeClinicUnit in '..\custom_class\TWorkingTimeClinicUnit.pas',
+  FormMenuAccessUnit in 'FormMenuAccessUnit.pas' {FormMenuAccess},
+  TUserAccessUnit in '..\custom_class\TUserAccessUnit.pas',
+  GlobalVariablesLinkDLL in 'GlobalVariablesLinkDLL.pas';
 
 {$R *.res}
 
@@ -108,5 +114,7 @@ begin
   Application.CreateForm(TFormHistoryCallOperator, FormHistoryCallOperator);
   Application.CreateForm(TFormChatNewMessage, FormChatNewMessage);
   Application.CreateForm(TFormHistoryStatusOperator, FormHistoryStatusOperator);
+  Application.CreateForm(TFormServerIKWorkingTime, FormServerIKWorkingTime);
+  Application.CreateForm(TFormMenuAccess, FormMenuAccess);
   Application.Run;
 end.

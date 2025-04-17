@@ -82,7 +82,7 @@ uses
 implementation
 
 uses
-  GlobalVariables;
+  GlobalVariables, GlobalVariablesLinkDLL;
 
 
 /////////////////////////TStructFileInfo/////////////////////////////////////

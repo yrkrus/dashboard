@@ -33,7 +33,7 @@ var
 implementation
 
 uses
-  FunctionUnit, FormSettingsGlobalUnit, GlobalVariables;
+  FunctionUnit, FormSettingsGlobalUnit, GlobalVariables, GlobalVariablesLinkDLL;
 
 {$R *.dfm}
 

@@ -319,9 +319,9 @@ begin
          end;
 
          // проверка чтобы не было типа таких соощений (Алексеевна,добрый | ,Огуречников | г.Волжском)
-         if isWordExistPunctuation(re_ManualSMS, _errorDescription) then begin
-           Exit;
-         end;
+//         if isWordExistPunctuation(re_ManualSMS, _errorDescription) then begin
+//           Exit;
+//         end;
 
          if not chkbox_SignSMS.Checked then begin
            resultat:=MessageBox(Handle,PChar('Не установлена галка "вставить подпись в конце SMS"'+#13#13+

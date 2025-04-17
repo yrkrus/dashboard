@@ -45,7 +45,7 @@ implementation
 
 
 uses
-  FormTrunkUnit, GlobalVariables;
+  FormTrunkUnit, GlobalVariables, GlobalVariablesLinkDLL;
 
 {$R *.dfm}
 

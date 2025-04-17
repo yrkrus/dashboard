@@ -12,7 +12,7 @@ interface
     IdAttachmentFile, DMUnit, FormHome, Data.Win.ADODB,
     Data.DB, IdIcmpClient, IdException, System.DateUtils,
     FIBDatabase, pFIBDatabase, TCustomTypeUnit, TUserUnit,
-    Vcl.Menus, GlobalVariables, TActiveSIPUnit, System.IOUtils,
+    Vcl.Menus, GlobalVariables, GlobalVariablesLinkDLL, TActiveSIPUnit, System.IOUtils,
     TLogFileUnit, Vcl.Buttons;
 
 
@@ -31,7 +31,7 @@ procedure showVersionAbout(programm:enumProrgamm);                              
 function GetVersionAbout(programm:enumProrgamm; inGUID:string):string;               // отображение истории вресий дашбоарда (только текущая версия)
 function Ping(InIp:string):Boolean;                                                  // проверка ping
 procedure CreateCheckServersInfoclinika;                                             // создание списка с серверами
-function GetRoleID(InRole:string):Integer;                                           // получение ID TRole
+//function GetRoleID(InRole:string):Integer;                                           // получение ID TRole
 function GetUserGroupSTR(InGroup:Integer):string;                                    // отображение роли пользвоателя
 function getHashPwd(inPwd: String):Integer;                                          // хэширование пароля
 function GetUserGroupID(InGroup:string):Integer;                                     // отображение ID роли пользвоателя
@@ -43,7 +43,6 @@ procedure LoadPanel_Operators;                                                  
 function GetCheckLogin(inLogin:string):Boolean;                                      // существует ли login пользвоателчя
 function DisableUser(InUserID:Integer; var _errorDescription:string):Boolean;        // отключение пользователя
 procedure DeleteOperator(InUserID:Integer);                                          // удаление пользователя из таблицы operators
-procedure LoadUsersAuthForm;                                                         // прогрузка пользователей в форму авторизации
 function getUserPwd(InUserID:Integer):Integer;                                       // полчуение userPwd из userID
 function getUserLogin(InUserID:Integer):string;                                      // полчуение userLogin из userID
 function GetUserRoleSTR(InUserID:Integer):string;                                    // отображение роли пользвоателя
@@ -58,7 +57,6 @@ procedure DeleteActiveSession(InSessionID:Integer);                             
 function GetActiveSessionUser(InUserID:Integer):Integer;                             // доставание ID активной сессии пользователя
 function isExistSipActiveOperator(InSip:string):Boolean;                             // проверка заведен ли уже ранее оператор под таким sip номером и он активен
 procedure accessRights(var p_TUser: TUser);                                          // права доступа
-// function GetCurrentUserNamePC:string;                                                // получение имени залогиненого пользователя
 function getComputerPCName: string;                                                  // функция получения имени ПК
 function GetForceActiveSessionClosed(InUserID:Integer):Boolean;                      // проверка нужно ли закрыть активную сессию
 function GetSelectResponse(InStroka:string):Integer;                                 // запрос по статичтике данных
@@ -119,6 +117,7 @@ procedure Mart8;                                                                
 function GetExistAccessToLocalChat(InUserId:Integer):Boolean;                        // есть ли доступ к локальному чату
 procedure OpenLocalChat;                                                             // открытые exe локального чата
 procedure OpenReports;                                                               // открытые exe отчетов
+procedure OpenService;                                                               // открытые exe услуг
 procedure OpenSMS;                                                                   // открытые exe SMS рассылки
 function GetExistActiveSession(InUserID:Integer; var ActiveSession:string):Boolean;  // есть ли активная сессия уже
 function GetStatusUpdateService:Boolean;                                             // проверка запущена ли служба обновления
@@ -147,6 +146,7 @@ function GetProgrammUptime(_uptime:Int64):string;  overload;                    
 function GetProgrammStarted:TDateTime;   overload;                                   // время запуска программы(текущий пользователь)
 function GetProgrammStarted(_userID:Integer):TDateTime;  overload;                   // время запуска программы(любой пользователь)
 function GetPhoneTrunkQueue(_phone:string;_timecall:string):string;                  // нахождение на какой транк звонил номер который ушел в очередь
+function IsServerIkExistWorkingTime(_id:Integer):Boolean;                            // настроен ли время работы в сервере ИК
 
 
 implementation
@@ -177,7 +177,8 @@ uses
   TXmlUnit,
   TOnlineChat,
   Thread_ChatUnit,
-  Thread_ForecastUnit, Thread_InternalProcessUnit;
+  Thread_ForecastUnit,
+  Thread_InternalProcessUnit;
 
 
 
@@ -209,7 +210,7 @@ begin
                                                                                    +#39+IntToStr(SharedCurrentUserLogon.GetID)+#39+','
                                                                                    +#39+SharedCurrentUserLogon.GetUserLoginPC+#39+','
                                                                                    +#39+SharedCurrentUserLogon.GetPC+#39+','
-                                                                                   +#39+IntToStr(TLoggingToInteger(InLoggingID))+#39+')');
+                                                                                   +#39+IntToStr(EnumLoggingToInteger(InLoggingID))+#39+')');
 
         try
             ExecSQL;
@@ -285,41 +286,41 @@ begin
 end;
 
 
-
-// получение ID TRole
-function GetRoleID(InRole:string):Integer;
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
- error:string;
-begin
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnectWithError(error);
-
-  if not Assigned(serverConnect) then begin
-     ShowFormErrorMessage(error,SharedMainLog,'GetRoleID');
-     FreeAndNil(ado);
-     Exit;
-  end;
-
-
-  try
-    with ado do begin
-      ado.Connection:=serverConnect;
-      SQL.Clear;
-      SQL.Add('select id from role where name_role = '+#39+InRole+#39);
-
-      Active:=True;
-      Result:=StrToInt(VarToStr(Fields[0].Value));
-    end;
-  finally
-    FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-     serverConnect.Close;
-     FreeAndNil(serverConnect);
-    end;
-  end;
-end;
+//
+//// получение ID TRole
+//function GetRoleID(InRole:string):Integer;
+//var
+// ado:TADOQuery;
+// serverConnect:TADOConnection;
+// error:string;
+//begin
+//  ado:=TADOQuery.Create(nil);
+//  serverConnect:=createServerConnectWithError(error);
+//
+//  if not Assigned(serverConnect) then begin
+//     ShowFormErrorMessage(error,SharedMainLog,'GetRoleID');
+//     FreeAndNil(ado);
+//     Exit;
+//  end;
+//
+//
+//  try
+//    with ado do begin
+//      ado.Connection:=serverConnect;
+//      SQL.Clear;
+//      SQL.Add('select id from role where name_role = '+#39+InRole+#39);
+//
+//      Active:=True;
+//      Result:=StrToInt(VarToStr(Fields[0].Value));
+//    end;
+//  finally
+//    FreeAndNil(ado);
+//    if Assigned(serverConnect) then begin
+//     serverConnect.Close;
+//     FreeAndNil(serverConnect);
+//    end;
+//  end;
+//end;
 
 // создание потоков
 procedure createThreadDashboard;
@@ -464,17 +465,29 @@ begin
 
     // запуск потоков
     STATISTICS_thread.Resume;
+    Sleep(10);
     IVR_thread.Resume;
+    Sleep(10);
     QUEUE_thread.Resume;
+    Sleep(10);
     ACTIVESIP_thread.Resume;
+    Sleep(10);
     ACTIVESIP_Queue_thread.Resume;
+    Sleep(10);
     ACTIVESIP_countTalk_thread.Resume;
+    Sleep(10);
     ACTIVESIP_updateTalk_thread.Resume;
+    Sleep(10);
     ACTIVESIP_updateTalkPhone_thread.Resume;
+    Sleep(10);
     CHECKSERVERS_thread.Resume;
+    Sleep(10);
     ANSWEREDQUEUE_thread.Resume;
+    Sleep(10);
     if SharedCurrentUserLogon.GetIsAccessLocalChat then ONLINECHAT_thread.Resume;
+    Sleep(10);
     FORECAST_thread.Resume;
+    Sleep(10);
     INTERNALPROCESS_thread.Resume;
   end;
 end;
@@ -536,27 +549,22 @@ begin
        if countKillExe>10 then Break;
      end;
 
+     // закрываем service_exe если открыт
+     countKillExe:=0;
+     while GetTask(PChar(SERVICE_EXE)) do begin
+       KillTask(PChar(SERVICE_EXE));
+
+       // на случай если не удасться закрыть дочерний exe
+       Sleep(500);
+       Inc(countKillExe);
+       if countKillExe>10 then Break;
+     end;
+
    finally
       //DM.ADOConnectServer.Close;
       KillProcessNow;
    end;
 end;
-
-
-// получение имени залогиненого пользователя
-//function GetCurrentUserNamePC:string;
-// const
-//   cnMaxUserNameLen = 254;
-// var
-//   sUserName: string;
-//   dwUserNameLen: DWORD;
-//begin
-//   dwUserNameLen := cnMaxUserNameLen - 1;
-//   SetLength(sUserName, cnMaxUserNameLen);
-//   GetUserName(PChar(sUserName), dwUserNameLen);
-//   SetLength(sUserName, dwUserNameLen);
-//   Result:= PChar(sUserName);
-//end;
 
 
 // запрос по статичтике данных
@@ -802,14 +810,26 @@ end;
 // очистка listbox_SIP
 procedure clearList_SIP(InWidth:Integer; InFontSize:Word);
  const
- //cWidth_default           :Word = 1017;
- cProcentWidth_operator   :Word = 29;
- cProcentWidth_status     :Word = 15;
- cProcentWidth_responce   :Word = 10;
- cProcentWidth_phone      :Word = 10;
- cProcentWidth_talk       :Word = 12;
- cProcentWidth_queue      :Word = 9;
- cProcentWidth_time       :Word = 15;
+ //cWidth_default           :Word = 1094;
+ cProcentWidth_operator   :Word = 27;
+ cProcentWidth_status     :Word = 13;
+ cProcentWidth_responce   :Word = 9;
+ cProcentWidth_trunk      :Word = 9;
+ cProcentWidth_phone      :Word = 9;
+ cProcentWidth_talk       :Word = 11;
+ cProcentWidth_queue      :Word = 8;
+ cProcentWidth_time       :Word = 14;
+
+ var // для дебага
+  test_size_operator,
+  test_size_status,
+  test_size_responce,
+  test_size_trunk,
+  test_size_phone,
+  test_size_talk,
+  test_size_queue,
+  test_size_time:Word;
+
 begin
  with HomeForm do begin
    Panel_SIP.Width:=InWidth;
@@ -833,6 +853,8 @@ begin
       begin
         Caption:='Оператор';
         Width:=Round((InWidth*cProcentWidth_operator)/100);
+        test_size_operator:=Width;
+
         Alignment:=taLeftJustify;
       end;
 
@@ -840,6 +862,8 @@ begin
       begin
         Caption:='Статус';
         Width:=Round((InWidth*cProcentWidth_status)/100);
+        test_size_status:=Width;
+
         Alignment:=taCenter;
       end;
 
@@ -847,6 +871,17 @@ begin
       begin
         Caption:='Отвечено';
         Width:=Round((InWidth*cProcentWidth_responce)/100);
+        test_size_responce:=Width;
+
+        Alignment:=taCenter;
+      end;
+
+      with Columns.Add do
+      begin
+        Caption:='Линия';
+        Width:=Round((InWidth*cProcentWidth_trunk)/100);
+        test_size_trunk:=Width;
+
         Alignment:=taCenter;
       end;
 
@@ -854,6 +889,8 @@ begin
       begin
         Caption:='Номер';
         Width:=Round((InWidth*cProcentWidth_phone)/100);
+        test_size_phone:=Width;
+
         Alignment:=taCenter;
       end;
 
@@ -861,6 +898,8 @@ begin
       begin
         Caption:='Время разговора';
         Width:=Round((InWidth*cProcentWidth_talk)/100);
+        test_size_talk:=Width;
+
         Alignment:=taCenter;
       end;
 
@@ -868,6 +907,8 @@ begin
       begin
         Caption:='Очередь';
         Width:=Round((InWidth*cProcentWidth_queue)/100);
+        test_size_queue:=Width;
+
         Alignment:=taCenter;
       end;
 
@@ -875,6 +916,8 @@ begin
       begin
         Caption:='Сред. время | Общее';
         Width:=Round((InWidth*cProcentWidth_time)/100);
+        test_size_time:=Width;
+
         Alignment:=taCenter;
       end;
    end;
@@ -2641,88 +2684,6 @@ begin
 end;
 
 
-// прогрузка пользователей в форму авторизации
-procedure LoadUsersAuthForm;
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
- CodOshibki:string;
- countUsers,i:Integer;
- error:string;
-begin
-
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnectWithError(error);
-
-  if not Assigned(serverConnect) then begin
-     ShowFormErrorMessage('Возникла ошибка при запросе на сервер!'+#13+error, SharedMainLog, 'LoadUsersAuthForm');
-     FreeAndNil(ado);
-     KillProcess;
-  end;
-
-  try
-    with ado do begin
-      ado.Connection:=serverConnect;
-      SQL.Clear;
-      SQL.Add('select count(id) from users where disabled = ''0'' and role <> ''6'' ');
-
-      try
-          Active:=True;
-      except
-          on E:EIdException do begin
-             CodOshibki:=e.Message;
-             MessageBox(FormAuth.Handle,PChar('Возникла ошибка при запросе на сервер!'+#13#13+CodOshibki),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-             FreeAndNil(ado);
-             if Assigned(serverConnect) then begin
-               serverConnect.Close;
-               FreeAndNil(serverConnect);
-             end;
-
-             KillProcess;
-          end;
-      end;
-
-      countUsers:=Fields[0].Value;
-
-      SQL.Clear;
-      SQL.Add('select familiya,name from users where disabled = ''0'' and role <> ''6'' order by familiya');
-
-      try
-          Active:=True;
-      except
-          on E:EIdException do begin
-             CodOshibki:=e.Message;
-             MessageBox(FormAuth.Handle,PChar('Возникла ошибка при запросе на сервер!'+#13#13+CodOshibki),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-             FreeAndNil(ado);
-             if Assigned(serverConnect) then begin
-               serverConnect.Close;
-               FreeAndNil(serverConnect);
-             end;
-
-             KillProcess;
-          end;
-      end;
-
-       with FormAuth.comboxUser do begin
-
-        Clear;
-
-         for i:=0 to countUsers-1 do begin
-          Items.Add(Fields[0].Value+' '+Fields[1].Value);
-          ado.Next;
-         end;
-       end;
-    end;
-  finally
-    FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
-  end;
-end;
-
-
 // нахождение userID после успешного входа на пк
 function GetUserFamiliyaName_LastSuccessEnter(InUser_login_pc,InUser_pc:string):string;
 var
@@ -2746,14 +2707,14 @@ begin
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
-      SQL.Add('select familiya,name from users where id = (select user_id  from logging where user_login_pc='+#39+InUser_login_pc+#39+' and pc='+#39+InUser_pc+#39+' and action='+#39+IntToStr(TLoggingToInteger(eLog_enter))+#39+' order by date_time DESC limit 1) and disabled =''0'' ');
+      SQL.Add('select familiya,name from users where id = (select user_id  from logging where user_login_pc='+#39+InUser_login_pc+#39+' and pc='+#39+InUser_pc+#39+' and action='+#39+IntToStr(EnumLoggingToInteger(eLog_enter))+#39+' order by date_time DESC limit 1) and disabled =''0'' ');
 
       Active:=True;
 
       // если нет в основной, то смотрим в таблице history_logging
       if Fields[0].Value = null then begin
         SQL.Clear;
-        SQL.Add('select familiya,name from users where id = (select user_id  from history_logging where user_login_pc='+#39+InUser_login_pc+#39+' and pc='+#39+InUser_pc+#39+' and action='+#39+IntToStr(TLoggingToInteger(eLog_enter))+#39+' order by date_time DESC limit 1) and disabled =''0'' ');
+        SQL.Add('select familiya,name from users where id = (select user_id  from history_logging where user_login_pc='+#39+InUser_login_pc+#39+' and pc='+#39+InUser_pc+#39+' and action='+#39+IntToStr(EnumLoggingToInteger(eLog_enter))+#39+' order by date_time DESC limit 1) and disabled =''0'' ');
 
         Active:=True;
 
@@ -3474,7 +3435,7 @@ begin
       ado.Connection:=serverConnect;
 
       SQL.Clear;
-      SQL.Add('select count(id) from remote_commands where command = '+#39+inttostr(TLoggingToInteger(command)) +#39+' and user_id = '+#39+IntToStr(SharedCurrentUserLogon.GetID)+#39);
+      SQL.Add('select count(id) from remote_commands where command = '+#39+inttostr(EnumLoggingToInteger(command)) +#39+' and user_id = '+#39+IntToStr(SharedCurrentUserLogon.GetID)+#39);
       Active:=True;
 
       if Fields[0].Value<>null then begin
@@ -3505,7 +3466,7 @@ begin
   showWait(open);
 
   response:='insert into remote_commands (sip,command,ip,user_id,user_login_pc,pc) values ('+#39+getUserSIP(SharedCurrentUserLogon.GetID) +#39+','
-                                                                                            +#39+IntToStr(TLoggingToInteger(command))+#39+','
+                                                                                            +#39+IntToStr(EnumLoggingToInteger(command))+#39+','
                                                                                             +#39+SharedCurrentUserLogon.GetIP+#39+','
                                                                                             +#39+IntToStr(SharedCurrentUserLogon.GetID)+#39+','
                                                                                             +#39+SharedCurrentUserLogon.GetUserLoginPC+#39+','
@@ -3526,7 +3487,7 @@ begin
 
     // пробуем удалить команду
        response:='delete from remote_commands where sip ='+#39+getUserSIP(SharedCurrentUserLogon.GetID)+#39+
-                                                         ' and command ='+#39+IntToStr(TLoggingToInteger(command))+#39;
+                                                         ' and command ='+#39+IntToStr(EnumLoggingToInteger(command))+#39;
 
     if not remoteCommand_Responce(response,error) then begin
       showWait(close);
@@ -3919,7 +3880,7 @@ begin
   end;
 
   // текущий статуса из лога
-  status:=TLoggingToInteger(StatusOperatorToTLogging(EnumStatusOperatorsToInteger(InOperatorStatus)));
+  status:=EnumLoggingToInteger(StatusOperatorToEnumLogging(EnumStatusOperatorsToInteger(InOperatorStatus)));
 
   try
     with ado do begin
@@ -4384,7 +4345,7 @@ begin
         Active:=True;
 
         if Fields[0].Value<>null then begin
-          Result:=IntegerToTLogging(StrToInt(VarToStr(Fields[0].Value)));
+          Result:=IntegerToEnumLogging(StrToInt(VarToStr(Fields[0].Value)));
         end;
       end;
    finally
@@ -4876,6 +4837,22 @@ begin
 end;
 
 
+// открытые exe услуг
+procedure OpenService;
+begin
+ if not SharedCurrentUserLogon.GetIsAccessReports then begin
+    MessageBox(HomeForm.Handle,PChar('Отсутствует доступ к услугам'),PChar('Отсутствует доступ'),MB_OK+MB_ICONINFORMATION);
+    Exit;
+ end;
+
+  if not FileExists(SERVICE_EXE) then begin
+    MessageBox(HomeForm.Handle,PChar('Не удается найти файл '+SERVICE_EXE),PChar('Файл не найден'),MB_OK+MB_ICONERROR);
+    Exit;
+  end;
+
+  ShellExecute(HomeForm.Handle, 'Open', PChar(SERVICE_EXE),PChar(USER_ID_PARAM+' '+IntToStr(SharedCurrentUserLogon.GetID)),nil,SW_SHOW);
+end;
+
 // открытые exe SMS рассылки
 procedure OpenSMS;
  var
@@ -5320,7 +5297,7 @@ begin
     else begin
      WindowState  :=wsNormal;
      Height       :=900; //1011  // default
-     ClientWidth  :=1410;        // default
+     ClientWidth  :=1470;        // default
     end;
   end;
   XML.Free;
@@ -5386,7 +5363,7 @@ var
  ado:TADOQuery;
  serverConnect:TADOConnection;
 begin
- Result:='null';
+  Result:='null';
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
@@ -5405,6 +5382,39 @@ begin
       if Fields[0].Value<>null then begin
        Result:=VarToStr(Fields[0].Value);
       end;
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+// настроен ли время работы в сервере ИК
+function IsServerIkExistWorkingTime(_id:Integer):Boolean;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+   Result:=False;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select count(id) from server_ik_worktime where id = '+#39+IntToStr(_id)+#39);
+
+      Active:=True;
+      if Fields[0].Value <> 0 then Result:=True;
     end;
   finally
    FreeAndNil(ado);

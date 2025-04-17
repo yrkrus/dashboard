@@ -86,7 +86,7 @@ var
 implementation
 
 uses
-  GlobalVariables, FunctionUnit, TCustomTypeUnit;
+  GlobalVariables, GlobalVariablesLinkDLL, FunctionUnit, TCustomTypeUnit;
 
 {$R *.dfm}
 

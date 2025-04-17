@@ -6,43 +6,49 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ExtCtrls,
   Vcl.ComCtrls,FunctionUnit, Data.Win.ADODB, Data.DB, IdException,
-  System.ImageList, Vcl.ImgList;
+  System.ImageList, Vcl.ImgList, TCustomTypeUnit;
+
+
 
 type
   TFormSettingsGlobal = class(TForm)
-    PanelSettings: TPanel;
+    panel_queue: TPanel;
     GroupBox1: TGroupBox;
     Label3: TLabel;
     Label4: TLabel;
+    lblQueue_5000: TLabel;
+    lblQueue_5050: TLabel;
     StaticText1: TStaticText;
     StaticText2: TStaticText;
     btnAddServer: TBitBtn;
     btnEditUser: TBitBtn;
-    lblQueue_5000: TLabel;
-    lblQueue_5050: TLabel;
-    PageSettings: TPageControl;
-    Sheet_Queue: TTabSheet;
-    Sheet_PasswordFirebird: TTabSheet;
-    Label1: TLabel;
-    Label2: TLabel;
-    edtLogin_Firebird: TEdit;
-    edtPassword_Firebird: TEdit;
+    panel_footer: TPanel;
+    panel_firebird: TPanel;
     btnSaveFirebirdSettings: TBitBtn;
     btnCheckFirebirdSettings: TBitBtn;
-    STFirebird_viewPwd: TStaticText;
-    lblInfoCheckIKServerFirebird: TLabel;
-    Sheet_SMS: TTabSheet;
+    panel_sms: TPanel;
     Label5: TLabel;
     reSmsURL: TRichEdit;
-    edtLogin_SMS: TEdit;
-    edtPassword_SMS: TEdit;
-    Label7: TLabel;
-    btnSaveSMSSettings: TBitBtn;
-    btnCheckSMSSettings: TBitBtn;
-    STSMS_viewPwd: TStaticText;
     Label6: TLabel;
+    edtLogin_SMS: TEdit;
+    Label7: TLabel;
+    edtPassword_SMS: TEdit;
+    STSMS_viewPwd: TStaticText;
     Label8: TLabel;
     edtSmsSign: TEdit;
+    btnSaveSMSSettings: TBitBtn;
+    btnCheckSMSSettings: TBitBtn;
+    GroupBox2: TGroupBox;
+    Label1: TLabel;
+    Label2: TLabel;
+    lblInfoCheckIKServerFirebird: TLabel;
+    edtLogin_Firebird: TEdit;
+    edtPassword_Firebird: TEdit;
+    STFirebird_viewPwd: TStaticText;
+    panel_access: TPanel;
+    btnEditAccessMenu: TBitBtn;
+    group_tree: TGroupBox;
+    tree_menu: TTreeView;
     procedure FormShow(Sender: TObject);
     procedure btnAddServerClick(Sender: TObject);
     procedure LoadSettings;
@@ -54,15 +60,27 @@ type
     procedure FormCreate(Sender: TObject);
     procedure btnSaveSMSSettingsClick(Sender: TObject);
     procedure STSMS_viewPwdClick(Sender: TObject);
+    procedure tree_menuClick(Sender: TObject);
+    procedure btnEditAccessMenuClick(Sender: TObject);
   private
 
    procedure SetFirebirdAuth;
    procedure SetButtonCheckFirebirdServer;
    procedure SetSMSAuth;
+   procedure AddNode(const AText: string);
+   procedure CreateTree;                      // создание дерева настроек
+   procedure ShowPanel(_tree:enumTreeSettings); // отображение панели
+
+
     { Private declarations }
   public
     { Public declarations }
   end;
+
+const
+  // позиционирование выбранной панели
+  cLEFT_panel :Word = 192;
+  cTOP_panel  :Word = 39;
 
 var
   FormSettingsGlobal: TFormSettingsGlobal;
@@ -71,9 +89,65 @@ implementation
 
 uses
   FormSettingsGlobal_addIVRUnit, FormSettingsGlobal_listIVRUnit,
-  FormGlobalSettingCheckFirebirdConnectUnit, TCustomTypeUnit, GlobalVariables, TSendSMSUint;
+  FormGlobalSettingCheckFirebirdConnectUnit, GlobalVariables,
+  GlobalVariablesLinkDLL, TSendSMSUint, FormMenuAccessUnit;
 
 {$R *.dfm}
+
+// отображение панели
+procedure  TFormSettingsGlobal.ShowPanel(_tree:enumTreeSettings);
+var
+  currentPanel:TPanel;
+begin
+   panel_queue.Visible:=False;
+   panel_firebird.Visible:=False;
+   panel_sms.Visible:=False;
+   panel_access.Visible:=False;
+
+   case _tree  of
+    tree_queue: begin
+     currentPanel:=panel_queue;
+    end;
+    tree_firebird: begin
+     currentPanel:=panel_firebird;
+    end;
+    tree_sms: begin
+     currentPanel:=panel_sms;
+    end;
+    tree_access:begin
+      currentPanel:=panel_access;
+    end;
+   end;
+
+   // название панели
+   panel_footer.Caption:=EnumTreeSettingsToString(_tree);
+
+   currentPanel.Visible:=True;
+   currentPanel.Left:=cLEFT_panel;
+   currentPanel.Top:=cTOP_panel;
+end;
+
+procedure TFormSettingsGlobal.AddNode(const AText: string);
+begin
+  // Добавляем новый корневой узел
+  tree_menu.Items.Add(nil, AText);
+end;
+
+
+// создание дерева настроек
+procedure TFormSettingsGlobal.CreateTree;
+var
+ i:Integer;
+ enumName:enumTreeSettings;
+begin
+  tree_menu.Items.Clear;
+
+  for i:=Ord(Low(enumTreeSettings)) to Ord(High(enumTreeSettings)) do
+  begin
+    enumName:=enumTreeSettings(i);
+    AddNode(EnumTreeSettingsToString(enumName));
+  end;
+end;
 
 
 // проверка можно ли активировать кнопку проверки соединения с БД
@@ -260,11 +334,22 @@ begin
   end;
 end;
 
+procedure TFormSettingsGlobal.tree_menuClick(Sender: TObject);
+var
+ treeString:string;
+begin
+  treeString:=tree_menu.Selected.Text;
+  ShowPanel(StringToEnumTreeSettings(treeString));
+end;
+
 // прогрузка текущих параметров
 procedure TFormSettingsGlobal.LoadSettings;
 var
  SMS:TSendSMS;
 begin
+   // панель по умолчанию
+   ShowPanel(tree_queue);
+
    // корректировка времени
    lblQueue_5000.Caption:=IntToStr(GetIVRTimeQueue(queue_5000));
    lblQueue_5050.Caption:=IntToStr(GetIVRTimeQueue(queue_5050));
@@ -308,6 +393,11 @@ end;
 procedure TFormSettingsGlobal.btnCheckFirebirdSettingsClick(Sender: TObject);
 begin
   FormGlobalSettingCheckFirebirdConnect.ShowModal;
+end;
+
+procedure TFormSettingsGlobal.btnEditAccessMenuClick(Sender: TObject);
+begin
+  FormMenuAccess.ShowModal;
 end;
 
 procedure TFormSettingsGlobal.btnEditUserClick(Sender: TObject);
@@ -378,8 +468,18 @@ begin
 end;
 
 procedure TFormSettingsGlobal.FormShow(Sender: TObject);
+const
+ cWidth:Word  = 648;
+ cHeight:Word = 317;
 begin
   Screen.Cursor:=crHourGlass;
+
+  // default value
+  Height:=cHeight;
+  Width:=cWidth;
+
+  // дерево настроек
+  CreateTree;
 
   // загружаем параметры
   LoadSettings;

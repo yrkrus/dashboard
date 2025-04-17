@@ -130,6 +130,41 @@ begin
 end;
 
 
+
+// получение ID TRole
+function GetRoleID(InRole:string):Integer; stdcall;export;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ error:string;
+begin
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select id from role where name_role = '+#39+InRole+#39);
+
+      Active:=True;
+      Result:=StrToInt(VarToStr(Fields[0].Value));
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+     serverConnect.Close;
+     FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
 // есть ли доступ у пользователя к локальному чату
 function GetUserAccessLocalChat(InUserID:Integer):Boolean;stdcall;export;
 var
@@ -623,6 +658,7 @@ exports
   createServerConnectWithError,
   GetCopyright,
   GetUserNameFIO,
+  GetRoleID,
   GetUserAccessLocalChat,
   GetUserAccessReports,
   GetUserAccessSMS,

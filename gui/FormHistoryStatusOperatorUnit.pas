@@ -64,7 +64,7 @@ var
 implementation
 
 uses
-  GlobalVariables, TCustomTypeUnit;
+  GlobalVariables, GlobalVariablesLinkDLL, TCustomTypeUnit;
 
 
 

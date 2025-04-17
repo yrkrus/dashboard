@@ -107,7 +107,7 @@ uses
 implementation
 
 uses
-  GlobalVariables, FunctionUnit, FormHome;
+  GlobalVariables, GlobalVariablesLinkDLL, FunctionUnit, FormHome;
 
 const
       cMAX_BROWSER      :Word = 2;        // максимальное кол-во переключаемых браузеров в одном классе чата

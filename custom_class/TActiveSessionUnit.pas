@@ -68,7 +68,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants, Graphic
 implementation
 
 uses
-  FunctionUnit, GlobalVariables;
+  FunctionUnit, GlobalVariables, GlobalVariablesLinkDLL;
 
 //////////////////////////////////////////////////
 // class TActiveStruct  STARt

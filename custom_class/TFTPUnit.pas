@@ -17,6 +17,7 @@ uses
   XMLDoc,
   XMLIntf,
   GlobalVariables,
+  GlobalVariablesLinkDLL,
   IdFTP,
   IdComponent,
   IdBaseComponent,

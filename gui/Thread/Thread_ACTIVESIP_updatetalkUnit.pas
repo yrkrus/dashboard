@@ -57,9 +57,17 @@ begin
   Log:=TLoggingFile.Create(NAME_THREAD);
 
   // вывод debug info
-  debugInfo:=TDebugStruct.Create(NAME_THREAD,Log);
-  SharedCountResponseThread.Add(debugInfo);
-
+  try
+     debugInfo:=TDebugStruct.Create(NAME_THREAD,Log);
+     SharedCountResponseThread.Add(debugInfo);
+  except
+    on E:Exception do
+    begin
+     messclass:=e.ClassName;
+     mess:=e.Message;
+     Synchronize(CriticalError);
+    end;
+  end;
 
   while not Terminated do
   begin

@@ -3,7 +3,9 @@ unit Thread_ACTIVESIPUnit;
 interface
 
 uses
-  System.Classes, System.DateUtils, SysUtils, ActiveX, TActiveSIPUnit, Vcl.ComCtrls, TLogFileUnit;
+  System.Classes, System.DateUtils,
+  SysUtils, ActiveX, TActiveSIPUnit,
+  Vcl.ComCtrls, TLogFileUnit, GlobalVariablesLinkDLL;
 
 type
   Thread_ACTIVESIP = class(TThread)
@@ -195,6 +197,16 @@ begin
       end;
     end;
 
+    // ===== À»Õ»ﬂ =====
+    begin
+      if p_ActiveSipOperators.GetListOperators_Trunk(i) = '' then begin
+       ListItem.SubItems.Add('---');
+      end
+      else begin
+       ListItem.SubItems.Add(p_ActiveSipOperators.GetListOperators_Trunk(i));
+      end;
+    end;
+
     // ===== ÕŒÃ≈– “≈À≈‘ŒÕ¿ =====
     begin
       if p_ActiveSipOperators.GetListOperators_Phone(i) = '' then begin
@@ -359,35 +371,46 @@ begin
         end;
       end;
 
-
-      // ===== ÕŒÃ≈– “≈À≈‘ŒÕ¿ =====
+      // ===== À»Õ»ﬂ =====
       begin
-        if p_ActiveSipOperators.GetListOperators_Phone(i) = '' then begin
+        if p_ActiveSipOperators.GetListOperators_Trunk(i) = '' then begin
           ListItem.SubItems[3]:='---';
 
         end
         else begin
-         ListItem.SubItems[3]:=p_ActiveSipOperators.GetListOperators_Phone(i);
+         ListItem.SubItems[3]:=p_ActiveSipOperators.GetListOperators_Trunk(i);
+        end;
+      end;
+
+
+      // ===== ÕŒÃ≈– “≈À≈‘ŒÕ¿ =====
+      begin
+        if p_ActiveSipOperators.GetListOperators_Phone(i) = '' then begin
+          ListItem.SubItems[4]:='---';
+
+        end
+        else begin
+         ListItem.SubItems[4]:=p_ActiveSipOperators.GetListOperators_Phone(i);
          Inc(p_ActiveSipOperators.countActiveCalls);
         end;
       end;
 
       // ===== ¬–≈Ãﬂ –¿«√Œ¬Œ–¿ =====
       begin
-       if p_ActiveSipOperators.GetListOperators_TalkTime(i,True) = '' then ListItem.SubItems[4]:='---'
-       else ListItem.SubItems[4]:=p_ActiveSipOperators.GetListOperators_TalkTime(i,True);
+       if p_ActiveSipOperators.GetListOperators_TalkTime(i,True) = '' then ListItem.SubItems[5]:='---'
+       else ListItem.SubItems[5]:=p_ActiveSipOperators.GetListOperators_TalkTime(i,True);
       end;
 
       // ===== Œ◊≈–≈ƒ‹ =====
       begin
-       if p_ActiveSipOperators.GetListOperators_Queue(i) = '' then ListItem.SubItems[5]:='---'
-       else ListItem.SubItems[5]:=p_ActiveSipOperators.GetListOperators_Queue(i);
+       if p_ActiveSipOperators.GetListOperators_Queue(i) = '' then ListItem.SubItems[6]:='---'
+       else ListItem.SubItems[6]:=p_ActiveSipOperators.GetListOperators_Queue(i);
       end;
 
       // ===== Œ¡Ÿ≈≈ ¬–≈Ãﬂ –¿«√Œ¬Œ–¿ =====
       begin
-       if  p_ActiveSipOperators.GetListOperators_TalkTimeAll(i) = 0 then ListItem.SubItems[6]:='00:00:00 | 00:00:00'
-       else ListItem.SubItems[6]:=GetTimeAnsweredSecondsToString(p_ActiveSipOperators.GetListOperators_TalkTimeAvg(i))
+       if  p_ActiveSipOperators.GetListOperators_TalkTimeAll(i) = 0 then ListItem.SubItems[7]:='00:00:00 | 00:00:00'
+       else ListItem.SubItems[7]:=GetTimeAnsweredSecondsToString(p_ActiveSipOperators.GetListOperators_TalkTimeAvg(i))
                                   +' | '
                                   +GetTimeAnsweredSecondsToString(p_ActiveSipOperators.GetListOperators_TalkTimeAll(i));
 
@@ -490,8 +513,17 @@ begin
   Log:=TLoggingFile.Create(NAME_THREAD);
 
   // ‚˚‚Ó‰ debug info
-  debugInfo:=TDebugStruct.Create(NAME_THREAD,Log);
-  SharedCountResponseThread.Add(debugInfo);
+  try
+     debugInfo:=TDebugStruct.Create(NAME_THREAD,Log);
+     SharedCountResponseThread.Add(debugInfo);
+  except
+    on E:Exception do
+    begin
+     messclass:=e.ClassName;
+     mess:=e.Message;
+     Synchronize(CriticalError);
+    end;
+  end;
 
   // ‰Ó·‡‚ÎˇÂÏ ÒÒ˚ÎÍÛ Ì‡ Log ‚ ÍÎ‡ÒÒ
   SharedActiveSipOperators.AddLinkLogFile(Log);

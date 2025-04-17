@@ -45,7 +45,7 @@ var
 implementation
 
 uses
-  FormTrunkEditUnit, GlobalVariables;
+  FormTrunkEditUnit, GlobalVariables, GlobalVariablesLinkDLL;
 
 {$R *.dfm}
 

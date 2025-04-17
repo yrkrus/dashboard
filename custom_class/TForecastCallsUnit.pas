@@ -15,6 +15,7 @@ uses
   System.Classes,
   System.SysUtils,
   GlobalVariables,
+  GlobalVariablesLinkDLL,
   Vcl.StdCtrls,
   Data.Win.ADODB,
   Data.DB,

@@ -10,7 +10,8 @@ uses
     Vcl.StdCtrls,
     Vcl.Controls,
     Vcl.ComCtrls,
-    TLogFileUnit;
+    TLogFileUnit,
+    GlobalVariablesLinkDLL;
 
 type
   Thread_QUEUE = class(TThread)
@@ -166,9 +167,19 @@ begin
   CoInitialize(Nil);
 
   Log:=TLoggingFile.Create(NAME_THREAD);
- // вывод debug info
-  debugInfo:=TDebugStruct.Create(NAME_THREAD,Log);
-  SharedCountResponseThread.Add(debugInfo);
+
+  // вывод debug info
+  try
+     debugInfo:=TDebugStruct.Create(NAME_THREAD,Log);
+     SharedCountResponseThread.Add(debugInfo);
+  except
+    on E:Exception do
+    begin
+     messclass:=e.ClassName;
+     mess:=e.Message;
+     Synchronize(CriticalError);
+    end;
+  end;
 
 
   while not Terminated do

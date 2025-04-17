@@ -18,24 +18,28 @@ type
     btnAdd: TBitBtn;
     btnEdit: TBitBtn;
     chkboxCloseWindow: TCheckBox;
-    panel: TPanel;
-    Label8: TLabel;
-    edtIP: TEdit;
-    Label2: TLabel;
-    edtAlias: TEdit;
-    Label1: TLabel;
-    edtAddress: TEdit;
-    Label3: TLabel;
-    combox_TypeClinic: TComboBox;
-    Label4: TLabel;
+    GroupBox1: TGroupBox;
+    btnWorkingTime: TButton;
     combox_ShowSMS: TComboBox;
-    Label5: TLabel;
     combox_Status: TComboBox;
+    combox_TypeClinic: TComboBox;
+    edtAddress: TEdit;
+    edtAlias: TEdit;
+    edtIP: TEdit;
+    Label1: TLabel;
+    Label2: TLabel;
+    Label3: TLabel;
+    Label4: TLabel;
+    Label5: TLabel;
+    lblWorkingTimeLabel: TLabel;
+    lblStatusWorkingTime: TLabel;
+    Label8: TLabel;
     procedure FormShow(Sender: TObject);
     procedure btnAddClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btnEditClick(Sender: TObject);
     function getResponseBD(InTypePanel_Server:TypeResponse_Server;
+                           _id:Integer;
                            InIP,
                            InAddr,
                            InAlias:string;
@@ -43,6 +47,8 @@ type
                            InShowSMS:enumParamStatus;
                            InStatus:enumStatusJobClinic;
                            var _errorDescription:string):Boolean;
+    procedure btnWorkingTimeClick(Sender: TObject);
+    function DeleteWorkingTime(_id:Integer; var _errorDescription:string):Boolean;  // удаление сервера из таблицы врем€ работы
 
   private
     { Private declarations }
@@ -58,7 +64,11 @@ type
     p_editIP,p_editAddress,p_editAlias:string;
     p_editTypeClinic:enumTypeClinic;
     p_editShowSMS:enumParamStatus;
+    p_editWorkingTime:enumParamStatus;
     p_editStatus:enumStatusJobClinic;
+
+ procedure UpdateWorkingTimeStatus(_status:enumParamStatus; isChangeEditWorkingTime:Boolean = False); // обновление статуса времени работы
+
   end;
 
 var
@@ -67,11 +77,12 @@ var
 implementation
 
 uses
-  FunctionUnit, FormServersIKUnit, GlobalVariables;
+  FunctionUnit, FormServersIKUnit, GlobalVariables, GlobalVariablesLinkDLL, FormServerIKWorkingTimeUnit;
 
 
 {$R *.dfm}
 function TFormServerIKEdit.getResponseBD(InTypePanel_Server:TypeResponse_Server;
+                                         _id:Integer;
                                          InIP,
                                          InAddr,
                                          InAlias:string;
@@ -120,7 +131,7 @@ begin
                                               +', type_clinik = '+#39+EnumTypeClinicToString(InTypeCLinic)+#39
                                               +', showSMS = '+#39+IntToStr(SettingParamsStatusToInteger(InShowSMS))+#39
                                               +', status = '+#39+IntToStr(EnumStatusJobClinicToInteger(InStatus))+#39
-                                              +' where id = '+#39+IntToStr(FormServerIKEdit.p_editID)+#39);
+                                              +' where id = '+#39+IntToStr(_id)+#39);
         end;
       end;
 
@@ -146,6 +157,11 @@ begin
       serverConnect.Close;
       FreeAndNil(serverConnect);
     end;
+  end;
+
+  // удад€ем врем€ работы
+  if InTypePanel_Server = server_delete then begin
+    DeleteWorkingTime(_id,_errorDescription);
   end;
 
   Screen.Cursor:=crDefault;
@@ -184,7 +200,35 @@ begin
 end;
 
 
+// обновление статуса времени работы
+procedure TFormServerIKEdit.UpdateWorkingTimeStatus(_status:enumParamStatus; isChangeEditWorkingTime:Boolean = False);
+begin
+  case _status of
+   paramStatus_ENABLED:begin
 
+     if isChangeEditWorkingTime then p_editWorkingTime:=_status;
+
+     btnWorkingTime.Enabled:=True;
+     lblWorkingTimeLabel.Enabled:=True;
+
+     if p_editWorkingTime = paramStatus_DISABLED then begin
+       lblStatusWorkingTime.Caption:='Ќе настроено';
+       lblStatusWorkingTime.Font.Color:=clRed;
+     end
+     else begin
+       lblStatusWorkingTime.Caption:='Ќастроено';
+       lblStatusWorkingTime.Font.Color:=clGreen;
+     end;
+   end;
+   paramStatus_DISABLED:begin
+     lblStatusWorkingTime.Font.Color:=clRed;
+     lblStatusWorkingTime.Caption:='недоступно при добавлении';
+
+     btnWorkingTime.Enabled:=False;
+     lblWorkingTimeLabel.Enabled:=False;
+   end;
+  end;
+end;
 
 function TFormServerIKEdit.getCheckFileds(var _errorDescription:string):Boolean;
 begin
@@ -251,6 +295,7 @@ end;
 procedure TFormServerIKEdit.btnAddClick(Sender: TObject);
 var
  ip,addr,alias:string;
+ id:Integer;
  type_clinic:enumTypeClinic;
  show_sms:enumParamStatus;
  status:enumStatusJobClinic;
@@ -262,6 +307,8 @@ begin
      Exit;
    end;
 
+   id:=0; // т.к. добавл€ем
+
    ip:=edtIP.Text;
    addr:=edtAddress.Text;
    alias:=edtAlias.Text;
@@ -272,7 +319,7 @@ begin
 
 
   // пробуем добавить
-  if not getResponseBD(server_add, ip, addr, alias, type_clinic, show_sms, status, error)  then begin
+  if not getResponseBD(server_add, id, ip, addr, alias, type_clinic, show_sms, status, error)  then begin
      MessageBox(Handle,PChar(error),PChar('ќшибка'),MB_OK+MB_ICONERROR);
     Exit;
   end;
@@ -288,6 +335,7 @@ end;
 procedure TFormServerIKEdit.btnEditClick(Sender: TObject);
 var
  ip,addr,alias:string;
+ id:Integer;
  type_clinic:enumTypeClinic;
  show_sms:enumParamStatus;
  status:enumStatusJobClinic;
@@ -298,6 +346,7 @@ begin
      MessageBox(Handle,PChar(error),PChar('ќшибка'),MB_OK+MB_ICONERROR);
      Exit;
    end;
+   id:=p_editID;
 
    ip:=edtIP.Text;
    addr:=edtAddress.Text;
@@ -308,7 +357,7 @@ begin
    status:=StringToEnumStatusJobClinic(combox_Status.Items[combox_Status.ItemIndex]);
 
   // пробуем отредактировать
-  if not getResponseBD(server_edit, ip, addr, alias, type_clinic, show_sms, status, error) then begin
+  if not getResponseBD(server_edit, id, ip, addr, alias, type_clinic, show_sms, status, error) then begin
      // не удалось добавить
     MessageBox(Handle,PChar(error),PChar('ќшибка'),MB_OK+MB_ICONERROR);
     Exit;
@@ -322,6 +371,69 @@ begin
 
 end;
 
+procedure TFormServerIKEdit.btnWorkingTimeClick(Sender: TObject);
+begin
+  with FormServerIKWorkingTime do begin
+    SetAddress(p_editAddress, p_editTypeClinic);
+    SetId(p_editID);
+
+    ShowModal;
+  end;
+end;
+
+// удаление сервера из таблицы врем€ работы
+function TFormServerIKEdit.DeleteWorkingTime(_id:Integer; var _errorDescription:string):Boolean;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+  Screen.Cursor:=crHourGlass;
+  Result:=False;
+  _errorDescription:='';
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnectWithError(_errorDescription);
+  if not Assigned(serverConnect) then begin
+     Screen.Cursor:=crDefault;
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('delete from server_ik_worktime where id='+#39+IntToStr(_id)+#39);
+
+      try
+          ExecSQL;
+      except
+          on E:EIdException do begin
+             Screen.Cursor:=crDefault;
+             _errorDescription:=e.Message;
+             FreeAndNil(ado);
+             if Assigned(serverConnect) then begin
+               serverConnect.Close;
+               FreeAndNil(serverConnect);
+             end;
+             Exit;
+          end;
+      end;
+
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+
+  Screen.Cursor:=crDefault;
+  Result:=True;
+end;
+
+
 procedure TFormServerIKEdit.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
@@ -333,6 +445,7 @@ begin
   p_editAlias:='';
   p_editTypeClinic:=eOther;
   p_editShowSMS:=paramStatus_DISABLED;
+  p_editWorkingTime:=paramStatus_DISABLED;
 
   with FormServersIK do begin
     panel_Server_IP:='';
@@ -363,8 +476,10 @@ begin
      chkboxCloseWindow.Caption:='закрыть окно после добавлени€';
      chkboxCloseWindow.Enabled:=True;
 
-    Caption:='ƒобавление сервера';
+     Caption:='ƒобавление сервера';
 
+     // часы работы
+     UpdateWorkingTimeStatus(paramStatus_DISABLED);
    end
    else begin             // редактируетс€
 
@@ -373,8 +488,11 @@ begin
      edtAlias.Text:=p_editAlias;
      combox_TypeClinic.ItemIndex:=combox_TypeClinic.Items.IndexOf(EnumTypeClinicToString(p_editTypeClinic));
      combox_ShowSMS.ItemIndex:=SettingParamsStatusToInteger(p_editShowSMS);
+
      combox_Status.ItemIndex:=EnumStatusJobClinicToInteger(p_editStatus);
 
+     // часы рабоиты
+     UpdateWorkingTimeStatus(paramStatus_ENABLED);
 
      btnEdit.Left:=cLeftButton;
      btnAdd.Visible:=False;
