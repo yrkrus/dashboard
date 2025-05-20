@@ -223,7 +223,7 @@ const
  IS_ERROR:Boolean = True;
 begin
   // записываем в лог
-  Log.Save(messclass+'.'+mess, IS_ERROR);
+  Log.Save(messclass+':'+mess, IS_ERROR);
 end;
 
 
@@ -268,7 +268,6 @@ begin
 
       // название потока
       begin
-
         lblNameThread[i]:=TLabel.Create(m_Form.panel);
         lblNameThread[i].Name:='lbl_'+nameThread;
         lblNameThread[i].Tag:=1;
@@ -421,21 +420,28 @@ procedure TDebugCountResponse.SetCurrentResponse(_name:string; _value:Integer);
 var
  i:Integer;
 begin
-  for i:=0 to m_count-1 do begin
-    if m_listNameThread.Count=0 then Exit;
+   try
+     for i:=0 to m_count-1 do begin
+        if (m_listNameThread.Count=0) or (i > m_count-1) then Exit;
 
-    if m_listNameThread[i] = _name then begin
+        if m_listNameThread[i] = _name then begin
 
-      if m_list[i].Mutex.WaitFor(INFINITE)= wrSignaled then
-      try
-        m_list[i].SetResponse(_value);
-      finally
-        m_list[i].Mutex.Release;
-      end;
+          if m_list[i].Mutex.WaitFor(INFINITE)= wrSignaled then
+          try
+            m_list[i].SetResponse(_value);
+          finally
+            m_list[i].Mutex.Release;
+          end;
 
-      Break;
+          Break;
+        end;
+     end;
+   except
+    on E:Exception do
+    begin
+     Log.Save('TDebugCountResponse.SetCurrentResponse | '+e.ClassName+' : '+E.Message, True);
     end;
-  end;
+   end;
 end;
 
 end.

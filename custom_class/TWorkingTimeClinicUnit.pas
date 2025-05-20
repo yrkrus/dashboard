@@ -22,6 +22,10 @@ uses
 
     type
      TWorkingStruct = class
+     private
+     m_id           :Integer;
+     procedure SetWorkingTime;   // заполнение данными о времени работы
+
      public
      m_monday       :string;
      m_tuesday      :string;
@@ -32,11 +36,6 @@ uses
      m_sunday       :string;
 
      constructor Create(_id:Integer; _isExistData:Boolean);                   overload;
-
-     private
-     m_id           :Integer;
-
-     procedure SetWorkingTime;   // заполнение данными о времени работы
 
      end;
 
@@ -54,13 +53,15 @@ uses
 
       function GetClinicAddress(_id:Integer):string;  // достать адрес клиники
       function IsExistTime(_id:Integer):Boolean;      // есть ли данные по времени работы в БД
+      function GetWorkingTime(_working:enumWorkingTime):string;  // время работы в зависимости от дня недели
 
       public
       m_time          :TWorkingStruct;
 
       constructor Create(_id:Integer);       overload;
       procedure SetWorking(_work:enumWorkingTime; _value:string; isOutput:Boolean);
-      function GetWorking(_work:enumWorkingTime):string;
+      function GetWorking(_work:enumWorkingTime):string; overload;
+      function GetWorking:string; overload;
 
       property ExistTime:Boolean read isExistDataTime;
       property ID:Integer read m_id;
@@ -190,6 +191,20 @@ begin
   Result:=IsServerIkExistWorkingTime(_id);
 end;
 
+// время работы в зависимости от дня недели
+function TWorkingTimeClinic.GetWorkingTime(_working:enumWorkingTime):string;
+begin
+  case _working of
+   workingtime_Monday:    Result:=m_time.m_monday;
+   workingtime_Tuesday:   Result:=m_time.m_tuesday;
+   workingtime_Wednesday: Result:=m_time.m_wednesday;
+   workingtime_Thursday:  Result:=m_time.m_thursday;
+   workingtime_Friday:    Result:=m_time.m_friday;
+   workingtime_Saturday:  Result:=m_time.m_saturday;
+   workingtime_Sunday:    Result:=m_time.m_sunday;
+  end;
+end;
+
 
 procedure TWorkingTimeClinic.SetWorking(_work:enumWorkingTime; _value:string; isOutput:Boolean);
 begin
@@ -207,6 +222,107 @@ begin
   end;
 end;
 
+function TWorkingTimeClinic.GetWorking:string;
+var
+  i: Integer;
+  tmp: string;
+  workTime: enumWorkingTime;
+  time: string;
+  week: string;
+  currentDays: TStringList;
+  previousTime: string;
+  weekendDays: TStringList; // Новый список для выходных
+begin
+  currentDays := TStringList.Create;
+  weekendDays := TStringList.Create; // Инициализация списка выходных
+  try
+    previousTime := '';
+    tmp := '';
+
+    for i := Ord(Low(enumWorkingTime)) to Ord(High(enumWorkingTime)) do
+    begin
+      workTime := enumWorkingTime(i);
+      time := GetWorkingTime(workTime);
+      week := EnumWorkingTimeToString(workTime);
+
+      // Проверка на выходной
+      if (time = '') or (time = '0') or (time = 'output') then
+      begin
+        // Добавляем день в список выходных
+        if weekendDays.IndexOf(week) = -1 then
+          weekendDays.Add(week);
+      end
+      else
+      begin
+        // Если есть выходные, обрабатываем их
+        if weekendDays.Count > 0 then
+        begin
+          // Формируем диапазон выходных
+          if tmp <> '' then
+            tmp := tmp + ', ';
+          if weekendDays.Count > 1 then
+            tmp := tmp + weekendDays[0] + ' - ' + weekendDays[weekendDays.Count - 1] + ' Выходной'
+          else
+            tmp := tmp + weekendDays[0] + ' Выходной';
+
+          // Очищаем список выходных
+          weekendDays.Clear;
+        end;
+
+        // Если время совпадает с предыдущим, добавляем день в текущий список
+        if time = previousTime then
+        begin
+          currentDays.Add(week);
+        end
+        else
+        begin
+          // Если есть дни в текущем списке, добавляем их в результат
+          if currentDays.Count > 0 then
+          begin
+            if tmp <> '' then
+              tmp := tmp + ', ';
+            if currentDays.Count > 1 then
+              tmp := tmp + currentDays[0] + '-' + currentDays[currentDays.Count - 1] + ' ' + previousTime
+            else
+              tmp := tmp + currentDays[0] + ' ' + previousTime;
+          end;
+
+          // Обновляем предыдущие значения
+          previousTime := time;
+          currentDays.Clear;
+          currentDays.Add(week);
+        end;
+      end;
+    end;
+
+    // Добавляем оставшиеся рабочие дни
+    if currentDays.Count > 0 then
+    begin
+      if tmp <> '' then
+        tmp := tmp + ', ';
+      if currentDays.Count > 1 then
+        tmp := tmp + currentDays[0] + '-' + currentDays[currentDays.Count - 1] + ' ' + previousTime
+      else
+        tmp := tmp + currentDays[0] + ' ' + previousTime;
+    end;
+
+    // Проверка на наличие выходных
+    if weekendDays.Count > 0 then
+    begin
+      if tmp <> '' then
+        tmp := tmp + ', ';
+      if weekendDays.Count > 1 then
+        tmp := tmp + weekendDays[0] + ' - ' + weekendDays[weekendDays.Count - 1] + ' Выходной'
+      else
+        tmp := tmp + weekendDays[0] + ' Выходной';
+    end;
+
+    Result := tmp;
+  finally
+    currentDays.Free;
+    weekendDays.Free; // Освобождаем память
+  end;
+end;
 
 function TWorkingTimeClinic.GetWorking(_work:enumWorkingTime):string;
 begin
@@ -220,6 +336,8 @@ begin
    workingtime_Sunday:    Result:=  m_time.m_sunday;
   end;
 end;
+
+
 
 // TWorkingTimeClinicUnit END
 // ===============================

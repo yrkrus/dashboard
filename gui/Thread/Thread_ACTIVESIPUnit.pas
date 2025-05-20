@@ -45,7 +45,7 @@ uses
  procedure Thread_ACTIVESIP.CriticalError;
  begin
    // записываем в лог
-   Log.Save(messclass+'.'+mess,IS_ERROR);
+   Log.Save(messclass+':'+mess,IS_ERROR);
  end;
 
 
@@ -100,7 +100,10 @@ begin
          if p_ActiveSipOperators.GetListOperators_AccessDashboad(i) then begin
             // проверим вдруг разговаривал оператор и просто ушел домой
             if isOperatorGoHome(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i)))) then ListItem.SubItems.Add(getStatus(eHome))
-            else ListItem.SubItems.Add('---');
+            else begin
+              if isOperatorGoHomeWithForceClosed(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i)))) then ListItem.SubItems.Add(getStatus(eHome))
+              else ListItem.SubItems.Add('---');
+            end;
 
             if p_ActiveSipOperators.GetListOperators_OperatorName(i) = SharedCurrentUserLogon.GetFamiliya+' '+SharedCurrentUserLogon.GetName then begin
              // для привязвнной форме
@@ -272,7 +275,11 @@ begin
            if p_ActiveSipOperators.GetListOperators_AccessDashboad(i) then begin
               // проверим вдруг разговаривал оператор и просто ушел домой
               if isOperatorGoHome(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i)))) then ListItem.SubItems[1]:=getStatus(eHome)
-              else ListItem.SubItems[1]:='---';
+              else begin // проверим вдруг закрыли через "завепшение активной сессии"
+                if isOperatorGoHomeWithForceClosed(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i)))) then ListItem.SubItems[1]:=getStatus(eHome)
+                else ListItem.SubItems[1]:='---';
+              end;
+
 
               if p_ActiveSipOperators.GetListOperators_OperatorName(i) = SharedCurrentUserLogon.GetFamiliya+' '+SharedCurrentUserLogon.GetName then begin
                  // для привязвнной форме
@@ -442,8 +449,6 @@ begin
        STlist_ACTIVESIP_NO_Rings.Visible:=False;
      end;
 
-    try
-
      // ListViewSIP.Items.BeginUpdate;
      // ListViewSIP.Columns[0].Width:= 0; // Установка ширины в 0 в редких вариантах почему то он без этого параметра оборажается
 
@@ -485,13 +490,19 @@ begin
       // Удаляем элементы, которые отсутствуют в новых данных
       for i:= ListViewSIP.Items.Count - 1 downto 0 do
       begin
-         if not p_ActiveSipOperators.isExistOperator(ListViewSIP.Items[i].Caption) then ListViewSIP.Items.Delete(i);
-
+         if not p_ActiveSipOperators.isExistOperator(ListViewSIP.Items[i].Caption) then
+         begin
+           try
+             ListViewSIP.Items.Delete(i);
+           except
+            on E:Exception do
+            begin
+             Log.Save(e.ClassName+' : '+E.Message, IS_ERROR);
+            end;
+           end;
+         end;
       end;
 
-    finally
-      //ListViewSIP.Items.EndUpdate;
-    end;
 
   end;
 end;

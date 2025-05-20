@@ -62,7 +62,7 @@ uses
 implementation
 
 uses
-  GlobalVariables, TCustomTypeUnit;
+  GlobalVariables, TCustomTypeUnit, GlobalVariablesLinkDLL;
 
 
 

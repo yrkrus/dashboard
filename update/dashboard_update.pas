@@ -31,7 +31,7 @@ var
 implementation
 
 uses
-  GlobalVariables, TXmlUnit, TLogFileUnit, TFTPUnit, TCustomTypeUnit;
+  GlobalVariables, TXmlUnit, TLogFileUnit, TFTPUnit, TCustomTypeUnit, GlobalVariablesLinkDLL;
 
 {$R *.dfm}
 
@@ -218,6 +218,7 @@ begin
      Add('taskkill /F /IM '+CHAT_EXE);
      Add('taskkill /F /IM '+REPORT_EXE);
      Add('taskkill /F /IM '+SMS_EXE);
+     Add('taskkill /F /IM '+SERVICE_EXE);
      Add('::');
 
      // закрываем обновлялку
@@ -278,6 +279,19 @@ begin
    while GetTask(PChar(SMS_EXE)) do begin
      p_Log.Save('Закрытие процесса '+PChar(SMS_EXE));
      KillTask(PChar(SMS_EXE));
+
+     // на случай если не удасться закрыть дочерний exe
+     Sleep(500);
+     Inc(countKillExe);
+     if countKillExe>10 then Break;
+   end;
+
+     // закрываем service_exe если открыт
+   countKillExe:=0;
+   p_Log.Save('Поиск процесса '+PChar(SERVICE_EXE));
+   while GetTask(PChar(SERVICE_EXE)) do begin
+     p_Log.Save('Закрытие процесса '+PChar(SERVICE_EXE));
+     KillTask(PChar(SERVICE_EXE));
 
      // на случай если не удасться закрыть дочерний exe
      Sleep(500);

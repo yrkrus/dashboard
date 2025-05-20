@@ -42,7 +42,7 @@ var
 implementation
 
 uses
-  GlobalVariables;
+  GlobalVariables, GlobalVariablesLinkDLL;
 
 {$R *.dfm}
 

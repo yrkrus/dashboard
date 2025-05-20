@@ -121,7 +121,6 @@ function TFormServerIKWorkingTime.GetResponseBD( _response:TypeResponse_Server;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
- monitoring:Integer;
 begin
   Screen.Cursor:=crHourGlass;
   Result:=False;

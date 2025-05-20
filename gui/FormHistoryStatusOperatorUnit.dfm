@@ -265,7 +265,6 @@ object FormHistoryStatusOperator: TFormHistoryStatusOperator
       Width = 57
       Height = 16
       Caption = 'CallBack:'
-      Enabled = False
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
@@ -273,13 +272,12 @@ object FormHistoryStatusOperator: TFormHistoryStatusOperator
       Font.Style = [fsBold]
       ParentFont = False
     end
-    object Label19: TLabel
+    object lbl_callback: TLabel
       Left = 335
       Top = 85
       Width = 15
       Height = 16
       Caption = '---'
-      Enabled = False
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
@@ -344,8 +342,6 @@ object FormHistoryStatusOperator: TFormHistoryStatusOperator
       TabOrder = 0
       ViewStyle = vsReport
       OnCustomDrawItem = list_HistoryCustomDrawItem
-      ExplicitWidth = 660
-      ExplicitHeight = 568
     end
     object st_NoStatus: TStaticText
       Left = 3

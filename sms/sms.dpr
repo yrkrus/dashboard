@@ -19,7 +19,18 @@ uses
   TSpellingUnit in '..\custom_class\TSpellingUnit.pas',
   FormSendingSMSUnit in 'FormSendingSMSUnit.pas' {FormSendingSMS},
   FormDictionaryUnit in 'FormDictionaryUnit.pas' {FormDictionary},
-  FormGenerateSMSUnit in 'FormGenerateSMSUnit.pas' {FormGenerateSMS};
+  FormGenerateSMSUnit in 'FormGenerateSMSUnit.pas' {FormGenerateSMS},
+  GlobalVariablesLinkDLL in '..\gui\GlobalVariablesLinkDLL.pas',
+  TShowMessageSMSUnit in '..\custom_class\TShowMessageSMSUnit.pas',
+  TCheckServersUnit in '..\custom_class\TCheckServersUnit.pas',
+  FormServerIKCheckUnit in '..\gui\FormServerIKCheckUnit.pas' {FormServerIKCheck},
+  TMessageGeneratorSMSUnit in '..\custom_class\TMessageGeneratorSMSUnit.pas',
+  FormServiceChoiseUnit in 'FormServiceChoiseUnit.pas' {FormServiceChoise},
+  TServiceUnit in '..\custom_class\TServiceUnit.pas',
+  FormWaitUnit in '..\gui\FormWaitUnit.pas' {FormWait},
+  FormServiceChoiseListUnit in 'FormServiceChoiseListUnit.pas' {FormServiceChoiseList},
+  TWorkingTimeClinicUnit in '..\custom_class\TWorkingTimeClinicUnit.pas',
+  DMUnit in 'DMUnit.pas' {DM: TDataModule};
 
 {$R *.res}
 
@@ -37,5 +48,10 @@ begin
   Application.CreateForm(TFormSendingSMS, FormSendingSMS);
   Application.CreateForm(TFormDictionary, FormDictionary);
   Application.CreateForm(TFormGenerateSMS, FormGenerateSMS);
+  Application.CreateForm(TFormServerIKCheck, FormServerIKCheck);
+  Application.CreateForm(TFormServiceChoise, FormServiceChoise);
+  Application.CreateForm(TFormWait, FormWait);
+  Application.CreateForm(TFormServiceChoiseList, FormServiceChoiseList);
+  Application.CreateForm(TDM, DM);
   Application.Run;
 end.

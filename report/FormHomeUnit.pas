@@ -50,7 +50,7 @@ implementation
 
 
 uses
-GlobalVariables, FunctionUnit, FormReportCountRingsOperatorsUnit;
+GlobalVariables, FunctionUnit, FormReportCountRingsOperatorsUnit, GlobalVariablesLinkDLL;
 
 
 {$R *.dfm}

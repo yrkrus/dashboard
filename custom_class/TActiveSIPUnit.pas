@@ -90,7 +90,8 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
 
       procedure Clear;                       // очистка от всех значений
       function GetListOperatorsGoHome:TStringList;    // список операторов которые ушли домой
-      function GetListOperatorsGoHomeNotCloseDashboard:TStringList; // список операторов которые ушли домой но забыли закрыть дашбор
+      function GetListOperatorsGoHomeNotCloseDashboard:TStringList; // список операторов которые ушли домой но забыли закрыть дашборб
+      function GetListOperatorsGoHomeClosedActiveSession:TStringList; // список операторов которые ушли через закрытие активной сессии
 
 
       public
@@ -327,6 +328,7 @@ var
  preHome:TStringList;
  operatorExit,operatorGoHome:Boolean;
  GoHomeNotCloseDashboad:TStringList;
+ ClosedWidthActiveSession:TStringList;
 begin
   Result:=TStringList.Create;
   Result.Sorted:=True;
@@ -345,7 +347,7 @@ begin
       ado.Connection:=serverConnect;
 
       SQL.Clear;
-      SQL.Add('select count(distinct(user_id)) from logging where action=''11'' ');
+      SQL.Add('select count(distinct(user_id)) from logging where action='+#39+IntToStr(EnumLoggingToInteger(eLog_home))+#39);
       Active:=True;
 
       countStatus:=Fields[0].Value;
@@ -366,7 +368,7 @@ begin
           preHome:=TStringList.Create;
 
           SQL.Clear;
-          SQL.Add('select distinct(user_id) from logging where action=''11'' ');
+          SQL.Add('select distinct(user_id) from logging where action='#39+IntToStr(EnumLoggingToInteger(eLog_home))+#39);
           Active:=True;
 
            for i:=0 to countStatus-1 do begin
@@ -400,11 +402,31 @@ begin
        end;
 
 
+       // проверим операторов которые нажади кнопку домой, но не закрыли дашборд
+       GoHomeNotCloseDashboad:=GetListOperatorsGoHomeNotCloseDashboard;
+       if GoHomeNotCloseDashboad.Count<>0 then begin
+         for i:=0 to GoHomeNotCloseDashboad.Count-1 do begin
+           Result.Add(GoHomeNotCloseDashboad[i]);
+         end;
+       end;
+       if Assigned(GoHomeNotCloseDashboad) then FreeAndNil(GoHomeNotCloseDashboad);
+
+
+       // проверим вдруг есть операторые закрытые через закрытие активной сессии
+       ClosedWidthActiveSession:=GetListOperatorsGoHomeClosedActiveSession;
+       if ClosedWidthActiveSession.Count<>0 then begin
+         for i:=0 to ClosedWidthActiveSession.Count-1 do begin
+           Result.Add(ClosedWidthActiveSession[i]);
+         end;
+       end;
+       if Assigned(ClosedWidthActiveSession) then FreeAndNil(ClosedWidthActiveSession);
+
+
        // и теперь проверим вдруг есть операторы\помогаторы(статус без доступа к дашборду)
        begin
          if Active then Active:=False;
          SQL.Clear;
-         SQL.Add('select count(distinct(sip)) from queue where sip IN (select sip from operators where user_id IN (select id from users where role = ''6''))');
+         SQL.Add('select count(distinct(sip)) from queue where sip IN (select sip from operators where user_id IN (select id from users where role = '+#39+IntToStr(EnumRoleToInteger(role_operator_no_dash))+#39+'))');
          Active:=True;
 
          countStatus:=Fields[0].Value;
@@ -420,7 +442,7 @@ begin
 
          if Active then Active:=False;
          SQL.Clear;
-         SQL.Add('select distinct(sip) from queue where sip IN (select sip from operators where user_id IN (select id from users where role = ''6''))');
+         SQL.Add('select distinct(sip) from queue where sip IN (select sip from operators where user_id IN (select id from users where role = '+#39+IntToStr(EnumRoleToInteger(role_operator_no_dash))+#39+'))');
          Active:=True;
 
          for i:=0 to countStatus-1 do begin
@@ -429,17 +451,77 @@ begin
          end;
        end;
 
-       //  и наконец проверим операторов которые нажади кнопку домой, но не закрыли дашборд
-       GoHomeNotCloseDashboad:=GetListOperatorsGoHomeNotCloseDashboard;
-       if GoHomeNotCloseDashboad.Count<>0 then begin
-         for i:=0 to GoHomeNotCloseDashboad.Count-1 do begin
-           Result.Add(GoHomeNotCloseDashboad[i]);
-         end;
-       end;
-       if Assigned(GoHomeNotCloseDashboad) then FreeAndNil(GoHomeNotCloseDashboad);
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
 
-       if Active then Active:=False;
-       Result.Sort;
+    Result.Sort;
+  end;
+
+  if Assigned(preHome) then FreeAndNil(preHome);
+end;
+
+
+// список операторов которые ушли через закрытие активной сессии
+function TActiveSIP.GetListOperatorsGoHomeClosedActiveSession:TStringList;
+ var
+  i:Integer;
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ countActiveSession:Integer;
+ userId:Integer;
+begin
+  Result:=TStringList.Create;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+
+      if Active then Active:=False;
+
+      SQL.Clear;
+      SQL.Add('select count(distinct(user_id)) from logging where action = '+#39+IntToStr(EnumLoggingToInteger(eLog_exit_force))+#39);
+      Active:=True;
+
+      countActiveSession:=Fields[0].Value;
+
+      if countActiveSession = 0 then begin
+         FreeAndNil(ado);
+         if Assigned(serverConnect) then begin
+           serverConnect.Close;
+           FreeAndNil(serverConnect);
+         end;
+         Exit;
+      end;
+
+      if Active then Active:=False;
+
+      SQL.Clear;
+      SQL.Add('select distinct user_id from logging where action = '+#39+IntToStr(EnumLoggingToInteger(eLog_exit_force))+#39);
+      Active:=True;
+
+      for i:=0 to countActiveSession-1 do begin
+        userId:=StrToInt(VarToStr(Fields[0].Value));
+        // проверим оператор ли
+        if IsUserOperator(userId) then begin
+           // проверим текущий статус
+         if GetLastStatusOperator(userId) = eLog_exit_force then Result.Add(IntToStr(userId));
+        end;
+        ado.Next;
+      end;
+
     end;
   finally
     FreeAndNil(ado);
@@ -448,8 +530,6 @@ begin
       FreeAndNil(serverConnect);
     end;
   end;
-
-  if Assigned(preHome) then FreeAndNil(preHome);
 end;
 
 // список операторов которые ушли домой но забыли закрыть дашбор
@@ -1395,6 +1475,7 @@ procedure TActiveSIP.updateTalkTimeAll;
  end;
 
 
+// проверка есть ли оператор в таблице active_session
  function TActiveSIP.isExistOperatorInLastActiveBD(InSip:string):Boolean;
 var
  ado:TADOQuery;

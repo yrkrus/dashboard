@@ -768,11 +768,11 @@ begin
    loadPanel_Operators;
 
   if not currentEditUsers then begin
-   LoggingRemote(eLog_create_new_user);
+   LoggingRemote(eLog_create_new_user, SharedCurrentUserLogon.GetID);
    MessageBox(Handle,PChar('Новый пользователь добавлен'),PChar('Успех'),MB_OK+MB_ICONINFORMATION)
   end
   else begin
-   LoggingRemote(eLog_edit_user);
+   LoggingRemote(eLog_edit_user,SharedCurrentUserLogon.GetID);
    MessageBox(Handle,PChar('Пользователь отредактирован'),PChar('Успех'),MB_OK+MB_ICONINFORMATION)
   end;
 

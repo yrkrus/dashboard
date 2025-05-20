@@ -1,15 +1,9 @@
 library core;
 
 uses
-  System.ShareMem,
-  System.SysUtils,
-  System.Classes,
-  Winapi.Windows,
-  Data.Win.ADODB,
-  Data.DB,
-  Variants,
-  System.DateUtils,
-  Winapi.TlHelp32,
+  System.ShareMem, System.SysUtils, System.Classes,
+  Winapi.Windows, Data.Win.ADODB, Data.DB, Variants,
+  System.DateUtils, Winapi.TlHelp32,  IdIcmpClient,
   GlobalVariables in 'GlobalVariables.pas',
   TCustomTypeUnit in '..\..\custom_class\TCustomTypeUnit.pas';
 
@@ -203,6 +197,42 @@ end;
 
 // есть ли доступ у пользователя к отчетам
 function GetUserAccessReports(InUserID:Integer):Boolean;stdcall;export;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+  Result:=False;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+
+      SQL.Clear;
+      SQL.Add('select reports from users where id = '+#39+IntToStr(InUserID)+#39);
+
+      Active:=True;
+      if StrToInt(VarToStr(Fields[0].Value)) = 1  then  Result:=True;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+
+// есть ли доступ у пользователя к услугам
+function GetUserAccessService(InUserID:Integer):Boolean;stdcall;export;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -513,23 +543,33 @@ const
   SecPerHour = 3600;
   SecPerMinute = 60;
 var
- ss, mm, hh: word;
- hour,min,sec:string;
+  ss, mm, hh, dd: word;
+  hour, min, sec, days: string;
 begin
 
+  // Вычисляем количество дней
+  dd := InSecondAnswered div SecPerDay;
+  // Вычисляем оставшиеся часы, минуты и секунды
   hh := (InSecondAnswered mod SecPerDay) div SecPerHour;
   mm := ((InSecondAnswered mod SecPerDay) mod SecPerHour) div SecPerMinute;
   ss := ((InSecondAnswered mod SecPerDay) mod SecPerHour) mod SecPerMinute;
 
+  // Форматируем дни
+  if dd > 0 then days := IntToStr(dd) + 'д '
+  else days := '';
 
-  if hh<=9 then hour:='0'+IntToStr(hh)
-  else hour:=IntToStr(hh);
-  if mm<=9 then min:='0'+IntToStr(mm)
-  else min:=IntToStr(mm);
-  if ss<=9 then sec:='0'+IntToStr(ss)
-  else sec:=IntToStr(ss);
+  // Форматируем часы, минуты и секунды
+  if hh <= 9 then hour := '0' + IntToStr(hh)
+  else hour := IntToStr(hh);
 
-  Result:=PChar(hour+':'+min+':'+sec);
+  if mm <= 9 then min := '0' + IntToStr(mm)
+  else min := IntToStr(mm);
+
+  if ss <= 9 then sec := '0' + IntToStr(ss)
+  else sec := IntToStr(ss);
+
+  // Формируем итоговую строку
+  Result := PChar(days + hour + ':' + min + ':' + sec);
 end;
 
 
@@ -653,6 +693,130 @@ begin
 end;
 
 
+// кол-во отправленных за сегодня смс
+function GetCountSendingSMSToday:Integer; stdcall; export;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+  Result:=0;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select count(id) from sms_sending where date_time > '+#39+getNowDateTime+#39+' and user_id <> ''0'' ');
+
+      Active:=True;
+      Result:= StrToInt(VarToStr(Fields[0].Value));
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+     serverConnect.Close;
+     FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+
+// проверка ping
+function Ping(InIp:string):Boolean; stdcall; export;
+const
+ error:word = 0;
+var
+  IcmpClient: TIdIcmpClient;
+begin
+  IcmpClient:= TIdIcmpClient.Create;
+  try
+    with IcmpClient do begin
+      Host:=InIp;
+      Ping(InIp,4);
+
+      if ReplyStatus.TimeToLive <> error then Result:=True
+      else Result:=False;
+    end;
+  finally
+    IcmpClient.Free;
+  end;
+end;
+
+// настроен ли время работы в сервере ИК
+function IsServerIkExistWorkingTime(_id:Integer):Boolean; stdcall; export;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+  Result:=False;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select count(id) from server_ik_worktime where id = '+#39+IntToStr(_id)+#39);
+
+      Active:=True;
+      if Fields[0].Value <> 0 then Result:=True;
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+
+// id клиники
+function GetClinicId(_nameClinic:string):Integer; stdcall; export;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+  Result:= -1;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select id from server_ik where address  = '+#39+_nameClinic+#39);
+
+      Active:=True;
+      if Fields[0].Value <> 0 then Result:=Fields[0].Value;
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+
 exports
   createServerConnect,
   createServerConnectWithError,
@@ -682,7 +846,11 @@ exports
   StringToTQueue,
   TQueueToString,
   GetUserNameOperators,
-  GetCurrentUserNamePC;
+  GetCurrentUserNamePC,
+  GetCountSendingSMSToday,
+  Ping,
+  IsServerIkExistWorkingTime,
+  GetClinicId;
 
 begin
 end.

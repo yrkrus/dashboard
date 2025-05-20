@@ -11,10 +11,19 @@ unit GlobalVariables;
 interface
 
 uses
+  Forms,
   TActiveSIPUnit, TUserUnit, Data.Win.ADODB,
   Data.DB, SysUtils, Windows, TLogFileUnit,
   TIVRUnit, TCustomTypeUnit, TFontSizeUnit,
+  TQueueStatisticsUnit,
   TDebugCountResponseUnit, GlobalVariablesLinkDLL;
+
+ type // глобальный перехват всех незарегистрированных исключений
+  TGlobalExeption = class
+  public
+    procedure HandleGlobalException(Sender: TObject; E: Exception);
+    procedure Setup;
+  end;
 
 
 var
@@ -29,7 +38,7 @@ var
   FOLDERUPDATE      :string;
 
   // Текущая версия GUID   ctrl+shift+G (GUID)
-  GUID_VERSION      :string = '425D7DB4';
+  GUID_VERSION      :string = '5F8869D0';
 
   // exe родителя
   DASHBOARD_EXE     :string = 'dashboard.exe';
@@ -37,15 +46,12 @@ var
   // файл с настройками
   SETTINGS_XML      :string = 'settings.xml';
 
-  // чат
-  CHAT_EXE          :string = 'chat.exe';
-  // отчеты
-  REPORT_EXE        :string = 'report.exe';
-  // sms рассылка
-  SMS_EXE           :string = 'sms.exe';
-  // редактор услуг
-  SERVICE_EXE       :string = 'service.exe';
-
+  ///////////////////// MODULE /////////////////////
+  CHAT_EXE          :string = 'chat.exe';         // чат
+  REPORT_EXE        :string = 'report.exe';       // отчеты
+  SMS_EXE           :string = 'sms.exe';          // sms
+  SERVICE_EXE       :string = 'service.exe';      // редактор услуг
+  ///////////////////// MODULE /////////////////////
 
   USER_ID_PARAM     :string = '--USER_ID';
   USER_ACCESS_PARAM :string = '--ACCESS';
@@ -69,26 +75,13 @@ var
   PROGRAM_STARTED:TDateTime;
 
   ///////////////////// CLASSES /////////////////////
-
-  // лог главной формы
-  SharedMainLog:TLoggingFile;
-
-  // текущий залогиненый пользователь в системе
-  SharedCurrentUserLogon: TUser;
-
-  // список с текущими активными операторами
-  SharedActiveSipOperators: TActiveSIP;
-
-  // список с текущим IVR кто звонит на линию
-  SharedIVR: TIVR;
-
-  // размеры шрифтов на дашборде
-  SharedFontSize: TFontSize;
-
-  // список для отслеживания времени работы в потоках
-  SharedCountResponseThread:TDebugCountResponse;
-
-
+  SharedMainLog             :TLoggingFile;         // лог главной формы
+  SharedCurrentUserLogon    :TUser;                // текущий залогиненый пользователь в системе
+  SharedActiveSipOperators  :TActiveSIP;           // список с текущими активными операторами
+  SharedIVR                 :TIVR;                 // список с текущим IVR кто звонит на линию
+  SharedQueueStatistics     :TQueueStatistics;     // список с текущей статистикой звонков за день
+  SharedFontSize            :TFontSize;            // размеры шрифтов на дашборде
+  SharedCountResponseThread :TDebugCountResponse;  // список для отслеживания времени работы в потоках
  ///////////////////// CLASSES /////////////////////
 
 
@@ -97,27 +90,43 @@ var
 
   // глобальная ошибка при подключении к БД
   CONNECT_BD_ERROR        :Boolean = False;
-
+  GlobalExceptions        :TGlobalExeption;
 
 
 implementation
 
+procedure TGlobalExeption.HandleGlobalException(Sender: TObject; E: Exception);
+begin
+   SharedMainLog.Save('Global Exception: ' + E.ClassName + ': ' + E.Message, IS_ERROR);
+end;
 
+procedure TGlobalExeption.Setup;
+begin
+  Application.OnException:=HandleGlobalException;
+end;
 
 initialization  // Инициализация
+
   FOLDERPATH      :=ExtractFilePath(ParamStr(0));
   FOLDERUPDATE    :=FOLDERPATH+GetUpdateNameFolder;
 
   SharedActiveSipOperators  := TActiveSIP.Create;
   SharedIVR                 := TIVR.Create;
+  SharedQueueStatistics     := TQueueStatistics.Create(True);
   SharedMainLog             := TLoggingFile.Create('main');   // лог работы main формы
   SharedFontSize            := TFontSize.Create;
   SharedCountResponseThread := TDebugCountResponse.Create(SharedMainLog);
 
+  if not DEBUG then begin
+    GlobalExceptions        := TGlobalExeption.Create;
+    GlobalExceptions.Setup;
+  end;
+
+
 finalization
   // Освобождение памяти
+  GlobalExceptions.Free;
   SharedActiveSipOperators.Free;
   SharedCurrentUserLogon.Free;
-  //SharedLoggingFile.Free;
 
 end.

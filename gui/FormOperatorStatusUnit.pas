@@ -3,8 +3,9 @@ unit FormOperatorStatusUnit;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls;
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
+  Vcl.StdCtrls, Vcl.ExtCtrls, TCustomTypeUnit;
 
 type
   TFormOperatorStatus = class(TForm)
@@ -44,7 +45,10 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     function GetCalculateHeightStart:Word;
     function GetCalculateHeightRegister:Word;
+    procedure Button2Click(Sender: TObject);
   private
+  procedure SendCommand(_command:enumLogging;_userID:Integer); // отправка удаленной команды
+
     { Private declarations }
   public
     { Public declarations }
@@ -62,9 +66,27 @@ var
 implementation
 
 uses
-  TCustomTypeUnit, FunctionUnit, GlobalVariables, FormHome;
+  FunctionUnit, GlobalVariables, FormHome;
 
 {$R *.dfm}
+
+// отправка удаленной команды
+procedure TFormOperatorStatus.SendCommand(_command:enumLogging;_userID:Integer);
+var
+ error:string;
+begin
+ if isExistRemoteCommand(_command,_userID) then begin
+   MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
+   Exit;
+ end;
+
+ if not remoteCommand_addQueue(_command,error) then begin
+   MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+  Exit;
+ end;
+end;
+
+
 
 // высчитывание размера окна по default
 // это нужно из за того что если устноавлен размер нет 100%, то окно не все отображается
@@ -140,30 +162,18 @@ end;
 
 procedure TFormOperatorStatus.btnStatus_add_queue5000Click(Sender: TObject);
 begin
-   // добавление в очередь 5000
- if not isExistRemoteCommand(eLog_add_queue_5000) then remoteCommand_addQueue(eLog_add_queue_5000)
- else begin
-    MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
- end;
+ SendCommand(eLog_add_queue_5000,SharedCurrentUserLogon.GetID);
 end;
 
 procedure TFormOperatorStatus.btnStatus_add_queue5000_5050Click(
   Sender: TObject);
 begin
-  // добавление в очередь 5000 и 5050
- if not isExistRemoteCommand(eLog_add_queue_5000_5050) then remoteCommand_addQueue(eLog_add_queue_5000_5050)
- else begin
-    MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
- end;
+ SendCommand(eLog_add_queue_5000_5050,SharedCurrentUserLogon.GetID);
 end;
 
 procedure TFormOperatorStatus.btnStatus_add_queue5050Click(Sender: TObject);
 begin
-   // добавление в очередь 5050
- if not isExistRemoteCommand(eLog_add_queue_5050) then remoteCommand_addQueue(eLog_add_queue_5050)
- else begin
-    MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
- end
+ SendCommand(eLog_add_queue_5050,SharedCurrentUserLogon.GetID);
 end;
 
 procedure TFormOperatorStatus.btnStatus_availableClick(Sender: TObject);
@@ -214,92 +224,66 @@ end;
 
 procedure TFormOperatorStatus.btnStatus_breakClick(Sender: TObject);
 begin
-  // перерыв
- if not isExistRemoteCommand(eLog_break) then remoteCommand_addQueue(eLog_break)
- else begin
-    MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
- end;
+ SendCommand(eLog_break,SharedCurrentUserLogon.GetID);
 end;
 
 procedure TFormOperatorStatus.btnStatus_del_queue_allClick(Sender: TObject);
 begin
-  // выход из всех очередей из 5000 и 5050
- if not isExistRemoteCommand(eLog_del_queue_5000_5050) then remoteCommand_addQueue(eLog_del_queue_5000_5050)
- else begin
-    MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
- end;
+  SendCommand(eLog_del_queue_5000_5050,SharedCurrentUserLogon.GetID);
 end;
 
 procedure TFormOperatorStatus.btnStatus_dinnerClick(Sender: TObject);
 begin
   // обед
- if not isExistRemoteCommand(eLog_dinner) then remoteCommand_addQueue(eLog_dinner)
- else begin
-    MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
- end;
+  SendCommand(eLog_dinner,SharedCurrentUserLogon.GetID);
 end;
 
 procedure TFormOperatorStatus.btnStatus_exodusClick(Sender: TObject);
 begin
- // исход
- if not isExistRemoteCommand(eLog_exodus) then remoteCommand_addQueue(eLog_exodus)
- else begin
-    MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
- end;
+  // исход
+ SendCommand(eLog_exodus,SharedCurrentUserLogon.GetID);
 end;
 
 procedure TFormOperatorStatus.btnStatus_homeClick(Sender: TObject);
 begin
  // домой
- if not isExistRemoteCommand(eLog_home) then remoteCommand_addQueue(eLog_home)
- else begin
-    MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
- end;
+  SendCommand(eLog_home,SharedCurrentUserLogon.GetID);
 end;
 
 procedure TFormOperatorStatus.btnStatus_ITClick(Sender: TObject);
 begin
  // ИТ
- if not isExistRemoteCommand(eLog_IT) then remoteCommand_addQueue(eLog_IT)
- else begin
-    MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
- end;
+  SendCommand(eLog_IT,SharedCurrentUserLogon.GetID);
 end;
 
 procedure TFormOperatorStatus.btnStatus_postvyzovClick(Sender: TObject);
 begin
   // поствызов
- if not isExistRemoteCommand(eLog_postvyzov) then remoteCommand_addQueue(eLog_postvyzov)
- else begin
-    MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
- end;
+  SendCommand(eLog_postvyzov,SharedCurrentUserLogon.GetID);
 end;
 
 procedure TFormOperatorStatus.btnStatus_reserveClick(Sender: TObject);
 begin
   // переносы
- if not isExistRemoteCommand(eLog_reserve) then remoteCommand_addQueue(eLog_reserve)
- else begin
-    MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
- end;
+ SendCommand(eLog_reserve,SharedCurrentUserLogon.GetID);
 end;
 
 procedure TFormOperatorStatus.btnStatus_studiesClick(Sender: TObject);
 begin
   // учеба
- if not isExistRemoteCommand(eLog_studies) then remoteCommand_addQueue(eLog_studies)
- else begin
-    MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
- end;
+  SendCommand(eLog_studies,SharedCurrentUserLogon.GetID);
 end;
 
 procedure TFormOperatorStatus.btnStatus_transferClick(Sender: TObject);
 begin
  // переносы
- if not isExistRemoteCommand(eLog_transfer) then remoteCommand_addQueue(eLog_transfer)
- else begin
-    MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
- end;
+ SendCommand(eLog_transfer,SharedCurrentUserLogon.GetID);
+end;
+
+procedure TFormOperatorStatus.Button2Click(Sender: TObject);
+begin
+ // callback
+  SendCommand(eLog_callback,SharedCurrentUserLogon.GetID);
 end;
 
 procedure TFormOperatorStatus.FormClose(Sender: TObject;

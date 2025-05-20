@@ -46,6 +46,9 @@ uses
     function GetFolderPathFindRemember: string;             // путь откуда будем забирать файл с смс рассылкой
     procedure SetFolderPathFindRemember(const Path: string);// установка пути откуда будем забирать файл с смс рассылкой
 
+    function GetFolderPathService: string;                  // путь откуда будем забирать файл с услугами
+    procedure SetFolderPathService(const Path: string);     // установка пути откуда будем забирать файл с услугами
+
     function GetFontSize(_font:enumFontSize):Word;          // получение текущего размера шрифта
     procedure SetFontSize(_font:enumFontSize; _value:Integer); // установка размера шрифта
 
@@ -54,6 +57,13 @@ uses
 
     procedure ForceUpdate(InValue:string);                   // принудительное обновление
     function  isForceUpdate:Boolean;        overload;       // текущее состояние (в принудительном обновлении)
+
+    function GetMissedCallsShow:string;                     // получение текущего значения отображать инфо о статусе callback
+    procedure SetMissedCallsShow(_state:string);            // установка текущего значения отображать инфо о статусе callback
+
+    function GetActiveSessionConfirm:string;                // получение текущего значения подтверждать действие при закрытии активной сессии
+    procedure SetActiveSessionConfirm(_state:string);       // установка текущего значения подтверждать действие при закрытии активной сессии
+
 
   private
     m_fileSettings: string;                                 // путь с файлом настроек
@@ -535,6 +545,60 @@ begin
   end;
 end;
 
+// путь откуда будем забирать файл с услугами
+function TXML.GetFolderPathService: string;
+begin
+  Result := 'null';
+
+  if not isExistSettingsFile then
+  begin
+    m_XMLDoc := nil; // Освобождаем ресурсы
+    Exit;
+  end;
+
+  // Загружаем XML-документ
+  m_XMLDoc:= LoadXMLDocument(m_fileSettings);
+  try
+    m_RootNode:= m_XMLDoc.DocumentElement;
+
+    // Проверяем наличие узла <Service>
+    m_ChildNode := m_RootNode.ChildNodes.FindNode('Service');
+    if Assigned(m_ChildNode) then
+    begin
+      // Проверяем наличие узла <FolderPathService>
+      m_ChildNode := m_ChildNode.ChildNodes.FindNode('FolderPathService');
+      if Assigned(m_ChildNode) then
+      begin
+        Result:= m_ChildNode.Text; // Возвращаем текст узла
+      end;
+    end;
+  finally
+    m_XMLDoc := nil; // Освобождаем ресурсы
+  end;
+end;
+
+
+// установка пути откуда будем забирать файл с услугами
+procedure TXML.SetFolderPathService(const Path: string);
+begin
+  // Проверяем наличие узла
+  checkExistNodeFields('Service', 'FolderPathService', Path);
+
+  m_XMLDoc := LoadXMLDocument(m_fileSettings);
+  try
+    m_RootNode := m_XMLDoc.DocumentElement;
+    m_ChildNode := m_RootNode.ChildNodes.FindNode('Service').ChildNodes.FindNode('FolderPathService');
+
+    if Assigned(m_ChildNode) then
+    begin
+      m_ChildNode.Text := Path;
+      m_XMLDoc.SaveToFile(m_fileSettings);
+    end;
+  finally
+    m_XMLDoc := nil;
+  end;
+end;
+
 // получение текущего размера шрифта
 function TXML.GetFontSize(_font:enumFontSize):Word;
 begin
@@ -640,5 +704,116 @@ begin
     m_XMLDoc := nil;
   end;
 end;
+
+
+// получение текущего значения отображать инфо о статусе callback
+function TXML.GetMissedCallsShow:string;
+begin
+   Result := 'true';  // defaul value state
+
+  if not isExistSettingsFile then
+  begin
+    m_XMLDoc := nil; // Освобождаем ресурсы
+    Exit;
+  end;
+
+  // Загружаем XML-документ
+  m_XMLDoc:= LoadXMLDocument(m_fileSettings);
+  try
+    m_RootNode:= m_XMLDoc.DocumentElement;
+
+    // Проверяем наличие узла <InfoMissedCallsShow>
+    m_ChildNode := m_RootNode.ChildNodes.FindNode('InfoMissedCallsShow');
+    if Assigned(m_ChildNode) then
+    begin
+      // Проверяем наличие узла <State>
+      m_ChildNode := m_ChildNode.ChildNodes.FindNode('Show');
+      if Assigned(m_ChildNode) then
+      begin
+        Result:= m_ChildNode.Text; // Возвращаем текст узла
+      end;
+    end;
+  finally
+    m_XMLDoc := nil; // Освобождаем ресурсы
+  end;
+end;
+
+// установка текущего значения отображать инфо о статусе callback
+procedure TXML.SetMissedCallsShow(_state:string);
+begin
+ // Проверяем наличие узла
+  checkExistNodeFields('InfoMissedCallsShow', 'Show', 'true');
+
+  m_XMLDoc := LoadXMLDocument(m_fileSettings);
+  try
+    m_RootNode := m_XMLDoc.DocumentElement;
+    m_ChildNode := m_RootNode.ChildNodes.FindNode('InfoMissedCallsShow').ChildNodes.FindNode('Show');
+
+    if Assigned(m_ChildNode) then
+    begin
+      m_ChildNode.Text := _state;
+      m_XMLDoc.SaveToFile(m_fileSettings);
+    end;
+  finally
+    m_XMLDoc := nil;
+  end;
+end;
+
+
+
+// получение текущего значения подтверждать действие при закрытии активной сессии
+function TXML.GetActiveSessionConfirm:string;
+begin
+   Result := 'true';  // defaul value state
+
+  if not isExistSettingsFile then
+  begin
+    m_XMLDoc := nil; // Освобождаем ресурсы
+    Exit;
+  end;
+
+  // Загружаем XML-документ
+  m_XMLDoc:= LoadXMLDocument(m_fileSettings);
+  try
+    m_RootNode:= m_XMLDoc.DocumentElement;
+
+    // Проверяем наличие узла <InfoMissedCallsShow>
+    m_ChildNode := m_RootNode.ChildNodes.FindNode('ActiveSessionConfirm');
+    if Assigned(m_ChildNode) then
+    begin
+      // Проверяем наличие узла <State>
+      m_ChildNode := m_ChildNode.ChildNodes.FindNode('Show');
+      if Assigned(m_ChildNode) then
+      begin
+        Result:= m_ChildNode.Text; // Возвращаем текст узла
+      end;
+    end;
+  finally
+    m_XMLDoc := nil; // Освобождаем ресурсы
+  end;
+end;
+
+
+// установка текущего значения подтверждать действие при закрытии активной сессии
+procedure TXML.SetActiveSessionConfirm(_state:string);
+begin
+ // Проверяем наличие узла
+  checkExistNodeFields('ActiveSessionConfirm', 'Show', 'true');
+
+  m_XMLDoc := LoadXMLDocument(m_fileSettings);
+  try
+    m_RootNode := m_XMLDoc.DocumentElement;
+    m_ChildNode := m_RootNode.ChildNodes.FindNode('ActiveSessionConfirm').ChildNodes.FindNode('Show');
+
+    if Assigned(m_ChildNode) then
+    begin
+      m_ChildNode.Text := _state;
+      m_XMLDoc.SaveToFile(m_fileSettings);
+    end;
+  finally
+    m_XMLDoc := nil;
+  end;
+end;
+
 
 end.

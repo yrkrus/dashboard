@@ -51,7 +51,7 @@ interface
                     );
 
 
- type   // тип запрошенных данных из очереди
+ type   // тип запрошенных данных из очереди ! TODO ВАЖНО в TQueueStatistics  береться только queue_5000 и queue_5050
  enumQueueCurrent =  (queue_5000,            // 5000 очередь
                       queue_5050,            // 5050 очередь
                       queue_5000_5050,       // 5000 и 5050 очередь
@@ -60,12 +60,12 @@ interface
 
 
  type   // типы прав доступа
-  enumRole = (  role_administrator,         // администратор
-                role_lead_operator,         // ведущий оператор
-                role_senior_operator,       // старший оператор
-                role_operator,              // оператор
-                role_supervisor_cov,        // руководитель ЦОВ
-                role_operator_no_dash       // оператор (без дашборда)
+  enumRole = (  role_administrator    = 1,       // администратор
+                role_lead_operator    = 2,       // ведущий оператор
+                role_senior_operator  = 3,       // старший оператор
+                role_operator         = 4,       // оператор
+                role_supervisor_cov   = 5,       // руководитель ЦОВ
+                role_operator_no_dash = 6        // оператор (без дашборда)
                 );
 
 
@@ -89,10 +89,10 @@ interface
    }
 
   type   // отображение \ сркытие окна запроса на сервер
-  enumShow_wait = ( open,
-                    close );
+  enumShow_wait = ( show_open,
+                    show_close );
 
-  type
+  type       // таблица logging_action
    enumLogging = (  eLog_unknown              = -1,        // не известный статус
                     eLog_enter                = 0,         // Вход
                     eLog_exit                 = 1,         // Выход
@@ -114,8 +114,9 @@ interface
                     eLog_IT                   = 17,        // ИТ
                     eLog_transfer             = 18,        // переносы
                     eLog_reserve              = 19,        // резерв
-                    eLog_create_new_user      = 20,        // создание нового пользователя
-                    eLog_edit_user            = 21         // редактирование пользователя
+                    eLog_callback             = 20,        // callback
+                    eLog_create_new_user      = 21,        // создание нового пользователя
+                    eLog_edit_user            = 22         // редактирование пользователя
                 );
 
    type   // текущие статусы операторов
@@ -130,7 +131,8 @@ interface
                             eStudies    = 7,     // учеба
                             eIT         = 8,     // ИТ
                             eTransfer   = 9,     // переносы
-                            eReserve    = 10     // резерв
+                            eReserve    = 10,    // резерв
+                            eCallback   = 11     // callback
    );
 
   type   // тип запрошенных данных из очереди
@@ -145,12 +147,12 @@ interface
 
  type   // тип запрошенных данных из очереди
    enumStatistiscDay = (stat_answered,            //  кол-во отвеченных
-                       stat_no_answered,         //  кол-во  не отвеченных
-                       stat_no_answered_return,  //  кол-во  не отвеченных + вернувшиеся решили перезвонить
-                       stat_procent_no_answered, // процент
-                       stat_procent_no_answered_return, // процент + вернувшиеся
-                       stat_summa                // сумма
-                     );
+                        stat_no_answered,         //  кол-во  не отвеченных
+                        stat_no_answered_return,  //  кол-во  не отвеченных + вернувшиеся решили перезвонить
+                        stat_procent_no_answered, // процент
+                        stat_procent_no_answered_return, // процент + вернувшиеся
+                        stat_summa                // сумма
+                        );
 
   type    // типы доступов
    enumAccessList = (menu_settings_users,                       // Меню-Пользователи
@@ -158,7 +160,8 @@ interface
                      menu_settings_siptrunk,                    // Меню-Sip_транки
                      menu_settings_global,                      // Меню-Глобальные_настройки
                      menu_active_session,                       // Меню-Активные сессии
-                     menu_service                               // Меню-Услуги
+                     menu_service,                              // Меню-Услуги
+                     menu_missed_calls                          // Меню-Пропущенные звонки
                      );
 
 
@@ -177,7 +180,8 @@ interface
   enumProrgamm = ( eGUI,
                    eCHAT,
                    eREPORT,
-                   eSMS
+                   eSMS,
+                   eService
                  );
 
   type  // какой браузер сейчас активен основной или дополнительный  !TODO эти же типы есть еще и в chat.exe
@@ -332,6 +336,27 @@ interface
                          workingtime_Sunday
                         );
 
+   type   // признак пропущенного звонка
+   enumMissed  = ( eMissed,              // пропущенные
+                   eMissed_no_return,    // пропущенные не вернувшиеся
+                   eMissed_all           );
+
+
+   type  // статус онлайн
+   enumOnlineStatus = ( eOffline = 0,  // офонлайн
+                        eOnline  = 1); // онлайн
+
+
+   type // типп действия при удаленной команде (пропущенные звонки, активные сессии)
+   enumRemoteCommandAction = ( remoteCommandAction_activeSession,       // активные сесиис
+                               remoteCommandAction_missedCalls          // пропущенные звонки
+   );
+
+   type // тип пола
+   enumGender = (gender_male,        // мужской
+                 gender_female);     // женский
+
+
  // =================== ПРОЕОБРАЗОВАНИЯ ===================
 
   // Boolean -> string
@@ -340,11 +365,14 @@ interface
  function EnumLoggingToInteger(_logging:enumLogging):Integer;                      // проеобразование из EnumLogging в Integer
  function IntegerToEnumLogging(_logging:Integer):enumLogging;                      // преобразование из Integer в EnumLogging
  function EnumLoggingToString(_logging:enumLogging):string;                        // EnumLogging -> String
- function StringToTRole(InRole:string):enumRole;                                   // string -> TRole
- function TRoleToString(InRole:enumRole):string;                                   // TRole -> string
+ function StringToEnumRole(InRole:string):enumRole;                                // String -> EnumRole
+ function EnumRoleToString(InRole:enumRole):string;                                // EnumRole -> String
+ function EnumRoleToStringName(InRole:enumRole):string;                            // EnumRole -> String(сокращенное название)
+ function EnumRoleToInteger(_InRole:enumRole):Integer;                             // EnumRole -> Integer
  function EnumProgrammToString(InEnumProgram:enumProrgamm):string;                 // enumProgramm -> string
- function TAccessListToString(AccessList:enumAccessList):string;                   // TAccessListToStr -> string
- function TAccessStatusToBool(Status: enumAccessStatus): Boolean;                  // TAccessStatus --> Bool
+ function EnumAccessListToString(AccessList:enumAccessList):string;                // enumAccessList -> String
+ function EnumAccessListToStringBaseName(_access:enumAccessList):string;           // enumAccessList -> String(name BD)
+ function EnumAccessStatusToBool(Status: enumAccessStatus): Boolean;               // enumAccessStatus -> Bool
  function EnumChannelChatIDToString(InChatID:enumChatID):string;                   // enumChatID -> string
  function EnumChannelToString(InChannel:enumChannel):string;                       // enumChannel -> string
  function EnumActiveBrowserToString(InActiveBrowser:enumActiveBrowser):string;     // enumActiveBrowser -> string
@@ -356,9 +384,14 @@ interface
  function IntegerToSettingParamsStatus(status:Integer):enumParamStatus;            // Int --> SettingParamsStatus
  function EnumTypeClinicToString(typeClinic:enumTypeClinic):string;                // EnumTypeClinic -> String
  function StringToEnumTypeClinic(typeClinic:string):enumTypeClinic;                // String -> EnumTypeClinic
- function StringToSettingParamsStatus(status:string):enumParamStatus;              // String (Да\Нет) --> SettingParamsStatus
+ function EnumQueueCurrentToString(_queue:enumQueueCurrent):string;                // EnumQueueCurrent - > String
+ function EnumQueueCurrentToInteger(_queue:enumQueueCurrent):Integer;              // EnumQueueCurrent - > Integer
+ function StringToEnumQueueCurrent(_queue:string):enumQueueCurrent;                // String -> EnumQueueCurrent
+ function StringToSettingParamsStatus(status:string):enumParamStatus;             // String (Да\Нет) --> SettingParamsStatus
  function StrToBoolean(InValue:string):Boolean;                                    // string -> boolean
  function EnumStatusToString(InStatus:enumStatus):string;                          // enumStatus -> String
+ function EnumStatusToInteger(InStatus:enumStatus):Integer;                        // enumStatus -> Integer
+ function BooleanToEnumStatus(_value:Boolean):enumStatus;                          // Boolean -> enumStatus
  function StringToEnumStatus(InStatus:string):enumStatus;                          // String -> enumStatus
  function EnumStatusJobClinicToString(InStatus:enumStatusJobClinic):string;        // enumStatusJobClinic -> String
  function EnumStatusJobClinicToInteger(InStatus:enumStatusJobClinic):integer;      // enumStatusJobClinic -> Integer
@@ -369,8 +402,13 @@ interface
  function StringToEnumReasonSmsMessage(InStatus:string):enumReasonSmsMessage;      // String -> enumReasonSmsMessage
  function EnumReasonSmsMessageToEnumReasonSmsMessageTemplate(_reasonSmsMessage:enumReasonSmsMessage):EnumReasonSmsMessageTemplate; // enumReasonSmsMessage -> enumReasonSmsMessageTemplate
  function EnumReasonSmsMessageTemplateToString(_reasonSmsMessageTemplate:enumReasonSmsMessageTemplate):TStringBuilder; // EnumReasonSmsMessageTemplate -> String
- function EnumTreeSettingsToString(_enumTreeSettings:enumTreeSettings):string;       // enumTreeSettings -> String
- function StringToEnumTreeSettings(_status:string):enumTreeSettings;                 // String -> enumTreeSettings
+ function EnumTreeSettingsToString(_enumTreeSettings:enumTreeSettings):string;        // enumTreeSettings -> String
+ function StringToEnumTreeSettings(_status:string):enumTreeSettings;                  // String -> enumTreeSettings
+ function EnumOnlineStatusToString(_status:enumOnlineStatus):string;                  // EnumOnlineStatus -> String
+ function EnumGenderToString(_gender:enumGender):string;                              // EnumGender -> String
+ function StringToEnumGender(_gender:string):enumGender;                              // String -> EnumGender
+ function EnumWorkingTimeToString(_workingTime:enumWorkingTime):string;               // enumWorkingTime -> String
+
 
  // =================== ПРОЕОБРАЗОВАНИЯ ===================
  implementation
@@ -409,8 +447,9 @@ begin
     eLog_IT:                  Result:=17;       // ИТ
     eLog_transfer:            Result:=18;       // переносы
     eLog_reserve:             Result:=19;       // резерв
-    eLog_create_new_user:     Result:=20;       // создание нового пользователя
-    eLog_edit_user:           Result:=21;       // редактирование пользователя
+    eLog_callback:            Result:=20;       // callback
+    eLog_create_new_user:     Result:=21;       // создание нового пользователя
+    eLog_edit_user:           Result:=22;       // редактирование пользователя
   end;
 end;
 
@@ -439,8 +478,9 @@ begin
     17:   Result:=eLog_IT;                  // ИТ
     18:   Result:=eLog_transfer;            // переносы
     19:   Result:=eLog_reserve;             // резерв
-    20:   Result:=eLog_create_new_user;     // создание нового пользователя
-    21:   Result:=eLog_edit_user;           // редактирование пользователя
+    20:   Result:=eLog_callback;            // callback
+    21:   Result:=eLog_create_new_user;     // создание нового пользователя
+    22:   Result:=eLog_edit_user;           // редактирование пользователя
   end;
 end;
 
@@ -459,7 +499,7 @@ begin
     eLog_add_queue_5000_5050: Result:='Добавление в очередь 5000 и 5050';
     eLog_del_queue_5000:      Result:='Удаление из очереди 5000';
     eLog_del_queue_5050:      Result:='Удаление из очереди 5050';
-    eLog_del_queue_5000_5050: Result:='Даление из очереди 5000 и 5050';
+    eLog_del_queue_5000_5050: Result:='Удаление из очереди 5000 и 5050';
     eLog_available:           Result:='Доступен';
     eLog_home:                Result:='Домой';
     eLog_exodus:              Result:='Исход';
@@ -470,25 +510,31 @@ begin
     eLog_IT:                  Result:='ИТ';
     eLog_transfer:            Result:='Переносы';
     eLog_reserve:             Result:='Резерв';
+    eLog_callback:            Result:='Callback';
     eLog_create_new_user:     Result:='Создание нового пользователя';
     eLog_edit_user:           Result:='Редактирование пользователя';
   end;
 end;
 
-// string -> TRole
-function StringToTRole(InRole:string):enumRole;
+// String -> EnumRole
+function StringToEnumRole(InRole:string):enumRole;
+var
+ i:Integer;
+ role:enumRole;
 begin
-  if InRole='Администратор'             then Result:=role_administrator;
-  if InRole='Ведущий оператор'          then Result:=role_lead_operator;
-  if InRole='Старший оператор'          then Result:=role_senior_operator;
-  if InRole='Оператор'                  then Result:=role_operator;
-  if InRole='Оператор (без дашборда)'   then Result:=role_operator_no_dash;
-  if InRole='Руководитель ЦОВ'          then Result:=role_supervisor_cov;
+   for i:=Ord(Low(enumRole)) to Ord(High(enumRole)) do
+  begin
+    role:=enumRole(i);
+    if EnumRoleToString(role) = InRole then begin
+     Result:=role;
+     Break;
+    end;
+  end;
 end;
 
 
-// TRole -> string
-function TRoleToString(InRole:enumRole):string;
+// EnumRole -> String
+function EnumRoleToString(InRole:enumRole):string;
 begin
   case InRole of
    role_administrator       :Result:='Администратор';
@@ -500,6 +546,32 @@ begin
   end;
 end;
 
+// EnumRole -> Integer
+function EnumRoleToInteger(_InRole:enumRole):Integer;
+var
+ i:Integer;
+begin
+  for i:=Ord(Low(enumRole)) to Ord(High(enumRole)) do
+  begin
+    if enumRole(i) = _InRole then begin
+      Result:=i;
+      Exit;
+    end;
+  end;
+end;
+
+// EnumRole -> String(сокращенное название)
+function EnumRoleToStringName(InRole:enumRole):string;
+begin
+ case InRole of
+   role_administrator       :Result:='administrator';
+   role_lead_operator       :Result:='lead_operator';
+   role_senior_operator     :Result:='senior_operator';
+   role_operator            :Result:='operator';
+   role_operator_no_dash    :Result:='operator_no_dash';
+   role_supervisor_cov      :Result:='supervisor_cov';
+  end;
+end;
 
  // enumProgramm -> string
 function EnumProgrammToString(InEnumProgram:enumProrgamm):string;
@@ -509,11 +581,13 @@ begin
    eCHAT    :Result:='chat';
    eREPORT  :Result:='report';
    eSMS     :Result:='sms';
+   eService :Result:='service';
   end;
 end;
 
 
-function TAccessListToString(AccessList:enumAccessList):string;
+// название как на форме TMenu
+function EnumAccessListToString(AccessList:enumAccessList):string;
 begin
   case AccessList of
     menu_settings_users:        Result:='menu_Users';
@@ -522,12 +596,26 @@ begin
     menu_settings_global:       Result:='menu_GlobalSettings';
     menu_active_session:        Result:='menu_activeSession';
     menu_service:               Result:='menu_service';
+    menu_missed_calls:          Result:='menu_missed_calls';
   end;
 end;
 
+// enumAccessList -> String(name BD) название как в БД
+function EnumAccessListToStringBaseName(_access:enumAccessList):string;
+begin
+ case _access of
+    menu_settings_users:        Result:='menu_users';
+    menu_settings_serversik:    Result:='menu_serversik';
+    menu_settings_siptrunk:     Result:='menu_siptrunk';
+    menu_settings_global:       Result:='menu_settings_global';
+    menu_active_session:        Result:='menu_active_session';
+    menu_service:               Result:='menu_service';
+    menu_missed_calls:          Result:='menu_missed_calls';
+  end;
+end;
 
-// преобразование TAccessStatus --> Bool
-function TAccessStatusToBool(Status: enumAccessStatus): Boolean;
+// преобразование EnumAccessStatus --> Bool
+function EnumAccessStatusToBool(Status: enumAccessStatus): Boolean;
 begin
   if Status = access_ENABLED  then Result:=True;
   if Status = access_DISABLED then Result:=False;
@@ -589,6 +677,7 @@ begin
     8:  Result:=eIT;              // ИТ
     9:  Result:=eTransfer;        // переносы
    10:  Result:=eReserve;         // резерв
+   11:  Result:=eCallback;        // callback
  end;
 end;
 
@@ -608,6 +697,7 @@ begin
    eIT:         Result:= 8;       // ИТ
    eTransfer:   Result:= 9;       // переносы
    eReserve:    Result:= 10;      // резерв
+   eCallback:   Result:=  11;     // callback
  end;
 end;
 
@@ -636,6 +726,7 @@ begin
      8: Result:=eLog_IT;
      9: Result:=eLog_transfer;
     10: Result:=eLog_reserve;
+    11: Result:=eLog_callback;
   end;
 end;
 
@@ -692,6 +783,39 @@ begin
    if typeClinic = 'Прочее'       then Result:=eOther;
 end;
 
+// EnumQueueCurrent - > String
+function EnumQueueCurrentToString(_queue:enumQueueCurrent):string;
+begin
+   case _queue of
+    queue_5000:       Result:='5000';
+    queue_5050:       Result:='5050';
+    queue_5000_5050:  Result:='5000 и 5050';
+    queue_null:       Result:='null';
+    end;
+end;
+
+// EnumQueueCurrent - > Integer
+function EnumQueueCurrentToInteger(_queue:enumQueueCurrent):Integer;
+var
+ i:Integer;
+begin
+  for i:=0 to Ord(High(enumQueueCurrent)) do begin
+    if enumQueueCurrent(i) = _queue then begin
+      Result:=i;
+      Exit;
+    end;
+  end;
+end;
+
+// String -> EnumQueueCurrent
+function StringToEnumQueueCurrent(_queue:string):enumQueueCurrent;
+begin
+  if _queue = '5000' then         Result:=queue_5000;
+  if _queue = '5050' then         Result:=queue_5050;
+  if _queue = '5000 и 5050' then  Result:=queue_5000_5050;
+  if _queue = 'null' then         Result:=queue_null;
+end;
+
 // string -> boolean
 function StrToBoolean(InValue:string):Boolean;
 var
@@ -710,6 +834,23 @@ begin
     eYES: Result:='Да';
   end;
 end;
+
+// enumStatus -> Integer
+function EnumStatusToInteger(InStatus:enumStatus):Integer;
+begin
+  case InStatus of
+    eNO:  Result:=0;
+    eYES: Result:=1;
+  end;
+end;
+
+// Boolean -> enumStatus
+function BooleanToEnumStatus(_value:Boolean):enumStatus;
+begin
+  if _value = False then Result:=eNO;
+  if _value = True  then Result:=eYES;
+end;
+
 
 // String -> enumStatus
 function StringToEnumStatus(InStatus:string):enumStatus;
@@ -787,7 +928,7 @@ begin
      reason_ReadyDocuments                      :Result:='Готова копия мед. документации, выписка, справка';
      reason_NeedDocumentsLVN                    :Result:='Необходимо предоставить данные для открытия ЛВН (СНИЛС)';
      reason_NeedDocumentsDMS                    :Result:='Проинформировать о согласовании услуг по ДМС (когда обещали)';
-     reason_VneplanoviiPriem                    :Result:='Согласован внеплановый прием (обозначить время)';
+     reason_VneplanoviiPriem                    :Result:='Согласован внеплановый прием';
      reason_ReturnMoney                         :Result:='Пригласить за возвратом ДС';
      reason_ReturnMoneyInfo                     :Result:='Проинформировать об осуществлении возврата ДС';
      reason_ReturnDiagnostic                    :Result:='Пригласить за гистологическим (цитологическим) материалом';
@@ -834,87 +975,92 @@ begin
 
   case _reasonSmsMessageTemplate of
    reasonTemplate_OtmenaPriema                        : begin // Отмена приема врача, перенос
-     Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
-     Result.Append('Сообщаем, что мы вынуждены перенести Вашу запись к врачу. ');
-     Result.Append('Свяжитесь, пожалуйста, с нами для выбора удобного времени посещения клиники по номеру +7(8442)220-220 или +7(8443)450-450. ');
+    Result.Append('Здравствуйте! %uvazaemii% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
+    Result.Append('Сообщаем, что мы вынуждены перенести Вашу запись к врачу. ');
+    Result.Append('Свяжитесь, пожалуйста, с нами для выбора удобного времени посещения клиники по номеру +7(8442)220-220 или +7(8443)450-450');
    end;
    reasonTemplate_NapominanieOPrieme                  : begin  // Напоминание о приеме
-    Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, ');
-    Result.Append('Вы записаны к доктору на %date% в %time% в клинику по адресу %address%. ');
+    Result.Append('Здравствуйте! %uvazaemii% %name% %otchestvo%, ');
+    Result.Append('Вы записаны к доктору %date% в %time% в клинику по адресу %address%');
    end;
    reasonTemplate_NapominanieOPrieme_do15             : begin // Напоминание о приеме (до 15 лет)
-     Result.Append('Здравствуйте! %name% %otchestvo% %pol% к доктору на %date% в %time% ');
-     Result.Append('в клинику по адресу %address%. Прием возможен в присутствии законного представителя ребенка. ');
+    Result.Append('Здравствуйте! %name% %otchestvo% %pol% к доктору %date% в %time% ');
+    Result.Append('в клинику по адресу %address%. Прием возможен в присутствии законного представителя ребенка');
    end;
    reasonTemplate_NapominanieOPrieme_OMS              : begin // Напоминание о приеме (ОМС)
-     Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, ');
-     Result.Append('Вы записаны к доктору на %date% в %time% в клинику по адресу %address%. ');
-     Result.Append('При себе необходимо иметь паспорт, СНИЛС и полис ОМС. ');
+    Result.Append('Здравствуйте! %uvazaemii% %name% %otchestvo%, ');
+    Result.Append('Вы записаны к доктору %date% в %time% в клинику по адресу %address%. ');
+    Result.Append('При себе необходимо иметь паспорт, СНИЛС и полис ОМС');
    end;
    reasonTemplate_IstekaetSrokGotovnostiBIOMateriala  : begin // Истекает срок годности биоматериала
-     Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, у Вас есть неоформленные лабораторные исследования. ');
-     Result.Append('До %date% %time% свяжитесь, пожалуйста, с нами для уточнения деталей по номеру +7(8442)220-220 или +7(8443)450-450. ');
-     Result.Append('После указанного времени мы утилизируем биоматериал ');
-     Result.Append('и для выполнения исследования Вам необходимо будет сдать биоматериал повторно. ');
+    Result.Append('Здравствуйте! %uvazaemii% %name% %otchestvo%, у Вас есть неоформленные лабораторные исследования. ');
+    Result.Append('До %date% %time% свяжитесь, пожалуйста, с нами для уточнения деталей по номеру +7(8442)220-220 или +7(8443)450-450. ');
+    Result.Append('После указанного времени мы утилизируем биоматериал ');
+    Result.Append('и для выполнения исследования Вам необходимо будет сдать биоматериал повторно');
    end;
    reasonTemplate_AnalizNaPereustanovke               : begin // Анализ на переустановке
-      Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
-      Result.Append('Срок готовности лабораторных анализов увеличивается, просьба связаться с нами для уточнения деталей. ');
+    Result.Append('Здравствуйте! %uvazaemii% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
+    Result.Append('Срок готовности лабораторных анализов увеличивается, просьба связаться с нами для уточнения деталей ');
+    Result.Append('по номеру +7(8442)220-220 или +7(8443)450-450');
    end;
    reasonTemplate_UvelichilsyaSrokIssledovaniya       : begin // Увеличился срок выполнения лабораторных исследований по тех. причинам
-     Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
-     Result.Append('Сообщаем Вам, что в связи с техническим сбоем выдача результатов лабораторных исследований задерживается ');
-     Result.Append('на срок %date%. Приносим извинения за доставленные неудобства. ');  // TODO срок как часы так и дни!!
+    Result.Append('Здравствуйте! %uvazaemii% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
+    Result.Append('Сообщаем Вам, что в связи с техническим сбоем выдача результатов лабораторных исследований задерживается ');
+    Result.Append('до %date%. Приносим извинения за доставленные неудобства');
    end;
    reasonTemplate_Perezabor                           : begin // Требуется перезабор крови (хилез, сгусток, недостаточно биоматериала)
-    Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
-    Result.Append('Сообщаем Вам, что %count_labs% %count_study% не %maybe% быть %done% по причине %prochina%. ');
+    Result.Append('Здравствуйте! %uvazaemii% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
+    Result.Append('Сообщаем Вам, что %labs% %study% не %maybe% быть %done% по причине %prochina%. ');
     Result.Append('Приглашаем Вас для перезабора биоматериала в клинику по адресу %address% ');
-    Result.Append('или просим связаться с нами по номеру +7(8442)220-220 или +7(8443)450-450. ');
+    Result.Append('или просим связаться с нами по номеру +7(8442)220-220 или +7(8443)450-450');
    end;
    reasonTemplate_Critical                            : begin // Получено письмо из лаборатории о критических значениях
-    Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
+    Result.Append('Здравствуйте! %uvazaemii% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
     Result.Append('Сообщаем Вам, что по результатам лабораторных исследований Вам необходимо как можно быстрее обратиться к врачу ');
-    Result.Append('или связаться с нами по номеру +7(8442)220-220 или +7(8443)450-450. ');
+    Result.Append('или связаться с нами по номеру +7(8442)220-220 или +7(8443)450-450');
    end;
    reasonTemplate_ReadyDiagnostic                     : begin // Готов результат диагностики (например,  ХОЛТЕРа, СМАДа)
-    Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, результат Вашей функциональной диагностики готов. ');
-    Result.Append('Забрать заключение Вы можете в часы работы клиники по адресу %address%. ');
+    Result.Append('Здравствуйте! %uvazaemii% %name% %otchestvo%, результат Вашей функциональной диагностики готов. ');
+    Result.Append('Забрать заключение Вы можете в часы работы клиники (%time_clinic%) по адресу %address%');
    end;
    reasonTemplate_ReadyNalog                          : begin // Готова справка в налоговую
-    Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, Ваша справка об оплате медицинских услуг для получения социального налогового вычета готова. ');
-    Result.Append('Забрать документ Вы можете в часы работы клиники по адресу %address%. ');
+    Result.Append('Здравствуйте! %uvazaemii% %name% %otchestvo%, Ваша справка об оплате медицинских услуг для получения социального налогового вычета готова. ');
+    Result.Append('Забрать документ Вы можете в часы работы клиники (%time_clinic%) по адресу %address%');
    end;
    reasonTemplate_ReadyDocuments                      : begin // Готова копия мед. документации, выписка, справка
-    Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, запрашиваемая Вами медицинская документация готова. ');
-    Result.Append('Забрать документ Вы можете в часы работы клиники по адресу %address%. ');
+    Result.Append('Здравствуйте! %uvazaemii% %name% %otchestvo%, запрашиваемая Вами медицинская документация готова. ');
+    Result.Append('Забрать документ Вы можете в часы работы клиники (%time_clinic%) по адресу %address%');
    end;
    reasonTemplate_NeedDocumentsLVN                    : begin // Необходимо предоставить данные для открытия ЛВН (СНИЛС)
-    Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
+    Result.Append('Здравствуйте! %uvazaemii% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
     Result.Append('Сообщаем, что для открытия листа временной нетрудоспособности Вам необходимо предоставить данные Вашего СНИЛСа. ');
-    Result.Append('Просим Вас обратиться в клинику по адресу %address% или связаться с нами по номеру +7(8442)220-220 или +7(8443)450-450. ');
+    Result.Append('Просим Вас обратиться в клинику по адресу %address% или связаться с нами по номеру +7(8442)220-220 или +7(8443)450-450');
    end;
    reasonTemplate_NeedDocumentsDMS                    : begin // Проинформировать о согласовании услуг по ДМС (когда обещали)
-    Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться по вопросу согласования услуг в рамках программы ДМС. ');
-    Result.Append('Просим Вас связаться с нами по номеру +7(8442)220-220 или +7(8443)450-450. ');
+    Result.Append('Здравствуйте! %uvazaemii% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться по вопросу согласования услуг в рамках программы ДМС. ');
+    Result.Append('Просим Вас связаться с нами по номеру +7(8442)220-220 или +7(8443)450-450');
    end;
    reasonTemplate_VneplanoviiPriem                    : begin // Согласован внеплановый прием (обозначить время)
-    Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
+    Result.Append('Здравствуйте! %uvazaemii% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
     Result.Append('Доктор сможет принять Вас внепланово сегодня в %time% в клинике по адресу %address%. ');
-    Result.Append('Просим связаться с нами по номеру +7(8442)220-220 или +7(8443)450-450 для подтверждения или отмены записи. ');
+    Result.Append('Просим связаться с нами по номеру +7(8442)220-220 или +7(8443)450-450 для подтверждения или отмены записи');
    end;
    reasonTemplate_ReturnMoney                         : begin // Пригласить за возвратом ДС
-    // Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться.
-    // Сообщаем, что Вам согласован возврат денежных средств за __________________ (услуга) в размере_____________________ руб. Для осуществления возврата Вы можете обратиться в клинику по адресу:___________________________. При себе необходимо иметь паспорт (банковскую карту, по которой осуществлялась оплата). С заботой о Вашем здоровье, Медси-Волгоград.
+    Result.Append('Здравствуйте! %uvazaemii% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
+    Result.Append('Сообщаем, что Вам согласован возврат денежных средств за %list_service% в размере %money% руб. ');
+    Result.Append('Для осуществления возврата Вы можете обратиться в клинику по адресу %address%. ');
+    Result.Append('При себе необходимо иметь паспорт и банковскую карту, по которой осуществлялась оплата');
    end;
    reasonTemplate_ReturnMoneyInfo                     : begin // Проинформировать об осуществлении возврата ДС
-//     Здравствуйте! Уважаемый (-ая) ИО, к сожалению, мы не смогли до Вас дозвониться.
-//     Сообщаем, что _______________ (дата) осуществлен возврат денежных средств на Ваш расчетный счет за __________________(услуга) в размере_____________________руб . С заботой о Вашем здоровье, Медси-Волгоград.
+    Result.Append('Здравствуйте! %uvazaemii% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
+    Result.Append('Сообщаем, что %date% осуществлен возврат денежных средств на Ваш расчетный счет за %list_service% ');
+    Result.Append('в размере %money% руб');
    end;
    reasonTemplate_ReturnDiagnostic                    : begin // Пригласить за гистологическим (цитологическим) материалом
-     Result.Append('Здравствуйте! %uvazaemii%\%pol% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
-     Result.Append('Сообщаем, что из лаборатории поступил Ваш гистологический (цитологический) материал. ');
-     Result.Append('Забрать его Вы можете в клинике по адресу: %address%. При себе необходимо иметь паспорт. ');
+    Result.Append('Здравствуйте! %uvazaemii% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
+    Result.Append('Сообщаем, что из лаборатории поступил Ваш гистологический (цитологический) материал. ');
+    Result.Append('Забрать его Вы можете в часы работы клиники (%time_clinic%) по адресу %address%. ');
+    Result.Append('При себе необходимо иметь паспорт');
    end;
   end;
 end;
@@ -944,6 +1090,42 @@ begin
      Result:=tree_settings;
      Break;
     end;
+  end;
+end;
+
+// EnumOnlineStatus -> String
+function EnumOnlineStatusToString(_status:enumOnlineStatus):string;
+begin
+  if _status = eOffline then Result:='offline';
+  if _status = eOnline then Result:='online';
+end;
+
+
+// EnumGender -> String
+function EnumGenderToString(_gender:enumGender):string;
+begin
+  if _gender = gender_male    then Result:='мужской';
+  if _gender = gender_female  then Result:='женский';
+end;
+
+// String -> EnumGender
+function StringToEnumGender(_gender:string):enumGender;
+begin
+  if _gender = 'мужской'  then Result:=gender_male;
+  if _gender = 'женский'  then Result:=gender_female;
+end;
+
+// enumWorkingTime -> String
+function EnumWorkingTimeToString(_workingTime:enumWorkingTime):string;
+begin
+  case _workingTime of
+    workingtime_Monday:     Result:='пн';
+    workingtime_Tuesday:    Result:='вт';
+    workingtime_Wednesday:  Result:='ср';
+    workingtime_Thursday:   Result:='чт';
+    workingtime_Friday:     Result:='пт';
+    workingtime_Saturday:   Result:='суб';
+    workingtime_Sunday:     Result:='вс';
   end;
 end;
 

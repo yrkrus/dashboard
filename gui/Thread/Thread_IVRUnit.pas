@@ -31,7 +31,7 @@ uses
 procedure Thread_IVR.CriticalError;
 begin
    // записываем в лог
-   Log.Save(messclass+'.'+mess,IS_ERROR);
+   Log.Save(messclass+':'+mess,IS_ERROR);
 end;
 
 

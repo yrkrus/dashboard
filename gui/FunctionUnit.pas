@@ -18,18 +18,15 @@ interface
 
 procedure KillProcess;                                                               // принудительное завершение работы
 function GetStatistics_queue(InQueueNumber:enumQueueCurrent;InQueueType:enumQueueType):string;    // отображение инфо по очередеям
-function GetStatistics_day(inStatDay:enumStatistiscDay):string;                      // отображение инфо за день
+function GetStatistics_day(inStatDay:enumStatistiscDay; _queue:enumQueueCurrent =queue_null):string;                      // отображение инфо за день
 procedure clearAllLists;                                                             // очистка всех list's
 procedure clearList_IVR(InFontSize:Word);                                            // отображение листа с текущими звонками
 procedure clearList_QUEUE(InFontSize:Word);                                          // очистка listbox_QUEUE
 procedure clearList_SIP(InWidth:Integer;InFontSize:Word);                            // очистка listbox_SIP
-procedure clearList_Propushennie;                                                    // создание интерфейса пропущенные
-procedure updatePropushennie;                                                        // обновление пропущенных звонков форма
 procedure createThreadDashboard;                                                     // создание потоков
-function getVersion(GUID:string; programm:enumProrgamm):string;                      // отображение текущей версии
+function GetVersion(GUID:string; programm:enumProrgamm):string;                      // отображение текущей версии
 procedure showVersionAbout(programm:enumProrgamm);                                   // отображение истории вресий
 function GetVersionAbout(programm:enumProrgamm; inGUID:string):string;               // отображение истории вресий дашбоарда (только текущая версия)
-function Ping(InIp:string):Boolean;                                                  // проверка ping
 procedure CreateCheckServersInfoclinika;                                             // создание списка с серверами
 //function GetRoleID(InRole:string):Integer;                                           // получение ID TRole
 function GetUserGroupSTR(InGroup:Integer):string;                                    // отображение роли пользвоателя
@@ -60,24 +57,26 @@ procedure accessRights(var p_TUser: TUser);                                     
 function getComputerPCName: string;                                                  // функция получения имени ПК
 function GetForceActiveSessionClosed(InUserID:Integer):Boolean;                      // проверка нужно ли закрыть активную сессию
 function GetSelectResponse(InStroka:string):Integer;                                 // запрос по статичтике данных
-procedure LoggingRemote(InLoggingID:enumLogging);                                    // логирование действий
+procedure LoggingRemote(InLoggingID:enumLogging;_userID:Integer);                    // логирование действий
 function GetUserFamiliyaName_LastSuccessEnter(InUser_login_pc,
                                               InUser_pc:string):string;              // нахождение userID после успешного входа на пк
 function GetCountAnsweredCall(InSipOperator:string):Integer;                         // кол-во отвеченных звонков оператором
 function GetCountAnsweredCallAll:Integer;                                            // кол-во отвеченных звонков всех операторов
 function CreateListAnsweredCall(InSipOperator:string):TStringList;                   // создвание списка со всем отвеченными звонками  sip оператора
-procedure remoteCommand_addQueue(command:enumLogging);                               // удаленная команда (добавление в очередь)
+function remoteCommand_addQueue(_command:enumLogging;
+                                var _errorDescriptions:string):Boolean;              // удаленная команда (добавление в очередь)
 procedure showWait(Status:enumShow_wait);                                            // отображение\сркытие окна запроса на сервер
 function remoteCommand_Responce(InStroka:string; var _errorDescriptions:string):boolean;  // отправка запроса на добавление удаленной команды
 function getUserSIP(InIDUser:integer):string;                                        // отображение SIP пользвоателя
-function isExistRemoteCommand(command:enumLogging):Boolean;                          // проверка есть ли уже такая удаленная команда на сервера
+function isExistRemoteCommand(command:enumLogging;_userID:Integer):Boolean;         // проверка есть ли уже такая удаленная команда на сервера
 function getStatus(InStatus:enumStatusOperators):string;                             // полчуение имени status оператора
 function getCurrentQueueOperator(InSipNumber:string):enumQueueCurrent;               // в какой очереди сейчас находится оператор
-procedure clearOperatorStatus;                                                       // очитска текущего статуса оператора
+procedure clearOperatorStatus(_userID:Integer);                                       // очитска текущего статуса оператора
 procedure checkCurrentStatusOperator(InOperatorStatus:enumStatusOperators);              // проверка и отображение кнопок статусов оператора
 procedure showStatusOperator(InShow:Boolean = True);                                 // отобрадение панели статусы операторов
 function getLastStatusTime(InUserid:Integer; InOperatorStatus:enumStatusOperators):string;    // подсчет времени в текущем статусе оператора
 function isOperatorGoHome(inUserID:Integer):Boolean;                                 // проверка оператор ушел домой или нет
+function isOperatorGoHomeWithForceClosed(inUserID:Integer):Boolean;                  // проверка оператор ушел домой или нет (через завершение активной сессии)
 function getIsExitOperatorCurrentQueue(InCurrentRole:enumRole;InUserID:Integer):Boolean;// проверка вдруг оператор забыл выйти из линии
 function getLastStatusTimeOnHold(InStartTimeonHold:string):string;                   // подсчет времени в статусе OnHold
 function getTranslate(Stroka: string):string;                                        // Транслитерация из рус - > транлирт
@@ -95,7 +94,7 @@ function getStatusIndividualSettingsUser(InUserID:Integer;
                                         settings:enumSettingUsers):enumParamStatus; // получение данных об индивидуальных настройках пользователя
 procedure LoadIndividualSettingUser(InUserId:Integer);                               // прогрузка индивидуальных настроек пользователя
 function getIsExitOperatorCurrentGoHome(InCurrentRole:enumRole;InUserID:Integer):Boolean; // проверка вдруг оператор не правильно выходит, нужно выходить через команду "домой"
-function getLastStatusOperator(InUserId:Integer):enumLogging;                           // текущий стаус оператора из таблицы logging
+function GetLastStatusOperator(InUserId:Integer):enumLogging;                           // текущий стаус оператора из таблицы logging
 procedure CheckCurrentVersion;                                                       // проверка на актуальную версию
 function getCheckIP(InIPAdtress:string):Boolean;                                     // проверка корректности IP адреса
 procedure CreateFormActiveSession;                                                   // создание окна активных сессий
@@ -115,6 +114,9 @@ procedure Egg;                                                                  
 procedure HappyNewYear;                                                              // пасхалка с новым годом
 procedure Mart8;                                                                     // пасхалка с 8 марта
 function GetExistAccessToLocalChat(InUserId:Integer):Boolean;                        // есть ли доступ к локальному чату
+function OpenMissedCalls(var _errorDescriptions:string;
+                        _queue:enumQueueCurrent = queue_5000_5050;
+                        _missed:enumMissed = eMissed_no_return):Boolean;                     // доступ к пропущенным звонкам
 procedure OpenLocalChat;                                                             // открытые exe локального чата
 procedure OpenReports;                                                               // открытые exe отчетов
 procedure OpenService;                                                               // открытые exe услуг
@@ -145,9 +147,13 @@ function GetProgrammUptime:int64;  overload;                                    
 function GetProgrammUptime(_uptime:Int64):string;  overload;                         // текущий uptime
 function GetProgrammStarted:TDateTime;   overload;                                   // время запуска программы(текущий пользователь)
 function GetProgrammStarted(_userID:Integer):TDateTime;  overload;                   // время запуска программы(любой пользователь)
+function GetProgrammStartedFirstLogon(_userID:Integer):TDateTime;                    // время запуска программы из истории входов
+function GetProgrammExit(_userID:Integer):TDateTime;                                 // время закрытия программы из итории входов
 function GetPhoneTrunkQueue(_phone:string;_timecall:string):string;                  // нахождение на какой транк звонил номер который ушел в очередь
-function IsServerIkExistWorkingTime(_id:Integer):Boolean;                            // настроен ли время работы в сервере ИК
-
+function CreateRemoteCommandCallback(_action:enumRemoteCommandAction; _id:Integer;
+                                      var _errorDescription:string): Boolean;        // действие по удаленной команде для активной сессии или для пропущенного звонка
+function ExecuteCommandKillActiveSession(_userID:Integer;
+                                         var _errorDescription:string):Boolean;      // выполенние команды закрытые активной сессии
 
 implementation
 
@@ -178,13 +184,13 @@ uses
   TOnlineChat,
   Thread_ChatUnit,
   Thread_ForecastUnit,
-  Thread_InternalProcessUnit;
+  Thread_InternalProcessUnit, TActiveSessionUnit;
 
 
 
 
  // логирование действий
-procedure LoggingRemote(InLoggingID:enumLogging);
+procedure LoggingRemote(InLoggingID:enumLogging; _userID:Integer);
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -207,7 +213,7 @@ begin
         SQL.Clear;
 
         SQL.Add('insert into logging (ip,user_id,user_login_pc,pc,action) values ('+#39+SharedCurrentUserLogon.GetIP+#39+','
-                                                                                   +#39+IntToStr(SharedCurrentUserLogon.GetID)+#39+','
+                                                                                   +#39+IntToStr(_userID)+#39+','
                                                                                    +#39+SharedCurrentUserLogon.GetUserLoginPC+#39+','
                                                                                    +#39+SharedCurrentUserLogon.GetPC+#39+','
                                                                                    +#39+IntToStr(EnumLoggingToInteger(InLoggingID))+#39+')');
@@ -502,15 +508,15 @@ begin
      if not CONNECT_BD_ERROR then begin
 
        // логирование (выход)  , через команду или руками
-       if GetForceActiveSessionClosed(SharedCurrentUserLogon.GetID) then LoggingRemote(eLog_exit_force)
+       if GetForceActiveSessionClosed(SharedCurrentUserLogon.GetID) then LoggingRemote(eLog_exit_force,SharedCurrentUserLogon.GetID)
        else
        begin
         // проверка на вдруг нажали просто отмена
-        if SharedCurrentUserLogon.GetID<>0 then LoggingRemote(eLog_exit);
+        if SharedCurrentUserLogon.GetID<>0 then LoggingRemote(eLog_exit,SharedCurrentUserLogon.GetID);
        end;
 
        // очичтка текущего статуса оператора
-       clearOperatorStatus;
+       clearOperatorStatus(SharedCurrentUserLogon.GetID);
 
        // удаление активной сессии
        DeleteActiveSession(GetActiveSessionUser(SharedCurrentUserLogon.GetID));
@@ -561,7 +567,6 @@ begin
      end;
 
    finally
-      //DM.ADOConnectServer.Close;
       KillProcessNow;
    end;
 end;
@@ -574,7 +579,6 @@ var
  serverConnect:TADOConnection;
  error:string;
 begin
-
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnectWithError(error);
 
@@ -624,14 +628,6 @@ begin
                                                                              +' and fail = ''1'' and date_time > '+#39+GetNowDateTime+#39;
     end;
     no_answered_return: begin  // не отвеченные + вернувшиеся
-     {select_response:='select ((select count(phone) from queue where number_queue ='+#39+IntToStr(InQueueNumber)+#39
-                                                                                    +' and fail = ''1'' and date_time >'+#39
-                                                                                    +GetCurrentStartDateTime+#39+') - (select count(distinct(phone)) from queue where number_queue ='+#39
-                                                                                    +IntToStr(InQueueNumber)+#39+' and answered =''1'' and date_time >'+#39
-                                                                                    +GetCurrentStartDateTime+#39+' and phone in (select distinct(phone) from queue where number_queue = '+#39
-                                                                                    +IntToStr(InQueueNumber)+#39+' and fail = ''1'' and date_time > '+#39
-                                                                                    +GetCurrentStartDateTime+#39+'))) as temp'; }
-
       select_response:='select count(distinct(phone)) from queue where number_queue='+#39+TQueueToString(InQueueNumber)+#39+
                                                                 ' and fail =''1'' and date_time >'+#39+GetNowDateTime+#39+
                                                                 ' and phone not in (select phone from queue where number_queue ='+#39+TQueueToString(InQueueNumber)+#39+
@@ -652,7 +648,7 @@ end;
 
 
 // отображение инфо за день
-function GetStatistics_day(inStatDay:enumStatistiscDay):string;
+function GetStatistics_day(inStatDay:enumStatistiscDay; _queue:enumQueueCurrent = queue_null):string;
 var
 resultat:string;
 select_response:string;
@@ -664,7 +660,12 @@ all_queue:string;
 
 begin
   resultat:='null';
-  all_queue:=#39+TQueueToString(queue_5000)+#39+','+#39+TQueueToString(queue_5050)+#39;
+  if _queue = queue_null then begin
+    all_queue:=#39+TQueueToString(queue_5000)+#39+','+#39+TQueueToString(queue_5050)+#39;
+  end
+  else begin
+    all_queue:=#39+TQueueToString(_queue)+#39;
+  end;
 
  with HomeForm do begin
     case inStatDay of
@@ -1103,80 +1104,9 @@ begin
   end;
 end;
 
-// создание интерфейса пропущенные
-procedure clearList_Propushennie;
-begin
- with FormPropushennie do begin
-
-   listSG_Propushennie.RowCount:=1;
-
-   listSG_Propushennie.Cells[0,0]:='дата\время звонка';
-   listSG_Propushennie.Cells[1,0]:='время ожидания';
-   listSG_Propushennie.Cells[2,0]:='телефон';
-   listSG_Propushennie.Cells[3,0]:='очередь';
-
- end;
-end;
-
-// обновление пропущенных звонков форма
-procedure updatePropushennie;
-var
- listCount:Integer;
- i:Integer;
- list_queue:string;
- serverConnect:TADOConnection;
-begin
-  listCount:=0;
-
-  // отображение только очереди 5000 и 5050
-  list_queue:=#39+TQueueToString(queue_5000)+#39+','+#39+TQueueToString(queue_5050)+#39;
-
-
-   with DM.ADOQuerySelect_Propushennie do begin
-      SQL.Clear;
-      SQL.Add('select count(phone) from queue where date_time > '+#39+GetNowDateTime+#39+ ' and fail = 1 and hash is null and number_queue IN ('+list_queue+')  order by date_time DESC');
-      Active:=True;
-      if Fields[0].Value<>null then listCount:=Fields[0].Value;
-   end;
-   if listCount>=1 then begin
-
-     with DM.ADOQuerySelect_Propushennie do begin
-        SQL.Clear;
-        SQL.Add('select date_time,waiting_time,phone,number_queue from queue where date_time > '+#39+GetNowDateTime+#39+ ' and fail = 1 and hash is null and number_queue IN ('+list_queue+') order by date_time DESC');
-        Active:=True;
-
-        FormPropushennie.listSG_Propushennie.RowCount:=listCount+1;
-
-        for i:=0 to listCount-1 do begin
-          try
-            if (Fields[0].Value = null) or (Fields[1].Value = null) or (Fields[2].Value = null) or (Fields[3].Value = null) then
-            begin
-             Next;
-             Break;
-            end;
-
-            with FormPropushennie.listSG_Propushennie do begin
-              Cells[0,i+1]:=Fields[0].Value;
-
-              // подправим время ожидания
-             // TODO переделать!!! т.к. correctTimeQueue в случае ошибка выдает 'null'  Cells[1,i+1]:=correctTimeQueue(StringToTQueue(Fields[3].Value),Fields[1].Value);
-
-              Cells[2,i+1]:=Fields[2].Value;
-              Cells[3,i+1]:=Fields[3].Value;
-            end;
-
-
-          finally
-            Next;
-          end;
-        end;
-     end;
-   end;
-end;
-
 
 // отображение текущей версии
-function getVersion(GUID:string; programm:enumProrgamm):string;
+function GetVersion(GUID:string; programm:enumProrgamm):string;
 var
  ado:TADOQuery;
  serverConnect: TADOConnection;
@@ -1188,7 +1118,7 @@ begin
   serverConnect:=createServerConnectWithError(error);
 
   if not Assigned(serverConnect) then begin
-     ShowFormErrorMessage(error,SharedMainLog,'getVersion');
+     ShowFormErrorMessage(error,SharedMainLog,'GetVersion');
      FreeAndNil(ado);
      Exit;
   end;
@@ -1262,7 +1192,7 @@ begin
                 end;
 
                 REHistory_GUI.SelStart:=0;
-                STInfoVersionGUI.Caption:=getVersion(GUID_VERSION,programm);
+                STInfoVersionGUI.Caption:=GetVersion(GUID_VERSION,programm);
               end;
               eCHAT: begin
 
@@ -1280,7 +1210,7 @@ begin
                 end;
 
                 REHistory_CHAT.SelStart:=0;
-                STInfoVersionCHAT.Caption:=getVersion(GUID_VERSION,programm);
+                STInfoVersionCHAT.Caption:=GetVersion(GUID_VERSION,programm);
               end;
               eREPORT:begin
                 REHistory_REPORT.Clear;
@@ -1297,7 +1227,7 @@ begin
                 end;
 
                 REHistory_REPORT.SelStart:=0;
-                STInfoVersionREPORT.Caption:=getVersion(GUID_VERSION,programm);
+                STInfoVersionREPORT.Caption:=GetVersion(GUID_VERSION,programm);
               end;
               eSMS:begin
                 REHistory_SMS.Clear;
@@ -1314,7 +1244,7 @@ begin
                 end;
 
                 REHistory_SMS.SelStart:=0;
-                STInfoVersionSMS.Caption:=getVersion(GUID_VERSION,programm);
+                STInfoVersionSMS.Caption:=GetVersion(GUID_VERSION,programm);
               end;
            end;
         end;
@@ -1362,28 +1292,6 @@ begin
       FreeAndNil(serverConnect);
     end;
    end;
-end;
-
-
-// проверка ping
-function Ping(InIp:string):Boolean;
-const
- error:word = 0;
-var
-  IcmpClient: TIdIcmpClient;
-begin
-  IcmpClient := TIdIcmpClient.Create;
-  try
-    with IcmpClient do begin
-      Host:=InIp;
-      Ping(InIp,4);
-
-      if ReplyStatus.TimeToLive <> error then Result:=True
-      else Result:=False;
-    end;
-  finally
-    IcmpClient.Free;
-  end;
 end;
 
 
@@ -1573,277 +1481,277 @@ var
  error:string;
 begin
 
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnectWithError(error);
-
-  if not Assigned(serverConnect) then begin
-     ShowFormErrorMessage(error,SharedMainLog,'CreateFormActiveSession');
-     FreeAndNil(ado);
-     Exit;
-  end;
-
-
-  try
-  with ado do begin
-      ado.Connection:=serverConnect;
-      SQL.Clear;
-      SQL.Add('select count(id) from active_session');
-
-      try
-          Active:=True;
-          countActive:=Fields[0].Value;
-      except
-          on E:EIdException do begin
-             FreeAndNil(ado);
-             if Assigned(serverConnect) then begin
-               serverConnect.Close;
-               FreeAndNil(serverConnect);
-             end;
-
-             Exit;
-          end;
-      end;
-
-      if countActive>=1 then begin
-
-        // выставляем размерность
-        SetLength(lblUSERID,countActive);
-        SetLength(lblROLE,countActive);
-        SetLength(lblUSERNAME,countActive);
-        SetLength(lblPC,countActive);
-        SetLength(lblIP,countActive);
-        SetLength(lblONLINE,countActive);
-        SetLength(lblSTATUS,countActive);
-        SetLength(btnCLOSE_SESSION,countActive);
-        SetLength(btnCLOSE_QUEUE,countActive);
-
-        SQL.Clear;
-        // order by id ASC
-
-        SQL.Add('SELECT asession.user_id, r.name_role, CONCAT(u.familiya, '+#39' '+#39+', u.name) AS full_name, asession.pc, asession.ip, asession.last_active FROM active_session AS asession JOIN users AS u ON asession.user_id = u.id JOIN role AS r ON u.role = r.id');
-
-        try
-          Active:=True;
-        except
-            on E:EIdException do begin
-               CodOshibki:=e.Message;
-               FreeAndNil(ado);
-               if Assigned(serverConnect) then begin
-                  serverConnect.Close;
-                  FreeAndNil(serverConnect);
-               end;
-
-               Exit;
-            end;
-        end;
-
-
-        for i:=0 to countActive-1 do begin
-
-          // ID
-          begin
-            nameID:=VarToStr(Fields[0].Value);
-
-            lblUSERID[i]:=TLabel.Create(FormActiveSession.PanelActive);
-            lblUSERID[i].Name:='lblUSERID_'+nameID;
-            lblUSERID[i].Tag:=1;
-            lblUSERID[i].Caption:=VarToStr(Fields[0].Value);
-            lblUSERID[i].Left:=6;
-
-            if i=0 then lblUSERID[i].Top:=cTOPSTART
-            else lblUSERID[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
-
-            lblUSERID[i].Font.Name:='Tahoma';
-            lblUSERID[i].Font.Size:=10;
-            lblUSERID[i].AutoSize:=False;
-            lblUSERID[i].Width:=79;
-            lblUSERID[i].Height:=16;
-            lblUSERID[i].Alignment:=taCenter;
-            lblUSERID[i].Parent:=FormActiveSession.PanelActive;
-
-          end;
-
-          // роль
-          begin
-            lblROLE[i]:=TLabel.Create(FormActiveSession.PanelActive);
-            lblROLE[i].Name:='lblROLE_'+nameID;
-            lblROLE[i].Tag:=1;
-            lblROLE[i].Caption:=VarToStr(Fields[1].Value);
-            lblROLE[i].Left:=85;
-
-            if i=0 then lblROLE[i].Top:=cTOPSTART
-            else lblROLE[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
-
-            lblROLE[i].Font.Name:='Tahoma';
-            lblROLE[i].Font.Size:=10;
-            lblROLE[i].AutoSize:=False;
-            lblROLE[i].Width:=150;
-            lblROLE[i].Height:=16;
-            lblROLE[i].Alignment:=taCenter;
-            lblROLE[i].Parent:=FormActiveSession.PanelActive;
-          end;
-
-          // пользователь
-          begin
-            lblUSERNAME[i]:=TLabel.Create(FormActiveSession.PanelActive);
-            lblUSERNAME[i].Name:='lblUSERNAME_'+nameID;
-            lblUSERNAME[i].Tag:=1;
-            lblUSERNAME[i].Caption:=VarToStr(Fields[2].Value);
-            lblUSERNAME[i].Left:=235;
-
-            if i=0 then lblUSERNAME[i].Top:=cTOPSTART
-            else lblUSERNAME[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
-
-            lblUSERNAME[i].Font.Name:='Tahoma';
-            lblUSERNAME[i].Font.Size:=10;
-            lblUSERNAME[i].AutoSize:=False;
-            lblUSERNAME[i].Width:=168;
-            lblUSERNAME[i].Height:=16;
-            lblUSERNAME[i].Alignment:=taCenter;
-            lblUSERNAME[i].Parent:=FormActiveSession.PanelActive;
-          end;
-
-          // компьютер
-          begin
-            lblPC[i]:=TLabel.Create(FormActiveSession.PanelActive);
-            lblPC[i].Name:='lblPC_'+nameID;
-            lblPC[i].Tag:=1;
-            lblPC[i].Caption:=VarToStr(Fields[3].Value);
-            lblPC[i].Left:=403;
-
-            if i=0 then lblPC[i].Top:=cTOPSTART
-            else lblPC[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
-
-            lblPC[i].Font.Name:='Tahoma';
-            lblPC[i].Font.Size:=10;
-            lblPC[i].AutoSize:=False;
-            lblPC[i].Width:=87;
-            lblPC[i].Height:=16;
-            lblPC[i].Alignment:=taCenter;
-            lblPC[i].Parent:=FormActiveSession.PanelActive;
-          end;
-
-          // IP
-          begin
-            lblIP[i]:=TLabel.Create(FormActiveSession.PanelActive);
-            lblIP[i].Name:='lblIP_'+nameID;
-            lblIP[i].Tag:=1;
-            lblIP[i].Caption:=VarToStr(Fields[4].Value);
-            lblIP[i].Left:=489;
-
-            if i=0 then lblIP[i].Top:=cTOPSTART
-            else lblIP[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
-
-            lblIP[i].Font.Name:='Tahoma';
-            lblIP[i].Font.Size:=10;
-            lblIP[i].AutoSize:=False;
-            lblIP[i].Width:=120;
-            lblIP[i].Height:=16;
-            lblIP[i].Alignment:=taCenter;
-            lblIP[i].Parent:=FormActiveSession.PanelActive;
-          end;
-
-          // Дата онлайна
-          begin
-            lblONLINE[i]:=TLabel.Create(FormActiveSession.PanelActive);
-            lblONLINE[i].Name:='lblONLINE_'+nameID;
-            lblONLINE[i].Tag:=1;
-            lblONLINE[i].Caption:=VarToStr(Fields[5].Value);
-            lblONLINE[i].Left:=609;
-
-            if i=0 then lblONLINE[i].Top:=cTOPSTART
-            else lblONLINE[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
-
-            lblONLINE[i].Font.Name:='Tahoma';
-            lblONLINE[i].Font.Size:=10;
-            lblONLINE[i].AutoSize:=False;
-            lblONLINE[i].Width:=121;
-            lblONLINE[i].Height:=16;
-            lblONLINE[i].Alignment:=taCenter;
-            lblONLINE[i].Parent:=FormActiveSession.PanelActive;
-          end;
-
-          // Статус
-          begin
-            lblSTATUS[i]:=TLabel.Create(FormActiveSession.PanelActive);
-            lblSTATUS[i].Name:='lblSTATUS_'+nameID;
-            lblSTATUS[i].Tag:=1;
-            lblSTATUS[i].Caption:='ONLINE!';
-            lblSTATUS[i].Left:=730;
-
-            if i=0 then lblSTATUS[i].Top:=cTOPSTART
-            else lblSTATUS[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
-
-            lblSTATUS[i].Font.Name:='Tahoma';
-            lblSTATUS[i].Font.Size:=10;
-            lblSTATUS[i].AutoSize:=False;
-            lblSTATUS[i].Width:=94;
-            lblSTATUS[i].Height:=16;
-            lblSTATUS[i].Alignment:=taCenter;
-            lblSTATUS[i].Parent:=FormActiveSession.PanelActive;
-          end;
-
-          // Закрыть сессию
-          begin
-            btnCLOSE_SESSION[i]:=TButton.Create(FormActiveSession.PanelActive);
-            btnCLOSE_SESSION[i].Name:='btnCLOSE_SESSION_'+nameID;
-            btnCLOSE_SESSION[i].Tag:=1;
-            btnCLOSE_SESSION[i].Caption:='Завершить сессию!';
-            btnCLOSE_SESSION[i].Left:=837;
-
-            if i=0 then btnCLOSE_SESSION[i].Top:=cTOPSTART - 5
-            else btnCLOSE_SESSION[i].Top:=cTOPSTART+(Round(cTOPSTART)*i)-5;
-
-            btnCLOSE_SESSION[i].Font.Name:='Tahoma';
-            btnCLOSE_SESSION[i].Font.Size:=10;
-            btnCLOSE_SESSION[i].Width:=126;
-            btnCLOSE_SESSION[i].Height:=25;
-            btnCLOSE_SESSION[i].Parent:=FormActiveSession.PanelActive;
-          end;
-
-           // Убрать из очереди
-          begin
-            btnCLOSE_QUEUE[i]:=TButton.Create(FormActiveSession.PanelActive);
-            btnCLOSE_QUEUE[i].Name:='btnCLOSE_QUEUE_'+nameID;
-            btnCLOSE_QUEUE[i].Tag:=1;
-            btnCLOSE_QUEUE[i].Caption:='Убрать из очереди';
-            btnCLOSE_QUEUE[i].Left:=971;
-
-            if i=0 then btnCLOSE_QUEUE[i].Top:=cTOPSTART - 5
-            else btnCLOSE_QUEUE[i].Top:=cTOPSTART+(Round(cTOPSTART)*i)-5;
-
-            btnCLOSE_QUEUE[i].Font.Name:='Tahoma';
-            btnCLOSE_QUEUE[i].Font.Size:=10;
-            btnCLOSE_QUEUE[i].Width:=126;
-            btnCLOSE_QUEUE[i].Height:=25;
-            btnCLOSE_QUEUE[i].Parent:=FormActiveSession.PanelActive;
-
-            if (AnsiPos('Оператор',VarToStr(Fields[1].Value)) <> 0) or
-                (AnsiPos('оператор',VarToStr(Fields[1].Value))<> 0) then begin
-              btnCLOSE_QUEUE[i].Enabled:=True;
-            end
-            else begin
-              btnCLOSE_QUEUE[i].Enabled:=False;
-            end;
-
-          end;
-
-
-
-          ado.Next;
-        end;
-      end;
-
-    end;
-
-  //FormServerIKCheck.Caption:=FormServerIKCheck.Caption+' ('+IntToStr(countServers)+')';
-  finally
-    FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
-  end;
+//  ado:=TADOQuery.Create(nil);
+//  serverConnect:=createServerConnectWithError(error);
+//
+//  if not Assigned(serverConnect) then begin
+//     ShowFormErrorMessage(error,SharedMainLog,'CreateFormActiveSession');
+//     FreeAndNil(ado);
+//     Exit;
+//  end;
+//
+//
+//  try
+//  with ado do begin
+//      ado.Connection:=serverConnect;
+//      SQL.Clear;
+//      SQL.Add('select count(id) from active_session');
+//
+//      try
+//          Active:=True;
+//          countActive:=Fields[0].Value;
+//      except
+//          on E:EIdException do begin
+//             FreeAndNil(ado);
+//             if Assigned(serverConnect) then begin
+//               serverConnect.Close;
+//               FreeAndNil(serverConnect);
+//             end;
+//
+//             Exit;
+//          end;
+//      end;
+//
+//      if countActive>=1 then begin
+//
+//        // выставляем размерность
+//        SetLength(lblUSERID,countActive);
+//        SetLength(lblROLE,countActive);
+//        SetLength(lblUSERNAME,countActive);
+//        SetLength(lblPC,countActive);
+//        SetLength(lblIP,countActive);
+//        SetLength(lblONLINE,countActive);
+//        SetLength(lblSTATUS,countActive);
+//        SetLength(btnCLOSE_SESSION,countActive);
+//        SetLength(btnCLOSE_QUEUE,countActive);
+//
+//        SQL.Clear;
+//        // order by id ASC
+//
+//        SQL.Add('SELECT asession.user_id, r.name_role, CONCAT(u.familiya, '+#39' '+#39+', u.name) AS full_name, asession.pc, asession.ip, asession.last_active FROM active_session AS asession JOIN users AS u ON asession.user_id = u.id JOIN role AS r ON u.role = r.id');
+//
+//        try
+//          Active:=True;
+//        except
+//            on E:EIdException do begin
+//               CodOshibki:=e.Message;
+//               FreeAndNil(ado);
+//               if Assigned(serverConnect) then begin
+//                  serverConnect.Close;
+//                  FreeAndNil(serverConnect);
+//               end;
+//
+//               Exit;
+//            end;
+//        end;
+//
+//
+//        for i:=0 to countActive-1 do begin
+//
+//          // ID
+//          begin
+//            nameID:=VarToStr(Fields[0].Value);
+//
+//            lblUSERID[i]:=TLabel.Create(FormActiveSession.PanelActive);
+//            lblUSERID[i].Name:='lblUSERID_'+nameID;
+//            lblUSERID[i].Tag:=1;
+//            lblUSERID[i].Caption:=VarToStr(Fields[0].Value);
+//            lblUSERID[i].Left:=6;
+//
+//            if i=0 then lblUSERID[i].Top:=cTOPSTART
+//            else lblUSERID[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
+//
+//            lblUSERID[i].Font.Name:='Tahoma';
+//            lblUSERID[i].Font.Size:=10;
+//            lblUSERID[i].AutoSize:=False;
+//            lblUSERID[i].Width:=79;
+//            lblUSERID[i].Height:=16;
+//            lblUSERID[i].Alignment:=taCenter;
+//            lblUSERID[i].Parent:=FormActiveSession.PanelActive;
+//
+//          end;
+//
+//          // роль
+//          begin
+//            lblROLE[i]:=TLabel.Create(FormActiveSession.PanelActive);
+//            lblROLE[i].Name:='lblROLE_'+nameID;
+//            lblROLE[i].Tag:=1;
+//            lblROLE[i].Caption:=VarToStr(Fields[1].Value);
+//            lblROLE[i].Left:=85;
+//
+//            if i=0 then lblROLE[i].Top:=cTOPSTART
+//            else lblROLE[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
+//
+//            lblROLE[i].Font.Name:='Tahoma';
+//            lblROLE[i].Font.Size:=10;
+//            lblROLE[i].AutoSize:=False;
+//            lblROLE[i].Width:=150;
+//            lblROLE[i].Height:=16;
+//            lblROLE[i].Alignment:=taCenter;
+//            lblROLE[i].Parent:=FormActiveSession.PanelActive;
+//          end;
+//
+//          // пользователь
+//          begin
+//            lblUSERNAME[i]:=TLabel.Create(FormActiveSession.PanelActive);
+//            lblUSERNAME[i].Name:='lblUSERNAME_'+nameID;
+//            lblUSERNAME[i].Tag:=1;
+//            lblUSERNAME[i].Caption:=VarToStr(Fields[2].Value);
+//            lblUSERNAME[i].Left:=235;
+//
+//            if i=0 then lblUSERNAME[i].Top:=cTOPSTART
+//            else lblUSERNAME[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
+//
+//            lblUSERNAME[i].Font.Name:='Tahoma';
+//            lblUSERNAME[i].Font.Size:=10;
+//            lblUSERNAME[i].AutoSize:=False;
+//            lblUSERNAME[i].Width:=168;
+//            lblUSERNAME[i].Height:=16;
+//            lblUSERNAME[i].Alignment:=taCenter;
+//            lblUSERNAME[i].Parent:=FormActiveSession.PanelActive;
+//          end;
+//
+//          // компьютер
+//          begin
+//            lblPC[i]:=TLabel.Create(FormActiveSession.PanelActive);
+//            lblPC[i].Name:='lblPC_'+nameID;
+//            lblPC[i].Tag:=1;
+//            lblPC[i].Caption:=VarToStr(Fields[3].Value);
+//            lblPC[i].Left:=403;
+//
+//            if i=0 then lblPC[i].Top:=cTOPSTART
+//            else lblPC[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
+//
+//            lblPC[i].Font.Name:='Tahoma';
+//            lblPC[i].Font.Size:=10;
+//            lblPC[i].AutoSize:=False;
+//            lblPC[i].Width:=87;
+//            lblPC[i].Height:=16;
+//            lblPC[i].Alignment:=taCenter;
+//            lblPC[i].Parent:=FormActiveSession.PanelActive;
+//          end;
+//
+//          // IP
+//          begin
+//            lblIP[i]:=TLabel.Create(FormActiveSession.PanelActive);
+//            lblIP[i].Name:='lblIP_'+nameID;
+//            lblIP[i].Tag:=1;
+//            lblIP[i].Caption:=VarToStr(Fields[4].Value);
+//            lblIP[i].Left:=489;
+//
+//            if i=0 then lblIP[i].Top:=cTOPSTART
+//            else lblIP[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
+//
+//            lblIP[i].Font.Name:='Tahoma';
+//            lblIP[i].Font.Size:=10;
+//            lblIP[i].AutoSize:=False;
+//            lblIP[i].Width:=120;
+//            lblIP[i].Height:=16;
+//            lblIP[i].Alignment:=taCenter;
+//            lblIP[i].Parent:=FormActiveSession.PanelActive;
+//          end;
+//
+//          // Дата онлайна
+//          begin
+//            lblONLINE[i]:=TLabel.Create(FormActiveSession.PanelActive);
+//            lblONLINE[i].Name:='lblONLINE_'+nameID;
+//            lblONLINE[i].Tag:=1;
+//            lblONLINE[i].Caption:=VarToStr(Fields[5].Value);
+//            lblONLINE[i].Left:=609;
+//
+//            if i=0 then lblONLINE[i].Top:=cTOPSTART
+//            else lblONLINE[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
+//
+//            lblONLINE[i].Font.Name:='Tahoma';
+//            lblONLINE[i].Font.Size:=10;
+//            lblONLINE[i].AutoSize:=False;
+//            lblONLINE[i].Width:=121;
+//            lblONLINE[i].Height:=16;
+//            lblONLINE[i].Alignment:=taCenter;
+//            lblONLINE[i].Parent:=FormActiveSession.PanelActive;
+//          end;
+//
+//          // Статус
+//          begin
+//            lblSTATUS[i]:=TLabel.Create(FormActiveSession.PanelActive);
+//            lblSTATUS[i].Name:='lblSTATUS_'+nameID;
+//            lblSTATUS[i].Tag:=1;
+//            lblSTATUS[i].Caption:='ONLINE!';
+//            lblSTATUS[i].Left:=730;
+//
+//            if i=0 then lblSTATUS[i].Top:=cTOPSTART
+//            else lblSTATUS[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
+//
+//            lblSTATUS[i].Font.Name:='Tahoma';
+//            lblSTATUS[i].Font.Size:=10;
+//            lblSTATUS[i].AutoSize:=False;
+//            lblSTATUS[i].Width:=94;
+//            lblSTATUS[i].Height:=16;
+//            lblSTATUS[i].Alignment:=taCenter;
+//            lblSTATUS[i].Parent:=FormActiveSession.PanelActive;
+//          end;
+//
+//          // Закрыть сессию
+//          begin
+//            btnCLOSE_SESSION[i]:=TButton.Create(FormActiveSession.PanelActive);
+//            btnCLOSE_SESSION[i].Name:='btnCLOSE_SESSION_'+nameID;
+//            btnCLOSE_SESSION[i].Tag:=1;
+//            btnCLOSE_SESSION[i].Caption:='Завершить сессию!';
+//            btnCLOSE_SESSION[i].Left:=837;
+//
+//            if i=0 then btnCLOSE_SESSION[i].Top:=cTOPSTART - 5
+//            else btnCLOSE_SESSION[i].Top:=cTOPSTART+(Round(cTOPSTART)*i)-5;
+//
+//            btnCLOSE_SESSION[i].Font.Name:='Tahoma';
+//            btnCLOSE_SESSION[i].Font.Size:=10;
+//            btnCLOSE_SESSION[i].Width:=126;
+//            btnCLOSE_SESSION[i].Height:=25;
+//            btnCLOSE_SESSION[i].Parent:=FormActiveSession.PanelActive;
+//          end;
+//
+//           // Убрать из очереди
+//          begin
+//            btnCLOSE_QUEUE[i]:=TButton.Create(FormActiveSession.PanelActive);
+//            btnCLOSE_QUEUE[i].Name:='btnCLOSE_QUEUE_'+nameID;
+//            btnCLOSE_QUEUE[i].Tag:=1;
+//            btnCLOSE_QUEUE[i].Caption:='Убрать из очереди';
+//            btnCLOSE_QUEUE[i].Left:=971;
+//
+//            if i=0 then btnCLOSE_QUEUE[i].Top:=cTOPSTART - 5
+//            else btnCLOSE_QUEUE[i].Top:=cTOPSTART+(Round(cTOPSTART)*i)-5;
+//
+//            btnCLOSE_QUEUE[i].Font.Name:='Tahoma';
+//            btnCLOSE_QUEUE[i].Font.Size:=10;
+//            btnCLOSE_QUEUE[i].Width:=126;
+//            btnCLOSE_QUEUE[i].Height:=25;
+//            btnCLOSE_QUEUE[i].Parent:=FormActiveSession.PanelActive;
+//
+//            if (AnsiPos('Оператор',VarToStr(Fields[1].Value)) <> 0) or
+//                (AnsiPos('оператор',VarToStr(Fields[1].Value))<> 0) then begin
+//              btnCLOSE_QUEUE[i].Enabled:=True;
+//            end
+//            else begin
+//              btnCLOSE_QUEUE[i].Enabled:=False;
+//            end;
+//
+//          end;
+//
+//
+//
+//          ado.Next;
+//        end;
+//      end;
+//
+//    end;
+//
+//  //FormServerIKCheck.Caption:=FormServerIKCheck.Caption+' ('+IntToStr(countServers)+')';
+//  finally
+//    FreeAndNil(ado);
+//    if Assigned(serverConnect) then begin
+//      serverConnect.Close;
+//      FreeAndNil(serverConnect);
+//    end;
+//  end;
 end;
 
 
@@ -3176,10 +3084,10 @@ procedure SetAccessMenu(InNameMenu:enumAccessList; InStatus: enumAccessStatus);
 var
   MenuItem: TMenuItem;
 begin
-  MenuItem:=FindMenuItem(HomeForm.FooterMenu.Items, TAccessListToString(InNameMenu));
+  MenuItem:=FindMenuItem(HomeForm.FooterMenu.Items, EnumAccessListToString(InNameMenu));
   if Assigned(MenuItem) then
   begin
-    MenuItem.Enabled := TAccessStatusToBool(InStatus);
+    MenuItem.Enabled := EnumAccessStatusToBool(InStatus);
   end
 end;
 
@@ -3321,8 +3229,6 @@ begin
    KillProcess;
   end;
 
-  // TODO сюда  потом команду на немедленное обновление версии!!!
-
   // запишем текущую версию дашборда
   begin
    if FileExists(SETTINGS_XML) then begin
@@ -3341,12 +3247,12 @@ end;
 procedure showWait(Status:enumShow_wait);
 begin
   case (Status) of
-   open: begin
+   show_open: begin
      Screen.Cursor:=crHourGlass;
      FormWait.Show;
      Application.ProcessMessages;
    end;
-   close: begin
+   show_close: begin
      // устанавливаем нормальный размер панельки
      HomeForm.PanelStatusIN.Height:=cPanelStatusHeight_default;
      FormOperatorStatus.Height:=FormOperatorStatus.cHeightStart;
@@ -3394,7 +3300,7 @@ begin
                  serverConnect.Close;
                  FreeAndNil(serverConnect);
                end;
-               _errorDescriptions:='Не удалось выполнить запрос'+#13#13+e.ClassName+': '+e.Message;
+               _errorDescriptions:='Сервер не смог обработать команду из за внутренней ошибки'+#13#13+e.ClassName+': '+e.Message;
                Exit;
             end;
         end;
@@ -3412,7 +3318,7 @@ end;
 
 
 // проверка есть ли уже такая удаленная команда на сервера
-function isExistRemoteCommand(command:enumLogging):Boolean;
+function isExistRemoteCommand(command:enumLogging;_userID:Integer):Boolean;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -3435,7 +3341,7 @@ begin
       ado.Connection:=serverConnect;
 
       SQL.Clear;
-      SQL.Add('select count(id) from remote_commands where command = '+#39+inttostr(EnumLoggingToInteger(command)) +#39+' and user_id = '+#39+IntToStr(SharedCurrentUserLogon.GetID)+#39);
+      SQL.Add('select count(id) from remote_commands where command = '+#39+inttostr(EnumLoggingToInteger(command)) +#39+' and user_id = '+#39+IntToStr(_userID)+#39);
       Active:=True;
 
       if Fields[0].Value<>null then begin
@@ -3455,31 +3361,33 @@ end;
 
 
 // удаленная команда (добавление в очередь)
-procedure remoteCommand_addQueue(command:enumLogging);
+function remoteCommand_addQueue(_command:enumLogging;
+                                var _errorDescriptions:string):Boolean;
 var
  resultat:string;
  response:string;
  soLongWait:UInt16;
- error:string;
 begin
+   Result:=False;
+  _errorDescriptions:='';
+
   soLongWait:=0;
-  showWait(open);
+  showWait(show_open);
 
   response:='insert into remote_commands (sip,command,ip,user_id,user_login_pc,pc) values ('+#39+getUserSIP(SharedCurrentUserLogon.GetID) +#39+','
-                                                                                            +#39+IntToStr(EnumLoggingToInteger(command))+#39+','
+                                                                                            +#39+IntToStr(EnumLoggingToInteger(_command))+#39+','
                                                                                             +#39+SharedCurrentUserLogon.GetIP+#39+','
                                                                                             +#39+IntToStr(SharedCurrentUserLogon.GetID)+#39+','
                                                                                             +#39+SharedCurrentUserLogon.GetUserLoginPC+#39+','
                                                                                             +#39+SharedCurrentUserLogon.GetPC+#39+')';
   // выполняем запрос
-  if not remoteCommand_Responce(response,error) then begin
-    showWait(close);
-    MessageBox(HomeForm.Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+  if not remoteCommand_Responce(response,_errorDescriptions) then begin
+    showWait(show_close);
     Exit;
   end;
 
   // ждем пока отработает на core_dashboard
-  while (isExistRemoteCommand(command)) do begin
+  while (isExistRemoteCommand(_command,SharedCurrentUserLogon.GetID)) do begin
    Sleep(1000);
    Application.ProcessMessages;
 
@@ -3487,21 +3395,24 @@ begin
 
     // пробуем удалить команду
        response:='delete from remote_commands where sip ='+#39+getUserSIP(SharedCurrentUserLogon.GetID)+#39+
-                                                         ' and command ='+#39+IntToStr(EnumLoggingToInteger(command))+#39;
+                                                         ' and command ='+#39+IntToStr(EnumLoggingToInteger(_command))+#39;
 
-    if not remoteCommand_Responce(response,error) then begin
-      showWait(close);
-      MessageBox(HomeForm.Handle,PChar('Команда не обработана из за внутренней ошибки'+#13#13+error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    if not remoteCommand_Responce(response,_errorDescriptions) then begin
+      showWait(show_close);
       Exit;
     end;
 
+    showWait(show_close);
+    _errorDescriptions:='Сервер не смог обработать команду'+#13+'Причина: команда неизвестна';
+    Exit;
 
    end else begin
     Inc(soLongWait);
    end;
   end;
 
-  showWait(close);
+  showWait(show_close);
+  Result:=True;
 end;
 
 
@@ -3566,21 +3477,12 @@ end;
 
 
 // очитска текущего статуса оператора
-procedure clearOperatorStatus;
+procedure clearOperatorStatus(_userID:Integer);
 var
- isOPerator:Boolean;
  ado:TADOQuery;
  serverConnect:TADOConnection;
 begin
-  isOPerator:=False;
-
-  if (SharedCurrentUserLogon.GetRole = role_lead_operator) or
-     (SharedCurrentUserLogon.GetRole = role_senior_operator) or
-     (SharedCurrentUserLogon.GetRole = role_operator) then isOPerator:=True;
-
-
-  if not isOPerator then Exit;
-
+  if not IsUserOperator(_userID) then Exit;
 
   // очищаем текущий статус
   ado:=TADOQuery.Create(nil);
@@ -3595,7 +3497,7 @@ begin
    with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
-      SQL.Add('update operators set status = ''-1'' where sip = '+#39+getUserSIP(SharedCurrentUserLogon.GetID)+#39);
+      SQL.Add('update operators set status = ''-1'' where sip = '+#39+getUserSIP(_userID)+#39);
 
       try
           ExecSQL;
@@ -3636,6 +3538,7 @@ begin
        btnStatus_transfer.Enabled:=True;
        btnStatus_home.Enabled:=True;
        btnStatus_reserve.Enabled:=True;
+       btnStatus_callback.Enabled:=True;
      end;
      eHome:begin    // домой
        btnStatus_exodus.Enabled:=True;
@@ -3647,6 +3550,7 @@ begin
        btnStatus_transfer.Enabled:=True;
        btnStatus_home.Enabled:=False;
        btnStatus_reserve.Enabled:=True;
+       btnStatus_callback.Enabled:=True;
      end;
      eExodus:begin    // исход
        btnStatus_exodus.Enabled:=False;
@@ -3658,7 +3562,7 @@ begin
        btnStatus_transfer.Enabled:=True;
        btnStatus_home.Enabled:=True;
        btnStatus_reserve.Enabled:=True;
-
+       btnStatus_callback.Enabled:=True;
      end;
      eBreak:begin    // перерыв
        btnStatus_exodus.Enabled:=True;
@@ -3670,6 +3574,7 @@ begin
        btnStatus_transfer.Enabled:=True;
        btnStatus_home.Enabled:=True;
        btnStatus_reserve.Enabled:=True;
+       btnStatus_callback.Enabled:=True;
      end;
      eDinner:begin   // обед
        btnStatus_exodus.Enabled:=True;
@@ -3681,6 +3586,7 @@ begin
        btnStatus_transfer.Enabled:=True;
        btnStatus_home.Enabled:=True;
        btnStatus_reserve.Enabled:=True;
+       btnStatus_callback.Enabled:=True;
      end;
      ePostvyzov:begin   // поствызов
        btnStatus_exodus.Enabled:=True;
@@ -3692,6 +3598,7 @@ begin
        btnStatus_transfer.Enabled:=True;
        btnStatus_home.Enabled:=True;
        btnStatus_reserve.Enabled:=True;
+       btnStatus_callback.Enabled:=True;
      end;
      eStudies:begin   // учеба
        btnStatus_exodus.Enabled:=True;
@@ -3703,6 +3610,7 @@ begin
        btnStatus_transfer.Enabled:=True;
        btnStatus_home.Enabled:=True;
        btnStatus_reserve.Enabled:=True;
+       btnStatus_callback.Enabled:=True;
      end;
      eIT:begin   // ИТ
        btnStatus_exodus.Enabled:=True;
@@ -3714,6 +3622,7 @@ begin
        btnStatus_transfer.Enabled:=True;
        btnStatus_home.Enabled:=True;
        btnStatus_reserve.Enabled:=True;
+       btnStatus_callback.Enabled:=True;
      end;
      eTransfer:begin  // переносы
        btnStatus_exodus.Enabled:=True;
@@ -3725,6 +3634,7 @@ begin
        btnStatus_transfer.Enabled:=False;
        btnStatus_home.Enabled:=True;
        btnStatus_reserve.Enabled:=True;
+       btnStatus_callback.Enabled:=True;
      end;
      eReserve:begin  // резерв
        btnStatus_exodus.Enabled:=True;
@@ -3736,6 +3646,19 @@ begin
        btnStatus_transfer.Enabled:=True;
        btnStatus_home.Enabled:=True;
        btnStatus_reserve.Enabled:=False;
+       btnStatus_callback.Enabled:=True;
+     end;
+      eCallback:begin  // callback
+       btnStatus_exodus.Enabled:=True;
+       btnStatus_break.Enabled:=True;
+       btnStatus_dinner.Enabled:=True;
+       btnStatus_postvyzov.Enabled:=True;
+       btnStatus_studies.Enabled:=True;
+       btnStatus_IT.Enabled:=True;
+       btnStatus_transfer.Enabled:=True;
+       btnStatus_home.Enabled:=True;
+       btnStatus_reserve.Enabled:=True;
+       btnStatus_callback.Enabled:=False;
      end;
     end;
   end;
@@ -4008,6 +3931,46 @@ begin
 end;
 
 
+// проверка оператор ушел домой или нет (через завершение активной сессии)
+function isOperatorGoHomeWithForceClosed(inUserID:Integer):Boolean;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+  Result:=False;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+
+      SQL.Clear;
+      SQL.Add('select action from logging where user_id = '+#39+IntToStr(InUserid)+#39+' order by date_time DESC limit 1' );
+      Active:=True;
+
+     if Fields[0].Value<>null then begin
+       if StrToInt(VarToStr(Fields[0].Value)) = EnumLoggingToInteger(eLog_exit_force) then Result:=True;
+     end;
+
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+
+end;
+
+
+
 // проверка вдруг оператор забыл выйти из линии
 function getIsExitOperatorCurrentQueue(InCurrentRole:enumRole;InUserID:Integer):Boolean;
 begin
@@ -4031,7 +3994,7 @@ begin
    role_lead_operator,role_senior_operator,role_operator:begin
 
      // проверяемв друг не правильно вышел гаденыш
-     if getLastStatusOperator(InUserID) <> eLog_home then Result:=True
+     if GetLastStatusOperator(InUserID) <> eLog_home then Result:=True
      else Result:=False;
 
    end
@@ -4322,7 +4285,7 @@ end;
 
 
 // текущий стаус оператора из таблицы logging
-function getLastStatusOperator(InUserId:Integer):enumLogging;
+function GetLastStatusOperator(InUserId:Integer):enumLogging;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -4803,6 +4766,27 @@ begin
 end;
 
 
+// доступ к пропущенным звонкам
+function OpenMissedCalls(var _errorDescriptions:string; _queue:enumQueueCurrent = queue_5000_5050; _missed:enumMissed = eMissed_no_return):Boolean;
+begin
+  Result:=False;
+
+  if SharedCurrentUserLogon.GetAccess(menu_missed_calls) = access_DISABLED then begin
+   _errorDescriptions:='Отсутствует доступ к пропущенным звонкам';
+   Exit;
+  end;
+
+ if SharedCurrentUserLogon.GetAccess(menu_missed_calls) = access_ENABLED then begin
+   with FormPropushennie do begin
+    SetQueue(_queue, _missed);
+   end;
+
+   Result:=True;
+ end;
+
+end;
+
+
 // открытые exe локального чата
 procedure OpenLocalChat;
 begin
@@ -4840,7 +4824,7 @@ end;
 // открытые exe услуг
 procedure OpenService;
 begin
- if not SharedCurrentUserLogon.GetIsAccessReports then begin
+ if not SharedCurrentUserLogon.GetIsAccessService then begin
     MessageBox(HomeForm.Handle,PChar('Отсутствует доступ к услугам'),PChar('Отсутствует доступ'),MB_OK+MB_ICONINFORMATION);
     Exit;
  end;
@@ -4978,7 +4962,7 @@ begin
   with ado do begin
     ado.Connection:=serverConnect;
     SQL.Clear;
-    SQL.Add('select count(id) from users where role = '+#39+IntToStr(GetRoleID(TRoleToString(role_administrator)))+#39+' and disabled = ''0'' ');
+    SQL.Add('select count(id) from users where role = '+#39+IntToStr(GetRoleID(EnumRoleToString(role_administrator)))+#39+' and disabled = ''0'' ');
 
     Active:=True;
     countUsers:=Fields[0].Value;
@@ -4995,7 +4979,7 @@ begin
     if Active then Active:=False;
 
     SQL.Clear;
-    SQL.Add('select familiya,name from users where role = '+#39+IntToStr(GetRoleID(TRoleToString(role_administrator)))+#39+' and disabled = ''0'' ');
+    SQL.Add('select familiya,name from users where role = '+#39+IntToStr(GetRoleID(EnumRoleToString(role_administrator)))+#39+' and disabled = ''0'' ');
 
     Active:=True;
 
@@ -5252,7 +5236,7 @@ begin
   NewSize:=SharedFontSize.GetSize(InTypeFont);
 
   case InChange of
-   eFontUP: Inc(NewSize);
+   eFontUP:   Inc(NewSize);
    eFontDonw: Dec(NewSize);
   end;
 
@@ -5322,6 +5306,77 @@ begin
   Result:=PROGRAM_STARTED;
 end;
 
+// время запуска программы из истории входов
+function GetProgrammStartedFirstLogon(_userID:Integer):TDateTime;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+  Result:=0;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select date_time from logging where user_id = '+#39+IntToStr(_userID)+#39 +' and action = ''0'' order by date_time ASC limit 1');
+
+      Active:=True;
+      if Fields[0].Value<>null then begin
+       Result:=VarToDateTime(Fields[0].Value);
+      end;
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+// время закрытия программы из итории входов
+function GetProgrammExit(_userID:Integer):TDateTime;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+  Result:=0;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select date_time from logging where user_id = '+#39+IntToStr(_userID)+#39 +' and action = ''1'' order by date_time DESC limit 1');
+
+      Active:=True;
+      if Fields[0].Value<>null then begin
+       Result:=VarToDateTime(Fields[0].Value);
+      end;
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+
 // время запуска программы(любой пользователь)
 function GetProgrammStarted(_userID:Integer):TDateTime;
 var
@@ -5346,6 +5401,9 @@ begin
       Active:=True;
       if Fields[0].Value<>null then begin
        Result:=VarToDateTime(Fields[0].Value);
+      end
+      else begin
+        Result:=GetProgrammStartedFirstLogon(_userID);
       end;
     end;
   finally
@@ -5381,7 +5439,8 @@ begin
       Active:=True;
       if Fields[0].Value<>null then begin
        Result:=VarToStr(Fields[0].Value);
-      end;
+      end
+      else Result:='mayby_lisa';
     end;
   finally
    FreeAndNil(ado);
@@ -5392,37 +5451,63 @@ begin
   end;
 end;
 
-// настроен ли время работы в сервере ИК
-function IsServerIkExistWorkingTime(_id:Integer):Boolean;
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
+
+// действие по удаленной команде для активной сессии или для пропущенного звонка
+function CreateRemoteCommandCallback(_action:enumRemoteCommandAction; _id:Integer; var _errorDescription:string): Boolean;
 begin
-   Result:=False;
+  Result:=False;
+  _errorDescription:='';
 
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  case _action of
+    remoteCommandAction_activeSession: Result:=ExecuteCommandKillActiveSession(_id,_errorDescription);
+   // remoteCommandAction_missedCalls: ;
   end;
 
-  try
-    with ado do begin
-      ado.Connection:=serverConnect;
-      SQL.Clear;
-      SQL.Add('select count(id) from server_ik_worktime where id = '+#39+IntToStr(_id)+#39);
-
-      Active:=True;
-      if Fields[0].Value <> 0 then Result:=True;
-    end;
-  finally
-   FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
-  end;
 end;
+
+
+// выполенние команды закрытые активной сессии
+function ExecuteCommandKillActiveSession(_userID:Integer; var _errorDescription:string):Boolean;
+var
+ currentActiveSession:TActiveSession;
+ isSetOperatorGoHome:Boolean;  // флаг того чтобы изменить статус оператора на домой
+begin
+ Result:=False;
+ _errorDescription:='';
+
+ try
+  Result:=False;
+  isSetOperatorGoHome:=False;
+
+  currentActiveSession:=TActiveSession.Create;
+
+  // операторская ли учетка и находится ли в очереди
+   if (currentActiveSession.IsOperator(_userID)) and
+      (currentActiveSession.IsOperatorInQueue(_userID)) then begin
+      // убираем из очереди (синхронно ждем ответа)
+      if not currentActiveSession.ForceExitOperatorInQueue(_userID, _errorDescription) then begin
+        // что то пошле не так выходим
+        Exit;
+      end;
+
+      isSetOperatorGoHome:=True;
+   end;
+
+   // проверяем если статус offline\online
+    case currentActiveSession.IsActiveSession(_userID) of
+     True:begin   // online сессия
+      Result:=currentActiveSession.DeleteOnlineSession(_userID,_errorDescription);
+     end;
+     False:begin   // offline сессия
+      Result:=currentActiveSession.DeleteOfflineSession(_userID,_errorDescription,isSetOperatorGoHome);
+     end;
+    end;
+
+ finally
+   if Assigned(currentActiveSession) then FreeAndNil(currentActiveSession);
+ end;
+end;
+
+
 
 end.

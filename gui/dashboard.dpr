@@ -3,7 +3,6 @@ program dashboard;
 uses
   Vcl.Forms,
   FormHome in 'FormHome.pas' {HomeForm},
-  DMUnit in 'DMUnit.pas' {DM: TDataModule},
   FunctionUnit in 'FunctionUnit.pas',
   FormPropushennieUnit in 'FormPropushennieUnit.pas' {FormPropushennie},
   FormSettingsUnit in 'FormSettingsUnit.pas' {FormSettings},
@@ -71,7 +70,9 @@ uses
   TWorkingTimeClinicUnit in '..\custom_class\TWorkingTimeClinicUnit.pas',
   FormMenuAccessUnit in 'FormMenuAccessUnit.pas' {FormMenuAccess},
   TUserAccessUnit in '..\custom_class\TUserAccessUnit.pas',
-  GlobalVariablesLinkDLL in 'GlobalVariablesLinkDLL.pas';
+  GlobalVariablesLinkDLL in 'GlobalVariablesLinkDLL.pas',
+  TQueueStatisticsUnit in '..\custom_class\TQueueStatisticsUnit.pas',
+  TThreadDispatcherUnit in '..\custom_class\TThreadDispatcherUnit.pas';
 
 {$R *.res}
 
@@ -88,7 +89,6 @@ begin
   Application.CreateForm(THomeForm, HomeForm);
   Application.CreateForm(TFormDEBUG, FormDEBUG);
   Application.CreateForm(TFormError, FormError);
-  Application.CreateForm(TDM, DM);
   Application.CreateForm(TFormPropushennie, FormPropushennie);
   Application.CreateForm(TFormSettings, FormSettings);
   Application.CreateForm(TFormAbout, FormAbout);

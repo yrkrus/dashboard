@@ -56,7 +56,7 @@ uses
 implementation
 
 uses
-  GlobalVariables;
+  GlobalVariables, GlobalVariablesLinkDLL;
 
 
 constructor TAddressClinicPopMenu.Create(var p_menu:TPopupMenu; var p_Text:TRichEdit);

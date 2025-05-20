@@ -966,8 +966,6 @@ object FormSettingsGlobal: TFormSettingsGlobal
       ReadOnly = True
       TabOrder = 0
       OnClick = tree_menuClick
-      ExplicitTop = 2
-      ExplicitHeight = 276
     end
   end
 end

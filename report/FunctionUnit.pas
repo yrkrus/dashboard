@@ -28,7 +28,7 @@ uses
 implementation
 
 uses
- FormHomeUnit, GlobalVariables, FormWaitUnit;
+ FormHomeUnit, GlobalVariables, FormWaitUnit, GlobalVariablesLinkDLL;
 
 // создание Copyright
 procedure createCopyright;

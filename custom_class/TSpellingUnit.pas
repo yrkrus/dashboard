@@ -46,7 +46,7 @@ uses
 implementation
 
 uses
-  GlobalVariables;
+  GlobalVariables, GlobalVariablesLinkDLL;
 
 const
  MAX_LENGHT_DICTIONARY :Word = 30;

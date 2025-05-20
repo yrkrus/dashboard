@@ -4,34 +4,84 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls,
+  Vcl.Buttons, TCheckServersUnit, TCustomTypeUnit;
 
 type
   TFormGenerateSMS = class(TForm)
     Label1: TLabel;
     comboxReasonSmsMessage: TComboBox;
-    group_generate: TGroupBox;
-    Label2: TLabel;
-    Label3: TLabel;
-    Edit1: TEdit;
-    Edit2: TEdit;
-    DateTimePicker1: TDateTimePicker;
-    DateTimePicker2: TDateTimePicker;
-    Label4: TLabel;
-    Label5: TLabel;
-    Label6: TLabel;
-    ComboBox1: TComboBox;
-    Label7: TLabel;
-    ComboBox2: TComboBox;
-    CheckBox1: TCheckBox;
+    group_Params: TGroupBox;
+    lblName: TLabel;
+    lblOtchestvo: TLabel;
+    combox_Pol: TComboBox;
+    lblPol: TLabel;
+    lblDate: TLabel;
+    dateShow: TDateTimePicker;
+    lblTime: TLabel;
+    timeShow: TDateTimePicker;
+    lblClinic: TLabel;
+    combox_AddressClinic: TComboBox;
+    lblService: TLabel;
+    btnServiceList: TButton;
+    lblServiceCount: TLabel;
+    lblSumma: TLabel;
+    edtSumma: TEdit;
+    st_rub: TStaticText;
+    btnGenerateMessage: TBitBtn;
+    btnGenerateMessageShow: TBitBtn;
+    group_info: TGroupBox;
+    lbl9: TLabel;
+    lblReason: TLabel;
+    reName: TRichEdit;
+    reOtchestvo: TRichEdit;
+    reReason: TRichEdit;
     procedure FormShow(Sender: TObject);
+    procedure comboxReasonSmsMessageChange(Sender: TObject);
+    procedure btnGenerateMessageShowClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure btnGenerateMessageClick(Sender: TObject);
+    procedure btnServiceListClick(Sender: TObject);
+    procedure reNameMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure reOtchestvoMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure reReasonMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure edtSummaKeyPress(Sender: TObject; var Key: Char);
   private
     { Private declarations }
+  list_clinic    :TCheckServersIK;  // список с клиниками
+  serviceChoiseList:TStringList;    // выбранные услуги
+
   procedure Clear;
   procedure CreateReasonBox;
+  procedure CreateGenderBox;
+  procedure CreateListAddressClinic; // создание списка с адресами клиник
+  procedure CurrentDateTime;         // текущее время\дата на форме
+
+
+  procedure ShowGroupParams(_status:enumParamStatus);     // отображение выбора параметров
+  procedure ShowParams(_params:enumReasonSmsMessage);     // показ нужных рпараметров в зависимости от выбранного типа сообщения
+  procedure DisableAllParams;                             // отключение всех параметров
+  procedure EnableParamsFIO;                              // включение параметров ФИО
+  procedure EnableParamsDate;                             // включение параметров дата
+  procedure EnableParamsTime;                             // включение параметров время
+  procedure EnableParamsAddressClinic;                    // включение параметров адрес клиники
+  procedure EnableParamsServiceList;                      // включение параметров услуги
+  procedure EnableParamsReason;                           // включение параметров причина
+  procedure EnableParamsSumma;                            // включение параметров сумма
+
+
+  procedure CreateMessage;    // создать сообщение
 
   public
     { Public declarations }
+  procedure SetServiceChoise(_service:string);   // добавление в списко выбьранных услуг
+  procedure DelServiceChoise(_service:string);   // удаление
+  function GetServiceChoise(_id:Integer):string;
+  function  GetCountServiceChoise:Integer;
+
   end;
 
 var
@@ -40,9 +90,456 @@ var
 implementation
 
 uses
-  TCustomTypeUnit;
+  FunctionUnit, FormHomeUnit, GlobalVariables, TMessageGeneratorSMSUnit, FormServiceChoiseUnit, DMUnit;
+
 
 {$R *.dfm}
+
+// отключение всех параметров
+procedure TFormGenerateSMS.DisableAllParams;
+begin
+  // имя
+  lblName.Enabled:=False;
+  reName.Enabled:=False;
+  reName.Clear;
+
+  // отчество
+  lblOtchestvo.Enabled:=False;
+  reOtchestvo.Enabled:=False;
+  reOtchestvo.Clear;
+
+  // пол
+  lblPol.Enabled:=False;
+  combox_Pol.Enabled:=False;
+  combox_Pol.ItemIndex:=-1;
+
+  // дата
+  lblDate.Enabled:=False;
+  dateShow.Enabled:=False;
+
+  // время
+  lblTime.Enabled:=False;
+  timeShow.Enabled:=False;
+
+  // клиника
+  lblClinic.Enabled:=False;
+  combox_AddressClinic.Enabled:=False;
+  combox_AddressClinic.ItemIndex:=-1;
+
+  // услуги
+  lblService.Enabled:=False;
+  btnServiceList.Enabled:=False;
+  lblServiceCount.Enabled:=False;
+  lblServiceCount.Caption:='выбрано услуг : 0';
+
+  // сумма
+  lblSumma.Enabled:=False;
+  edtSumma.Enabled:=False;
+  edtSumma.Text:='';
+  st_rub.Enabled:=False;
+
+  // причина
+  lblReason.Enabled:=False;
+  reReason.Enabled:=False;
+  reReason.Clear;
+end;
+
+
+procedure TFormGenerateSMS.edtSummaKeyPress(Sender: TObject; var Key: Char);
+begin
+  if not (Key in ['0'..'9', #8]) then  // #8 - Backspace, #13 - Enter
+  begin
+    Key := #0; // Отменяем ввод, если символ не является цифрой
+  end;
+end;
+
+// включение параметров ФИО + пол
+procedure TFormGenerateSMS.EnableParamsFIO;
+begin
+   // имя
+  lblName.Enabled:=True;
+  reName.Enabled:=True;
+  // отчество
+  lblOtchestvo.Enabled:=True;
+  reOtchestvo.Enabled:=True;
+  // пол
+  lblPol.Enabled:=True;
+  combox_Pol.Enabled:=True;
+end;
+
+
+// включение параметров дата
+procedure TFormGenerateSMS.EnableParamsDate;
+begin
+ // дата
+  lblDate.Enabled:=True;
+  dateShow.Enabled:=True;
+end;
+
+// включение параметров время
+procedure TFormGenerateSMS.EnableParamsTime;
+begin
+ // время
+  lblTime.Enabled:=True;
+  timeShow.Enabled:=True;
+end;
+
+// включение параметров адрес клиники
+procedure TFormGenerateSMS.EnableParamsAddressClinic;
+begin
+  // клиника
+  lblClinic.Enabled:=True;
+  combox_AddressClinic.Enabled:=True;
+  combox_AddressClinic.ItemIndex:=-1;
+end;
+
+
+// включение параметров услуги
+procedure TFormGenerateSMS.EnableParamsServiceList;
+begin
+  // услуги
+  lblService.Enabled:=True;
+  btnServiceList.Enabled:=True;
+  lblServiceCount.Enabled:=True;
+  lblServiceCount.Caption:='выбрано услуг : 0';
+end;
+
+
+// включение параметров причина
+procedure TFormGenerateSMS.EnableParamsReason;
+begin
+  // причина
+  lblReason.Enabled:=True;
+  reReason.Enabled:=True;
+  reReason.Clear;
+end;
+
+
+// включение параметров сумма
+procedure TFormGenerateSMS.EnableParamsSumma;
+begin
+  // сумма
+  lblSumma.Enabled:=True;
+  edtSumma.Enabled:=True;
+  edtSumma.Text:='';
+  st_rub.Enabled:=False;
+end;
+
+// добавление в списко выбьранных услуг
+procedure TFormGenerateSMS.SetServiceChoise(_service:string);
+var
+ i:Integer;
+ isExist:Boolean;
+begin
+  isExist:=False;
+
+  for i:=0 to serviceChoiseList.Count-1 do begin
+    if serviceChoiseList[i] = _service then begin
+     isExist:=True;
+     Break;
+    end;
+  end;
+
+  if not isExist then serviceChoiseList.Add(_service);
+end;
+
+// удаление
+procedure TFormGenerateSMS.DelServiceChoise(_service:string);
+var
+ i:Integer;
+begin
+  for i:=serviceChoiseList.Count-1 downto 0 do begin
+    if serviceChoiseList[i] = _service then begin
+      serviceChoiseList.Delete(i);
+
+     Break;
+    end;
+  end;
+end;
+
+
+function TFormGenerateSMS.GetServiceChoise(_id:Integer):string;
+begin
+  Result:=serviceChoiseList[_id];
+end;
+
+
+procedure TFormGenerateSMS.reNameMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  // Проверяем, был ли клик правой кнопкой мыши
+  if Button = mbRight then
+  begin
+    if IsExistSpellingColor(DM.maybeDictionary, reName) then begin
+      DM.popmenu_AddSpellnig.Items[0].Enabled:=True;
+    end
+    else begin
+     DM.popmenu_AddSpellnig.Items[0].Enabled:=False;
+    end;
+  end;
+end;
+
+procedure TFormGenerateSMS.reOtchestvoMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  // Проверяем, был ли клик правой кнопкой мыши
+  if Button = mbRight then
+  begin
+    if IsExistSpellingColor(DM.maybeDictionary, reOtchestvo) then begin
+      DM.popmenu_AddSpellnig.Items[0].Enabled:=True;
+    end
+    else begin
+     DM.popmenu_AddSpellnig.Items[0].Enabled:=False;
+    end;
+  end;
+end;
+
+procedure TFormGenerateSMS.reReasonMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+ // Проверяем, был ли клик правой кнопкой мыши
+  if Button = mbRight then
+  begin
+    if IsExistSpellingColor(DM.maybeDictionary, reReason) then begin
+      DM.popmenu_AddSpellnig.Items[0].Enabled:=True;
+    end
+    else begin
+     DM.popmenu_AddSpellnig.Items[0].Enabled:=False;
+    end;
+  end;
+end;
+
+function TFormGenerateSMS.GetCountServiceChoise:Integer;
+begin
+  Result:=serviceChoiseList.Count;
+end;
+
+// создать сообщение
+procedure TFormGenerateSMS.CreateMessage;
+var
+ params:enumReasonSmsMessage;
+ gender:enumGender;
+ prichina:string;
+ money:string;
+ error:string;
+begin
+  Screen.Cursor:=crHourGlass;
+
+  if comboxReasonSmsMessage.ItemIndex = -1 then begin
+   Screen.Cursor:=crDefault;
+
+   MessageBox(Handle,PChar('Не выбран "Тип сообщения"'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+   Exit;
+  end;
+
+  params:=StringToEnumReasonSmsMessage(comboxReasonSmsMessage.Items[comboxReasonSmsMessage.ItemIndex]);
+  gender:=StringToEnumGender(combox_Pol.Items[combox_Pol.ItemIndex]);
+  prichina:=reReason.Text;
+  money:=edtSumma.Text;
+
+  // проверка параметров перед созданием сообщения
+  if not SharedGenerateMessage.CheckParams(params, serviceChoiseList, error) then begin
+   Screen.Cursor:=crDefault;
+   MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+   Exit;
+  end;
+
+  SharedGenerateMessage.CreateMessage(params, gender, reName.Text, reOtchestvo.Text, serviceChoiseList, money, prichina);
+
+  Screen.Cursor:=crDefault;
+end;
+
+
+// показ нужных рпараметров в зависимости от выбранного типа сообщения
+procedure TFormGenerateSMS.ShowParams(_params:enumReasonSmsMessage);
+begin
+  // отключаем все параметры
+  DisableAllParams;
+
+  case _params of
+   reason_OtmenaPriema: begin                       // Отмена приема врача, перенос
+     // + ФИО + пол
+     EnableParamsFIO;
+   end;
+   reason_NapominanieOPrieme:begin                  // Напоминание о приеме
+    // + ФИО + пол
+    EnableParamsFIO;
+
+    // дата
+    EnableParamsDate;
+
+    // время
+    EnableParamsTime;
+
+    // адрес клинки
+    EnableParamsAddressClinic;
+
+   end;
+   reason_NapominanieOPrieme_do15:begin             // Напоминание о приеме (до 15 лет)
+     // + ФИО + пол
+     EnableParamsFIO;
+
+     // дата
+    EnableParamsDate;
+
+     // время
+    EnableParamsTime;
+
+     // адрес клинки
+    EnableParamsAddressClinic;
+   end;
+   reason_NapominanieOPrieme_OMS:begin              // Напоминание о приеме (ОМС)
+     // + ФИО + пол
+     EnableParamsFIO;
+
+     // дата
+    EnableParamsDate;
+
+     // время
+    EnableParamsTime;
+
+     // адрес клинки
+    EnableParamsAddressClinic;
+   end;
+   reason_IstekaetSrokGotovnostiBIOMateriala:begin  // Истекает срок годности биоматериала
+     // + ФИО + пол
+     EnableParamsFIO;
+
+     // дата
+    EnableParamsDate;
+
+     // время
+    EnableParamsTime;
+   end;
+   reason_AnalizNaPereustanovke:begin               // Анализ на переустановке
+     // + ФИО + пол
+     EnableParamsFIO;
+   end;
+   reason_UvelichilsyaSrokIssledovaniya:begin       // Увеличился срок выполнения лабораторных исследований по тех. причинам
+    // + ФИО + пол
+     EnableParamsFIO;
+
+     // дата
+    EnableParamsDate;
+   end;
+   reason_Perezabor:begin                           // Требуется перезабор крови (хилез, сгусток, недостаточно биоматериала)
+     // + ФИО + пол
+     EnableParamsFIO;
+
+     // адрес клинки
+    EnableParamsAddressClinic;
+
+    // услуги
+    EnableParamsServiceList;
+
+    // причина
+    EnableParamsReason;
+   end;
+   reason_Critical:begin                            // Получено письмо из лаборатории о критических значениях
+     // + ФИО + пол
+     EnableParamsFIO;
+   end;
+   reason_ReadyDiagnostic:begin                     // Готов результат диагностики (например,  ХОЛТЕРа, СМАДа)
+     // + ФИО + пол
+     EnableParamsFIO;
+
+     // адрес клинки
+     EnableParamsAddressClinic;
+   end;
+   reason_ReadyNalog:begin                          // Готова справка в налоговую
+    // + ФИО + пол
+     EnableParamsFIO;
+
+    // адрес клинки
+    EnableParamsAddressClinic;
+   end;
+   reason_ReadyDocuments:begin                      // Готова копия мед. документации, выписка, справка
+     // + ФИО + пол
+     EnableParamsFIO;
+
+     // адрес клинки
+     EnableParamsAddressClinic;
+   end;
+   reason_NeedDocumentsLVN:begin                    // Необходимо предоставить данные для открытия ЛВН (СНИЛС)
+    // + ФИО + пол
+     EnableParamsFIO;
+
+    // адрес клинки
+    EnableParamsAddressClinic;
+   end;
+   reason_NeedDocumentsDMS:begin                    // Проинформировать о согласовании услуг по ДМС (когда обещали)
+     // + ФИО + пол
+     EnableParamsFIO;
+   end;
+   reason_VneplanoviiPriem:begin                    // Согласован внеплановый прием (обозначить время)
+     // + ФИО + пол
+     EnableParamsFIO;
+
+     // время
+    EnableParamsTime;
+
+     // адрес клинки
+    EnableParamsAddressClinic;
+   end;
+   reason_ReturnMoney:begin                         // Пригласить за возвратом ДС
+     // + ФИО + пол
+     EnableParamsFIO;
+
+     // адрес клинки
+    EnableParamsAddressClinic;
+
+     // услуги
+    EnableParamsServiceList;
+
+    // сумма
+    EnableParamsSumma;
+   end;
+   reason_ReturnMoneyInfo:begin                     // Проинформировать об осуществлении возврата ДС
+     // + ФИО + пол
+     EnableParamsFIO;
+
+     // дата
+    EnableParamsDate;
+
+     // услуги
+    EnableParamsServiceList;
+
+     // сумма
+    EnableParamsSumma;
+   end;
+   reason_ReturnDiagnostic:begin                    // Пригласить за гистологическим (цитологическим) материалом
+     // + ФИО + пол
+     EnableParamsFIO;
+
+     // адрес клинки
+     EnableParamsAddressClinic;
+   end;
+  end;
+end;
+
+
+// отображение выбора параметров
+procedure TFormGenerateSMS.ShowGroupParams(_status:enumParamStatus);
+begin
+  // сброс выбранных ранее параметров
+  if Assigned(serviceChoiseList) then serviceChoiseList.Clear;
+
+
+  case _status of
+    paramStatus_ENABLED: begin
+     group_Params.Visible:=True;
+     group_info.Visible:=False;
+    end;
+    paramStatus_DISABLED: begin
+     group_Params.Visible:=False;
+     group_info.Visible:=True;
+    end;
+  end;
+
+  group_info.Left:=group_Params.Left;
+  group_info.Top:=group_Params.Top;
+end;
+
 
 procedure TFormGenerateSMS.CreateReasonBox;
 var
@@ -56,18 +553,122 @@ begin
   end;
 end;
 
+
+procedure TFormGenerateSMS.CreateGenderBox;
+var
+ i:Integer;
+ gender:enumGender;
+begin
+  for i:=Ord(Low(enumGender)) to Ord(High(enumGender)) do
+  begin
+    gender:=enumGender(i);
+    combox_Pol.Items.Add(EnumGenderToString(gender));
+  end;
+end;
+
+
+procedure TFormGenerateSMS.btnGenerateMessageClick(Sender: TObject);
+begin
+  CreateMessage;
+  if SharedGenerateMessage.GeneretedMessage = '' then Exit;
+
+  Screen.Cursor:=crHourGlass;
+  AddMessageFromTemplate(SharedGenerateMessage.GeneretedMessage);
+
+  // добавляем инфо что сообщение нельзя отредактировать
+  FormHome.SetEditMessage(paramStatus_DISABLED,'Сообщение из генератора не редактируется!');
+
+  Screen.Cursor:=crDefault;
+  Close;
+end;
+
+procedure TFormGenerateSMS.btnGenerateMessageShowClick(Sender: TObject);
+begin
+  CreateMessage;
+  if SharedGenerateMessage.GeneretedMessage = '' then Exit;
+
+  MessageBox(Handle,PChar(SharedGenerateMessage.GeneretedMessage),PChar('Инфо'),MB_OK+MB_ICONINFORMATION);
+end;
+
+
+procedure TFormGenerateSMS.btnServiceListClick(Sender: TObject);
+begin
+  FormServiceChoise.ShowModal;
+end;
+
 procedure TFormGenerateSMS.Clear;
 begin
   comboxReasonSmsMessage.Clear;
+  combox_Pol.Clear;
+
+  // параметры сообщения
+  ShowGroupParams(paramStatus_DISABLED);
+
+  // показать сообщение
+  btnGenerateMessageShow.Enabled:=true;
+
+  // выбранные услуги
+  if not Assigned(serviceChoiseList) then serviceChoiseList:=TStringList.Create
+  else serviceChoiseList.Clear;
+end;
+
+// создание списка с адресами клиник
+procedure TFormGenerateSMS.comboxReasonSmsMessageChange(Sender: TObject);
+var
+ params:enumReasonSmsMessage;
+begin
+  //ототбражаем параметры
+  ShowGroupParams(paramStatus_ENABLED);
+
+  // отображаем нужные параметры
+ params:=StringToEnumReasonSmsMessage(comboxReasonSmsMessage.Items[comboxReasonSmsMessage.ItemIndex]);
+ ShowParams(params);
+end;
+
+procedure TFormGenerateSMS.CreateListAddressClinic;
+var
+ i:Integer;
+begin
+  combox_AddressClinic.Clear;
+  list_clinic:=TCheckServersIK.Create(True);
+
+  for i:=0 to list_clinic.Count-1 do begin
+    combox_AddressClinic.Items.Add(list_clinic.GetAddress(i));
+  end;
+end;
+
+
+// текущее время\дата на форме
+procedure TFormGenerateSMS.CurrentDateTime;
+begin
+ dateShow.Date:=Now;
+ timeShow.Time:=Now;
+end;
+
+
+procedure TFormGenerateSMS.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  FormHome.ShowManualMessage;
 end;
 
 procedure TFormGenerateSMS.FormShow(Sender: TObject);
 begin
+  if not Assigned(SharedGenerateMessage) then begin
+   SharedGenerateMessage:=TMessageGeneratorSMS.Create(Self);
+  end
+  else SharedGenerateMessage.Clear;
+
   Clear;
 
   // создадим выбор вариантов сообщений
   CreateReasonBox;
+  CreateGenderBox;
 
+  // список с адресами клиник
+  CreateListAddressClinic;
+
+  // текущее время\дата на форме
+  CurrentDateTime;
 
 end;
 

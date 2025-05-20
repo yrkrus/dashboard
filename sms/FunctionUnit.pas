@@ -10,7 +10,7 @@ FormHomeUnit,
  IdSSL,IdIOHandlerStack, IdSSLOpenSSL, System.DateUtils,System.IniFiles,
  Winapi.WinSock,  Vcl.ComCtrls, GlobalVariables, Vcl.Grids, Data.Win.ADODB,
  Data.DB, IdException, TPacientsListUnit, Vcl.Menus, System.SyncObjs,
- TCustomTypeUnit, Word_TLB, ActiveX;
+ TCustomTypeUnit, Word_TLB, ActiveX, FormGenerateSMSUnit, Winapi.RichEdit;
 
 
 function GetSMS(inPacientPhone:string):string; overload;                                      // отправка смс v2
@@ -27,7 +27,9 @@ function LoadData(InFileExcel:string; var _errorDescription:string;
                   var p_CountNotSending:TLabel):Boolean;                                      // загрузка excel
 procedure OptionsStyle(InOptionsType:enumSendingOptions);                                     // выбор типа отправляемого смс
 function isCorrectNumberPhone(InNumberPhone:string; var _errorDescription:string):Boolean;    // проверка корректности номера телефона при вводе
-function CheckParamsBeforeSending(InOptionsType:enumSendingOptions; var _errorDescription:string):Boolean; // проверка данных перед отправкой
+function CheckParamsBeforeSending(InOptionsType:enumSendingOptions;
+                                  _isEditMessage:Boolean;
+                                  var _errorDescription:string):Boolean; // проверка данных перед отправкой
 function IsPunctuationOrDigit(ch: Char;
                               InCheckOnlyPunctuation:Boolean = False;
                               InCheckMinimalPunctuation:Boolean=False): Boolean;      // проверка на знак припенания или цифру
@@ -58,13 +60,14 @@ procedure SendingRemember(isShowLog:Boolean; var _executeTime:Cardinal);        
 procedure SignSMS;                                                                            // есть ли возможность вставлять подпись в СМС сообщение
 procedure CreatePopMenuAddressClinic(var p_PopMenu:TPopupMenu; var p_Message:TRichEdit);      // создание списка с адресами клиник для быстрого доступа к ним
 procedure ShowSendingManualPhone(InSendingType:enumManualSMS);                                // выбор типа при ручной отправки SMS (1 SMS или списком)
-function GetCountSendingSMSToday:Integer;                                                     // кол-во отправленных за сегодня смс
+procedure showWait(Status:enumShow_wait);                                                     // отображение\сркытие окна запроса на сервер
+function IsExistSpellingColor(var _MaybeDictionaryWord:string; var p_text:TRichEdit):Boolean; // проверка можно ли показать меню на добавление слова в словарь
 
 
 implementation
 
 uses
-  FormMyTemplateUnit, TSendSMSUint, TAddressClinicPopMenuUnit, TThreadSendSMSUnit, TSpellingUnit;
+  FormMyTemplateUnit, TSendSMSUint, TAddressClinicPopMenuUnit, TThreadSendSMSUnit, TSpellingUnit, GlobalVariablesLinkDLL, FormWaitUnit;
 
 
 
@@ -205,12 +208,6 @@ begin
   _stroka.SelAttributes.Color := clBlack; // Цвет текста по умолчанию
   _stroka.SelAttributes.Style := [];      // Убираем все стили
 
-  // проверяем содержит ли текст ссылку на чат бот хирургии
-  if FormHome.isMedsiLinkTelegramBot then begin
-    // пропускаем это сообщение
-    Result := False;
-    Exit;
-  end;
 
   for i := 1 to Length(message_tmp) do
   begin
@@ -259,7 +256,7 @@ end;
 
 
 // проверка данных перед отправкой
-function CheckParamsBeforeSending(InOptionsType:enumSendingOptions; var _errorDescription:string):Boolean;
+function CheckParamsBeforeSending(InOptionsType:enumSendingOptions; _isEditMessage:Boolean;  var _errorDescription:string):Boolean;
 var
  i:Integer;
  temp_message:string;
@@ -280,6 +277,22 @@ begin
             _errorDescription:='Пустой номер телефона';
             Exit;
          end;
+
+          // проверим длинну сообщения чтобы была не очень длинное
+          SMS:=TSendSMS.Create(DEBUG);
+          if SMS.IsMessageToLong(re_ManualSMS.Text) then begin
+            _errorDescription:='Кто ты воин!?'+#13+
+                               'Программа обалдела от такого длинного сообщения!'+#13#13+
+                               'крч, надо уменьшить длину сообщения до 670 символов именно столько максимально она может переварить';
+            Exit;
+          end;
+
+         // сообщение не редактируемое значит оно пришло из генератора или из шаблона, пропускаем все проверки остальные
+         if not _isEditMessage then begin
+           Result:=True;
+           Exit;
+         end;
+
 
          for i:=0 to SharedSendindPhoneManualSMS.Count-1 do begin
           if not isCorrectNumberPhone(SharedSendindPhoneManualSMS[i],_errorDescription) then begin
@@ -309,19 +322,10 @@ begin
             Exit;
          end;
 
-         // проверка чтобы не отправили ссылку на телеграм бот хириургии не из шаблона
-         if not isMedsiLinkTelegramBot then begin
-           temp_message:=AnsiLowerCase(re_ManualSMS.Text);
-           if AnsiPos(MEDSI_CHAT_BOT_TELEGRAM,temp_message)<>0 then begin
-              _errorDescription:='Ссылку на чат бот Центра хирургии Медси-Диалайн нужно отправлять через глобальные шаблоны';
-              Exit;
-           end;
-         end;
-
          // проверка чтобы не было типа таких соощений (Алексеевна,добрый | ,Огуречников | г.Волжском)
-//         if isWordExistPunctuation(re_ManualSMS, _errorDescription) then begin
-//           Exit;
-//         end;
+         if isWordExistPunctuation(re_ManualSMS, _errorDescription) then begin
+           Exit;
+         end;
 
          if not chkbox_SignSMS.Checked then begin
            resultat:=MessageBox(Handle,PChar('Не установлена галка "вставить подпись в конце SMS"'+#13#13+
@@ -330,29 +334,6 @@ begin
            if resultat = mrNo then begin
              _errorDescription:='Действие отменено';
              Exit;
-           end;
-         end;
-
-         // проверка сообщения чтобы не содержало с уважением
-         if chkbox_SignSMS.Checked then begin
-           temp_message:=AnsiLowerCase(re_ManualSMS.Text);
-           if AnsiPos('уважением',temp_message)<>0 then begin
-              _errorDescription:='Сообщение содержит подпись (с уважением)'+#13+
-                                 'Уберите подпись или снимите галку "вставить подпись в конце SMS"';
-              Exit;
-           end;
-         end;
-
-         // проверка чтобы не повторялось слово медси
-         if chkbox_SignSMS.Checked then begin
-           if not isMedsiLinkTelegramBot then begin // проверка вдруг отправляется ссылка на телеграм
-             if AnsiPos('медси',temp_message)<>0 then begin
-                _errorDescription:='Сообщение содержит название компании "Медси"'+#13+
-                                   'при этом установлена галка "вставить подпись в конце SMS"'+#13+
-                                   'это приведет к лексической ошибке в сообщении'+#13#13+
-                                   'Уберите название или снимите галку "вставить подпись в конце SMS"';
-                Exit;
-             end;
            end;
          end;
 
@@ -366,15 +347,6 @@ begin
             Exit;
           end;
 
-
-          // ну и на последок проверим длинну сообщения чтобы была не очень длинное
-          SMS:=TSendSMS.Create(DEBUG);
-          if SMS.IsMessageToLong(re_ManualSMS.Text) then begin
-            _errorDescription:='Кто ты воин!?'+#13+
-                               'Программа обалдела от такого длинного сообщения!'+#13#13+
-                               'крч, надо уменьшить длину сообщения до 670 символов именно столько максимально она может переварить';
-            Exit;
-          end;
 
         end;
         options_Sending:begin // рассылка
@@ -545,7 +517,15 @@ begin
        SharedSendindPhoneManualSMS.Clear;
        lblManualSMS_List.Caption:='списком';
 
-       isMedsiLinkTelegramBot:=False;
+
+       // кнопки выбора по умолчанию
+       btnGenerateMessage.Visible:=True;
+       btnManualMessage.Visible:=True;
+       panel_message_group.Visible:=False;
+       lblOpenGenerateMessage.Visible:=False;
+
+       // скрываем инфо (сообщение не редактируемое)
+       lblinfoEditMessage.Visible:=False;
       end;
       options_Sending: begin
        btnSendSMS.Caption:=' &Запустить SMS рассылку';
@@ -583,12 +563,6 @@ var
  tmp:string;
 begin
   with FormHome do begin
-    // проверка отпавка ссылки на чат бот медси хирургии
-    begin
-      tmp:=AnsiLowerCase(InMessage);
-      if AnsiPos(MEDSI_CHAT_BOT_TELEGRAM,tmp)<>0 then isMedsiLinkTelegramBot:=True;
-    end;
-
     re_ManualSMS.Clear;
     re_ManualSMS.Text:=InMessage;
   end;
@@ -1712,36 +1686,74 @@ begin
 end;
 
 
-// кол-во отправленных за сегодня смс
-function GetCountSendingSMSToday:Integer;
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
+// отображение\сркытие окна запроса на сервер
+procedure showWait(Status:enumShow_wait);
 begin
-  Result:=0;
+  case (Status) of
+   show_open: begin
+     Screen.Cursor:=crHourGlass;
+     FormWait.Show;
+     Application.ProcessMessages;
+   end;
+   show_close: begin
+     Screen.Cursor:=crDefault;
+     FormWait.Close;
+   end;
+  end;
+end;
 
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
 
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+
+// проверка можно ли показать меню на добавление слова в словарь
+function IsExistSpellingColor(var _MaybeDictionaryWord:string; var p_text:TRichEdit):Boolean;
+var
+  CursorPos: Integer;
+  StartPos, EndPos: Integer;
+  Word: string;
+  i: Integer;
+  IsRed: Boolean;
+  CharColor: TColor;
+begin
+ _MaybeDictionaryWord:='';
+ Result:=False;
+
+ // Получаем позицию курсора
+  CursorPos := p_text.SelStart;
+
+  // Находим границы слова под курсором
+  StartPos := SendMessage(p_text.Handle, EM_FINDWORDBREAK, WB_LEFT, CursorPos);
+  EndPos := SendMessage(p_text.Handle, EM_FINDWORDBREAK, WB_RIGHT, CursorPos);
+
+  // Извлекаем слово
+  Word := Copy(p_text.Text, StartPos + 1, EndPos - StartPos);
+
+  if Word = '' then begin
+    Exit;
   end;
 
-  try
-    with ado do begin
-      ado.Connection:=serverConnect;
-      SQL.Clear;
-      SQL.Add('select count(id) from sms_sending where date_time > '+#39+GetCurrentStartDateTime+#39);
+  // Проверяем, не пустое ли слово
+  begin
+    IsRed := False; // Предполагаем, что слово не с ошибкой
+    for i := StartPos to EndPos - 1 do
+    begin
+      // Получаем цвет символа
+      SendMessage(p_text.Handle, EM_SETSEL, i, i + 1);
+      CharColor := p_text.SelAttributes.Color;
 
-      Active:=True;
-      Result:= StrToInt(VarToStr(Fields[0].Value));
+      // Проверяем, является ли цвет символа красным
+      if CharColor = clRed then
+      begin
+        IsRed := True;
+       // Break;
+      end;
     end;
-  finally
-    FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-     serverConnect.Close;
-     FreeAndNil(serverConnect);
+
+    if IsRed then begin
+       Word:=StringReplace(Word,' ','',[rfReplaceAll]);    // убираем пробел
+       Word:=StringReplace(Word, #13, '', [rfReplaceAll]); // убираем enter
+
+      _MaybeDictionaryWord:=Word;
+      Result:=True;
     end;
   end;
 end;

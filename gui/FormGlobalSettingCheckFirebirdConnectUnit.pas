@@ -49,10 +49,10 @@ begin
    Screen.Cursor:=crDefault;
 
    if resultat  then begin
-     MessageBox(Handle,PChar('Успешное подключение к серверу:'+#13#13+servers.listServers[id].address),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
+     MessageBox(Handle,PChar('Успешное подключение к серверу:'+#13#13+servers.GetAddress(id)),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
    end
    else begin
-     MessageBox(Handle,PChar('Не удалось подключиться к серверу:'+#13#13+servers.listServers[id].address),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+     MessageBox(Handle,PChar('Не удалось подключиться к серверу:'+#13#13+servers.GetAddress(id)),PChar('Ошибка'),MB_OK+MB_ICONERROR);
    end;
 end;
 
@@ -67,14 +67,13 @@ var
  i:Integer;
 begin
   Screen.Cursor:=crHourGlass;
-
-  servers:=TCheckServersIK.Create(SharedMainLog);
+  servers:=TCheckServersIK.Create(False);
 
   // заполним combox
   comboxServer.Items.Clear;
 
-  for i:=0 to servers.GetCount-1 do begin
-    comboxServer.Items.Add(servers.listServers[i].address+' ('+servers.listServers[i].ip+')');
+  for i:=0 to servers.Count-1 do begin
+    comboxServer.Items.Add(servers.GetAddress(i)+' ('+servers.GetIP(i)+')');
   end;
 
   comboxServer.ItemIndex:=-1;

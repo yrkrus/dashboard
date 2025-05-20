@@ -27,7 +27,7 @@ uses
 procedure Thread_ACTIVESIP_updateTalk.CriticalError;
 begin
    // записываем в лог
-   Log.Save(messclass+'.'+mess,IS_ERROR);
+   Log.Save(messclass+':'+mess,IS_ERROR);
 end;
 
 procedure Thread_ACTIVESIP_updateTalk.show(var p_ActiveSipOperators:TActiveSIP);

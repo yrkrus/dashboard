@@ -4,10 +4,11 @@ uses
   Vcl.SvcMgr,
   dashboard_update in 'dashboard_update.pas' {Service1: TService},
   GlobalVariables in 'GlobalVariables.pas',
-  TCustomTypeUnit in '..\..\custom_class\TCustomTypeUnit.pas',
-  TFTPUnit in '..\..\custom_class\TFTPUnit.pas',
-  TLogFileUnit in '..\..\custom_class\TLogFileUnit.pas',
-  TXmlUnit in '..\..\custom_class\TXmlUnit.pas';
+  TXmlUnit in '..\custom_class\TXmlUnit.pas',
+  TCustomTypeUnit in '..\custom_class\TCustomTypeUnit.pas',
+  TLogFileUnit in '..\custom_class\TLogFileUnit.pas',
+  TFTPUnit in '..\custom_class\TFTPUnit.pas',
+  GlobalVariablesLinkDLL in '..\gui\GlobalVariablesLinkDLL.pas';
 
 {$R *.RES}
 

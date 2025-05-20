@@ -6,13 +6,11 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls, Vcl.Grids,
   Vcl.Samples.Gauges, Winapi.ShellAPI, Vcl.Imaging.jpeg, Vcl.ExtCtrls,
-  Vcl.Buttons, Vcl.Menus, ClipBrd, System.ImageList, Vcl.ImgList,RichEdit;
+  Vcl.Buttons, Vcl.Menus, ClipBrd, System.ImageList, Vcl.ImgList,RichEdit, TCustomTypeUnit;
 
 
 type
   TFormHome = class(TForm)
-    GroupBox2: TGroupBox;
-    chkboxLog: TCheckBox;
     OpenDialog: TOpenDialog;
     page_TypesSMS: TPageControl;
     sheet_ManualSMS: TTabSheet;
@@ -24,9 +22,6 @@ type
     Label1: TLabel;
     edtManualSMS: TEdit;
     btnSaveFirebirdSettings: TBitBtn;
-    panel_ManualSMS: TPanel;
-    re_ManualSMS: TRichEdit;
-    ST_StatusPanel: TStaticText;
     chkbox_SaveMyTemplate: TCheckBox;
     group_SendingSMS: TGroupBox;
     Label2: TLabel;
@@ -34,7 +29,6 @@ type
     chkboxShowLog: TCheckBox;
     GroupBox1: TGroupBox;
     RELog: TRichEdit;
-    STDEBUG: TStaticText;
     lblCountSendingSMS: TLabel;
     Label3: TLabel;
     ProgressStatusText: TStaticText;
@@ -45,25 +39,20 @@ type
     chkbox_SaveGlobalTemplate: TCheckBox;
     popmenu_AddressClinic: TPopupMenu;
     chkbox_SignSMS: TCheckBox;
-    st_ShowInfoAddAddressClinic: TStaticText;
     lblNameExcelFile: TLabel;
     lblManualSMS_List: TLabel;
     lblManualSMS_One: TLabel;
-    popmenu_AddSpellnig: TPopupMenu;
-    menu_AddSpelling: TMenuItem;
     ImageList1: TImageList;
     st_ShowSendingSMS: TStaticText;
-    menu_Dictionary: TMenuItem;
-    N1: TMenuItem;
-    menu_Paste: TMenuItem;
-    menu_Copy: TMenuItem;
-    TabSheet1: TTabSheet;
-    Label5: TLabel;
-    Edit1: TEdit;
-    StaticText1: TStaticText;
-    Label6: TLabel;
-    Label7: TLabel;
+    panel_message_group: TPanel;
+    ST_StatusPanel: TStaticText;
+    st_ShowInfoAddAddressClinic: TStaticText;
+    panel_ManualSMS: TPanel;
+    re_ManualSMS: TRichEdit;
     btnGenerateMessage: TBitBtn;
+    btnManualMessage: TBitBtn;
+    lblOpenGenerateMessage: TLabel;
+    lblinfoEditMessage: TLabel;
     procedure ProcessCommandLineParams(DEBUG:Boolean = False);
     procedure FormCreate(Sender: TObject);
     procedure btnLoadFileClick(Sender: TObject);
@@ -92,29 +81,39 @@ type
       Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure re_ManualSMSMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure menu_AddSpellingClick(Sender: TObject);
     procedure st_ShowSendingSMSMouseLeave(Sender: TObject);
     procedure st_ShowSendingSMSMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure st_ShowSendingSMSClick(Sender: TObject);
-    procedure menu_DictionaryClick(Sender: TObject);
     procedure menu_CopyClick(Sender: TObject);
     procedure btnGenerateMessageClick(Sender: TObject);
-
+    procedure StatusBarClick(Sender: TObject);
+    procedure btnManualMessageClick(Sender: TObject);
+    procedure lblOpenGenerateMessageClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure lblinfoEditMessageClick(Sender: TObject);
+    procedure lblinfoEditMessageMouseLeave(Sender: TObject);
+    procedure lblinfoEditMessageMouseMove(Sender: TObject; Shift: TShiftState;
+      X, Y: Integer);
 
 
   private
     { Private declarations }
    isSpelling:Boolean;
-   maybeDictionary:string; // слово которое моджет пойти в словарь
+
+
+   isEditMessage:Boolean;  // флаг того что сообщение редактируется и его нужно проверить на ошибки
+
 
    procedure CopySelectedTextToClipboard; // копирование в буфер
+   procedure EnableOrDisableEditMessage(_status:enumParamStatus; _textStatus:string = ''); // включение\отключение возможности редактирования сообщения
+
+
 
   public
     { Public declarations }
-  isMedsiLinkTelegramBot:Boolean;  // отправляется ссылка на тедлеграм бот (MEDSI_CHAT_BOT_TELEGRAM)
-
-  function IsExistSpellingColor(var _MaybeDictionaryWord:string):Boolean;   // проверка можно ли показать меню на добавление слова в словарь
+  procedure ShowManualMessage;  // отображение окна с ручным вводом
+  procedure SetEditMessage(_status:enumParamStatus; _textStatus:string = '');
 
 
   end;
@@ -124,8 +123,9 @@ var
   FormHome: TFormHome;
 
 const
-cWIDTH_SHOWLOG:Integer=1128;
-cWIDTH_HIDELOG:Integer=440;
+cWIDTH_SHOWLOG:Integer=1193;
+cWIDTH_HIDELOG:Integer=513;
+cLEFT_PANEL_MESSAGE:Integer=9;
 
 cLOG_EXTENSION:string='.html';
 cWebApiSMS:string='https://a2p-sms-https.beeline.ru/proto/http/?user=%USERNAME&pass=%USERPWD&action=post_sms&message=%MESSAGE&target=%PHONENUMBER';
@@ -135,16 +135,44 @@ cWebApiSMSstatusID:string='https://a2p-sms-https.beeline.ru/proto/http/?gzip=non
 implementation
 
 uses
-  FunctionUnit, GlobalVariables, TSendSMSUint, FormMyTemplateUnit, FormNotSendingSMSErrorUnit, TCustomTypeUnit, FormListSendingSMSUnit, TXmlUnit, TSpellingUnit, FormSendingSMSUnit, FormDictionaryUnit, FormGenerateSMSUnit;
+  FunctionUnit, GlobalVariables, GlobalVariablesLinkDLL, TSendSMSUint,
+  FormMyTemplateUnit, FormNotSendingSMSErrorUnit, FormListSendingSMSUnit,
+  TXmlUnit, TSpellingUnit, FormSendingSMSUnit, FormDictionaryUnit, FormGenerateSMSUnit, DMUnit;
 
  {$R *.dfm}
 
  // class TSMSMessage END
 
+ // отображение окна с ручным вводом
+procedure TFormHome.ShowManualMessage;
+begin
+  panel_message_group.Left:=cLEFT_PANEL_MESSAGE;
+  panel_message_group.Visible:=True;
+
+  btnGenerateMessage.Visible:=False;
+  btnManualMessage.Visible:=False;
+
+  lblOpenGenerateMessage.Visible:=True;
+end;
+
+procedure TFormHome.SetEditMessage(_status:enumParamStatus; _textStatus:string = '');
+begin
+  EnableOrDisableEditMessage(_status, _textStatus);
+end;
+
 // установка флага что есть орфографическая ошибка
 procedure TFormHome.SetSpelling(InValue:Boolean);
 begin
   isSpelling:=InValue;
+end;
+
+procedure TFormHome.StatusBarClick(Sender: TObject);
+begin
+ with FormSendingSMS do begin
+   SetTodaySendingSms(True);
+   Caption:='Отправленные сообщения';
+   ShowModal;
+ end;
 end;
 
 // копирование в буфер
@@ -157,60 +185,27 @@ begin
   else MessageBox(Handle,PChar('Нет выделенного текста для копирования'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
 end;
 
-// проверка можно ли показать меню на добавление слова в словарь
-function TFormHome.IsExistSpellingColor(var _MaybeDictionaryWord:string):Boolean;
-var
-  CursorPos: Integer;
-  StartPos, EndPos: Integer;
-  Word: string;
-  i: Integer;
-  IsRed: Boolean;
-  CharColor: TColor;
+
+// включение\отключение возможности редактирования сообщения
+procedure TFormHome.EnableOrDisableEditMessage(_status:enumParamStatus; _textStatus:string = '');
 begin
- _MaybeDictionaryWord:='';
- Result:=False;
+  case _status of
+    paramStatus_ENABLED: begin
+      lblinfoEditMessage.Visible:=False;
+      re_ManualSMS.Enabled:=True;
 
- // Получаем позицию курсора
-  CursorPos := re_ManualSMS.SelStart;
-
-  // Находим границы слова под курсором
-  StartPos := SendMessage(re_ManualSMS.Handle, EM_FINDWORDBREAK, WB_LEFT, CursorPos);
-  EndPos := SendMessage(re_ManualSMS.Handle, EM_FINDWORDBREAK, WB_RIGHT, CursorPos);
-
-  // Извлекаем слово
-  Word := Copy(re_ManualSMS.Text, StartPos + 1, EndPos - StartPos);
-
-  if Word = '' then begin
-    Exit;
-  end;
-
-  // Проверяем, не пустое ли слово
-  begin
-    IsRed := False; // Предполагаем, что слово не с ошибкой
-    for i := StartPos to EndPos - 1 do
-    begin
-      // Получаем цвет символа
-      SendMessage(re_ManualSMS.Handle, EM_SETSEL, i, i + 1);
-      CharColor := re_ManualSMS.SelAttributes.Color;
-
-      // Проверяем, является ли цвет символа красным
-      if CharColor = clRed then
-      begin
-        IsRed := True;
-        Break;
-      end;
+      isEditMessage:=True;
     end;
+    paramStatus_DISABLED: begin
+      lblinfoEditMessage.Visible:=True;
+      re_ManualSMS.Enabled:=False;
 
-    if IsRed then begin
-       Word:=StringReplace(Word,' ','',[rfReplaceAll]);    // убираем пробел
-       Word:=StringReplace(Word, #13, '', [rfReplaceAll]); // убираем enter
-
-      _MaybeDictionaryWord:=Word;
-      Result:=True;
+      isEditMessage:=False;
     end;
   end;
+
+  if Length(_textStatus) <> 0 then lblinfoEditMessage.Caption:=_textStatus+' (включить редактирование)';
 end;
-
 
 procedure TFormHome.btnGenerateMessageClick(Sender: TObject);
 begin
@@ -304,6 +299,14 @@ begin
   end;
 end;
 
+procedure TFormHome.btnManualMessageClick(Sender: TObject);
+begin
+  ShowManualMessage;
+
+  isEditMessage:=True;
+  re_ManualSMS.Enabled:=True;
+end;
+
 procedure TFormHome.btnSaveFirebirdSettingsClick(Sender: TObject);
 begin
   FormMyTemplate.ShowModal;
@@ -322,7 +325,7 @@ begin
 
   begin
     case page_TypesSMS.ActivePage.PageIndex of
-     1:begin                 // ручная отправка
+     0:begin                 // ручная отправка
       currentOptions:=options_Manual;
 
       // добавим номера телефонов в список
@@ -335,12 +338,12 @@ begin
       end;
 
      end;
-     2:begin                  // рассылка
+     1:begin                  // рассылка
       currentOptions:=options_Sending;
      end;
     end;
 
-    if not CheckParamsBeforeSending(currentOptions,error) then begin
+    if not CheckParamsBeforeSending(currentOptions,isEditMessage, error) then begin
      Screen.Cursor:=crDefault;
      MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
      Exit;
@@ -533,12 +536,11 @@ begin
   // Проверяем, был ли клик правой кнопкой мыши
   if Button = mbRight then
   begin
-    if IsExistSpellingColor(maybeDictionary) then begin
-      popmenu_AddSpellnig.Items[0].Enabled:=True;
+    if IsExistSpellingColor(DM.maybeDictionary, re_ManualSMS) then begin
+      DM.popmenu_AddSpellnig.Items[0].Enabled:=True;
     end
     else begin
-     popmenu_AddSpellnig.Items[0].Enabled:=False;
-
+     DM.popmenu_AddSpellnig.Items[0].Enabled:=False;
     end;
   end;
 end;
@@ -583,6 +585,7 @@ end;
 procedure TFormHome.st_ShowSendingSMSClick(Sender: TObject);
 begin
   with FormSendingSMS do begin
+   SetTodaySendingSms(False);
    Caption:='Сообщения на отправку ('+IntToStr(SharedPacientsList.Count)+')';
    ShowModal;
   end;
@@ -597,6 +600,11 @@ procedure TFormHome.st_ShowSendingSMSMouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
 begin
  st_ShowSendingSMS.Font.Style:=[fsUnderline];
+end;
+
+procedure TFormHome.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  KillProcessNow;
 end;
 
 procedure TFormHome.FormCreate(Sender: TObject);
@@ -625,7 +633,9 @@ begin
   Screen.Cursor:=crHourGlass;
 
   // debug node
-  if DEBUG then STDEBUG.Visible:=True
+  if DEBUG then begin
+    Caption:='    ===== DEBUG =====    ' + Caption;
+  end
   else begin
     // скрываем отправку рассылки для обычных операторов
     if not USER_ACCESS_SENDING_LIST then begin
@@ -639,6 +649,8 @@ begin
 
   lblManualSMS_One.Font.Color:=clHighlight;
   lblManualSMS_List.Font.Color:=clHighlight;
+  lblOpenGenerateMessage.Font.Color:=clHighlight;
+  lblinfoEditMessage.Font.Color:=clHighlight;
 
 
    // создатим copyright
@@ -668,6 +680,23 @@ begin
   Screen.Cursor:=crDefault;
 end;
 
+procedure TFormHome.lblinfoEditMessageClick(Sender: TObject);
+begin
+  EnableOrDisableEditMessage(paramStatus_ENABLED);
+  re_ManualSMS.Clear;
+end;
+
+procedure TFormHome.lblinfoEditMessageMouseLeave(Sender: TObject);
+begin
+ lblinfoEditMessage.Font.Style:=[];
+end;
+
+procedure TFormHome.lblinfoEditMessageMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  lblinfoEditMessage.Font.Style:=[fsUnderline];
+end;
+
 procedure TFormHome.lblManualSMS_ListClick(Sender: TObject);
 var
   MousePos: TPoint;
@@ -688,42 +717,25 @@ begin
  ShowSendingManualPhone(sending_one);
 end;
 
-procedure TFormHome.menu_AddSpellingClick(Sender: TObject);
-var
-  resultat:Word;
-  Spelling:TSpelling;
-  error:string;
+procedure TFormHome.lblOpenGenerateMessageClick(Sender: TObject);
 begin
-  resultat:=MessageBox(Handle,PChar('Точно добавить слово "'+maybeDictionary+'" в словарь?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
-  if resultat=mrYes then begin
-    Spelling:=TSpelling.Create(re_ManualSMS, True);
-
-    if not Spelling.AddWordToDictionary(maybeDictionary,error) then begin
-      MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-      Exit;
-    end
-    else MessageBox(Handle,PChar(error),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
-  end;
+ FormGenerateSMS.ShowModal;
 end;
+
 
 procedure TFormHome.menu_CopyClick(Sender: TObject);
 begin
  CopySelectedTextToClipboard;
 end;
 
-procedure TFormHome.menu_DictionaryClick(Sender: TObject);
-begin
-  FormDictionary.Show;
-end;
 
 procedure TFormHome.page_TypesSMSChange(Sender: TObject);
 begin
   case page_TypesSMS.ActivePage.PageIndex of
-
-   1:begin                 // ручная отправка
+   0:begin                 // ручная отправка
     OptionsStyle(options_Manual);
    end;
-   2:begin                  // рассылка
+   1:begin                  // рассылка
     OptionsStyle(options_Sending);
    end;
   end;

@@ -49,8 +49,25 @@ uses  System.Classes,
    // class TUser
   type
       TUser = class
-      public
+      private
+      Params                                  : TUserList;
+      Access                                  : TUserAccess;
 
+      isOperator                              : Boolean;   // пользователь оператор или нет
+      isAccessLocalChat                       : Boolean;   // есть ли доступ в локальному чату
+      isAccessReports                         : Boolean;   // есть ли доступ к отчетам
+      isAccessSMS                             : Boolean;   // есть ли доступ к sms рассылке
+      isAccessService                         : Boolean;   // есть ли доступ к услугам
+
+
+      function GetRoleIsOperator(InRole:enumRole)     :Boolean;   // проверка роль пользователя это операторская роль
+      function GetAccessLocalChat(InUserID:integer)   :Boolean;   // проверка есть ли доступ к локальному чату
+      function GetAccessReports(InUserID:integer)     :Boolean;   // проверка есть ли доступ к отчетам
+      function GetAccessSMS(InUserID:integer)         :Boolean;   // проверка есть ли доступ к SMS рассылке
+      function GetAccessService                       :Boolean;   // проверка есть ли доступ к услугам
+
+
+      public
       procedure UpdateParams(InParams:TUserList);         // обновление параметров пользователя
       function GetID                         :Integer;    // получить текущий id
       function GetName                       :string;     // получить текущий Name
@@ -63,6 +80,8 @@ uses  System.Classes,
       function GetIsAccessLocalChat          :Boolean;    // текущий пользователь есть доступ к локальному чату
       function GetIsAccessReports            :Boolean;    // текущий пользователь есть доступ к отчетам
       function GetIsAccessSMS                :Boolean;    // текущий пользователь есть доступ к sms рассылке
+      function GetIsAccessService            :Boolean;    // текущий пользователь есть доступ услугам
+
 
       function GetAccess(Menu:enumAccessList):enumAccessStatus; // получение данных о том какие параметры могут быть открыты на доступе у пользователя
 
@@ -71,21 +90,7 @@ uses  System.Classes,
       function GetRole                        :enumRole;
       constructor Create;                     overload;
 
-      private
-      Params                                  : TUserList;
-      Access                                  : TUserAccess;
 
-      isOperator                              : Boolean;   // пользователь оператор или нет
-      isAccessLocalChat                       : Boolean;   // есть ли доступ в локальному чату
-      isAccessReports                         : Boolean;   // есть ли доступ к отчетам
-      isAccessSMS                             : Boolean;   // есть ли доступ к sms рассылке
-      isAccessService                         : Boolean;   // есть ли доступ к  услугам
-
-
-      function GetRoleIsOperator(InRole:enumRole)     :Boolean;   // проверка роль пользователя это операторская роль
-      function GetAccessLocalChat(InUserID:integer)   :Boolean;   // проверка есть ли доступ к локальному чату
-      function GetAccessReports(InUserID:integer)     :Boolean;   // проверка есть ли доступ к отчетам
-      function GetAccessSMS(InUserID:integer)         :Boolean;   // проверка есть ли доступ к SMS рассылке
 
       end;
  // class TUser END
@@ -134,7 +139,7 @@ begin
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
-      SQL.Add('select only_operators from role where id = '+#39+IntToStr(GetRoleID(TRoleToString(InRole)))+#39);
+      SQL.Add('select only_operators from role where id = '+#39+IntToStr(GetRoleID(EnumRoleToString(InRole)))+#39);
 
       Active:=True;
 
@@ -262,6 +267,13 @@ begin
 end;
 
 
+// проверка есть ли доступ к SMS рассылке
+function TUser.GetAccessService:Boolean;
+begin
+  Result:=Access.menu_service;
+end;
+
+
  procedure TUser.UpdateParams(InParams:TUserList);
  begin
    with Self.Params do begin
@@ -290,6 +302,9 @@ end;
 
    // проверка есть ли досутп к SMS рассылке
    Self.isAccessSMS:=GetAccessSMS(InParams.id);
+
+      // проверка есть ли досутп к услугам
+   Self.isAccessService:=GetAccessService;
  end;
 
  function TUser.GetID:Integer;
@@ -348,11 +363,15 @@ end;
   Result:=Self.isAccessReports;
  end;
 
-  function TUser.GetIsAccessSMS:Boolean;
+ function TUser.GetIsAccessSMS:Boolean;
  begin
   Result:=Self.isAccessSMS;
  end;
 
+function TUser.GetIsAccessService:Boolean;
+ begin
+  Result:=Self.isAccessService;
+ end;
 
 
  function TUser.GetAccess(Menu:enumAccessList):enumAccessStatus;
@@ -377,6 +396,9 @@ end;
     end;
     menu_service:begin
       if Access.menu_service then Result:=access_ENABLED;
+    end;
+    menu_missed_calls:begin
+      if Access.menu_missed_calls then Result:=access_ENABLED;
     end;
    end;
  end;

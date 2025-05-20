@@ -12,6 +12,7 @@ const
  CHAT_EXE         :string = 'chat.exe';
  REPORT_EXE       :string = 'report.exe';
  SMS_EXE          :string = 'sms.exe';
+ SERVICE_EXE      :string = 'service.exe';
  UPDATE_EXE       :string = 'update.exe';
  INSTALL_EXE      :string = 'install.exe';
 
@@ -36,30 +37,30 @@ const
 var
   FOLDERPATH:string;
 
-   // загрузка DLL
-  // --- core.dll ---
- type
-  p_TADOConnection = Pointer; // Указатель на TADOConnection
-  function createServerConnect: p_TADOConnection; stdcall;    external 'core.dll';       // Создание подключения к серверу
-  function GetCurrentDateTimeDec(DecMinutes:Integer):PChar; overload;  stdcall; external 'core.dll';       // текущее начала дня минус -DecMinutes
-  function GetCurrentStartDateTime:PChar; overload;  stdcall; external 'core.dll';       // текущее начала дня с минутами 00:00:00
-  function GetCurrentTime:PChar; stdcall; external 'core.dll';       // текущее время
-  function GetExtensionLog:PChar; stdcall; external 'core.dll';       // // тип лога
-  function GetLogNameFolder:PChar; stdcall; external 'core.dll';       // // папка с логом
-  function GetUpdateNameFolder:PChar; stdcall; external 'core.dll';       // // папка с update (обновленияем)
-  function GetRemoteVersionDashboard(var _errorDescriptions:string):PChar; stdcall;external 'core.dll';        // текущая версия дашборда (БД)
-  function KillTask(ExeFileName:string):integer;  stdcall; external 'core.dll';        // функция остановки exe
-  function GetCloneRun(InExeName:Pchar):Boolean;              stdcall;    external 'core.dll';          // проверка на 2ую запущенную копию
-  function GetTask(ExeFileName:string):Boolean;  stdcall; external 'core.dll';         // проверка запущен ли процесс
-
-   // --- connect_to_server.dll ---
- function GetServerAddress:string;      stdcall;   external 'connect_to_server.dll'; // адрес сервера
- function GetServerName:string;         stdcall;   external 'connect_to_server.dll'; // адрес базы
- function GetServerUser:string;         stdcall;   external 'connect_to_server.dll'; // логин
- function GetServerPassword:string;     stdcall;   external 'connect_to_server.dll'; // пароль
- function GetFTPServerAddress:string;   stdcall;   external 'connect_to_server.dll'; // адрес ftp
- function GetFTPServerUser:string;      stdcall;   external 'connect_to_server.dll'; // логин
- function GetFTPServerPassword:string;  stdcall;   external 'connect_to_server.dll'; // пароль
+//   // загрузка DLL
+//  // --- core.dll ---
+// type
+//  p_TADOConnection = Pointer; // Указатель на TADOConnection
+//  function createServerConnect: p_TADOConnection; stdcall;    external 'core.dll';       // Создание подключения к серверу
+//  function GetCurrentDateTimeDec(DecMinutes:Integer):PChar; overload;  stdcall; external 'core.dll';       // текущее начала дня минус -DecMinutes
+//  function GetCurrentStartDateTime:PChar; overload;  stdcall; external 'core.dll';       // текущее начала дня с минутами 00:00:00
+//  function GetCurrentTime:PChar; stdcall; external 'core.dll';       // текущее время
+//  function GetExtensionLog:PChar; stdcall; external 'core.dll';       // // тип лога
+//  function GetLogNameFolder:PChar; stdcall; external 'core.dll';       // // папка с логом
+//  function GetUpdateNameFolder:PChar; stdcall; external 'core.dll';       // // папка с update (обновленияем)
+//  function GetRemoteVersionDashboard(var _errorDescriptions:string):PChar; stdcall;external 'core.dll';        // текущая версия дашборда (БД)
+//  function KillTask(ExeFileName:string):integer;  stdcall; external 'core.dll';        // функция остановки exe
+//  function GetCloneRun(InExeName:Pchar):Boolean;              stdcall;    external 'core.dll';          // проверка на 2ую запущенную копию
+//  function GetTask(ExeFileName:string):Boolean;  stdcall; external 'core.dll';         // проверка запущен ли процесс
+//
+//   // --- connect_to_server.dll ---
+// function GetServerAddress:string;      stdcall;   external 'connect_to_server.dll'; // адрес сервера
+// function GetServerName:string;         stdcall;   external 'connect_to_server.dll'; // адрес базы
+// function GetServerUser:string;         stdcall;   external 'connect_to_server.dll'; // логин
+// function GetServerPassword:string;     stdcall;   external 'connect_to_server.dll'; // пароль
+// function GetFTPServerAddress:string;   stdcall;   external 'connect_to_server.dll'; // адрес ftp
+// function GetFTPServerUser:string;      stdcall;   external 'connect_to_server.dll'; // логин
+// function GetFTPServerPassword:string;  stdcall;   external 'connect_to_server.dll'; // пароль
 
 implementation
 
@@ -68,8 +69,6 @@ uses
 
 initialization  // Инициализация
   FOLDERPATH:=ExtractFilePath(ParamStr(0));
-
-
 
 
 finalization

@@ -33,7 +33,7 @@ uses
 procedure Thread_Forecast.CriticalError;
 begin
   // записываем в лог
-  Log.Save(messclass+'.'+mess,IS_ERROR);
+  Log.Save(messclass+':'+mess,IS_ERROR);
 end;
 
 

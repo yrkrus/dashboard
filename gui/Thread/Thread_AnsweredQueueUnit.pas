@@ -28,7 +28,7 @@ uses
 procedure Thread_AnsweredQueue.CriticalError;
 begin
    // записываем в лог
-   Log.Save(messclass+'.'+mess,IS_ERROR);
+   Log.Save(messclass+':'+mess,IS_ERROR);
 end;
 
  procedure Thread_AnsweredQueue.show(var p_AnsweredQueue: TAnsweredQueue);

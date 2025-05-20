@@ -63,7 +63,7 @@ var
 implementation
 
 uses
-  GlobalVariables, FunctionUnit, FormWaitUnit, TReportCountOperatorsUnit, TAbstractReportUnit;
+  GlobalVariables, FunctionUnit, FormWaitUnit, TReportCountOperatorsUnit, TAbstractReportUnit, GlobalVariablesLinkDLL;
 
 {$R *.dfm}
 

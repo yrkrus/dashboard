@@ -7,7 +7,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Grids, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.Menus,Data.Win.ADODB, Data.DB, Vcl.Imaging.jpeg,System.SyncObjs,
   TActiveSIPUnit,TUserUnit, Vcl.Imaging.pngimage, ShellAPI, TLogFileUnit,
-  System.Zip, Vcl.WinXCtrls, Vcl.Samples.Gauges;
+  System.Zip, Vcl.WinXCtrls, Vcl.Samples.Gauges, TCustomTypeUnit;
 
 
 type
@@ -40,7 +40,7 @@ type
     StatusBar: TStatusBar;
     FooterMenu: TMainMenu;
     menu: TMenuItem;
-    menu_FormPropushennie: TMenuItem;
+    menu_missed_calls: TMenuItem;
     menu_About: TMenuItem;
     Label6: TLabel;
     lblStstatisc_Queue5000_Summa: TLabel;
@@ -71,14 +71,6 @@ type
     ST_SL: TStaticText;
     STlist_ACTIVESIP_NO_Rings: TStaticText;
     popMenu_ActionOperators: TPopupMenu;
-    N9: TMenuItem;
-    N10: TMenuItem;
-    N51: TMenuItem;
-    N52: TMenuItem;
-    N53: TMenuItem;
-    N54: TMenuItem;
-    N55: TMenuItem;
-    N56: TMenuItem;
     menu_Users: TMenuItem;
     menu_ServersIK: TMenuItem;
     menu_SIPtrunk: TMenuItem;
@@ -103,7 +95,7 @@ type
     btnStatus_add_queue5000_5050: TButton;
     btnStatus_del_queue_all: TButton;
     btnStatus_reserve: TButton;
-    Button2: TButton;
+    btnStatus_callback: TButton;
     ST_StatusPanel: TStaticText;
     img_goHome_YES: TImage;
     img_goHome_NO: TImage;
@@ -143,21 +135,6 @@ type
     st_Forecast_AfterTomorrow: TStaticText;
     Img8Mart: TImage;
     popMenu_ActionOperators_HistoryCallOperator: TMenuItem;
-    N3: TMenuItem;
-    N4: TMenuItem;
-    b1: TMenuItem;
-    N5: TMenuItem;
-    N6: TMenuItem;
-    N7: TMenuItem;
-    N8: TMenuItem;
-    N11: TMenuItem;
-    N12: TMenuItem;
-    N13: TMenuItem;
-    N14: TMenuItem;
-    C1: TMenuItem;
-    N15: TMenuItem;
-    N17: TMenuItem;
-    N18: TMenuItem;
     img_DownFont_ActiveSIP: TImage;
     img_UpFont_ActiveSIP: TImage;
     img_UpFont_IVR: TImage;
@@ -168,11 +145,12 @@ type
     popMenu_ActionOperators_HistoryStatusOPerators: TMenuItem;
     N19: TMenuItem;
     menu_service: TMenuItem;
+    y1: TMenuItem;
     procedure START_THREAD_ALLlClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure Timer_Thread_StartTimer(Sender: TObject);
-    procedure menu_FormPropushennieClick(Sender: TObject);
+    procedure menu_missed_callsClick(Sender: TObject);
     procedure lblCheckInfocilinikaServerAliveClick(Sender: TObject);
     procedure menu_activeSessionClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -247,6 +225,15 @@ type
     procedure popMenu_ActionOperators_HistoryStatusOPeratorsClick(
       Sender: TObject);
     procedure menu_serviceClick(Sender: TObject);
+    procedure btnStatus_callbackClick(Sender: TObject);
+    procedure lblStstatisc_Queue5000_No_AnsweredClick(Sender: TObject);
+    procedure lblStstatisc_Queue5050_No_AnsweredClick(Sender: TObject);
+    procedure lblStstatisc_Queue5000_No_AnsweredMouseLeave(Sender: TObject);
+    procedure lblStstatisc_Queue5000_No_AnsweredMouseMove(Sender: TObject;
+      Shift: TShiftState; X, Y: Integer);
+    procedure lblStstatisc_Queue5050_No_AnsweredMouseLeave(Sender: TObject);
+    procedure lblStstatisc_Queue5050_No_AnsweredMouseMove(Sender: TObject;
+      Shift: TShiftState; X, Y: Integer);
 
   private
     { Private declarations }
@@ -255,6 +242,9 @@ type
    SelectedItemPopMenu: TListItem; // Переменная для хранения выбранного элемента(для popmenu_ActionOPerators)
 
    procedure WndProc(var Msg: TMessage); override;   // изменение размер шрифта по сочетанию  Ctrl + колесико
+
+   procedure ViewLabel(IsBold,IsUnderline:Boolean; var p_label:TLabel); // визуальная подсветка при наведении указателя мыши
+   function SendCommand(_command:enumLogging;_userID:Integer):Boolean;     // отправка удаленной команды
 
 
   public
@@ -325,7 +315,7 @@ uses
     DMUnit, FunctionUnit, FormPropushennieUnit, FormSettingsUnit, Thread_StatisticsUnit, Thread_IVRUnit,
     Thread_QUEUEUnit, FormAboutUnit, FormOperatorStatusUnit, FormServerIKCheckUnit, FormAuthUnit,
     FormActiveSessionUnit, FormRePasswordUnit, Thread_AnsweredQueueUnit, ReportsUnit, Thread_ACTIVESIP_updatetalkUnit,
-    FormDEBUGUnit, FormErrorUnit, TCustomTypeUnit, GlobalVariables, FormUsersUnit, FormServersIKUnit, FormSettingsGlobalUnit,
+    FormDEBUGUnit, FormErrorUnit,GlobalVariables, FormUsersUnit, FormServersIKUnit, FormSettingsGlobalUnit,
     FormTrunkUnit, TFTPUnit, TXmlUnit, FormStatisticsChartUnit, TForecastCallsUnit, FormStatusInfoUnit,
     FormHistoryCallOperatorUnit, FormChatNewMessageUnit, TDebugStructUnit, FormHistoryStatusOperatorUnit, GlobalVariablesLinkDLL;
 
@@ -344,28 +334,19 @@ end;
 procedure THomeForm.btnStatus_add_queue5000Click(Sender: TObject);
 begin
  // добавление в очередь 5000
- if not isExistRemoteCommand(eLog_add_queue_5000) then remoteCommand_addQueue(eLog_add_queue_5000)
- else begin
-    MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
- end;
+ SendCommand(eLog_add_queue_5000,SharedCurrentUserLogon.GetID);
 end;
 
 procedure THomeForm.btnStatus_add_queue5000_5050Click(Sender: TObject);
 begin
  // добавление в очередь 5000 и 5050
- if not isExistRemoteCommand(eLog_add_queue_5000_5050) then remoteCommand_addQueue(eLog_add_queue_5000_5050)
- else begin
-    MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
- end;
+  SendCommand(eLog_add_queue_5000_5050,SharedCurrentUserLogon.GetID);
 end;
 
 procedure THomeForm.btnStatus_add_queue5050Click(Sender: TObject);
 begin
  // добавление в очередь 5050
- if not isExistRemoteCommand(eLog_add_queue_5050) then remoteCommand_addQueue(eLog_add_queue_5050)
- else begin
-    MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
- end;
+ SendCommand(eLog_add_queue_5050,SharedCurrentUserLogon.GetID);
 end;
 
 procedure THomeForm.btnStatus_availableClick(Sender: TObject);
@@ -418,91 +399,74 @@ end;
 procedure THomeForm.btnStatus_breakClick(Sender: TObject);
 begin
  // перерыв
- if not isExistRemoteCommand(eLog_break) then remoteCommand_addQueue(eLog_break)
- else begin
-    MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
+  SendCommand(eLog_break,SharedCurrentUserLogon.GetID);
+end;
+
+procedure THomeForm.btnStatus_callbackClick(Sender: TObject);
+begin
+  // callback
+ if SendCommand(eLog_callback,SharedCurrentUserLogon.GetID) then begin
+   with FormPropushennie do begin
+     SetQueue(queue_5000_5050,eMissed_no_return);
+     SetCallbak;
+
+     ShowModal;
+   end;
  end;
 end;
 
 procedure THomeForm.btnStatus_del_queue_allClick(Sender: TObject);
 begin
   // выход из всех очередей из 5000 и 5050
- if not isExistRemoteCommand(eLog_del_queue_5000_5050) then remoteCommand_addQueue(eLog_del_queue_5000_5050)
- else begin
-    MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
- end;
+  SendCommand(eLog_del_queue_5000_5050,SharedCurrentUserLogon.GetID);
 end;
 
 procedure THomeForm.btnStatus_dinnerClick(Sender: TObject);
 begin
    // обед
- if not isExistRemoteCommand(eLog_dinner) then remoteCommand_addQueue(eLog_dinner)
- else begin
-    MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
- end;
+  SendCommand(eLog_dinner,SharedCurrentUserLogon.GetID);
 end;
 
 procedure THomeForm.btnStatus_exodusClick(Sender: TObject);
 begin
  // исход
- if not isExistRemoteCommand(eLog_exodus) then remoteCommand_addQueue(eLog_exodus)
- else begin
-    MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
- end;
+  SendCommand(eLog_exodus,SharedCurrentUserLogon.GetID);
 end;
 
 procedure THomeForm.btnStatus_homeClick(Sender: TObject);
 begin
  // домой
- if not isExistRemoteCommand(eLog_home) then remoteCommand_addQueue(eLog_home)
- else begin
-    MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
- end;
+  SendCommand(eLog_home,SharedCurrentUserLogon.GetID);
 end;
 
 procedure THomeForm.btnStatus_ITClick(Sender: TObject);
 begin
   // ИТ
- if not isExistRemoteCommand(eLog_IT) then remoteCommand_addQueue(eLog_IT)
- else begin
-    MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
- end;
+   SendCommand(eLog_IT,SharedCurrentUserLogon.GetID);
 end;
 
 procedure THomeForm.btnStatus_postvyzovClick(Sender: TObject);
 begin
  // поствызов
- if not isExistRemoteCommand(eLog_postvyzov) then remoteCommand_addQueue(eLog_postvyzov)
- else begin
-    MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
- end;
+  SendCommand(eLog_postvyzov,SharedCurrentUserLogon.GetID);
 end;
 
 procedure THomeForm.btnStatus_reserveClick(Sender: TObject);
 begin
  // переносы
- if not isExistRemoteCommand(eLog_reserve) then remoteCommand_addQueue(eLog_reserve)
- else begin
-    MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
- end;
+  SendCommand(eLog_reserve,SharedCurrentUserLogon.GetID);
 end;
 
 procedure THomeForm.btnStatus_studiesClick(Sender: TObject);
 begin
  // учеба
- if not isExistRemoteCommand(eLog_studies) then remoteCommand_addQueue(eLog_studies)
- else begin
-    MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
- end;
+   SendCommand(eLog_studies,SharedCurrentUserLogon.GetID);
 end;
 
 procedure THomeForm.btnStatus_transferClick(Sender: TObject);
 begin
 // переносы
- if not isExistRemoteCommand(eLog_transfer) then remoteCommand_addQueue(eLog_transfer)
- else begin
-    MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
- end;
+ SendCommand(eLog_transfer,SharedCurrentUserLogon.GetID);
 end;
 
 procedure THomeForm.Button1Click(Sender: TObject);
@@ -696,8 +660,8 @@ begin
   end;
 
   // отображение текущей версии  ctrl+shift+G (GUID) - от этого ID зависит актуальность еще
-  if DEBUG then Caption:='    ===== DEBUG =====    ' + Caption+' '+getVersion(GUID_VERSION,eGUI) + ' | '+'('+GUID_VERSION+')' + '    ===== DEBUG ===== '
-  else Caption:=Caption+' '+getVersion(GUID_VERSION,eGUI) + ' | '+'('+GUID_VERSION+')';
+  if DEBUG then Caption:='    ===== DEBUG =====    ' + Caption+' '+GetVersion(GUID_VERSION,eGUI) + ' | '+'('+GUID_VERSION+')' + '    ===== DEBUG ===== '
+  else Caption:=Caption+' '+GetVersion(GUID_VERSION,eGUI) + ' | '+'('+GUID_VERSION+')';
 
 
 
@@ -994,6 +958,62 @@ begin
   MessageBox(Handle,PChar('Для применения обновления закройте программу'+#13+'и подождите около 30 сек'),PChar('Информация'),MB_OK+MB_ICONINFORMATION);
 end;
 
+procedure THomeForm.lblStstatisc_Queue5000_No_AnsweredClick(Sender: TObject);
+var
+ error:string;
+begin
+ // есть ли доступ к пропущенным
+  if not OpenMissedCalls(error, queue_5000, eMissed_no_return) then begin
+    MessageBox(HomeForm.Handle,PChar(error),PChar('Отсутствует доступ'),MB_OK+MB_ICONINFORMATION);
+    Exit;
+  end;
+
+  with FormPropushennie do begin
+    // берем по всем 5000
+   Show;
+  end;
+end;
+
+procedure THomeForm.lblStstatisc_Queue5000_No_AnsweredMouseLeave(
+  Sender: TObject);
+begin
+  ViewLabel(False,False, lblStstatisc_Queue5000_No_Answered);
+end;
+
+procedure THomeForm.lblStstatisc_Queue5000_No_AnsweredMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+begin
+ ViewLabel(False,True, lblStstatisc_Queue5000_No_Answered);
+end;
+
+procedure THomeForm.lblStstatisc_Queue5050_No_AnsweredClick(Sender: TObject);
+var
+ error:string;
+begin
+ // есть ли доступ к пропущенным
+  if not OpenMissedCalls(error, queue_5050, eMissed_no_return) then begin
+    MessageBox(HomeForm.Handle,PChar(error),PChar('Отсутствует доступ'),MB_OK+MB_ICONINFORMATION);
+    Exit;
+  end;
+
+  with FormPropushennie do begin
+    // берем по всем 5050
+   Show;
+  end;
+end;
+
+procedure THomeForm.lblStstatisc_Queue5050_No_AnsweredMouseLeave(
+  Sender: TObject);
+begin
+ ViewLabel(False,False, lblStstatisc_Queue5050_No_Answered);
+end;
+
+procedure THomeForm.lblStstatisc_Queue5050_No_AnsweredMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  ViewLabel(False,True, lblStstatisc_Queue5050_No_Answered);
+end;
+
 procedure THomeForm.ListViewSIPCustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
 var
@@ -1102,9 +1122,20 @@ begin
   OpenLocalChat;
 end;
 
-procedure THomeForm.menu_FormPropushennieClick(Sender: TObject);
+procedure THomeForm.menu_missed_callsClick(Sender: TObject);
+var
+ error:string;
 begin
-  FormPropushennie.ShowModal;
+  // есть ли доступ к пропущенным
+  if not OpenMissedCalls(error, queue_5000, eMissed_no_return) then begin
+    MessageBox(HomeForm.Handle,PChar(error),PChar('Отсутствует доступ'),MB_OK+MB_ICONINFORMATION);
+    Exit;
+  end;
+
+  with FormPropushennie do begin
+    // берем по всем 5000+5050
+   Show;
+  end;
 end;
 
 procedure THomeForm.menu_ServersIKClick(Sender: TObject);
@@ -1182,6 +1213,37 @@ begin
       else Msg.Result := 1; // Отметить, что событие обработано
     end;
   end;
+end;
+
+
+// визуальная подсветка при наведении указателя мыши
+procedure THomeForm.ViewLabel(IsBold,IsUnderline:Boolean; var p_label:TLabel);
+begin
+  if not (IsBold) and not (IsUnderline) then p_label.Font.Style:=[];
+  if (IsBold) and (IsUnderline) then p_label.Font.Style:=[fsBold,fsUnderline];
+
+  if not (IsBold) and (IsUnderline) then p_label.Font.Style:=[fsUnderline];
+  if (IsBold) and not (IsUnderline) then p_label.Font.Style:=[fsBold];
+end;
+
+ // отправка удаленной команды
+function THomeForm.SendCommand(_command:enumLogging;_userID:Integer):Boolean;
+var
+ error:string;
+begin
+ Result:=False;
+
+ if isExistRemoteCommand(_command,_userID) then begin
+   MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
+   Exit;
+ end;
+
+ if not remoteCommand_addQueue(_command,error) then begin
+   MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+  Exit;
+ end;
+
+ Result:=True;
 end;
 
 

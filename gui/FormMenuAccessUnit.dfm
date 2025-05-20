@@ -4,8 +4,8 @@ object FormMenuAccess: TFormMenuAccess
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1072' '#1087#1088#1072#1074' '#1075#1088#1091#1087#1087' '#1076#1083#1103' '#1076#1086#1089#1090#1091#1087#1072' '#1082' '#1084#1077#1085#1102
-  ClientHeight = 304
-  ClientWidth = 905
+  ClientHeight = 208
+  ClientWidth = 1030
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -14,14 +14,16 @@ object FormMenuAccess: TFormMenuAccess
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
+  OnClose = FormClose
+  OnCreate = FormCreate
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 16
   object group: TGroupBox
     Left = 8
     Top = 8
-    Width = 889
-    Height = 288
+    Width = 1009
+    Height = 193
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -16
@@ -101,12 +103,12 @@ object FormMenuAccess: TFormMenuAccess
       ParentFont = False
     end
     object Label6: TLabel
-      Left = 710
+      Left = 714
       Top = 12
-      Width = 114
+      Width = 147
       Height = 16
       Alignment = taCenter
-      Caption = #1040#1082#1090#1080#1074#1085#1099#1077' '#1089#1077#1089#1089#1080#1080
+      Caption = #1055#1088#1086#1087#1091#1097#1077#1085#1085#1099#1077' '#1079#1074#1086#1085#1082#1080
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
@@ -146,7 +148,7 @@ object FormMenuAccess: TFormMenuAccess
     end
     object Label9: TLabel
       Left = 7
-      Top = 62
+      Top = 60
       Width = 196
       Height = 16
       Alignment = taCenter
@@ -160,8 +162,22 @@ object FormMenuAccess: TFormMenuAccess
       ParentFont = False
       Visible = False
     end
+    object Label10: TLabel
+      Left = 879
+      Top = 12
+      Width = 114
+      Height = 16
+      Alignment = taCenter
+      Caption = #1040#1082#1090#1080#1074#1085#1099#1077' '#1089#1077#1089#1089#1080#1080
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+    end
     object CheckBox1: TCheckBox
-      Left = 296
+      Left = 295
       Top = 34
       Width = 16
       Height = 17
@@ -201,7 +217,15 @@ object FormMenuAccess: TFormMenuAccess
       Visible = False
     end
     object CheckBox6: TCheckBox
-      Left = 758
+      Left = 927
+      Top = 34
+      Width = 16
+      Height = 17
+      TabOrder = 6
+      Visible = False
+    end
+    object CheckBox7: TCheckBox
+      Left = 782
       Top = 34
       Width = 16
       Height = 17

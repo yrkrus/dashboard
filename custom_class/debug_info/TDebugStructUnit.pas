@@ -111,7 +111,7 @@ const
  IS_ERROR:Boolean = True;
 begin
    // записываем в лог
-   Log.Save(m_nameStruct+' --> '+ messclass+'.'+mess,IS_ERROR);
+   Log.Save(m_nameStruct+' --> '+ messclass+':'+mess,IS_ERROR);
 end;
 
 procedure TAverageCalculator.Execute;

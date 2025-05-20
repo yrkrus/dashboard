@@ -155,7 +155,7 @@ begin
   else lblTime.Caption:='Переподключение через '+IntToStr(StartTime-Ostatok)+' сек';
 
   Inc(Ostatok);
-  Application.ProcessMessages;
+ // Application.ProcessMessages;
   Sleep(1000);
 end;
 

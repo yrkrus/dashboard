@@ -14,7 +14,7 @@ interface
 uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       Variants, Graphics, System.SyncObjs, Vcl.StdCtrls,
       IdException, FIBDatabase, pFIBDatabase, TLogFileUnit,
-      Vcl.ExtCtrls, Vcl.Dialogs;
+      Vcl.ExtCtrls, Vcl.Dialogs, Vcl.Forms, FormServerIKCheckUnit;
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -45,38 +45,44 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
    // class TCheckServersIK
  type
       TCheckServersIK = class
+      private
+      m_listServers                         :TArray<TStructServers>;
+      m_count                               :Integer;
+      m_mutex                               :TMutex;
+
+      m_log                                 :TLoggingFile;
+      p_checkServerInfo                     :TLabel;
+      p_formCheckServers                    :TFormServerIKCheck;
+
+      firebird_login                        :string;
+      firebird_pwd                          :string;
+
+      firebirdConnect                       :TpFIBDatabase;
+
+      procedure CreateListServers(isShowSMS:Boolean);                         // получение данных о серверах(ip, alias)
+      procedure CreateAuthFirebird;
+      function CheckServer(InServerIP,InServerID_Alias:string):Boolean;
+
 
       public
+      constructor Create(var p_Log:TLoggingFile;
+                         var p_TextCheckServerInfo:TLabel;
+                         var p_FormCheckServer:TFormServerIKCheck); overload;
 
-      listServers             :array of TStructServers;
-
-
-      constructor Create(var p_Log:TLoggingFile);                   overload;
-
+      constructor Create(onlyShowSMS:Boolean);                      overload;
 
       destructor Destroy;                   override;
-
-      function GetCount                     :Integer;
 
       procedure CheckServerPing;                // проверка на доступность серверов инфоклиники режим Ping
       procedure CheckServerFirebird;            // проверка на доступность серверов инфоклиники режим Firebird (через подключение к БД Firebird)
 
-      function GetCheckServerFirebird(ID:Integer):Boolean;  // единичная проверка сервера
+      function GetCheckServerFirebird(_id:Integer):Boolean;  // единичная проверка сервера
 
+      function GetAddress(_id:Integer):string;
+      function GetIP(_id:Integer):string;
 
-      private
-      m_mutex                               : TMutex;
-      m_log                                 : TLoggingFile;
+      property Count:Integer read  m_count;
 
-      count                                 : Integer;
-      firebird_login                        : string;
-      firebird_pwd                          : string;
-
-      firebirdConnect                       : TpFIBDatabase;
-
-      procedure CreateListServers;                                   // получение данных о серверах(ip, alias)
-      procedure CreateAuthFirebird;
-      function CheckServer(InServerIP,InServerID_Alias:string):Boolean;
 
       end;
    // class TCheckServersIK END
@@ -85,7 +91,7 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
 implementation
 
 uses
-  FunctionUnit, FormHome, FormServerIKCheckUnit, GlobalVariables, TCustomTypeUnit, GlobalVariablesLinkDLL;
+  FunctionUnit, {FormHome, FormServerIKCheckUnit,} GlobalVariables, TCustomTypeUnit, GlobalVariablesLinkDLL;
 
 
 constructor TStructServers.Create;
@@ -105,26 +111,45 @@ constructor TStructServers.Create;
  end;
 
 
-constructor TCheckServersIK.Create(var p_Log:TLoggingFile);
+constructor TCheckServersIK.Create(var p_Log:TLoggingFile;
+                                   var p_TextCheckServerInfo:TLabel;
+                                   var p_FormCheckServer:TFormServerIKCheck);
  begin
    // inherited;
     m_mutex:=TMutex.Create(nil, False, 'Global\TCheckServersIK');
 
     m_log:=p_Log;
+    p_checkServerInfo:=p_TextCheckServerInfo;
+    p_formCheckServers:=p_FormCheckServer;
+
+
     firebirdConnect:=TpFIBDatabase.Create(nil);
-    count:=0;
+    m_count:=0;
 
    // получим данные
-   CreateListServers;
+   CreateListServers(False);
    CreateAuthFirebird;
  end;
+
+constructor TCheckServersIK.Create(onlyShowSMS:Boolean);
+begin
+   // inherited;
+    m_mutex:=TMutex.Create(nil, False, 'Global\TCheckServersIK');
+
+    firebirdConnect:=TpFIBDatabase.Create(nil);
+    m_count:=0;
+   // получим данные
+   CreateListServers(onlyShowSMS);
+   CreateAuthFirebird;
+end;
+
 
 destructor TCheckServersIK.Destroy;
 var
  i: Integer;
 begin
-  for i:=Low(listServers) to High(listServers) do FreeAndNil(listServers[i]);
-  SetLength(listServers, 0); // Убираем массив
+  for i:=Low(m_listServers) to High(m_listServers) do FreeAndNil(m_listServers[i]);
+  SetLength(m_listServers, 0); // Убираем массив
 
   m_mutex.Free;
   firebirdConnect.Free;
@@ -132,16 +157,6 @@ begin
   inherited;
 end;
 
-
-function TCheckServersIK.GetCount:Integer;
-begin
-  if m_mutex.WaitFor(INFINITE)=wrSignaled then
-  try
-    Result:=Self.count;
-  finally
-    m_mutex.Release;
-  end;
-end;
 
 
 procedure TCheckServersIK.CreateAuthFirebird;
@@ -179,13 +194,14 @@ begin
   end;
 end;
 
-procedure TCheckServersIK.CreateListServers;
+procedure TCheckServersIK.CreateListServers(isShowSMS:Boolean);
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  CodOshibki:string;
  countServers:Integer;
  i:Integer;
+ response:string;
 begin
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
@@ -199,7 +215,10 @@ begin
       ado.Connection:=serverConnect;
 
       SQL.Clear;
-      SQL.Add('select count(id) from server_ik');
+      if isShowSMS then response:='select count(id) from server_ik where showSMS = ''1'' ' // для отображения в СМС
+      else response:='select count(id) from server_ik';
+
+      SQL.Add(response);
 
       try
           Active:=True;
@@ -219,15 +238,18 @@ begin
       if countServers>=1 then begin
 
         //создадиим структуру
-        SetLength(listServers,countServers);
-        for i:=0 to countServers-1 do listServers[i]:=TStructServers.Create;
+        SetLength(m_listServers,countServers);
+        for i:=0 to countServers-1 do m_listServers[i]:=TStructServers.Create;
 
-        count:=countServers;
+        m_count:=countServers;
 
         if Active then ACtive:=false;
 
         SQL.Clear;
-        SQL.Add('select id,ip,address,alias from server_ik');
+        if isShowSMS then response:='select id,ip,address,alias from server_ik where showSMS = ''1'' order by address ASC' // для отображения в СМС
+        else response:='select id,ip,address,alias from server_ik';
+
+        SQL.Add(response);
 
         try
          Active:=True;
@@ -245,11 +267,11 @@ begin
 
 
          for i:=0 to countServers-1 do begin
-           listServers[i].id:=StrToInt(VarToStr(Fields[0].Value));
-           listServers[i].ip:=VarToStr(Fields[1].Value);
-           listServers[i].address:=VarToStr(Fields[2].Value);
-           listServers[i].alias:=VarToStr(Fields[3].Value);
-           listServers[i].countErrors:=0;
+           m_listServers[i].id:=StrToInt(VarToStr(Fields[0].Value));
+           m_listServers[i].ip:=VarToStr(Fields[1].Value);
+           m_listServers[i].address:=VarToStr(Fields[2].Value);
+           m_listServers[i].alias:=VarToStr(Fields[3].Value);
+           m_listServers[i].countErrors:=0;
 
            ado.Next;
          end;
@@ -276,10 +298,10 @@ var
  allCount:Integer;
 begin
 
-   for i:=0 to GetCount-1 do begin
+   for i:=0 to Count-1 do begin
 
     try
-     if Ping(listServers[i].ip)=False then begin
+     if Ping(m_listServers[i].ip)=False then begin
        //listServers[i].isRunning:=False;
      end;
     except
@@ -287,8 +309,8 @@ begin
       begin
         CodOshibki:=e.Message;
         if AnsiPos('10013',CodOshibki)<>0 then begin  // 'Socket Error # 10013'#$D#$A'Access denied.'
-          HomeForm.lblCheckInfocilinikaServerAlive.Caption:='Exception.Access denied';
-          HomeForm.lblCheckInfocilinikaServerAlive.Font.Color:=clRed;
+          p_checkServerInfo.Caption:='Exception.Access denied';
+          p_checkServerInfo.Font.Color:=clRed;
           Exit;
         end else if AnsiPos('long',CodOshibki)<>0 then begin
           //listServers[i].isRunning:=False;
@@ -298,22 +320,22 @@ begin
     end;
 
       // подправим статусы
-      with FormServerIKCheck do begin
-
-        {for j:=0 to ComponentCount-1 do begin
-          if Components[j].Name='lbl_'+IntToStr(listServers[i].id) then begin
-            if listServers[i].isRunning then begin  // НЕТ ОШИБКИ!!
-               (Components[j] as TLabel).Caption:='доступен';
-               (Components[j] as TLabel).Font.Color:=clGreen;
-            end
-            else begin                  // ЕСТЬ ОШИБКА!!!
-              (Components[j] as TLabel).Caption:='не доступен';
-              (Components[j] as TLabel).Font.Color:=clRed;
-            end;
-          end;
-        end;  }
-
-      end;
+//      with FormServerIKCheck do begin
+//
+//        for j:=0 to ComponentCount-1 do begin
+//          if Components[j].Name='lbl_'+IntToStr(listServers[i].id) then begin
+//            if listServers[i].isRunning then begin  // НЕТ ОШИБКИ!!
+//               (Components[j] as TLabel).Caption:='доступен';
+//               (Components[j] as TLabel).Font.Color:=clGreen;
+//            end
+//            else begin                  // ЕСТЬ ОШИБКА!!!
+//              (Components[j] as TLabel).Caption:='не доступен';
+//              (Components[j] as TLabel).Font.Color:=clRed;
+//            end;
+//          end;
+//        end;
+//
+//      end;
    end;
 
 
@@ -406,7 +428,7 @@ begin
       begin
        messclass:=e.ClassName;
        mess:=e.Message;
-       m_log.Save(DBName+': '+messclass+'.'+mess,IS_ERROR);
+       m_log.Save(DBName+': '+messclass+':'+mess,True);
        Connected:=False;
        Close;
       end;
@@ -421,14 +443,14 @@ begin
 end;
 
 
-function TCheckServersIK.GetCheckServerFirebird(ID:Integer):Boolean;
+function TCheckServersIK.GetCheckServerFirebird(_id:Integer):Boolean;
 var
  connectBD_Firebird:Boolean;
 begin
   Result:=False;
 
   try
-     connectBD_Firebird:=CheckServer(listServers[ID].ip,listServers[ID].alias);
+     connectBD_Firebird:=CheckServer(m_listServers[_id].ip,m_listServers[_id].alias);
 
      if connectBD_Firebird then Result:=True;
   except
@@ -437,6 +459,16 @@ begin
         Exit;
       end;
   end;
+end;
+
+function TCheckServersIK.GetAddress(_id:Integer):string;
+begin
+  Result:=m_listServers[_id].address;
+end;
+
+function TCheckServersIK.GetIP(_id:Integer):string;
+begin
+  Result:=m_listServers[_id].ip;
 end;
 
 
@@ -464,21 +496,21 @@ begin
    isWarningError:=False;
    isWarningErrorCount:=0;
 
-   for i:=0 to GetCount-1 do begin
+   for i:=0 to Count-1 do begin
 
     try
-      connectBD_Firebird:=CheckServer(listServers[i].ip,listServers[i].alias);
+      connectBD_Firebird:=CheckServer(m_listServers[i].ip,m_listServers[i].alias);
 
       if not connectBD_Firebird then begin
         // увеличиаем кол-во
-        if listServers[i].countErrors<countWarningsErrors then begin
-          Inc(listServers[i].countErrors);
+        if m_listServers[i].countErrors<countWarningsErrors then begin
+          Inc(m_listServers[i].countErrors);
         end;
       end
       else begin
-        if listServers[i].countErrors<>0 then begin
-          if listServers[i].countErrors > 0 then begin
-            Dec(listServers[i].countErrors);
+        if m_listServers[i].countErrors<>0 then begin
+          if m_listServers[i].countErrors > 0 then begin
+            Dec(m_listServers[i].countErrors);
           end;
         end;
       end;
@@ -487,31 +519,30 @@ begin
       on E:Exception do
       begin
         CodOshibki:=e.Message;
-       // HomeForm.STError.Caption:=CodOshibki;
-        if listServers[i].countErrors<countWarningsErrors then begin
-          Inc(listServers[i].countErrors);
+        if m_listServers[i].countErrors<countWarningsErrors then begin
+          Inc(m_listServers[i].countErrors);
         end;
       end;
     end;
 
       // подправим статусы
-      with FormServerIKCheck do begin
+      with p_formCheckServers do begin
 
         for j:=0 to ComponentCount-1 do begin
-          if Components[j].Name='lbl_'+IntToStr(listServers[i].id) then begin
-            if listServers[i].countErrors=0 then begin  // НЕТ ОШИБКИ!!
+          if Components[j].Name='lbl_'+IntToStr(m_listServers[i].id) then begin
+            if m_listServers[i].countErrors=0 then begin  // НЕТ ОШИБКИ!!
                (Components[j] as TLabel).Caption:='доступен';
                (Components[j] as TLabel).Font.Color:=colorOk;
             end
             else begin                                  // ЕСТЬ ОШИБКА!!!
-              if listServers[i].countErrors<countWarningsErrors then begin
+              if m_listServers[i].countErrors<countWarningsErrors then begin
                 (Components[j] as TLabel).Caption:='проблема';
                 (Components[j] as TLabel).Font.Color:=colorWarning;
                 isWarningError:=True;
                 Inc(isWarningErrorCount);
               end;
 
-              if listServers[i].countErrors=countWarningsErrors then begin
+              if m_listServers[i].countErrors=countWarningsErrors then begin
                 (Components[j] as TLabel).Caption:='не доступен';
                 (Components[j] as TLabel).Font.Color:=colorError;
               end;
@@ -524,87 +555,88 @@ begin
 
 
   // надпись после проверки
-  with HomeForm do begin
-    // кол-во с ошибками
-    for i:=0 to GetCount-1 do begin
-      if listServers[i].countErrors>=countWarningsErrors then begin
-         Inc(allCountErrors);
+  begin
+     // кол-во с ошибками
+      for i:=0 to Count-1 do begin
+        if m_listServers[i].countErrors>=countWarningsErrors then begin
+           Inc(allCountErrors);
+        end;
       end;
-    end;
 
-    for i:=0 to GetCount-1 do begin
+      for i:=0 to Count-1 do begin
 
-      if allCountErrors = 0 then begin
+        if allCountErrors = 0 then begin
 
-        if isWarningError then begin
-         lblCheckInfocilinikaServerAlive.Caption:='возможная проблема ('+IntToStr(isWarningErrorCount)+') (подробнее)';
-         lblCheckInfocilinikaServerAlive.Font.Color:=colorWarning;
+          if isWarningError then begin
+           p_checkServerInfo.Caption:='возможная проблема ('+IntToStr(isWarningErrorCount)+') (подробнее)';
+           p_checkServerInfo.Font.Color:=colorWarning;
+          end
+          else begin
+           p_checkServerInfo.Caption:='отсутствуют';
+           p_checkServerInfo.Font.Color:=colorOk;
+          end;
+
+          p_checkServerInfo.InitiateAction;
+          p_checkServerInfo.Repaint;
         end
         else begin
-         lblCheckInfocilinikaServerAlive.Caption:='отсутствуют';
-         lblCheckInfocilinikaServerAlive.Font.Color:=colorOk;
-        end;
+          p_checkServerInfo.Font.Color:=colorError;
 
-        lblCheckInfocilinikaServerAlive.InitiateAction;
-        lblCheckInfocilinikaServerAlive.Repaint;
-      end
-      else begin
-        lblCheckInfocilinikaServerAlive.Font.Color:=colorError;
-
-        case allCountErrors of
-         1:begin
-          for j:=0 to GetCount-1 do begin
-            if listServers[j].countErrors>=countWarningsErrors then begin
-              lblCheckInfocilinikaServerAlive.Caption:=listServers[j].address;
-              lblCheckInfocilinikaServerAlive.InitiateAction;
-              lblCheckInfocilinikaServerAlive.Repaint;
-            end;
-          end;
-         end;
-         2:begin
-          viewErrors:=0;
-          for j:=0 to GetCount-1 do begin
-            if listServers[j].countErrors>=countWarningsErrors then begin
-              if viewErrors=0 then begin
-               lblCheckInfocilinikaServerAlive.Caption:=listServers[j].address;
-               Inc(viewErrors);
-              end
-              else begin
-                lblCheckInfocilinikaServerAlive.Caption:=lblCheckInfocilinikaServerAlive.Caption+' и '+listServers[j].address;
+          case allCountErrors of
+           1:begin
+            for j:=0 to Count-1 do begin
+              if m_listServers[j].countErrors>=countWarningsErrors then begin
+                p_checkServerInfo.Caption:=m_listServers[j].address;
+                p_checkServerInfo.InitiateAction;
+                p_checkServerInfo.Repaint;
               end;
-
-              lblCheckInfocilinikaServerAlive.InitiateAction;
-              lblCheckInfocilinikaServerAlive.Repaint;
             end;
-          end;
-         end;
-        else
-         viewErrors:=0;
-          for j:=0 to GetCount-1 do begin
-            if listServers[j].countErrors>=countWarningsErrors then begin
-              if viewErrors=0 then begin
-               lblCheckInfocilinikaServerAlive.Caption:=listServers[j].address;
-               Inc(viewErrors);
-              end
-              else if (viewErrors=1) then begin
-                lblCheckInfocilinikaServerAlive.Caption:=lblCheckInfocilinikaServerAlive.Caption+' и '+listServers[j].address;
-                inc(viewErrors);
+           end;
+           2:begin
+            viewErrors:=0;
+            for j:=0 to Count-1 do begin
+              if m_listServers[j].countErrors>=countWarningsErrors then begin
+                if viewErrors=0 then begin
+                 p_checkServerInfo.Caption:=m_listServers[j].address;
+                 Inc(viewErrors);
+                end
+                else begin
+                  p_checkServerInfo.Caption:=p_checkServerInfo.Caption+' и '+m_listServers[j].address;
+                end;
+
+                p_checkServerInfo.InitiateAction;
+                p_checkServerInfo.Repaint;
               end;
-
-              lblCheckInfocilinikaServerAlive.InitiateAction;
-              lblCheckInfocilinikaServerAlive.Repaint;
             end;
-          end;
+           end;
+          else
+           viewErrors:=0;
+            for j:=0 to Count-1 do begin
+              if m_listServers[j].countErrors>=countWarningsErrors then begin
+                if viewErrors=0 then begin
+                 p_checkServerInfo.Caption:=m_listServers[j].address;
+                 Inc(viewErrors);
+                end
+                else if (viewErrors=1) then begin
+                  p_checkServerInfo.Caption:=p_checkServerInfo.Caption+' и '+m_listServers[j].address;
+                  inc(viewErrors);
+                end;
 
-          if viewErrors>=2 then begin
-           lblCheckInfocilinikaServerAlive.Caption:=lblCheckInfocilinikaServerAlive.Caption+' и еще '+IntToStr(allCountErrors-2)+' (нажмите сюда для показа...)';
-           lblCheckInfocilinikaServerAlive.InitiateAction;
-           lblCheckInfocilinikaServerAlive.Repaint;
+                p_checkServerInfo.InitiateAction;
+                p_checkServerInfo.Repaint;
+              end;
+            end;
+
+            if viewErrors>=2 then begin
+             p_checkServerInfo.Caption:=p_checkServerInfo.Caption+' и еще '+IntToStr(allCountErrors-2)+' (нажмите сюда для показа...)';
+             p_checkServerInfo.InitiateAction;
+             p_checkServerInfo.Repaint;
+            end;
           end;
         end;
       end;
-    end;
   end;
+
 end;
 
 end.

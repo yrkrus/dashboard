@@ -21,13 +21,13 @@ type
 implementation
 
 uses
-  FunctionUnit, FormHome, GlobalVariables, TDebugStructUnit;
+  FunctionUnit, FormHome, GlobalVariables, TDebugStructUnit, FormServerIKCheckUnit;
 
 
 procedure Thread_CHECKSERVERS.CriticalError;
 begin
  // записываем в лог
- Log.Save(messclass+'.'+mess,IS_ERROR);
+ Log.Save(messclass+':'+mess,IS_ERROR);
 end;
 
 
@@ -66,47 +66,41 @@ begin
     end;
   end;
 
-
   try
-   listServers:=TCheckServersIK.Create(Log);
+   listServers:=TCheckServersIK.Create(Log, HomeForm.lblCheckInfocilinikaServerAlive, FormServerIKCheck);
   except
     on E:Exception do
     begin
-     //INTERNAL_ERROR:=true;
      messclass:=e.ClassName;
      mess:=e.Message;
      Synchronize(CriticalError);
-    // INTERNAL_ERROR:=False;
     end;
   end;
 
 
   while not Terminated do
   begin
+    if UpdateCHECKSERVERSSTOP then begin
 
-      if UpdateCHECKSERVERSSTOP then begin
+      try
+        StartTime:=GetTickCount;
 
-        try
-          StartTime:=GetTickCount;
+        show(listServers);
 
-          show(listServers);
+        EndTime:= GetTickCount;
+        Duration:= EndTime - StartTime;
 
-          EndTime:= GetTickCount;
-          Duration:= EndTime - StartTime;
-
-          SharedCountResponseThread.SetCurrentResponse(NAME_THREAD,Duration);
-        except
-          on E:Exception do
-          begin
-           //INTERNAL_ERROR:=true;
-           messclass:=e.ClassName;
-           mess:=e.Message;
-           Synchronize(CriticalError);
-          // INTERNAL_ERROR:=False;
-          end;
+        SharedCountResponseThread.SetCurrentResponse(NAME_THREAD,Duration);
+      except
+        on E:Exception do
+        begin
+         messclass:=e.ClassName;
+         mess:=e.Message;
+         Synchronize(CriticalError);
         end;
       end;
-     if Duration<SLEEP_TIME then Sleep(SLEEP_TIME-Duration);
+    end;
+   if Duration<SLEEP_TIME then Sleep(SLEEP_TIME-Duration);
   end;
 end;
 

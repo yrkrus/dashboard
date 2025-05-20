@@ -3,16 +3,21 @@ unit FormSendingSMSUnit;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls, Vcl.ExtCtrls;
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
+  Vcl.StdCtrls, Vcl.ComCtrls, Vcl.ExtCtrls, TShowMessageSMSUnit;
 
 type
   TFormSendingSMS = class(TForm)
     panel: TPanel;
     re_LogSending: TRichEdit;
     procedure FormShow(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
+  m_showTodaySendingSMS:Boolean;  // показываем отправленные за сегодня смс или массовую расслыку
+  m_sendingSMS:TShowMessageSMS;
+
   procedure Show;
 
   procedure CreateLogAddColoredLine(var p_Log: TRichEdit;
@@ -21,6 +26,8 @@ type
 
   public
     { Public declarations }
+  procedure SetTodaySendingSms(_value:Boolean);
+
   end;
 
 var
@@ -33,6 +40,11 @@ uses
 
 {$R *.dfm}
 
+
+procedure TFormSendingSMS.SetTodaySendingSms(_value:Boolean);
+begin
+  m_showTodaySendingSMS:=_value;
+end;
 
 
 procedure TFormSendingSMS.CreateLogAddColoredLine(var p_Log: TRichEdit;
@@ -66,6 +78,11 @@ end;
 
 
 
+procedure TFormSendingSMS.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+ m_showTodaySendingSMS:=False;
+end;
+
 procedure TFormSendingSMS.FormShow(Sender: TObject);
 begin
   Screen.Cursor:=crHourGlass;
@@ -82,11 +99,23 @@ begin
   // очищаем данные, вдруг еще раз будет прогрузка
   re_LogSending.Clear;
 
-  for i:=0 to SharedPacientsList.Count-1 do begin
+  if not m_showTodaySendingSMS then begin
+    for i:=0 to SharedPacientsList.Count-1 do begin
 
-    CreateLogAddColoredLine(re_LogSending,
-                            SharedPacientsList.GetPhone(i),clGreen,
-                            SharedPacientsList.CreateMessage(i, REMEMBER_MESSAGE),clBlack);
+      CreateLogAddColoredLine(re_LogSending,
+                              SharedPacientsList.GetPhone(i),clGreen,
+                              SharedPacientsList.CreateMessage(i, REMEMBER_MESSAGE),clBlack);
+    end;
+  end
+  else begin
+   // текущие отправленные смс
+   m_sendingSMS:=TShowMessageSMS.Create;
+
+   for i:=0 to m_sendingSMS.Count-1 do begin
+      CreateLogAddColoredLine(re_LogSending,
+                              m_sendingSMS.GetUserInfoSending(i),clGreen,
+                              m_sendingSMS.GetMessageSMS(i),clBlack);
+   end;
   end;
 
   re_LogSending.SelStart:=0;

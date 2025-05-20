@@ -121,9 +121,6 @@ Coordinates=738,554,196,58
 [Label11]
 Coordinates=413,622,60,58
 
-[menu_FormPropushennie]
-Coordinates=1569,188,162,36
-
 [lblStstatisc_Queue5000_Answered]
 Coordinates=502,282,214,58
 
@@ -151,4 +148,7 @@ Coordinates=457,232,40,36
 
 [START_THREAD_ALLl]
 Coordinates=10,622,59,58
+
+[menu_missed_calls]
+Coordinates=1569,188,162,36
 

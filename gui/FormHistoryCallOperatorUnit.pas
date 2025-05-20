@@ -39,12 +39,19 @@ type
     Label2: TLabel;
     combox_TimeFilter: TComboBox;
     img_play_or_downloads: TImage;
+    lblDownloadCall: TLabel;
+    Image1: TImage;
+    Image2: TImage;
+    lblPlayCall: TLabel;
     Label4: TLabel;
+    lblProgramExit: TLabel;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure list_HistoryCustomDrawItem(Sender: TCustomListView;
       Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
     procedure combox_TimeFilterChange(Sender: TObject);
+    procedure lblDownloadCallClick(Sender: TObject);
+    procedure lblPlayCallClick(Sender: TObject);
   private
     { Private declarations }
   m_id:Integer;  // id пользователя
@@ -72,6 +79,8 @@ type
                       isReducedTime: Boolean;
                       var p_ListView: TListView;
                       var m_count3, m_count3_10, m_count10_15, m_count15: Integer);
+
+  procedure ZAGLUSHKA;
   public
     { Public declarations }
 
@@ -89,6 +98,12 @@ uses
   GlobalVariables, GlobalVariablesLinkDLL, FunctionUnit, TCustomTypeUnit;
 
 {$R *.dfm}
+
+
+procedure TFormHistoryCallOperator.ZAGLUSHKA;
+begin
+ MessageBox(0,PChar('Функционал в разработке ... '),PChar('Заглушка'),MB_OK+MB_ICONINFORMATION);
+end;
 
 function EnumFilterTimeToString(_time:enumFilterTime):string;
 begin
@@ -137,6 +152,7 @@ begin
   m_count15:=0;
 
   lblProgramStarted.Caption:='---';
+  lblProgramExit.Caption:='---';
   lbl_3.Caption:='---';
   lbl_3_10.Caption:='---';
   lbl_10_15.Caption:='---';
@@ -274,10 +290,10 @@ begin
 
   // Увеличиваем счетчики в зависимости от времени разговора
   case time_talk of
-    0..179: Inc(m_count3);
-    180..600: Inc(m_count3_10);
-    601..900: Inc(m_count10_15);
-    else Inc(m_count15);
+    0..179:     Inc(m_count3);
+    180..600:   Inc(m_count3_10);
+    601..900:   Inc(m_count10_15);
+    else        Inc(m_count15);
   end;
 end;
 
@@ -299,7 +315,8 @@ var
   serverConnect: TADOConnection;
   i, countCalls: Integer;
   time_talk: Integer;
-  program_started: Double;
+  program_started: TDateTime;
+  program_exit: TDateTime;
   id, dateTime, trunk, phone, numberQueue, talkTime:string;
   filteringCount:Integer;
 begin
@@ -310,10 +327,16 @@ begin
   if _filterTime = time_all then LoadCountCalls(True)
   else LoadCountCalls(False);
 
-  // время входа
-  program_started := GetProgrammStarted(m_id);
-  if program_started <> 0 then
-    lblProgramStarted.Caption := DateTimeToStr(program_started);
+  // время
+  begin
+     // входа
+    program_started := GetProgrammStarted(m_id);
+    if program_started <> 0 then lblProgramStarted.Caption := DateTimeToStr(program_started);
+
+    // выхода
+    program_exit :=GetProgrammExit(m_id);
+    if program_exit <> 0 then lblProgramExit.Caption := DateTimeToStr(program_exit);
+  end;
 
   ado := TADOQuery.Create(nil);
   serverConnect := createServerConnect;
@@ -464,6 +487,16 @@ begin
   list_History.SetFocus;
 end;
 
+
+procedure TFormHistoryCallOperator.lblDownloadCallClick(Sender: TObject);
+begin
+ ZAGLUSHKA;
+end;
+
+procedure TFormHistoryCallOperator.lblPlayCallClick(Sender: TObject);
+begin
+  ZAGLUSHKA;
+end;
 
 procedure TFormHistoryCallOperator.list_HistoryCustomDrawItem(
   Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;

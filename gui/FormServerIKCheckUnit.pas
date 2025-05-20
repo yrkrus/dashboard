@@ -22,9 +22,6 @@ var
 
 implementation
 
-uses
-  FormHome;
-
 {$R *.dfm}
 
 end.

@@ -311,7 +311,7 @@ begin
       familiya      := user_familiya;
       id            := getUserID(user_name,user_familiya);
       login         := getUserLogin(id);
-      group_role    := StringToTRole(getUserRoleSTR(id));
+      group_role    := StringToEnumRole(getUserRoleSTR(id));
       re_password   := getUserRePassword(id);
       ip            := getLocalIP;
       pc            := getComputerPCName;
@@ -332,14 +332,14 @@ begin
     end;
 
     // логирование (авторизация)
-    LoggingRemote(eLog_enter);
+    LoggingRemote(eLog_enter,SharedCurrentUserLogon.GetID);
     Screen.Cursor:=crDefault;
     Close;
   end
   else begin
 
     // логирование (не успешная авторизация)
-   LoggingRemote(eLog_auth_error);
+   LoggingRemote(eLog_auth_error,SharedCurrentUserLogon.GetID);
    Screen.Cursor:=crDefault;
 
    FormSizeWithError('Ошибка авторизации, не верный пароль');
@@ -461,7 +461,7 @@ begin
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
-      SQL.Add('select count(id) from users where disabled = ''0'' and role <> ''6'' ');
+      SQL.Add('select count(id) from users where disabled = ''0'' and role <> '+#39+IntToStr(EnumRoleToInteger(role_operator_no_dash))+#39);
 
       try
           Active:=True;
@@ -482,7 +482,7 @@ begin
       countUsers:=Fields[0].Value;
 
       SQL.Clear;
-      SQL.Add('select familiya,name from users where disabled = ''0'' and role <> ''6'' order by familiya');
+      SQL.Add('select familiya,name from users where disabled = ''0'' and role <> '+#39+IntToStr(EnumRoleToInteger(role_operator_no_dash))+#39+' order by familiya');
 
       try
           Active:=True;
@@ -592,7 +592,7 @@ begin
   end;
 
   // версия
-  lblVersion.Caption:=getVersion(GUID_VERSION,eGUI);
+  lblVersion.Caption:=GetVersion(GUID_VERSION,eGUI);
 
   // пасхалки
   Egg;
@@ -612,9 +612,7 @@ begin
   img_eay_open.Visible:=False;
 
   img_eay_close.Visible:=True;
-
 end;
-
 
 
 procedure TFormAuth.lblChangeUserClick(Sender: TObject);
@@ -625,7 +623,6 @@ begin
   lblChangeUser.Visible:=False;
 
   comboxUser.Visible:=True;
-
 end;
 
 end.

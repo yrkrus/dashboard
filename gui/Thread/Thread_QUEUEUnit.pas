@@ -135,7 +135,7 @@ end;
 procedure Thread_QUEUE.CriticalError;
 begin
   // записываем в лог
- Log.Save(messclass+'.'+mess,IS_ERROR);
+ Log.Save(messclass+':'+mess,IS_ERROR);
 end;
 
 procedure Thread_QUEUE.show;

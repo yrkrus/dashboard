@@ -310,7 +310,7 @@ end;
      end;
     end;
    end;
-   Application.ProcessMessages;
+  // Application.ProcessMessages;
  end;
 
  procedure TAnsweredQueue.addAnswered(id,answered_time:Integer);

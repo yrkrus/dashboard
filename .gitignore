@@ -6,6 +6,7 @@ Debug/
 Release/
 ico/
 !to_MIR/
+!release/
 soft/
 *.local
 *.stat
@@ -15,7 +16,9 @@ soft/
 *.exe
 *.dll
 *.png
+*.bmp
 *.jpg
+*.jpeg
 *.ico
 *.cmd
 *.bat

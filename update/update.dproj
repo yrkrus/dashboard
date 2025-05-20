@@ -7,7 +7,7 @@
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Release</Config>
         <Platform Condition="'$(Platform)'==''">Win64</Platform>
-        <TargetedPlatforms>3</TargetedPlatforms>
+        <TargetedPlatforms>2</TargetedPlatforms>
         <AppType>Application</AppType>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
@@ -172,9 +172,9 @@
         <VerInfo_Locale>1033</VerInfo_Locale>
         <Icon_MainIcon>ico\cloudrefresh_icon-icons.com_54403.ico</Icon_MainIcon>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
-        <VerInfo_Build>33</VerInfo_Build>
-        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.8.0.33;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=0.0.0.0;Comments=</VerInfo_Keys>
-        <VerInfo_MinorVer>8</VerInfo_MinorVer>
+        <VerInfo_Build>38</VerInfo_Build>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.9.0.38;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=0.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_MinorVer>9</VerInfo_MinorVer>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -185,10 +185,11 @@
             <DesignClass>TService</DesignClass>
         </DCCReference>
         <DCCReference Include="GlobalVariables.pas"/>
-        <DCCReference Include="..\..\custom_class\TCustomTypeUnit.pas"/>
-        <DCCReference Include="..\..\custom_class\TFTPUnit.pas"/>
-        <DCCReference Include="..\..\custom_class\TLogFileUnit.pas"/>
-        <DCCReference Include="..\..\custom_class\TXmlUnit.pas"/>
+        <DCCReference Include="..\custom_class\TXmlUnit.pas"/>
+        <DCCReference Include="..\custom_class\TCustomTypeUnit.pas"/>
+        <DCCReference Include="..\custom_class\TLogFileUnit.pas"/>
+        <DCCReference Include="..\custom_class\TFTPUnit.pas"/>
+        <DCCReference Include="..\gui\GlobalVariablesLinkDLL.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -658,7 +659,7 @@
                 <Platform value="iOSSimulator">False</Platform>
                 <Platform value="Linux64">False</Platform>
                 <Platform value="OSX32">False</Platform>
-                <Platform value="Win32">True</Platform>
+                <Platform value="Win32">False</Platform>
                 <Platform value="Win64">True</Platform>
             </Platforms>
         </BorlandProject>

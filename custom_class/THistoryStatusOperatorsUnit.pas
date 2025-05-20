@@ -31,7 +31,7 @@ uses
   m_IT          :Cardinal;     // ИТ
   m_transfer    :Cardinal;     // Переносы
   m_reserve     :Cardinal;     // Резерв
-  //m_callback    :Cardinal;  // в разработке
+  m_callback    :Cardinal;     // callback
   m_home        :Cardinal;     // Домой
 
   constructor Create      overload;
@@ -112,7 +112,7 @@ constructor TStatusDuration.Create;
   m_IT          :=0;
   m_transfer    :=0;
   m_reserve     :=0;
-  //m_callback    :=0;  // в разработке
+  m_callback    :=0;
   m_home        :=0;
  end;
 
@@ -195,6 +195,7 @@ begin
    eLog_IT            :countTime := m_status.m_IT;               // ИТ
    eLog_transfer      :countTime := m_status.m_transfer;         // переносы
    eLog_reserve       :countTime := m_status.m_reserve;          // резерв
+   eLog_callback      :countTime := m_status.m_callback;         // callback
   else
     Exit;
   end;
@@ -255,7 +256,7 @@ begin
         m_history[i].m_dateStart:=actionTime;
 
         // не сервисный статус
-        if not (action in [eLog_add_queue_5000 .. eLog_reserve]) then begin
+        if not (action in [eLog_add_queue_5000 .. eLog_callback]) then begin
           ado.Next;
           Continue;
         end;
@@ -334,6 +335,7 @@ begin
     eLog_IT                   :m_status.m_IT        := m_status.m_IT + _count;                // ИТ
     eLog_transfer             :m_status.m_transfer  := m_status.m_transfer + _count;          // переносы
     eLog_reserve              :m_status.m_reserve   := m_status.m_reserve + _count;           // резерв
+    eLog_callback             :m_status.m_callback  := m_status.m_callback + _count;          // callback
     eLog_create_new_user      :Exit;         // создание нового пользователя  (не считаем)
     eLog_edit_user            :Exit;         // редактирование пользователя  (не считаем)
   end;

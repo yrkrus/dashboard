@@ -54,7 +54,7 @@ var
 implementation
 
 uses
-  GlobalVariables, FunctionUnit, FormEditTemplateUnit;
+  GlobalVariables, FunctionUnit, FormEditTemplateUnit, FormHomeUnit, TCustomTypeUnit;
 
 {$R *.dfm}
 
@@ -95,6 +95,8 @@ begin
   if Assigned(SelectedItem) then
   begin
      AddMessageFromTemplate(SelectedItem.SubItems.Text);
+     FormHome.ShowManualMessage;
+     FormHome.SetEditMessage(paramStatus_DISABLED, 'Сообщение из глобального шаблона не редактируется!');
      Close;
   end
   else
@@ -125,6 +127,7 @@ begin
   if Assigned(SelectedItem) then
   begin
      AddMessageFromTemplate(SelectedItem.SubItems.Text);
+     FormHome.ShowManualMessage;
      Close;
   end
   else

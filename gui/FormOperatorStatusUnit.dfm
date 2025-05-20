@@ -257,8 +257,7 @@ object FormOperatorStatus: TFormOperatorStatus
       Top = 3
       Width = 76
       Height = 37
-      Caption = 'CallBack ('#1074' '#1088#1072#1079#1088#1072#1073#1086#1090#1082#1077')'
-      Enabled = False
+      Caption = 'CallBack'
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
       Font.Height = -11
@@ -267,6 +266,7 @@ object FormOperatorStatus: TFormOperatorStatus
       ParentFont = False
       TabOrder = 9
       WordWrap = True
+      OnClick = Button2Click
     end
   end
 end

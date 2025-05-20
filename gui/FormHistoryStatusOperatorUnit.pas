@@ -28,7 +28,7 @@ type
     Label16: TLabel;
     lbl_reserve: TLabel;
     Label18: TLabel;
-    Label19: TLabel;
+    lbl_callback: TLabel;
     Label20: TLabel;
     lbl_home: TLabel;
     panel_History: TPanel;
@@ -98,6 +98,7 @@ begin
   lbl_transfer.Caption:='---';
   lbl_reserve.Caption:='---';
   lbl_home.Caption:='---';
+  lbl_callback.Caption:='---';
 
   if Assigned(operatorStatus) then FreeAndNil(operatorStatus);
 end;
@@ -167,6 +168,7 @@ begin
   lbl_transfer.Caption  := operatorStatus.GetCountTimeLogging(eLog_transfer);  // переносы
   lbl_reserve.Caption   := operatorStatus.GetCountTimeLogging(eLog_reserve);   // резерв
   lbl_home.Caption      := operatorStatus.GetCountTimeLogging(eLog_home);      // домой
+  lbl_callback.Caption  := operatorStatus.GetCountTimeLogging(eLog_callback);  // callback
 end;
 
 

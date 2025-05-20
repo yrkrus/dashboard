@@ -11,7 +11,8 @@ uses
   TCustomTypeUnit in '..\custom_class\TCustomTypeUnit.pas',
   TQueueHistoryUnit in '..\custom_class\TQueueHistoryUnit.pas',
   TReportCountOperatorsUnit in '..\custom_class\TReportCountOperatorsUnit.pas',
-  TCountRingsOperatorsUnit in '..\custom_class\TCountRingsOperatorsUnit.pas';
+  TCountRingsOperatorsUnit in '..\custom_class\TCountRingsOperatorsUnit.pas',
+  GlobalVariablesLinkDLL in '..\gui\GlobalVariablesLinkDLL.pas';
 
 {$R *.res}
 

@@ -378,10 +378,6 @@ begin
 
      btnCheckSMSSettings.Enabled:=True;
    end;
-
-
-
-
 end;
 
 

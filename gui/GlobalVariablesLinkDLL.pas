@@ -17,14 +17,15 @@ uses
   function GetUserAccessLocalChat(InUserID:Integer):Boolean;            stdcall;  external 'core.dll';       // есть ли доступ у пользователя к локальному чату
   function GetUserAccessReports(InUserID:Integer):Boolean;              stdcall;  external 'core.dll';       // есть ли доступ у пользователя к отчетам
   function GetUserAccessSMS(InUserID:Integer):Boolean;                  stdcall;  external 'core.dll';       // есть ли доступ у пользователя к SMS отправке
-  //function GetCurrentDateTimeDec(DecMinutes:Integer):PChar;   overload; stdcall; external 'core.dll';       // текущее начала дня минус -DecMinutes
+  function GetUserAccessService(InUserID:Integer):Boolean;              stdcall;  external 'core.dll';       // есть ли доступ у пользователя к услугам
+   //function GetCurrentDateTimeDec(DecMinutes:Integer):PChar;   overload; stdcall; external 'core.dll';       // текущее начала дня минус -DecMinutes
   function GetCurrentStartDateTime:PChar;                     overload; stdcall; external 'core.dll';       // текущее начала дня с минутами 00:00:00
   function GetCurrentTime:PChar;                                        stdcall;  external 'core.dll';       // текущее время
   function GetLocalChatNameFolder:PChar;                                stdcall;  external 'core.dll';       // папка с локальным чатом
   function GetExtensionLog:PChar;                                       stdcall;  external 'core.dll';       // папка с локальным чатом
   function GetLogNameFolder:PChar;                                      stdcall;  external 'core.dll';       // папка с логом
   function GetUpdateNameFolder:PChar;                                   stdcall;  external 'core.dll';       // папка с update (обновленияем)
-  function GetRemoteVersionDashboard(var _errorDescriptions:string):PChar;                   stdcall;  external 'core.dll';       // текущая версия дашборда (БД)
+  function GetRemoteVersionDashboard(var _errorDescriptions:string):PChar;    stdcall;  external 'core.dll';       // текущая версия дашборда (БД)
   function KillTask(ExeFileName:string):integer;                        stdcall;  external 'core.dll';       // функция остановки exe
   procedure KillProcessNow;                                             stdcall;  external 'core.dll';       // немедленное звершение работы
   function GetTask(ExeFileName:string):Boolean;                         stdcall;  external 'core.dll';       // проверка запущен ли процесс
@@ -38,6 +39,10 @@ uses
   function TQueueToString(InQueueSTR:enumQueueCurrent):PChar;           stdcall;  external 'core.dll';      // конвертер из TQueue в string
   function GetUserNameOperators(InSip:string):PChar;                    stdcall;  external 'core.dll';      // полчуение имени пользователя из его SIP номера
   function GetCurrentUserNamePC:PChar;                                  stdcall;  external 'core.dll';      // получение имени залогиненого пользователя (из системы)
+  function GetCountSendingSMSToday:Integer;                             stdcall;  external 'core.dll';      // кол-во отправленных за сегодня смс
+  function Ping(InIp:string):Boolean;                                   stdcall;  external 'core.dll';      // проверка ping
+  function IsServerIkExistWorkingTime(_id:Integer):Boolean;             stdcall;  external 'core.dll';      // настроен ли время работы в сервере ИК
+  function GetClinicId(_nameClinic:string):Integer;                     stdcall;  external 'core.dll';      // id клиники
 
 
   // --- connect_to_server.dll ---

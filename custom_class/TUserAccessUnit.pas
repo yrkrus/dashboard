@@ -24,6 +24,11 @@ uses
  // class TUserAccess
   type
     TUserAccess = class
+  private
+  m_role                                      :enumRole;
+
+  procedure LoadAccess(var p_InRole: enumRole);
+
   public
    menu_settings_users                        : Boolean;
    menu_settings_serversik                    : Boolean;
@@ -31,11 +36,11 @@ uses
    menu_settings_global                       : Boolean;
    menu_active_session                        : Boolean;
    menu_service                               : Boolean;
+   menu_missed_calls                          : Boolean;
 
   constructor Create(InGroupRole:enumRole);      overload;
+  property Role:enumRole read m_role;
 
-  private
-  procedure LoadAccess(var p_InRole: enumRole);
   end;
  // class TUserAccess END
 
@@ -54,6 +59,9 @@ implementation
    menu_settings_global                     :=  False;
    menu_active_session                      :=  False;
    menu_service                             :=  False;
+   menu_missed_calls                        :=  False;
+
+   m_role                                   :=  InGroupRole;
 
    LoadAccess(InGroupRole);
  end;
@@ -79,8 +87,9 @@ begin
 
     SQL.Clear;
     SQL.Add('select menu_users,menu_serversik, menu_siptrunk,');
-    SQL.Add('menu_settings_global, menu_active_session, menu_service ');
-    SQL.Add('from access_panel where role = '+#39+IntToStr(GetRoleID(TRoleToString(p_InRole)))+#39);
+    SQL.Add('menu_settings_global, menu_active_session, menu_service,');
+    SQL.Add('menu_missed_calls ');
+    SQL.Add('from access_panel where role = '+#39+IntToStr(GetRoleID(EnumRoleToString(p_InRole)))+#39);
 
     Active:=True;
 
@@ -90,6 +99,7 @@ begin
     if StrToInt(VarToStr(Fields[3].Value))=1 then menu_settings_global:=True;
     if StrToInt(VarToStr(Fields[4].Value))=1 then menu_active_session:=True;
     if StrToInt(VarToStr(Fields[5].Value))=1 then menu_service:=True;
+    if StrToInt(VarToStr(Fields[6].Value))=1 then menu_missed_calls:=True;
 
   end;
  finally

@@ -3,7 +3,7 @@ unit Thread_StatisticsUnit;
 interface
 
 uses
-  System.Classes,SysUtils, ActiveX, TLogFileUnit;
+  System.Classes,SysUtils, ActiveX, TLogFileUnit,TQueueStatisticsUnit;
 
 type
   Thread_Statistics = class(TThread)
@@ -11,7 +11,7 @@ type
 
   protected
     procedure Execute; override;
-    procedure show;
+    procedure show(var p_SharedQueueStatistics:TQueueStatistics);
     procedure CriticalError;
 
   private
@@ -32,7 +32,7 @@ uses
 procedure  Thread_Statistics.CriticalError;
 begin
   // записываем в лог
-  Log.Save(messclass+'.'+mess,IS_ERROR);
+  Log.Save(messclass+':'+mess,IS_ERROR);
 end;
 
 procedure Thread_Statistics.show;
@@ -40,48 +40,19 @@ procedure Thread_Statistics.show;
 // val:Double;
 begin
   if not CONNECT_BD_ERROR then begin
-    with HomeForm do begin
-      if StrToInt(GetStatistics_day(stat_summa))<>0 then begin
 
-          lblStstatisc_Queue5000_Summa.Caption:=GetStatistics_queue(queue_5000,all_answered);
-          lblStstatisc_Queue5050_Summa.Caption:=GetStatistics_queue(queue_5050,all_answered);
+    // обновляем даынне
+    p_SharedQueueStatistics.Update;
 
-          lblStstatisc_Queue5000_Answered.Caption:=GetStatistics_queue(queue_5000,answered);
-          lblStstatisc_Queue5000_No_Answered.Caption:=GetStatistics_queue(queue_5000,no_answered) + ' ('+GetStatistics_queue(queue_5000,no_answered_return)+')';
-
-          lblStstatisc_Queue5050_Answered.Caption:=GetStatistics_queue(queue_5050,answered);
-          lblStstatisc_Queue5050_No_Answered.Caption:=GetStatistics_queue(queue_5050,no_answered) + ' ('+GetStatistics_queue(queue_5050,no_answered_return)+')';
-
-
-          lblStstistisc_Day_Summa.Caption:=GetStatistics_day(stat_summa);
-          lblStstistisc_Day_Answered.Caption:=GetStatistics_day(stat_answered);
-          lblStstistisc_Day_No_Answered.Caption:=GetStatistics_day(stat_no_answered) + ' ('+GetStatistics_day(stat_no_answered_return)+')';
-          lblStstistisc_Day_Procent.Caption:=GetStatistics_day(stat_procent_no_answered) + '% ('+GetStatistics_day(stat_procent_no_answered_return)+'%)';
-
-      end else begin
-        lblStstatisc_Queue5000_Summa.Caption:='0';
-        lblStstatisc_Queue5050_Summa.Caption:='0';
-
-        lblStstatisc_Queue5000_Answered.Caption:='0';
-        lblStstatisc_Queue5000_No_Answered.Caption:='0';
-
-        lblStstatisc_Queue5050_Answered.Caption:='0';
-        lblStstatisc_Queue5050_No_Answered.Caption:='0';
-
-
-        lblStstistisc_Day_Summa.Caption:='0';
-        lblStstistisc_Day_Answered.Caption:='0';
-        lblStstistisc_Day_No_Answered.Caption:='0';
-        lblStstistisc_Day_Procent.Caption:='0%';
-      end;
-    end;
+    // отображаем данные
+    p_SharedQueueStatistics.Show;
   end;
 end;
 
 
 procedure Thread_Statistics.Execute;
  const
- SLEEP_TIME:Word = 2000;
+ SLEEP_TIME:Word = 5000;
  NAME_THREAD:string = 'Thread_Statistics';
  var
   StartTime, EndTime: Cardinal;
@@ -108,15 +79,25 @@ begin
     end;
   end;
 
+  with HomeForm do begin
+   // линковка label при первом запуске
+   SharedQueueStatistics.SetLinkLabel(queue_5000, lblStstatisc_Queue5000_Summa, lblStstatisc_Queue5000_Answered, lblStstatisc_Queue5000_No_Answered);
+   SharedQueueStatistics.SetLinkLabel(queue_5050, lblStstatisc_Queue5050_Summa, lblStstatisc_Queue5050_Answered, lblStstatisc_Queue5050_No_Answered);
+
+   // + линковка для статистики за день
+   if SharedQueueStatistics.ExistStatDay then begin
+    SharedQueueStatistics.SetLinkLabelStatDay(lblStstistisc_Day_Summa, lblStstistisc_Day_Answered, lblStstistisc_Day_No_Answered, lblStstistisc_Day_Procent);
+   end;
+  end;
+
   while not Terminated do
   begin
-
     if UpdateStatistiscSTOP then begin
 
       try
         StartTime:=GetTickCount;
 
-        show;
+        show(SharedQueueStatistics);
 
         EndTime:= GetTickCount;
         Duration:= EndTime - StartTime;
@@ -124,11 +105,9 @@ begin
       except
         on E:Exception do
         begin
-         //INTERNAL_ERROR:=true;
          messclass:=e.ClassName;
          mess:=e.Message;
          Synchronize(CriticalError);
-        // INTERNAL_ERROR:=False;
         end;
       end;
     end;
