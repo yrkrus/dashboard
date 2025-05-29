@@ -235,7 +235,7 @@ begin
        SendingMessage:=m_pacients.CreateMessage(i, REMEMBER_MESSAGE);
 
        try
-         if not SMS.SendSMS(SendingMessage,m_pacients.GetPhone(i),error, cADDSIGN) then
+         if not SMS.SendSMS(SendingMessage ,m_pacients.GetPhone(i), reason_Empty, error, cADDSIGN) then
          begin
           log_message.m_message:=potokName+'Не удалось отправить СМС на номер ('+m_pacients.GetPhone(i)+') '+error;
           log_message.m_color:=clRed;

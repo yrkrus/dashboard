@@ -146,6 +146,14 @@ type
     N19: TMenuItem;
     menu_service: TMenuItem;
     y1: TMenuItem;
+    N3: TMenuItem;
+    J1: TMenuItem;
+    N4: TMenuItem;
+    popMenu_ActionOperators_DelQueue: TMenuItem;
+    popMenu_ActionOperators_AddQueue5050: TMenuItem;
+    popMenu_ActionOperators_AddQueue5000_5050: TMenuItem;
+    popMenu_ActionOperators_AddQueue5000: TMenuItem;
+    StaticText1: TStaticText;
     procedure START_THREAD_ALLlClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -234,6 +242,10 @@ type
     procedure lblStstatisc_Queue5050_No_AnsweredMouseLeave(Sender: TObject);
     procedure lblStstatisc_Queue5050_No_AnsweredMouseMove(Sender: TObject;
       Shift: TShiftState; X, Y: Integer);
+    procedure popMenu_ActionOperators_DelQueueClick(Sender: TObject);
+    procedure popMenu_ActionOperators_AddQueue5000Click(Sender: TObject);
+    procedure popMenu_ActionOperators_AddQueue5050Click(Sender: TObject);
+    procedure popMenu_ActionOperators_AddQueue5000_5050Click(Sender: TObject);
 
   private
     { Private declarations }
@@ -245,6 +257,8 @@ type
 
    procedure ViewLabel(IsBold,IsUnderline:Boolean; var p_label:TLabel); // визуальная подсветка при наведении указателя мыши
    function SendCommand(_command:enumLogging;_userID:Integer):Boolean;     // отправка удаленной команды
+   procedure AddQueuePopMenu(_command:enumLogging;_userSip:Integer); // добавление в очередь из popmenu
+
 
 
   public
@@ -361,7 +375,7 @@ begin
 
    Screen.Cursor:=crHourGlass;
 
-    PanelStatusIN.Height:=cPanelStatusHeight_showqueue;
+   PanelStatusIN.Height:=cPanelStatusHeight_showqueue;
 
     // проверяем в какой очереди находится оператор
     curr_queue:=getCurrentQueueOperator(getUserSIP(SharedCurrentUserLogon.GetID));
@@ -540,7 +554,7 @@ begin
 
   // проверка вдруг роль оператора и он не вышел из линии
   if getIsExitOperatorCurrentQueue(SharedCurrentUserLogon.GetRole, SharedCurrentUserLogon.GetID) then begin
-    CanClose:= Application.MessageBox(PChar(getUserNameBD(SharedCurrentUserLogon.GetID) + ', Вы забыли выйти из очереди'), 'Ошибка при выходе', MB_OK + MB_ICONERROR) = IDNO;
+    CanClose:= Application.MessageBox(PChar('Вы забыли выйти из очереди'), 'Ошибка при выходе', MB_OK + MB_ICONERROR) = IDNO;
   end
   else begin
     // проверяем правильно ли оператор вышел через команду
@@ -660,7 +674,7 @@ begin
   end;
 
   // отображение текущей версии  ctrl+shift+G (GUID) - от этого ID зависит актуальность еще
-  if DEBUG then Caption:='    ===== DEBUG =====    ' + Caption+' '+GetVersion(GUID_VERSION,eGUI) + ' | '+'('+GUID_VERSION+')' + '    ===== DEBUG ===== '
+  if DEBUG then Caption:='    ===== DEBUG =====    ' + Caption+' '+GetVersion(GUID_VERSION,eGUI) + ' | '+'('+GUID_VERSION+')'
   else Caption:=Caption+' '+GetVersion(GUID_VERSION,eGUI) + ' | '+'('+GUID_VERSION+')';
 
 
@@ -678,8 +692,7 @@ begin
     KillProcess;
   end;
 
-
-  Screen.Cursor:=crHourGlass;
+   Screen.Cursor:=crHourGlass;
 
    // текущий залогиненый пользователь
   SharedCurrentUserLogon:=TUser.Create;
@@ -790,6 +803,125 @@ begin
     FDragging:= False;
     Screen.Cursor:=crDefault;
   end;
+end;
+
+procedure THomeForm.popMenu_ActionOperators_AddQueue5000Click(Sender: TObject);
+var
+ id_sip:Integer;
+ user_id:Integer;
+ resultat:Word;
+ id:Integer;
+begin
+  // Проверяем, был ли выбран элемент
+  if not Assigned(SelectedItemPopMenu) then begin
+    MessageBox(Handle,PChar('Не выбран оператор'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    Exit;
+  end;
+  id_sip:=StrToInt(SelectedItemPopMenu.Caption);
+
+  // в очереди ли находится оператор
+  id:=SharedActiveSipOperators.GetListOperators_ID(id_sip);
+
+  if SharedActiveSipOperators.GetListOperators_Queue(id) = queue_5000 then begin
+    MessageBox(Handle,PChar('Оператор и так в этой очереди'),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
+    Exit;
+  end;
+
+  user_id:=getUserID(id_sip);
+
+  AddQueuePopMenu(eLog_add_queue_5000, id_sip);
+end;
+
+procedure THomeForm.popMenu_ActionOperators_AddQueue5000_5050Click(
+  Sender: TObject);
+var
+ id_sip:Integer;
+ user_id:Integer;
+ resultat:Word;
+ id:Integer;
+begin
+  // Проверяем, был ли выбран элемент
+  if not Assigned(SelectedItemPopMenu) then begin
+    MessageBox(Handle,PChar('Не выбран оператор'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    Exit;
+  end;
+  id_sip:=StrToInt(SelectedItemPopMenu.Caption);
+
+  // в очереди ли находится оператор
+  id:=SharedActiveSipOperators.GetListOperators_ID(id_sip);
+
+  if SharedActiveSipOperators.GetListOperators_Queue(id) = queue_5000_5050 then begin
+    MessageBox(Handle,PChar('Оператор и так в этой очереди'),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
+    Exit;
+  end;
+
+  user_id:=getUserID(id_sip);
+
+  AddQueuePopMenu(eLog_add_queue_5000_5050, id_sip);
+end;
+
+procedure THomeForm.popMenu_ActionOperators_AddQueue5050Click(Sender: TObject);
+var
+ id_sip:Integer;
+ user_id:Integer;
+ resultat:Word;
+ id:Integer;
+begin
+  // Проверяем, был ли выбран элемент
+  if not Assigned(SelectedItemPopMenu) then begin
+    MessageBox(Handle,PChar('Не выбран оператор'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    Exit;
+  end;
+  id_sip:=StrToInt(SelectedItemPopMenu.Caption);
+
+  // в очереди ли находится оператор
+  id:=SharedActiveSipOperators.GetListOperators_ID(id_sip);
+
+  if SharedActiveSipOperators.GetListOperators_Queue(id) = queue_5050 then begin
+    MessageBox(Handle,PChar('Оператор и так в этой очереди'),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
+    Exit;
+  end;
+
+  user_id:=getUserID(id_sip);
+
+  AddQueuePopMenu(eLog_add_queue_5050, id_sip);
+end;
+
+procedure THomeForm.popMenu_ActionOperators_DelQueueClick(Sender: TObject);
+var
+ id_sip:Integer;
+ user_id:Integer;
+ resultat:Word;
+begin
+  // Проверяем, был ли выбран элемент
+  if not Assigned(SelectedItemPopMenu) then begin
+    MessageBox(Handle,PChar('Не выбран оператор'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    Exit;
+  end;
+
+  id_sip:=StrToInt(SelectedItemPopMenu.Caption);
+
+  // в очереди ли находится оператор
+  if not SharedActiveSipOperators.isExistOperatorInQueue(IntToStr(id_sip)) then begin
+    MessageBox(Handle,PChar('Оператор не в очереди'),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
+    Exit;
+  end;
+
+  // найдем id и передадим его дальше
+  user_id:=getUserID(id_sip);
+
+  resultat:=MessageBox(0,PChar('Точно удалить из очереди?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
+  if resultat=mrNo then begin
+    Exit;
+  end;
+
+  // выход из всех очередей из 5000 и 5050
+  SendCommand(eLog_home,user_id);
+
+  // очистка статуса
+  UpdateOperatorStatus(eUnknown,user_id);
+
+  LoggingRemote(eLog_home,user_id);
 end;
 
 procedure THomeForm.popMenu_ActionOperators_HistoryCallOperatorClick(
@@ -1238,12 +1370,31 @@ begin
    Exit;
  end;
 
- if not remoteCommand_addQueue(_command,error) then begin
+ if not remoteCommand_addQueue(_command,_userID, error) then begin
    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
   Exit;
  end;
 
  Result:=True;
+end;
+
+
+// добавление в очередь из popmenu
+procedure THomeForm.AddQueuePopMenu(_command:enumLogging;_userSip:Integer);
+var
+ user_id:Integer;
+begin
+  // найдем id
+  user_id:=getUserID(_userSip);
+
+ if not SendCommand(_command,user_id) then begin
+  // todo в SendCommand messagebox с ошибками есть
+  Exit;
+ end;
+
+  // очистка статуса
+  UpdateOperatorStatus(eAvailable,user_id);
+  LoggingRemote(eLog_available,user_id);
 end;
 
 

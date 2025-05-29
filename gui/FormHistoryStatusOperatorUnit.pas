@@ -4,7 +4,8 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls, THistoryStatusOperatorsUnit;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls, THistoryStatusOperatorsUnit,
+  TThreadDispatcherUnit;
 
 type
   TFormHistoryStatusOperator = class(TForm)
@@ -43,12 +44,14 @@ type
    m_id:Integer;  // id пользовател€
    m_sip:Integer; // sip пользовател€
 
+   m_dispatcher    :TThreadDispatcher;   // планировщик
+
    operatorStatus:THistoryStatusOperators;
 
-    procedure ClearListView(var p_ListView:TListView);
+    procedure ClearListView;
     procedure ClearData(isClearUserID:Boolean = True);
     procedure AddCountData;
-    procedure LoadData(var p_ListView:TListView);
+    procedure LoadData;
     procedure Show;
   public
     { Public declarations }
@@ -105,7 +108,7 @@ end;
 
 
 
-procedure TFormHistoryStatusOperator.ClearListView(var p_ListView:TListView);
+procedure TFormHistoryStatusOperator.ClearListView;
 const
  cWidth_default        :Word = 496;
  cWidth_status         :Word = 24;
@@ -113,7 +116,7 @@ const
  cWidth_date_stop      :Word = 24;
  cWidth_diff           :Word = 24;
 begin
- with p_ListView do begin
+ with list_History do begin
 
     Items.Clear;
     Columns.Clear;
@@ -172,7 +175,7 @@ begin
 end;
 
 
-procedure TFormHistoryStatusOperator.LoadData(var p_ListView:TListView);
+procedure TFormHistoryStatusOperator.LoadData;
 var
  i:Integer;
  ListItem: TListItem;
@@ -181,7 +184,13 @@ var
  duration:Cardinal;
 begin
   // подгрузим данные
-  operatorStatus:=THistoryStatusOperators.Create(m_id,m_sip);
+  if not Assigned(operatorStatus) then begin
+    operatorStatus:=THistoryStatusOperators.Create(m_id,m_sip);
+  end
+  else begin
+   operatorStatus.Update;
+  end;
+
   if operatorStatus.Count>0 then st_NoStatus.Visible:=False
   else begin
     st_NoStatus.Visible:=True;
@@ -193,7 +202,7 @@ begin
 
   // заполним данными (истори€)
   for i:= operatorStatus.Count - 1 downto 0 do begin
-    ListItem:= p_ListView.Items.Add;
+    ListItem:= list_History.Items.Add;
     ListItem.Caption := IntToStr(i);      // id
 
     // замена "добавление в очередь" на "доступен"
@@ -220,15 +229,22 @@ end;
 procedure TFormHistoryStatusOperator.Show;
 begin
   Screen.Cursor:=crHourGlass;
+
+   // создаем диспетчера
+   if not Assigned(m_dispatcher) then begin
+    m_dispatcher:=TThreadDispatcher.Create('FormHistoryStatusOperator',10, LoadData);
+   end;
+
   Caption := '»стори€ статусов: ' + GetUserNameOperators(IntToStr(m_sip));
 
   // обнулим все данные (кроме id пользовател€)
   ClearData(False);
 
-  ClearListView(list_History);
-  LoadData(list_History);
+  ClearListView;
+  LoadData;
 //  LoadComboxFilterValue(_timeFilter);
 
+  m_dispatcher.StartThread;
   Screen.Cursor:=crDefault;
 end;
 
@@ -237,6 +253,9 @@ procedure TFormHistoryStatusOperator.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
   ClearData;
+
+  // остановливаем планировщик
+  m_dispatcher.StopThread;
 end;
 
 procedure TFormHistoryStatusOperator.FormShow(Sender: TObject);

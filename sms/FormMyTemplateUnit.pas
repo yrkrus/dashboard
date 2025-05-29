@@ -97,6 +97,7 @@ begin
      AddMessageFromTemplate(SelectedItem.SubItems.Text);
      FormHome.ShowManualMessage;
      FormHome.SetEditMessage(paramStatus_DISABLED, 'Сообщение из глобального шаблона не редактируется!');
+     FormHome.SetReasonSMSType(reason_Empty);
      Close;
   end
   else

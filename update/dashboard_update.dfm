@@ -13,9 +13,8 @@ object update_dashboard: Tupdate_dashboard
   Height = 121
   Width = 175
   object TimerMonitoring: TTimer
-    Enabled = False
     OnTimer = TimerMonitoringTimer
-    Left = 48
-    Top = 8
+    Left = 72
+    Top = 40
   end
 end

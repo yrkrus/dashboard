@@ -80,7 +80,7 @@ begin
    Exit;
  end;
 
- if not remoteCommand_addQueue(_command,error) then begin
+ if not remoteCommand_addQueue(_command,_userID, error) then begin
    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
   Exit;
  end;

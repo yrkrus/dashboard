@@ -27,6 +27,7 @@ function LoadData(InFileExcel:string; var _errorDescription:string;
                   var p_CountNotSending:TLabel):Boolean;                                      // загрузка excel
 procedure OptionsStyle(InOptionsType:enumSendingOptions);                                     // выбор типа отправляемого смс
 function isCorrectNumberPhone(InNumberPhone:string; var _errorDescription:string):Boolean;    // проверка корректности номера телефона при вводе
+procedure ClearManagerSymbolsPhoneMessage(var p_list:TStringList);                            // очитска номера телефона от управляющих символов
 function CheckParamsBeforeSending(InOptionsType:enumSendingOptions;
                                   _isEditMessage:Boolean;
                                   var _errorDescription:string):Boolean; // проверка данных перед отправкой
@@ -35,11 +36,14 @@ function IsPunctuationOrDigit(ch: Char;
                               InCheckMinimalPunctuation:Boolean=False): Boolean;      // проверка на знак припенания или цифру
 function IsOnlyNumber(ch: Char): Boolean;                                                     // проверка только на цифру цифру
 function IsLetter(ch: Char): Boolean;                                                         // проверка только на букву
+function IsLetterENG(ch: Char): Boolean;                                                      // проверка только на букву (ENG)
 function IsFirstCharUpperCyrillic(const S: string): Boolean;                                  // проверка что первая буква это заглавная буква
 function isExistSpaceWithLine(const S: string): Boolean;                                      // проверка на пробел в конце строки
 function isWordExistPunctuation(var _stroka:TRichEdit; var _errorDescription:string):Boolean; // проверка чтобы не было типа таких слов (Алексеевна,добрый | ,Огуречников | г.Волжском)
 function CreateSMSMessage(var InMessage:TRichEdit):string;                                    // правка сообщения чтобы оно было в 1 строку
-function SendingMessage(InOptionsType:enumSendingOptions; var _errorDescription:string):Boolean; // отправка сообщения
+function SendingMessage(InOptionsType:enumSendingOptions;
+                        _reasonSMS:enumReasonSmsMessage;
+                        var _errorDescription:string):Boolean; // отправка сообщения
 procedure ClearParamsForm(InOptionsType:enumSendingOptions);                                  // очистка полей формы
 procedure ShowOrHideLog(InOptions:enumFormShowingLog);                                        // ототбражать или скрывать лог
 function isExistExcel(var _errorDescriptions:string):Boolean;                                 // проверка установлен ли excel
@@ -62,6 +66,13 @@ procedure CreatePopMenuAddressClinic(var p_PopMenu:TPopupMenu; var p_Message:TRi
 procedure ShowSendingManualPhone(InSendingType:enumManualSMS);                                // выбор типа при ручной отправки SMS (1 SMS или списком)
 procedure showWait(Status:enumShow_wait);                                                     // отображение\сркытие окна запроса на сервер
 function IsExistSpellingColor(var _MaybeDictionaryWord:string; var p_text:TRichEdit):Boolean; // проверка можно ли показать меню на добавление слова в словарь
+function SaveWord(_id:Integer;
+                    InNewMessage:string;
+                    var _errorDescription:string;
+                    IsDelete:Boolean = False):Boolean;  // редактирование слова
+function IsExistSignInMessage(const _message:string):Boolean;                                 // проверка есть ли подпись в отправляемом сообщении
+function ParsePhoneNumber(const PhoneNumber: string):string;                                  // пасинг номера тлф при вствке в поле номер телефона
+function GetUserSIP(_idUser:integer):string;                                                 // отображение SIP пользвоателя
 
 
 implementation
@@ -141,8 +152,19 @@ var
 begin
   code:=Ord(ch);     // А-1040  Я-1071   а-1072   я-1103
   Result:=((code >= 1040) or (code <= 1103));
+  //Result := ((code >= 1040) and (code <= 1071)) or ((code >= 1072) and (code <= 1106));
+
 end;
 
+
+// проверка только на букву (ENG)
+function IsLetterENG(ch: Char): Boolean;
+var
+  code: Integer;
+begin
+  code:=Ord(ch);     // А-65  Z-90   а-97   z-122
+  Result := ((code >= 65) and (code <= 90)) or ((code >= 97) and (code <= 122));
+end;
 
 // проверка что первая буква это заглавная буква
 function IsFirstCharUpperCyrillic(const S: string): Boolean;
@@ -214,16 +236,26 @@ begin
      if isExistSpaceWithLine(message_tmp[i]) then Continue;
 
     // Проверяем, если текущий символ — буква
-    if IsLetter(message_tmp[i]) then
     begin
       // Проверяем, если следующий символ — не пробел, а за ним знак препинания
       if (i < Length(message_tmp)) then
       begin
+         // если след. символ это цифра то пропускаем
+        if i+1 < Length(message_tmp) then begin
+          if IsOnlyNumber(message_tmp[i+1]) then Continue;
+        end;
+
+        // пропускаем если это латинские буквы
+        if i+1 < Length(message_tmp) then begin
+          if IsLetterENG(message_tmp[i+1]) then Continue;
+        end;
+
         if (not isExistSpaceWithLine(message_tmp[i+1])) and
            IsPunctuationOrDigit(message_tmp[i],True,True) then
         begin
+
           // Извлекаем словосочетание
-           word :=  GetWordAtPosition(message_tmp, i);
+           word := GetWordAtPosition(message_tmp, i);
           _errorDescription := Format('Между словом "%s" и знаком препинания "%s" должен быть пробел',
                                       [word, message_tmp[i]]);
 
@@ -253,6 +285,17 @@ begin
   Result := False; // Если ошибок не найдено, возвращаем False
 end;
 
+
+// очитска номера телефона от управляющих символов
+procedure ClearManagerSymbolsPhoneMessage(var p_list:TStringList);
+var
+ i:Integer;
+begin
+  for i:=0 to p_list.Count-1 do begin
+    p_list[i] := StringReplace(p_list[i], #$D, '', [rfReplaceAll]);
+    p_list[i] := StringReplace(p_list[i], #$A, '', [rfReplaceAll]);
+  end;
+end;
 
 
 // проверка данных перед отправкой
@@ -286,6 +329,9 @@ begin
                                'крч, надо уменьшить длину сообщения до 670 символов именно столько максимально она может переварить';
             Exit;
           end;
+
+         // очищаем от управляющих сиволов (вдруг тупо скопировали номер тлф)
+         ClearManagerSymbolsPhoneMessage(SharedSendindPhoneManualSMS);
 
          // сообщение не редактируемое значит оно пришло из генератора или из шаблона, пропускаем все проверки остальные
          if not _isEditMessage then begin
@@ -335,6 +381,14 @@ begin
              _errorDescription:='Действие отменено';
              Exit;
            end;
+         end
+         else begin
+           // проверим чтобы в тексте не было подписи уже
+           if IsExistSignInMessage(re_ManualSMS.Text) then begin
+            _errorDescription:='В тексте сообщения присутствует подпись,'+#13+
+                               'уберите подпись или снимите галку "вставить подпись в конце SMS"';
+             Exit;
+           end;
          end;
 
           // проверка орфографии
@@ -373,11 +427,14 @@ begin
     else tmp:=tmp + InMessage.Lines[i];
   end;
 
+  tmp := StringReplace(tmp, #$D, '', [rfReplaceAll]);
+  tmp := StringReplace(tmp, #$A, '', [rfReplaceAll]);
+
   Result:=tmp;
 end;
 
 // отправка сообщения
-function SendingMessage(InOptionsType:enumSendingOptions; var _errorDescription:string):Boolean;
+function SendingMessage(InOptionsType:enumSendingOptions; _reasonSMS:enumReasonSmsMessage; var _errorDescription:string):Boolean;
 var
  SMS:TSendSMS;
  SMSMessage:string;
@@ -413,7 +470,7 @@ begin
         if FormHome.chkbox_SignSMS.Checked then addSign:=True
         else addSign:=False;
 
-        if not SMS.SendSMS(SMSMessage,phone,_errorDescription,addSign) then begin
+        if not SMS.SendSMS(SMSMessage, phone, _reasonSMS, _errorDescription, addSign) then begin
 
          if not isExistError then begin
           sendindManualReportError.Add('Не удалось отправить SMS');
@@ -430,7 +487,7 @@ begin
       begin
         _errorDescription:='Не удалось отправить сообщение на номера:'+#13#13;
         for i:=0 to sendindManualReportError.Count-1 do begin
-         _errorDescription:=_errorDescription+sendindManualReportError[i]+#13;
+          _errorDescription:=_errorDescription+sendindManualReportError[i]+#13;
         end;
 
         Exit;
@@ -526,6 +583,9 @@ begin
 
        // скрываем инфо (сообщение не редактируемое)
        lblinfoEditMessage.Visible:=False;
+
+       // тип смс сообщения
+       SetReasonSMSType(reason_Empty);
       end;
       options_Sending: begin
        btnSendSMS.Caption:=' &Запустить SMS рассылку';
@@ -1670,6 +1730,7 @@ begin
         lblManualSMS_List.left:=155;
         lblManualSMS_List.top:=22;
 
+        lblManualPodbor.Visible:=True;
       end;
       sending_list: begin
 
@@ -1754,6 +1815,139 @@ begin
 
       _MaybeDictionaryWord:=Word;
       Result:=True;
+    end;
+  end;
+end;
+
+// удаление слова из БД
+function SaveWord(_id:Integer;
+                  InNewMessage:string;
+                  var _errorDescription:string;
+                  IsDelete:Boolean = False):Boolean;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+  Result:=False;
+  _errorDescription:='';
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+
+  if not Assigned(serverConnect) then begin
+    FreeAndNil(ado);
+    Exit;
+  end;
+
+   try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      if not IsDelete then begin
+       SQL.Add('update sms_dictionary set word = '+#39+InNewMessage+#39+' where id = '+#39+IntToStr(_id)+#39);
+      end
+      else begin
+        SQL.Add('delete from sms_dictionary where id = '+#39+IntToStr(_id)+#39);
+      end;
+
+      try
+          ExecSQL;
+      except
+          on E:EIdException do begin
+            FreeAndNil(ado);
+            if Assigned(serverConnect) then begin
+              serverConnect.Close;
+              FreeAndNil(serverConnect);
+              _errorDescription:=e.ClassName+': '+e.Message;
+            end;
+             Exit;
+          end;
+      end;
+
+    end;
+   finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+   end;
+
+   Result:=True;
+end;
+
+
+// проверка есть ли подпись в отправляемом сообщении
+function IsExistSignInMessage(const _message:string):Boolean;
+var
+ SMS:TSendSMS;
+begin
+  Result:=False;
+
+  SMS:=TSendSMS.Create(DEBUG);
+  if AnsiPos(SMS.GetSignSMS, _message)<>0 then Result:=True;
+end;
+
+
+// пасинг номера тлф при вствке в поле номер телефона
+function ParsePhoneNumber(const PhoneNumber: string): string;
+var
+  CleanedNumber: string;
+  i: Integer;
+begin
+  CleanedNumber := '';
+
+  // Проходим по каждому символу в исходной строке
+  for i := 1 to Length(PhoneNumber) do
+  begin
+    // Проверяем, является ли символ цифрой
+    if PhoneNumber[i] in ['0'..'9'] then
+    begin
+      // Добавляем цифру в очищенный номер
+      CleanedNumber := CleanedNumber + PhoneNumber[i];
+    end;
+  end;
+
+  // Проверяем, если номер начинается с "7" и добавляем "8" в начале
+  if (Length(CleanedNumber) > 0) and (CleanedNumber[1] = '7') then
+  begin
+    CleanedNumber := '8' + Copy(CleanedNumber, 2, Length(CleanedNumber) - 1);
+  end;
+
+  Result := CleanedNumber;
+end;
+
+
+// отображение SIP пользвоателя
+function GetUserSIP(_idUser:integer):string;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+  Result:='null';
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+
+      SQL.Clear;
+      SQL.Add('select sip from operators where user_id = '+#39+IntToStr(_idUser)+#39);
+      Active:=True;
+
+      if Fields[0].Value<>null then Result:=VarToStr(Fields[0].Value);
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
     end;
   end;
 end;

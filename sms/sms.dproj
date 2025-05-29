@@ -5,7 +5,7 @@
         <FrameworkType>VCL</FrameworkType>
         <MainSource>sms.dpr</MainSource>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Release</Config>
+        <Config Condition="'$(Config)'==''">Debug</Config>
         <Platform Condition="'$(Platform)'==''">Win64</Platform>
         <TargetedPlatforms>2</TargetedPlatforms>
         <AppType>Application</AppType>
@@ -130,9 +130,10 @@
         <UWP_DelphiLogo44>C:\Users\home0\Desktop\DASHBOARD\develop\sms\ico\sms_send_Icon.png</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>C:\Users\home0\Desktop\DASHBOARD\develop\sms\ico\sms_send_Icon.png</UWP_DelphiLogo150>
         <VerInfo_MajorVer>4</VerInfo_MajorVer>
-        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=4.0.0.22;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=0.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=4.2.0.25;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=0.0.0.0;Comments=</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
-        <VerInfo_Build>22</VerInfo_Build>
+        <VerInfo_Build>25</VerInfo_Build>
+        <VerInfo_MinorVer>2</VerInfo_MinorVer>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -180,7 +181,6 @@
             <Form>FormGenerateSMS</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="..\gui\GlobalVariablesLinkDLL.pas"/>
         <DCCReference Include="..\custom_class\TShowMessageSMSUnit.pas"/>
         <DCCReference Include="..\custom_class\TCheckServersUnit.pas"/>
         <DCCReference Include="..\gui\FormServerIKCheckUnit.pas">
@@ -206,6 +206,20 @@
             <Form>DM</Form>
             <FormType>dfm</FormType>
             <DesignClass>TDataModule</DesignClass>
+        </DCCReference>
+        <DCCReference Include="FormEditDictionaryUnit.pas">
+            <Form>FormEditDictionary</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\custom_class\TAutoPodborPeopleUnit.pas"/>
+        <DCCReference Include="..\gui\GlobalVariablesLinkDLL.pas"/>
+        <DCCReference Include="FormPodborUnit.pas">
+            <Form>FormPodbor</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="FormManualPodborUnit.pas">
+            <Form>FormManualPodbor</Form>
+            <FormType>dfm</FormType>
         </DCCReference>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>

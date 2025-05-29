@@ -47,6 +47,7 @@ uses
   THistoryStruct = class
 
   public
+  m_id              :Integer;      // id по Ѕƒ
   m_status          :enumLogging;  // тип лога
   m_dateStart       :TDateTime;    // дата начала
   m_dateStop        :TDateTime;    // дата окончвани€
@@ -79,6 +80,8 @@ uses
       public
       constructor Create(_id,_sip:Integer);               overload;
       destructor Destroy;                                 override;
+
+      procedure Update;   // обновление данных
 
       function GetStatus(_id:Cardinal):enumLogging;
       function GetDateStart(_id:Cardinal):TDateTime;
@@ -122,6 +125,7 @@ constructor THistoryStruct.Create;
  begin
    inherited;
 
+   m_id:=0;
    m_status:=eLog_unknown;
    m_dateStart:=0;
    m_dateStop:=0;
@@ -140,7 +144,6 @@ begin
 
   // заполн€ем данными
   CreateArrayHistory;
-
 end;
 
 
@@ -156,6 +159,11 @@ end;
   inherited Destroy; // ¬ызов деструктора родительского класса
  end;
 
+// обновление данных
+procedure THistoryStatusOperators.Update;
+begin
+
+end;
 
 function THistoryStatusOperators.GetStatus(_id:Cardinal):enumLogging;
 begin
@@ -244,7 +252,7 @@ begin
       end;
 
       SQL.Clear;
-      SQL.Add('select action,date_time from logging where user_id = '+#39+IntToStr(m_id)+#39+' order by date_time ASC');
+      SQL.Add('select action,date_time,id from logging where user_id = '+#39+IntToStr(m_id)+#39+' order by date_time ASC');
       Active := True;
 
       for i := 0 to m_countHistory - 1 do
@@ -254,6 +262,8 @@ begin
 
         m_history[i].m_status:=action;
         m_history[i].m_dateStart:=actionTime;
+        m_history[i].m_id:=StrToInt(VarToStr(Fields[2].Value));
+
 
         // не сервисный статус
         if not (action in [eLog_add_queue_5000 .. eLog_callback]) then begin
@@ -272,33 +282,6 @@ begin
           AddCountStatusLogging(action,m_history[i].m_duration);
         end;
       end;
-
-      {
-        enumLogging = (  eLog_unknown              = -1,        // неизвестный статус
-                    eLog_enter                = 0,         // ¬ход
-                    eLog_exit                 = 1,         // ¬ыход
-                    eLog_auth_error           = 2,         // не успешна€ авторизаци€
-                    eLog_exit_force           = 3,         // ¬ыход (через команду force_closed)
-                    eLog_add_queue_5000       = 4,         // добавление в очередь 5000
-                    eLog_add_queue_5050       = 5,         // добавление в очередь 5050
-                    eLog_add_queue_5000_5050  = 6,         // добавление в очередь 5000 и 5050
-                    eLog_del_queue_5000       = 7,         // удаление из очереди 5000
-                    eLog_del_queue_5050       = 8,         // удаление из очереди 5050
-                    eLog_del_queue_5000_5050  = 9,         // удаление из очереди 5000 и 5050
-                    eLog_available            = 10,        // доступен
-                    eLog_home                 = 11,        // домой
-                    eLog_exodus               = 12,        // исход
-                    eLog_break                = 13,        // перерыв
-                    eLog_dinner               = 14,        // обед
-                    eLog_postvyzov            = 15,        // поствызов
-                    eLog_studies              = 16,        // учеба
-                    eLog_IT                   = 17,        // »“
-                    eLog_transfer             = 18,        // переносы
-                    eLog_reserve              = 19,        // резерв
-                    eLog_create_new_user      = 20,        // создание нового пользовател€
-                    eLog_edit_user            = 21         // редактирование пользовател€
-                );
-      }
     end;
   finally
     FreeAndNil(ado);

@@ -243,7 +243,7 @@ begin
     SLLog.LoadFromFile(GetPathToLogName);
     if isError then InSTroka:='<font color="red"><b>'+InSTroka+'</b></font>';
 
-    SLLog.Add( DateTimeToStr(Now)+' '+ InSTroka+'<br>');
+    SLLog.Add(DateTimeToStr(Now)+' '+ InSTroka+'<br>');
 
     try
       SLLog.SaveToFile(GetPathToLogName);

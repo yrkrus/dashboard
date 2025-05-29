@@ -8,7 +8,6 @@ uses
   Vcl.Samples.Gauges, Winapi.ShellAPI, Vcl.Imaging.jpeg, Vcl.ExtCtrls,
   Vcl.Buttons, Vcl.Menus, ClipBrd, System.ImageList, Vcl.ImgList,RichEdit, TCustomTypeUnit;
 
-
 type
   TFormHome = class(TForm)
     OpenDialog: TOpenDialog;
@@ -53,6 +52,7 @@ type
     btnManualMessage: TBitBtn;
     lblOpenGenerateMessage: TLabel;
     lblinfoEditMessage: TLabel;
+    lblManualPodbor: TLabel;
     procedure ProcessCommandLineParams(DEBUG:Boolean = False);
     procedure FormCreate(Sender: TObject);
     procedure btnLoadFileClick(Sender: TObject);
@@ -95,26 +95,28 @@ type
     procedure lblinfoEditMessageMouseLeave(Sender: TObject);
     procedure lblinfoEditMessageMouseMove(Sender: TObject; Shift: TShiftState;
       X, Y: Integer);
+    procedure lblManualPodborClick(Sender: TObject);
 
 
   private
     { Private declarations }
    isSpelling:Boolean;
 
-
    isEditMessage:Boolean;  // флаг того что сообщение редактируется и его нужно проверить на ошибки
+   reasonSMS:enumReasonSmsMessage; // тип смс который отправляется
 
 
    procedure CopySelectedTextToClipboard; // копирование в буфер
    procedure EnableOrDisableEditMessage(_status:enumParamStatus; _textStatus:string = ''); // включение\отключение возможности редактирования сообщения
-
+   procedure AutoPodborGenerateSMS;      // включение автоподбора для генератора
 
 
   public
     { Public declarations }
   procedure ShowManualMessage;  // отображение окна с ручным вводом
   procedure SetEditMessage(_status:enumParamStatus; _textStatus:string = '');
-
+  procedure SetReasonSMSType(_reason:enumReasonSmsMessage);
+  procedure SetPhoneNumberPodbor(_phone:string);
 
   end;
 
@@ -137,11 +139,9 @@ implementation
 uses
   FunctionUnit, GlobalVariables, GlobalVariablesLinkDLL, TSendSMSUint,
   FormMyTemplateUnit, FormNotSendingSMSErrorUnit, FormListSendingSMSUnit,
-  TXmlUnit, TSpellingUnit, FormSendingSMSUnit, FormDictionaryUnit, FormGenerateSMSUnit, DMUnit;
+  TXmlUnit, TSpellingUnit, FormSendingSMSUnit, FormDictionaryUnit, FormGenerateSMSUnit, DMUnit, FormManualPodborUnit;
 
  {$R *.dfm}
-
- // class TSMSMessage END
 
  // отображение окна с ручным вводом
 procedure TFormHome.ShowManualMessage;
@@ -158,6 +158,20 @@ end;
 procedure TFormHome.SetEditMessage(_status:enumParamStatus; _textStatus:string = '');
 begin
   EnableOrDisableEditMessage(_status, _textStatus);
+end;
+
+
+procedure TFormHome.SetReasonSMSType(_reason:enumReasonSmsMessage);
+begin
+  reasonSMS:=_reason;
+end;
+
+procedure TFormHome.SetPhoneNumberPodbor(_phone:string);
+begin
+  edtManualSMS.Clear;
+  edtManualSMS.Text:=_phone;
+
+  st_PhoneInfo.Visible:=False;
 end;
 
 // установка флага что есть орфографическая ошибка
@@ -207,8 +221,38 @@ begin
   if Length(_textStatus) <> 0 then lblinfoEditMessage.Caption:=_textStatus+' (включить редактирование)';
 end;
 
+
+// включение автоподбора для генератора
+procedure TFormHome.AutoPodborGenerateSMS;
+var
+ phone:string;
+ error:string;
+begin
+  error:='';
+
+  phone:=edtManualSMS.Text;
+  phone := StringReplace(phone, #$D, '', [rfReplaceAll]);
+  phone := StringReplace(phone, #$A, '', [rfReplaceAll]);
+
+  if phone='' then begin
+   FormGenerateSMS.SetPhonePodbor('','Пустой номер');
+   Exit;
+  end;
+
+  if not isCorrectNumberPhone(phone,error) then begin
+    FormGenerateSMS.SetPhonePodbor('',error);
+    Exit;
+  end;
+
+  FormGenerateSMS.SetPhonePodbor(phone,error);
+end;
+
+
 procedure TFormHome.btnGenerateMessageClick(Sender: TObject);
 begin
+  // автоподбор
+  AutoPodborGenerateSMS;
+
   FormGenerateSMS.ShowModal;
 end;
 
@@ -354,7 +398,7 @@ begin
    // отправляем сообщение
    case currentOptions of
     options_Manual: begin
-      if not SendingMessage(currentOptions, error) then begin
+      if not SendingMessage(currentOptions, reasonSMS, error) then begin
        Screen.Cursor:=crDefault;
        MessageBox(Handle,PChar(error),PChar('Ошибка отправки'),MB_OK+MB_ICONERROR);
       end
@@ -381,7 +425,7 @@ begin
       end;
 
       ProgressStatusText.Caption:='Статус : Отправка';
-      if not SendingMessage(currentOptions, error) then begin
+      if not SendingMessage(currentOptions, reasonSMS, error) then begin
         Screen.Cursor:=crDefault;
         MessageBox(Handle,PChar(error),PChar('Ошибка отправки'),MB_OK+MB_ICONERROR);
       end
@@ -414,6 +458,9 @@ end;
 
 procedure TFormHome.edtManualSMSChange(Sender: TObject);
 begin
+  if Length(edtManualSMS.Text) > 0 then lblManualPodbor.Visible:=False
+  else lblManualPodbor.Visible:=True;
+
   lblManualSMS_List.Caption:='списком';
   SharedSendindPhoneManualSMS.Clear;
 end;
@@ -433,7 +480,7 @@ begin
        86: // Ctrl + V
         begin
           // Вставляем текст из буфера обмена
-          edtManualSMS.Text := edtManualSMS.Text + Clipboard.AsText;
+          edtManualSMS.Text := ParsePhoneNumber(Clipboard.AsText);
           Key := 0; // Отменяем дальнейшую обработку клавиши
         end;
       88: // Ctrl + X
@@ -445,6 +492,22 @@ begin
         end;
     end;
   end;
+
+  // Проверяем, есть ли текст в буфере обмена
+//    if Clipboard.HasFormat(CF_TEXT) then
+//    begin
+//      ClipboardText := Clipboard.AsText;
+//
+//      // Применяем функцию ParsePhoneNumber к тексту из буфера
+//      Edit1.Text := ParsePhoneNumber(ClipboardText);
+//
+//      // Устанавливаем курсор в конец текста
+//      Edit1.SelStart := Length(Edit1.Text);
+//
+//      // Отменяем стандартное поведение вставки
+//      Key := 0;
+//    end;
+
 end;
 
 procedure TFormHome.edtManualSMSKeyPress(Sender: TObject; var Key: Char);
@@ -608,6 +671,8 @@ begin
 end;
 
 procedure TFormHome.FormCreate(Sender: TObject);
+var
+FolderDll:string;
 begin
   // проверка на запуска 2ой копи
   if GetCloneRun(Pchar(SMS_EXE)) then begin
@@ -618,19 +683,39 @@ begin
 
   ProcessCommandLineParams(DEBUG);
 
+  // папка для dll firebird
+  begin
+    FolderDll:= FOLDERPATH + 'dll';
 
-  // размер окна
+    // Проверка на существование папки
+    if DirectoryExists(FolderDll) then begin
+      // путь к папке с DLL
+      SetDllDirectory(PChar(FolderDll));
+    end
+    else begin
+      MessageBox(Handle,PChar('Не найдена папка с dll библиотеками'+#13#13+FolderDll),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+      KillProcessNow; // Завершаем выполнение процедуры, чтобы не продолжать дальше
+    end;
+  end;
+
+    // размер окна
   FormHome.Width:=cWIDTH_HIDELOG;
 end;
-
-
-
 
 procedure TFormHome.FormShow(Sender: TObject);
 var
  error:string;
 begin
   Screen.Cursor:=crHourGlass;
+
+  // проверка существует ли excel
+  if not isExistExcel(error) then begin
+   Screen.Cursor:=crDefault;
+
+   MessageBox(Handle,PChar('Excel не установлен'+#13#13+error),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
+   KillProcessNow;
+  end;
+
 
   // debug node
   if DEBUG then begin
@@ -651,6 +736,7 @@ begin
   lblManualSMS_List.Font.Color:=clHighlight;
   lblOpenGenerateMessage.Font.Color:=clHighlight;
   lblinfoEditMessage.Font.Color:=clHighlight;
+  lblManualPodbor.Font.Color:=clHighlight;
 
 
    // создатим copyright
@@ -659,16 +745,11 @@ begin
   // подсчет сколько за сегодня отправлено смс
   ShowCountTodaySmsSending;
 
-  // проверка существует ли excel
-  if not isExistExcel(error) then begin
-   Screen.Cursor:=crDefault;
-
-   MessageBox(Handle,PChar('Excel не установлен'+#13#13+error),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
-   KillProcessNow;
-  end;
-
   // возможность автоматически вставлять подпись в смс сообщение
   SignSMS;
+
+  // тип смс сообщения
+  SetReasonSMSType(reason_Empty);
 
   // создание меню быстрого доступа к адресам клиник
   CreatePopMenuAddressClinic(popmenu_AddressClinic, re_ManualSMS);
@@ -697,6 +778,11 @@ begin
   lblinfoEditMessage.Font.Style:=[fsUnderline];
 end;
 
+procedure TFormHome.lblManualPodborClick(Sender: TObject);
+begin
+ FormManualPodbor.ShowModal;
+end;
+
 procedure TFormHome.lblManualSMS_ListClick(Sender: TObject);
 var
   MousePos: TPoint;
@@ -719,6 +805,9 @@ end;
 
 procedure TFormHome.lblOpenGenerateMessageClick(Sender: TObject);
 begin
+  // автоподбор
+  AutoPodborGenerateSMS;
+
  FormGenerateSMS.ShowModal;
 end;
 

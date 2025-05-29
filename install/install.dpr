@@ -16,10 +16,11 @@ uses
   ACLAPI,
   Registry,
   System.Zip,
-  GlobalVariables in '..\services\delphi\GlobalVariables.pas',
   TCustomTypeUnit in '..\custom_class\TCustomTypeUnit.pas',
   TFTPUnit in '..\custom_class\TFTPUnit.pas',
-  TLogFileUnit in '..\custom_class\TLogFileUnit.pas';
+  TLogFileUnit in '..\custom_class\TLogFileUnit.pas',
+  GlobalVariables in '..\update\GlobalVariables.pas',
+  GlobalVariablesLinkDLL in '..\gui\GlobalVariablesLinkDLL.pas';
 
 const
  cSLEEP_ERRROR:Cardinal = 9000000;  //  такое большое значение т.к. чтобы в вечный sleep ушел
@@ -150,8 +151,6 @@ begin
    SetLength(sUserName, dwUserNameLen);
    Result:= PChar(sUserName);
 end;
-
-
 
 
 
@@ -444,7 +443,6 @@ end;
 begin
   try
     CoInitialize(nil);
-
     ProcessCommandLineParams;
 
     { TODO -oUser -cConsole Main : Insert code here }
@@ -493,6 +491,10 @@ begin
      // закрытые дочерних процессов
      // ==============================================
      KillChildTask;
+
+    //  ========= удаление старой папки   =========
+    if DirectoryExists(INSTALL_DASHBOARD) then TDirectory.Delete(INSTALL_DASHBOARD, True);
+
 
     //  ========= скачиваем актуальную версию дашборда  =========
     begin

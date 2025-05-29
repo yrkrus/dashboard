@@ -46,7 +46,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       trunk                                  : string;        // транк с которого пришел звонок
       phone                                  : string;        // номер телефона
       talk_time                              : string;        // время разговора
-      queue                                  : string;        // какая очередь
+      queue                                  : enumQueueCurrent;    // какая очередь
       status                                 : enumStatusOperators;       // текущий статус оператора
       access_dashboard                       : Boolean;       // есть ли доступ к дашборду
       operator_name                          : string;        // имя оператора
@@ -141,7 +141,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       function GetListOperators_SipNumber(id:Integer):string;           // listOperators.sip_number
       function GetListOperators_Status(id:Integer):enumStatusOperators; // listOperators.status
       function GetListOperators_AccessDashboad(id:Integer):Boolean;     // listOperators.access_dashboard
-      function GetListOperators_Queue(id:Integer):string;               // listOperators.queue
+      function GetListOperators_Queue(id:Integer):enumQueueCurrent;     // listOperators.queue
       function GetListOperators_TalkTime(id:Integer; isReducedTime:Boolean):string;            // listOperators.talk_time
       function GetListOperators_Trunk(id:Integer):string;               // listOperators.trunk
       function GetListOperators_Phone(id:Integer):string;               // listOperators.phone
@@ -212,7 +212,7 @@ uses
    Self.trunk:='';
    Self.phone:='';
    Self.talk_time:='';
-   Self.queue:='';
+   Self.queue:=queue_null;
    Self.status:=eUnknown;
    Self.access_dashboard:=False;
    Self.operator_name:='';
@@ -1026,8 +1026,8 @@ end;
   i,j,countQueue:Integer;
   ado:TADOQuery;
   serverConnect:TADOConnection;
-  tempQueue:string;
-  oldQueue:string;
+  tempQueue:enumQueueCurrent;
+  oldQueue:enumQueueCurrent;
  begin
    if getCountSipOperators=0 then Exit;
 
@@ -1043,7 +1043,7 @@ end;
       ado.Connection:=serverConnect;
 
        for i:=0 to Length(listOperators)-1 do begin
-         tempQueue:='';
+         tempQueue:=queue_null;
 
           if Active then Active:=False;
 
@@ -1057,7 +1057,7 @@ end;
             countQueue:=Fields[0].Value;
 
             if countQueue=0 then begin
-              listOperators[i].queue:='';
+              listOperators[i].queue:=queue_null;
               Continue;
             end;
 
@@ -1066,18 +1066,14 @@ end;
             SQL.Add('select queue from operators_queue where sip = '+#39+listOperators[i].sip_number+#39);
             Active:=True;
 
-
-            for j:=0 to countQueue-1 do begin
-
-              if Fields[0].Value <> null then begin
-                 if tempQueue='' then tempQueue:=VarToStr(Fields[0].Value)
-                 else tempQueue:=tempQueue+' и '+VarToStr(Fields[0].Value);
-              end;
-              ado.Next;
+            if Fields[0].Value <> null then begin
+              if countQueue = 1 then begin
+                 tempQueue:=StringToEnumQueueCurrent(VarToStr(Fields[0].Value));
+              end
+              else tempQueue:=queue_5000_5050;
             end;
 
             if oldQueue<>tempQueue then listOperators[i].queue:=tempQueue;
-
           end;
        end;
     end;
@@ -1453,7 +1449,7 @@ procedure TActiveSIP.updateTalkTimeAll;
  begin
    for i:=0 to countSipOperators-1 do begin
      if listOperators[i].sip_number = InSip then begin
-        if listOperators[i].queue='' then Result:=False
+        if listOperators[i].queue=queue_null then Result:=False
         else Result:=True;
         Break;
      end;
@@ -1604,7 +1600,7 @@ begin
 end;
 
 
-function TActiveSIP.GetListOperators_Queue(id:Integer):string;
+function TActiveSIP.GetListOperators_Queue(id:Integer):enumQueueCurrent;
 begin
   if m_mutex.WaitFor(INFINITE) = wrSignaled  then begin
     try

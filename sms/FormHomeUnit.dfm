@@ -108,7 +108,7 @@ object FormHome: TFormHome
         end
         object lblinfoEditMessage: TLabel
           Left = 12
-          Top = 71
+          Top = 72
           Width = 447
           Height = 16
           Cursor = crHandPoint
@@ -127,6 +127,25 @@ object FormHome: TFormHome
           OnClick = lblinfoEditMessageClick
           OnMouseMove = lblinfoEditMessageMouseMove
           OnMouseLeave = lblinfoEditMessageMouseLeave
+        end
+        object lblManualPodbor: TLabel
+          Left = 17
+          Top = 63
+          Width = 90
+          Height = 13
+          Cursor = crHandPoint
+          Hint = #1053#1072#1081#1090#1080' '#1085#1086#1084#1077#1088' '#1080#1079' '#1073#1072#1079#1099' '#1089' '#1088#1072#1079#1075#1086#1074#1086#1088#1072#1084#1080
+          Caption = #1087#1086#1076#1073#1086#1088' '#1085#1086#1084#1077#1088#1072
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clBlue
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ParentShowHint = False
+          ShowHint = True
+          Visible = False
+          OnClick = lblManualPodborClick
         end
         object edtManualSMS: TEdit
           Left = 151
@@ -953,7 +972,7 @@ object FormHome: TFormHome
     Left = 816
     Top = 432
     Bitmap = {
-      494C010102000C004C0018001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010102000C00540018001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000600000001800000001002000000000000024
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

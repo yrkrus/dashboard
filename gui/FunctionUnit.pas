@@ -64,6 +64,7 @@ function GetCountAnsweredCall(InSipOperator:string):Integer;                    
 function GetCountAnsweredCallAll:Integer;                                            // кол-во отвеченных звонков всех операторов
 function CreateListAnsweredCall(InSipOperator:string):TStringList;                   // создвание списка со всем отвеченными звонками  sip оператора
 function remoteCommand_addQueue(_command:enumLogging;
+                                _userID:Integer;
                                 var _errorDescriptions:string):Boolean;              // удаленна€ команда (добавление в очередь)
 procedure showWait(Status:enumShow_wait);                                            // отображение\сркытие окна запроса на сервер
 function remoteCommand_Responce(InStroka:string; var _errorDescriptions:string):boolean;  // отправка запроса на добавление удаленной команды
@@ -71,7 +72,7 @@ function getUserSIP(InIDUser:integer):string;                                   
 function isExistRemoteCommand(command:enumLogging;_userID:Integer):Boolean;         // проверка есть ли уже така€ удаленна€ команда на сервера
 function getStatus(InStatus:enumStatusOperators):string;                             // полчуение имени status оператора
 function getCurrentQueueOperator(InSipNumber:string):enumQueueCurrent;               // в какой очереди сейчас находитс€ оператор
-procedure clearOperatorStatus(_userID:Integer);                                       // очитска текущего статуса оператора
+procedure UpdateOperatorStatus(_status:enumStatusOperators;_userID:Integer);         // очитска текущего статуса оператора
 procedure checkCurrentStatusOperator(InOperatorStatus:enumStatusOperators);              // проверка и отображение кнопок статусов оператора
 procedure showStatusOperator(InShow:Boolean = True);                                 // отобрадение панели статусы операторов
 function getLastStatusTime(InUserid:Integer; InOperatorStatus:enumStatusOperators):string;    // подсчет времени в текущем статусе оператора
@@ -516,7 +517,7 @@ begin
        end;
 
        // очичтка текущего статуса оператора
-       clearOperatorStatus(SharedCurrentUserLogon.GetID);
+       UpdateOperatorStatus(eUnknown, SharedCurrentUserLogon.GetID);
 
        // удаление активной сессии
        DeleteActiveSession(GetActiveSessionUser(SharedCurrentUserLogon.GetID));
@@ -3102,29 +3103,43 @@ begin
 
     // HomeForm
     begin
-     // панель статусы операторов
+
      case p_TUser.GetRole of
        role_administrator:begin                  // администратор
+        // панель статусы операторов
         showStatusOperator(False);
        end;
        role_lead_operator:begin                  // ведущий оператор
-         showStatusOperator;
+        // панель статусы операторов
+        showStatusOperator;
        end;
        role_senior_operator:begin                // старший оператор
-         showStatusOperator;
+        // панель статусы операторов
+        showStatusOperator;
+
+        // контекстное меню (выключено)
+        ListViewSIP.PopupMenu:=nil;
        end;
        role_operator:begin                       // оператор
         // панель статусы операторов
         showStatusOperator;
+
+        // контекстное меню (выключено)
+        ListViewSIP.PopupMenu:=nil;
        end;
        role_operator_no_dash:begin               // оператор (без дашборда)
+        // панель статусы операторов
         showStatusOperator;
+
+        // контекстное меню (выключено)
+        ListViewSIP.PopupMenu:=nil;
        end;
        role_supervisor_cov:begin                 // –уководитель ÷ќ¬
         // панель статусы операторов
         showStatusOperator(False);
        end;
      end;
+
 
       // menu
       begin
@@ -3209,9 +3224,9 @@ begin
 
     if GetStatusUpdateService then begin
       error:='“екуща€ верси€ программы отличаетс€ от актуальной версии'+#13#13
-          +'ќбратитесь в отдел »“ или обновите вручную по кнопке'+#13
-          +'"ѕринудительное обновление"' +#13#13
-          +'»м€ ѕ : '+getComputerPCName;
+              +'ќбратитесь в отдел »“ или обновите вручную по кнопке'+#13
+              +'"ѕринудительное обновление"' +#13#13
+              +'»м€ ѕ : '+getComputerPCName;
 
       force_update:=True;
     end
@@ -3362,6 +3377,7 @@ end;
 
 // удаленна€ команда (добавление в очередь)
 function remoteCommand_addQueue(_command:enumLogging;
+                                _userID:Integer;
                                 var _errorDescriptions:string):Boolean;
 var
  resultat:string;
@@ -3374,7 +3390,7 @@ begin
   soLongWait:=0;
   showWait(show_open);
 
-  response:='insert into remote_commands (sip,command,ip,user_id,user_login_pc,pc) values ('+#39+getUserSIP(SharedCurrentUserLogon.GetID) +#39+','
+  response:='insert into remote_commands (sip,command,ip,user_id,user_login_pc,pc) values ('+#39+getUserSIP(_userID) +#39+','
                                                                                             +#39+IntToStr(EnumLoggingToInteger(_command))+#39+','
                                                                                             +#39+SharedCurrentUserLogon.GetIP+#39+','
                                                                                             +#39+IntToStr(SharedCurrentUserLogon.GetID)+#39+','
@@ -3387,14 +3403,14 @@ begin
   end;
 
   // ждем пока отработает на core_dashboard
-  while (isExistRemoteCommand(_command,SharedCurrentUserLogon.GetID)) do begin
+  while (isExistRemoteCommand(_command,_userID)) do begin
    Sleep(1000);
    Application.ProcessMessages;
 
    if soLongWait>6 then begin
 
     // пробуем удалить команду
-       response:='delete from remote_commands where sip ='+#39+getUserSIP(SharedCurrentUserLogon.GetID)+#39+
+       response:='delete from remote_commands where sip ='+#39+getUserSIP(_userID)+#39+
                                                          ' and command ='+#39+IntToStr(EnumLoggingToInteger(_command))+#39;
 
     if not remoteCommand_Responce(response,_errorDescriptions) then begin
@@ -3476,8 +3492,8 @@ begin
 end;
 
 
-// очитска текущего статуса оператора
-procedure clearOperatorStatus(_userID:Integer);
+// изменение текущего статуса оператора
+procedure UpdateOperatorStatus(_status:enumStatusOperators;_userID:Integer);
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -3497,7 +3513,8 @@ begin
    with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
-      SQL.Add('update operators set status = ''-1'' where sip = '+#39+getUserSIP(_userID)+#39);
+      SQL.Add('update operators set status = '+#39+IntToStr(EnumStatusOperatorsToInteger(_status))+#39+
+                                             ' where sip = '+#39+getUserSIP(_userID)+#39);
 
       try
           ExecSQL;
@@ -5507,7 +5524,6 @@ begin
    if Assigned(currentActiveSession) then FreeAndNil(currentActiveSession);
  end;
 end;
-
 
 
 end.

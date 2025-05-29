@@ -35,7 +35,7 @@ uses
 
 var
   // ****************** режим разработки ******************
-                      DEBUG:Boolean = FALSE;
+                      DEBUG:Boolean = TRUE;
   // ****************** режим разработки ******************
 
   SMS_EXE           :string = 'sms.exe';
@@ -83,8 +83,8 @@ var
   REMEMBER_MESSAGE        :string='%FIO_Pacienta %записан(а) %к_доктору %FIO_Doctora в %Time %Data в клинику по адресу %Address.'+
                                   ' Если у Вас есть вопросы, готовы на них ответить, номер тел. для связи (8442)220-220 или (8443)450-450';
 
-   // сообщение когда не прогружен excel файл
-   EXCEL_FILE_NOT_LOADED:string ='не загружен';
+  // сообщение когда не прогружен excel файл
+  EXCEL_FILE_NOT_LOADED:string ='не загружен';
 
 implementation
 

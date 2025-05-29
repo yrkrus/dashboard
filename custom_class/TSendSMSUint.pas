@@ -105,7 +105,7 @@ type
   type
       TSendSMS = class
       public
-      function SendSMS(InMessage:string; InNumberPhone:string; var _errorDescription:string; isAddSign:Boolean):Boolean;
+      function SendSMS(InMessage:string; InNumberPhone:string; _reasonSMS:enumReasonSmsMessage; var _errorDescription:string; isAddSign:Boolean):Boolean;
       function isExistAuth:Boolean;                         // есть ли все авторизационные данные
       function GetSignSMS:string;                           // подпись в СМС сообщение
 
@@ -121,7 +121,7 @@ type
 
       function EncodeURL(const Value: AnsiString): AnsiString;
       function ResponceParsing(InServerOtvet:string; var _errorDescription:string):Boolean;  // парсинг ответа
-      procedure SaveToBase(InServerOtvet:string; InMessage:string); // сохранение отправленной смс в базу
+      procedure SaveToBase(InServerOtvet:string; InMessage:string; _reasonSMS:enumReasonSmsMessage); // сохранение отправленной смс в базу
       function AddSign(InMessage:string):string; // добавление подписи к отправляемомй сообщению
       function isExistSMS(InPhone:string;InChechMessage:string; var _errorDescription:string):Boolean; // проверка отправляли ли уже ранее такую смс
       function GetDataExistSMS(InPhone:string;InChechMessage:string; var _userID:integer; var _sendinDate:string):Boolean; // данные кто отправлял смс
@@ -335,7 +335,7 @@ end;
 
 
 // сохранение отправленной смс в базу
-procedure TSendSMS.SaveToBase(InServerOtvet:string; InMessage:string);
+procedure TSendSMS.SaveToBase(InServerOtvet:string; InMessage:string; _reasonSMS:enumReasonSmsMessage);
  var
  XmlDoc: IXMLDocument;
  RootNode: IXMLNode;
@@ -383,12 +383,13 @@ begin
   user_login_pc:=GetCurrentUserNamePC;
   countReal:=GetCountRealSMS(InMessage);
 
-  response:='insert into sms_sending (user_id,phone,message,sms_id,user_login_pc,count_real_sms) values ('+#39+IntToStr(USER_STARTED_SMS_ID)+#39+','
-                                                                                                          +#39+phone+#39+','
-                                                                                                          +#39+InMessage+#39+','
-                                                                                                          +#39+sms_id+#39+','
-                                                                                                          +#39+user_login_pc+#39+','
-                                                                                                          +#39+IntToStr(countReal)+#39+')';
+  response:='insert into sms_sending (user_id,phone,message,sms_id,user_login_pc,count_real_sms,sms_type) values ('+#39+IntToStr(USER_STARTED_SMS_ID)+#39+','
+                                                                                                                   +#39+phone+#39+','
+                                                                                                                   +#39+InMessage+#39+','
+                                                                                                                   +#39+sms_id+#39+','
+                                                                                                                   +#39+user_login_pc+#39+','
+                                                                                                                   +#39+IntToStr(countReal)+#39+','
+                                                                                                                   +#39+IntToStr(EnumReasonSmsMessageToInteger(_reasonSMS))+#39+')';
    try
      with ado do begin
         ado.Connection:=serverConnect;
@@ -420,6 +421,7 @@ end;
 
 function TSendSMS.SendSMS(InMessage:string;
                           InNumberPhone:string;
+                          _reasonSMS:enumReasonSmsMessage;
                           var _errorDescription:string;
                           isAddSign:Boolean):Boolean;
 const
@@ -514,7 +516,7 @@ begin
         end;
 
          // сохраняем в базу
-         SaveToBase(ServerOtvet,sendMessage);
+         SaveToBase(ServerOtvet, sendMessage, _reasonSMS);
 
        except on E: EIdHTTPProtocolException do
           begin

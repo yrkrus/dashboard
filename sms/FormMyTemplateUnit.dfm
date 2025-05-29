@@ -45,6 +45,10 @@ object FormMyTemplate: TFormMyTemplate
     TabOrder = 2
     object sheet_MyTemplate: TTabSheet
       Caption = #1052#1086#1080' '#1089#1086#1093#1088#1072#1085#1077#1085#1085#1099#1077' '#1096#1072#1073#1083#1086#1085#1099
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object list_MyTemplate: TListView
         Left = 0
         Top = 0
@@ -91,6 +95,10 @@ object FormMyTemplate: TFormMyTemplate
     object sheet_GlobalTemplate: TTabSheet
       Caption = #1043#1083#1086#1073#1072#1083#1100#1085#1099#1077' '#1096#1072#1073#1083#1086#1085#1099
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object list_GlobalTemplate: TListView
         Left = 0
         Top = 0
@@ -313,7 +321,7 @@ object FormMyTemplate: TFormMyTemplate
     Left = 704
     Top = 152
     Bitmap = {
-      494C0101020054007C0020002000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010102005400880020002000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000800000002000000001002000000000000040
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

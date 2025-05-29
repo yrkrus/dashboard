@@ -215,8 +215,6 @@ begin
       Width:=Round((cWidth_default*cWidth_time)/100);
       Alignment:=taCenter;
     end;
-
-
  end;
 end;
 

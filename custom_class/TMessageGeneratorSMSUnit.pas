@@ -13,12 +13,8 @@ unit TMessageGeneratorSMSUnit;
 interface
 
 uses
-  System.Classes,
-  System.SysUtils,
-  FormGenerateSMSUnit,
-  TWorkingTimeClinicUnit,
-  Vcl.ComCtrls,
-  TCustomTypeUnit;
+  System.Classes, System.SysUtils, FormGenerateSMSUnit, TWorkingTimeClinicUnit,
+  Vcl.ComCtrls, Data.Win.ADODB, Data.DB, IdException, TCustomTypeUnit, System.Variants;
 
 
  // class TMessageGeneratorSMS
@@ -26,7 +22,6 @@ uses
       TMessageGeneratorSMS = class
       private
       m_form                      :TFormGenerateSMS;
-
       m_generetedMessage          :string;   // сгенерированное сообщение
 
 
@@ -51,7 +46,8 @@ uses
       function CheckParamsPol(var _errorDescription:string):Boolean;            // проверка параметров(пол)
       function CheckParamsAddressClinic(var _errorDescription:string):Boolean;  // проверка параметров(адрес клиники)
       function CheckParamsServiceCount(const p_service:TStringList; var _errorDescription:string):Boolean;   // проверка параметров(кол-во услуг)
-      function CheckParamsMoney(var _errorDescription:string):Boolean;  // проверка параметров(сумма)
+      function CheckParamsMoney(var _errorDescription:string):Boolean;          // проверка параметров(сумма)
+      function CheckParamsReason(var _errorDescription:string):Boolean;         // проверка параметров(причина)
 
 
       public
@@ -60,6 +56,7 @@ uses
       procedure Clear;
       function CheckParams(_generate:enumReasonSmsMessage;
                            const p_service:TStringList;
+                           isAutoPodbor:Boolean;
                            var _errorDescription:string):Boolean;  // проверка параметров
       procedure CreateMessage(_genereate:enumReasonSmsMessage;
                               _gender:enumGender;
@@ -68,6 +65,8 @@ uses
                               _money:string;
                               const _prichina:string);       // создание сгенерированного собощени€
 
+      function GetExampleMessage(_messageType:enumReasonSmsMessage):string; // пример сообщени€ (беретс€ из бд history_sms_sending)
+      procedure ClearMessage;     // очистка сообщени€
 
       property GeneretedMessage:string read m_generetedMessage;
 
@@ -131,7 +130,7 @@ var
   time:TTime;
 begin
    time:=m_form.timeShow.Time;
-  _stroka:=StringReplace(_stroka,'%time%',Copy(TimeToStr(time), 1, 5)  ,[rfReplaceAll]);
+  _stroka := StringReplace(_stroka, '%time%', FormatDateTime('hh:nn', time), [rfReplaceAll]);
 end;
 
 
@@ -181,7 +180,7 @@ var
  tmp:string;
 begin
   tmp:=AnsiLowerCase(_prichina); // все с маленькой строки
-  _stroka:=StringReplace(_stroka,'%prochina%',tmp,[rfReplaceAll]);
+  _stroka:=StringReplace(_stroka,'%prichina%',tmp,[rfReplaceAll]);
 end;
 
 
@@ -364,27 +363,53 @@ begin
   Result:=True;
 end;
 
-
-// проверка параметров
-function TMessageGeneratorSMS.CheckParams(_generate:enumReasonSmsMessage; const p_service:TStringList; var _errorDescription:string):Boolean;
+// проверка параметров(причина)
+function TMessageGeneratorSMS.CheckParamsReason(var _errorDescription:string):Boolean;
 begin
   Result:=False;
   _errorDescription:='';
 
-  // им€ + отчетсво + пол провер€етс€ глобально
-  begin
-    if not CheckParamsName(_errorDescription) then begin
-      Exit;
-    end;
+  // провер€ем заполнено ли им€
+  if Length(m_form.reReason.Text) = 0 then begin
+   _errorDescription:='Ќе заполнено поле "ѕричина"';
+   Exit;
+  end;
 
-    if not CheckParamsOtchestvo(_errorDescription) then begin
-      Exit;
-    end;
+  // провер€ем на орфорграфические ошибки
+  if not CheckParamsSpelling(m_form.reReason, _errorDescription) then begin
+    Exit;
+  end;
 
-    if not CheckParamsPol(_errorDescription) then begin
-      Exit;
+  Result:=True;
+end;
+
+
+// проверка параметров
+function TMessageGeneratorSMS.CheckParams(_generate:enumReasonSmsMessage;
+                                          const p_service:TStringList;
+                                          isAutoPodbor:Boolean;
+                                          var _errorDescription:string):Boolean;
+begin
+  Result:=False;
+  _errorDescription:='';
+
+  // им€ + отчетсво + пол провер€етс€ глобально (не провер€ем если через автоподбор зашли)
+  if not isAutoPodbor then begin
+    begin
+      if not CheckParamsName(_errorDescription) then begin
+        Exit;
+      end;
+
+      if not CheckParamsOtchestvo(_errorDescription) then begin
+        Exit;
+      end;
+
+      if not CheckParamsPol(_errorDescription) then begin
+        Exit;
+      end;
     end;
   end;
+
 
   case _generate of
    reason_OtmenaPriema: begin                       // ќтмена приема врача, перенос
@@ -418,6 +443,9 @@ begin
 
     // адрес клиники
     if not CheckParamsAddressClinic(_errorDescription) then Exit;
+
+    // проверка параметров(причина)
+    if not CheckParamsReason(_errorDescription) then Exit;
 
    end;
    reason_Critical:begin                            // ѕолучено письмо из лаборатории о критических значени€х
@@ -488,6 +516,7 @@ var
  workingTimeClinic:TWorkingTimeClinic;
  clinicId:Integer;
 begin
+  m_generetedMessage:='';
 
   template:=EnumReasonSmsMessageTemplateToString(EnumReasonSmsMessageToEnumReasonSmsMessageTemplate(_genereate));
   tmp:=template.ToString;
@@ -662,9 +691,59 @@ begin
    end;
   end;
 
-
   m_generetedMessage:=tmp;
 end;
 
+// пример сообщени€ (беретс€ из бд history_sms_sending)
+function TMessageGeneratorSMS.GetExampleMessage(_messageType:enumReasonSmsMessage):string;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ countTemplate:Integer;
+begin
+
+  if _messageType = reason_Empty then begin
+    Result:='Ќе выбран "“ип сообщени€"';
+    Exit;
+  end;
+
+  Result:='ѕримеров пока нет';
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+
+  if not Assigned(serverConnect) then begin
+    FreeAndNil(ado);
+    Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select message from history_sms_sending where sms_type = '+#39+inttostr(EnumReasonSmsMessageToInteger(_messageType)) +#39+' order by date_time DESC limit 1');
+
+      Active:=True;
+
+      if Fields[0].Value <> Null then begin
+        if Length(VarToStr(Fields[0].Value)) > 0 then begin
+          Result:=VarToStr(Fields[0].Value);
+        end;
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+// очистка сообщени€
+procedure TMessageGeneratorSMS.ClearMessage;
+begin
+  m_generetedMessage:='';
+end;
 
 end.

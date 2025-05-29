@@ -38,7 +38,7 @@ var
   FOLDERUPDATE      :string;
 
   // Текущая версия GUID   ctrl+shift+G (GUID)
-  GUID_VERSION      :string = '5F8869D0';
+  GUID_VERSION      :string = '66793BBB';
 
   // exe родителя
   DASHBOARD_EXE     :string = 'dashboard.exe';

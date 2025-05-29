@@ -20,7 +20,6 @@ uses
   FormSendingSMSUnit in 'FormSendingSMSUnit.pas' {FormSendingSMS},
   FormDictionaryUnit in 'FormDictionaryUnit.pas' {FormDictionary},
   FormGenerateSMSUnit in 'FormGenerateSMSUnit.pas' {FormGenerateSMS},
-  GlobalVariablesLinkDLL in '..\gui\GlobalVariablesLinkDLL.pas',
   TShowMessageSMSUnit in '..\custom_class\TShowMessageSMSUnit.pas',
   TCheckServersUnit in '..\custom_class\TCheckServersUnit.pas',
   FormServerIKCheckUnit in '..\gui\FormServerIKCheckUnit.pas' {FormServerIKCheck},
@@ -30,7 +29,12 @@ uses
   FormWaitUnit in '..\gui\FormWaitUnit.pas' {FormWait},
   FormServiceChoiseListUnit in 'FormServiceChoiseListUnit.pas' {FormServiceChoiseList},
   TWorkingTimeClinicUnit in '..\custom_class\TWorkingTimeClinicUnit.pas',
-  DMUnit in 'DMUnit.pas' {DM: TDataModule};
+  DMUnit in 'DMUnit.pas' {DM: TDataModule},
+  FormEditDictionaryUnit in 'FormEditDictionaryUnit.pas' {FormEditDictionary},
+  TAutoPodborPeopleUnit in '..\custom_class\TAutoPodborPeopleUnit.pas',
+  GlobalVariablesLinkDLL in '..\gui\GlobalVariablesLinkDLL.pas',
+  FormPodborUnit in 'FormPodborUnit.pas' {FormPodbor},
+  FormManualPodborUnit in 'FormManualPodborUnit.pas' {FormManualPodbor};
 
 {$R *.res}
 
@@ -53,5 +57,8 @@ begin
   Application.CreateForm(TFormWait, FormWait);
   Application.CreateForm(TFormServiceChoiseList, FormServiceChoiseList);
   Application.CreateForm(TDM, DM);
+  Application.CreateForm(TFormEditDictionary, FormEditDictionary);
+  Application.CreateForm(TFormPodbor, FormPodbor);
+  Application.CreateForm(TFormManualPodbor, FormManualPodbor);
   Application.Run;
 end.

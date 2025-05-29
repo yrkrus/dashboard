@@ -270,7 +270,7 @@ begin
   // если оператоская учетка нужно ли принудительно посатвить статус (домой)
   if _isSetStatusOperatorGoHome then begin
      LoggingRemote(eLog_exit_force,_idUser);
-     clearOperatorStatus(_idUser);
+     UpdateOperatorStatus(eUnknown,_idUser);
   end;
 
   response:='delete from active_session where user_id='+#39+IntToStr(_idUser)+#39;

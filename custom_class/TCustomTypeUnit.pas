@@ -275,7 +275,8 @@ interface
 
 
    type // тип причины отправки смс
-   enumReasonSmsMessage = (reason_OtmenaPriema                        = 0,  // Отмена приема врача, перенос
+   enumReasonSmsMessage = (reason_Empty                               = -1, // пустой
+                           reason_OtmenaPriema                        = 0,  // Отмена приема врача, перенос
                            reason_NapominanieOPrieme                  = 1,  // Напоминание о приеме
                            reason_NapominanieOPrieme_do15             = 2,  // Напоминание о приеме (до 15 лет)
                            reason_NapominanieOPrieme_OMS              = 3,  // Напоминание о приеме (ОМС)
@@ -296,6 +297,7 @@ interface
                           );
    type  // шаблон сообщения в зависимости от типа отправки
    enumReasonSmsMessageTemplate = (
+                           reasonTemplate_Empty                               = -1,
                            reasonTemplate_OtmenaPriema                        = 0,  // Отмена приема врача, перенос
                            reasonTemplate_NapominanieOPrieme                  = 1,  // Напоминание о приеме
                            reasonTemplate_NapominanieOPrieme_do15             = 2,  // Напоминание о приеме (до 15 лет)
@@ -399,6 +401,8 @@ interface
  function EnumFontSizeToString(InFont:enumFontSize):string;                        // enumFontSize -> String;
  function EnumColorStatusToTColor(_statusColor:enumColorStatus):TColor;            // enumColorStatus -> TColor
  function EnumReasonSmsMessageToString(_reasonSmsMessage:enumReasonSmsMessage):string; // enumReasonSmsMessage -> String
+ function EnumReasonSmsMessageToInteger(_reasonSmsMessage:enumReasonSmsMessage):integer; // enumReasonSmsMessage -> Integer
+ function IntegerToEnumReasonSmsMessage(_value:Integer):enumReasonSmsMessage; // Integer -> enumReasonSmsMessage
  function StringToEnumReasonSmsMessage(InStatus:string):enumReasonSmsMessage;      // String -> enumReasonSmsMessage
  function EnumReasonSmsMessageToEnumReasonSmsMessageTemplate(_reasonSmsMessage:enumReasonSmsMessage):EnumReasonSmsMessageTemplate; // enumReasonSmsMessage -> enumReasonSmsMessageTemplate
  function EnumReasonSmsMessageTemplateToString(_reasonSmsMessageTemplate:enumReasonSmsMessageTemplate):TStringBuilder; // EnumReasonSmsMessageTemplate -> String
@@ -407,8 +411,8 @@ interface
  function EnumOnlineStatusToString(_status:enumOnlineStatus):string;                  // EnumOnlineStatus -> String
  function EnumGenderToString(_gender:enumGender):string;                              // EnumGender -> String
  function StringToEnumGender(_gender:string):enumGender;                              // String -> EnumGender
+ function EnumGenderToInteger(_gender:enumGender):Integer;                            // EnumGender -> Integer
  function EnumWorkingTimeToString(_workingTime:enumWorkingTime):string;               // enumWorkingTime -> String
-
 
  // =================== ПРОЕОБРАЗОВАНИЯ ===================
  implementation
@@ -697,7 +701,7 @@ begin
    eIT:         Result:= 8;       // ИТ
    eTransfer:   Result:= 9;       // переносы
    eReserve:    Result:= 10;      // резерв
-   eCallback:   Result:=  11;     // callback
+   eCallback:   Result:= 11;      // callback
  end;
 end;
 
@@ -935,6 +939,36 @@ begin
   end;
 end;
 
+// enumReasonSmsMessage -> Integer
+function EnumReasonSmsMessageToInteger(_reasonSmsMessage:enumReasonSmsMessage):integer;
+var
+ i:Integer;
+begin
+  for i:=Ord(Low(enumReasonSmsMessage)) to Ord(High(enumReasonSmsMessage)) do
+  begin
+    if enumReasonSmsMessage(i) = _reasonSmsMessage then begin
+     Result:=i;
+     Break;
+    end;
+  end;
+end;
+
+// Integer -> enumReasonSmsMessage
+function IntegerToEnumReasonSmsMessage(_value:Integer):enumReasonSmsMessage;
+var
+ i:Integer;
+begin
+  Result:=reason_Empty;
+
+  for i:=Ord(Low(enumReasonSmsMessage)) to Ord(High(enumReasonSmsMessage)) do
+  begin
+    if i = _value then begin
+      Result:=enumReasonSmsMessage(i);
+      Exit;
+    end;
+  end;
+end;
+
 // String -> enumReasonSmsMessage
 function StringToEnumReasonSmsMessage(InStatus:string):enumReasonSmsMessage;
 var
@@ -1010,7 +1044,7 @@ begin
    end;
    reasonTemplate_Perezabor                           : begin // Требуется перезабор крови (хилез, сгусток, недостаточно биоматериала)
     Result.Append('Здравствуйте! %uvazaemii% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
-    Result.Append('Сообщаем Вам, что %labs% %study% не %maybe% быть %done% по причине %prochina%. ');
+    Result.Append('Сообщаем Вам, что %labs% %study% не %maybe% быть %done% по причине "%prichina%". ');
     Result.Append('Приглашаем Вас для перезабора биоматериала в клинику по адресу %address% ');
     Result.Append('или просим связаться с нами по номеру +7(8442)220-220 или +7(8443)450-450');
    end;
@@ -1115,6 +1149,15 @@ begin
   if _gender = 'женский'  then Result:=gender_female;
 end;
 
+// EnumGender -> Integer
+function EnumGenderToInteger(_gender:enumGender):Integer;
+begin
+  case _gender of
+   gender_male:   Result:=0;
+   gender_female: Result:=1;
+  end;
+end;
+
 // enumWorkingTime -> String
 function EnumWorkingTimeToString(_workingTime:enumWorkingTime):string;
 begin
@@ -1128,5 +1171,6 @@ begin
     workingtime_Sunday:     Result:='вс';
   end;
 end;
+
 
 end.

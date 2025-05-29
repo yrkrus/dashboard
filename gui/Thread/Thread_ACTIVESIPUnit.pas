@@ -116,8 +116,8 @@ begin
          else begin // доступа к дашборду нет значит это  тип "операторы (доступ без дашборда)"
 
             // находитс€ ли в очереди
-            if p_ActiveSipOperators.GetListOperators_Queue(i) <> '' then begin
-               if p_ActiveSipOperators.GetListOperators_TalkTime(i,True) <>'' then begin
+            if p_ActiveSipOperators.GetListOperators_Queue(i) <> queue_null then begin
+               if p_ActiveSipOperators.GetListOperators_TalkTime(i,True) <> '' then begin
                  ListItem.SubItems.Add('разговор');
 
                end
@@ -136,7 +136,7 @@ begin
 
           // измен€ем статус на "разговор", если доступен и разговаривают
           if (p_ActiveSipOperators.GetListOperators_Status(i) = eAvailable) and
-             (p_ActiveSipOperators.GetListOperators_Queue(i) <> '') and
+             (p_ActiveSipOperators.GetListOperators_Queue(i) <> queue_null) and
              ((p_ActiveSipOperators.GetListOperators_Phone(i) <> ''){ and (listOperators[i].talk_time<>'')} ) then begin
 
             // проверим вдруг оператор в состо€нии onHold
@@ -230,8 +230,8 @@ begin
 
     // ===== ќ„≈–≈ƒ№ =====
     begin
-     if p_ActiveSipOperators.GetListOperators_Queue(i) = '' then ListItem.SubItems.Add('---')
-     else ListItem.SubItems.Add(p_ActiveSipOperators.GetListOperators_Queue(i));
+     if p_ActiveSipOperators.GetListOperators_Queue(i) = queue_null then ListItem.SubItems.Add('---')
+     else ListItem.SubItems.Add(EnumQueueCurrentToString(p_ActiveSipOperators.GetListOperators_Queue(i)));
     end;
 
     // ===== ќЅў≈≈ ¬–≈ћя –ј«√ќ¬ќ–ј =====
@@ -292,7 +292,7 @@ begin
            else begin // доступа к дашборду нет значит это  тип "операторы (доступ без дашборда)"
 
               // находитс€ ли в очереди
-              if p_ActiveSipOperators.GetListOperators_Queue(i) <> '' then begin
+              if p_ActiveSipOperators.GetListOperators_Queue(i) <> queue_null then begin
                  if p_ActiveSipOperators.GetListOperators_TalkTime(i,True) <>'' then begin
                    ListItem.SubItems[1]:='разговор';
 
@@ -312,7 +312,7 @@ begin
 
             // измен€ем статус на "разговор", если доступен и разговаривают
             if (p_ActiveSipOperators.GetListOperators_Status(i) = eAvailable) and
-               (p_ActiveSipOperators.GetListOperators_Queue(i) <> '') and
+               (p_ActiveSipOperators.GetListOperators_Queue(i) <> queue_null) and
                ((p_ActiveSipOperators.GetListOperators_Phone(i) <> ''){ and (listOperators[i].talk_time<>'')} ) then begin
 
               // проверим вдруг оператор в состо€нии onHold
@@ -410,8 +410,8 @@ begin
 
       // ===== ќ„≈–≈ƒ№ =====
       begin
-       if p_ActiveSipOperators.GetListOperators_Queue(i) = '' then ListItem.SubItems[6]:='---'
-       else ListItem.SubItems[6]:=p_ActiveSipOperators.GetListOperators_Queue(i);
+       if p_ActiveSipOperators.GetListOperators_Queue(i) = queue_null then ListItem.SubItems[6]:='---'
+       else ListItem.SubItems[6]:=EnumQueueCurrentToString(p_ActiveSipOperators.GetListOperators_Queue(i));
       end;
 
       // ===== ќЅў≈≈ ¬–≈ћя –ј«√ќ¬ќ–ј =====

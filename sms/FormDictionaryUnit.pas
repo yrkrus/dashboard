@@ -15,25 +15,24 @@ type
     PopupMenu: TPopupMenu;
     menu_del: TMenuItem;
     st_NoMessage: TStaticText;
+    N1: TMenuItem;
+    menu_edit: TMenuItem;
     procedure FormShow(Sender: TObject);
     procedure menu_delClick(Sender: TObject);
     procedure list_DictionaryMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure menu_editClick(Sender: TObject);
   private
     { Private declarations }
   SelectedItemPopMenu: TListItem; // Переменная для хранения выбранного элемента
 
-  procedure Show;
+
   procedure ClearListView(var p_ListView:TListView);
   procedure LoadData(var p_ListView:TListView);
 
-  function SaveWord(_id:Integer;
-                    InNewMessage:string;
-                    var _errorDescription:string;
-                    IsDelete:Boolean = False):Boolean;  // редактирование слова
-
   public
     { Public declarations }
+  procedure ShowData;
   end;
 
 var
@@ -42,7 +41,7 @@ var
 implementation
 
 uses
-  GlobalVariables, GlobalVariablesLinkDLL;
+  GlobalVariables, GlobalVariablesLinkDLL, FormEditDictionaryUnit, FunctionUnit;
 
 {$R *.dfm}
 
@@ -172,92 +171,55 @@ var
  error:string;
 begin
   // Проверяем, был ли выбран элемент
-  if Assigned(SelectedItemPopMenu) then
-  begin
-    id:=StrToInt(SelectedItemPopMenu.Caption);
-    word:=SelectedItemPopMenu.SubItems[2];
-    if word='' then word:='пустое слово';
-
-    resultat:=MessageBox(Handle,PChar('Точно удалить слово "'+word+'" ?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
-    if resultat=mrYes then begin
-
-      if not SaveWord(id, '', error, True) then begin
-        MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-        Exit;
-      end;
-      // обновляем данные
-      Show;
-      Exit;
-    end;
-  end
-  else
-  begin
-   MessageBox(Handle,PChar('Не выбрано слово'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-  end;
-
-end;
-
-// удаление слова из БД
-function TFormDictionary.SaveWord(_id:Integer;
-                                  InNewMessage:string;
-                                  var _errorDescription:string;
-                                  IsDelete:Boolean = False):Boolean;
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
-begin
-  Result:=False;
-  _errorDescription:='';
-
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-
-  if not Assigned(serverConnect) then begin
-    FreeAndNil(ado);
+  if not Assigned(SelectedItemPopMenu) then begin
+    MessageBox(Handle,PChar('Не выбрано слово'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
   end;
 
-   try
-    with ado do begin
-      ado.Connection:=serverConnect;
-      SQL.Clear;
-      if not IsDelete then begin
-       SQL.Add('update sms_dictionary set word = '+#39+InNewMessage+#39+' where id = '+#39+IntToStr(_id)+#39);
-      end
-      else begin
-        SQL.Add('delete from sms_dictionary where id = '+#39+IntToStr(_id)+#39);
-      end;
+  id:=StrToInt(SelectedItemPopMenu.Caption);
+  word:=SelectedItemPopMenu.SubItems[2];
+  if word='' then word:='пустое слово';
 
-      try
-          ExecSQL;
-      except
-          on E:EIdException do begin
-            FreeAndNil(ado);
-            if Assigned(serverConnect) then begin
-              serverConnect.Close;
-              FreeAndNil(serverConnect);
-              _errorDescription:=e.ClassName+': '+e.Message;
-            end;
-             Exit;
-          end;
-      end;
+  resultat:=MessageBox(Handle,PChar('Точно удалить слово "'+word+'" ?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
+  if resultat=mrYes then begin
 
+    if not SaveWord(id, '', error, True) then begin
+      MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+      Exit;
     end;
-   finally
-    FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
-   end;
 
-   Result:=True;
+    // обновляем данные
+    ShowData;
+    Exit;
+  end;
 end;
+
+procedure TFormDictionary.menu_editClick(Sender: TObject);
+var
+ id:integer;
+ word:string;
+begin
+  // Проверяем, был ли выбран элемент
+  if not Assigned(SelectedItemPopMenu) then begin
+    MessageBox(Handle,PChar('Не выбрано слово'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    Exit;
+  end;
+
+  id:=StrToInt(SelectedItemPopMenu.Caption);
+  word:=SelectedItemPopMenu.SubItems[2];
+  if word='' then word:='пустое слово';
+
+  with FormEditDictionary do begin
+    SetOldWord(id,word);
+    ShowModal;
+  end;
+end;
+
 
 
 procedure TFormDictionary.FormShow(Sender: TObject);
 begin
-  Show;
+  ShowData;
 end;
 
 procedure TFormDictionary.list_DictionaryMouseDown(Sender: TObject;
@@ -271,7 +233,7 @@ begin
   end;
 end;
 
-procedure TFormDictionary.Show;
+procedure TFormDictionary.ShowData;
 begin
   ClearListView(list_Dictionary);
   LoadData(list_Dictionary);

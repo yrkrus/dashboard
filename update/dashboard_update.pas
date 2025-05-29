@@ -103,6 +103,7 @@ begin
  while not terminated do
  begin
    ServiceThread.ProcessRequests(False);
+   Sleep(200);
  end;
 end;
 
@@ -326,16 +327,14 @@ var
  SLFilesUpdateList:TStringList;   //  список файлов которые будем обновлять
  error:string;
 begin
-// Sleep(3000);
+
  XML:=TXML.Create;
  log:=TLoggingFile.Create('update');
  log.Save('Проверка новой версии');
 
-  if not XML.isExistSettingsFile then begin
+  while not XML.isExistSettingsFile do begin
     log.Save('Отсутствует файл настроек '+SETTINGS_XML+', чтобы он появился необходимо запустить '+DASHBOARD_EXE, IS_ERROR);
-    log.Save('Следующая попытка проверки новой версии через 1 мин');
-    TimerMonitoring.Interval:=cTIMER_ERROR;
-    Exit;
+    Sleep(1000);
   end;
 
  // проверка вдруг уже в настоящий момент обновлямся (не качается если мы в принудительном обновлении)
@@ -355,16 +354,15 @@ begin
 
   // найдем текущую версию
   remoteVersion:=GetRemoteVersionDashboard(error);
-  if remoteVersion='null' then begin
+  while remoteVersion = 'null' do begin
    log.Save('Не удается получить текущую версию дашборда. '+error, IS_ERROR);
-   log.Save('Следующая попытка проверки новой версии через 1 мин');
-   TimerMonitoring.Interval:=cTIMER_ERROR;
-   Exit;
-  end
-  else begin
-    // запишем текущую удаленную версию
-    XML.UpdateRemoteVersion(remoteVersion);
+   Sleep(1000);
+   remoteVersion:=GetRemoteVersionDashboard(error);
   end;
+
+  // запишем текущую удаленную версию
+  XML.UpdateRemoteVersion(remoteVersion);
+
 
   if CompareText(XML.GetCurrentVersion, XML.GetRemoteVersion) = 0 then begin
     log.Save('Актуальная версия');
@@ -394,7 +392,7 @@ begin
     if XML.isForceUpdate then Break;
 
     log.Save('Запущен родительский процесс: <b>'+DASHBOARD_EXE+'</b>. Ожидание закрытия процесса ...');
-    Sleep(Round( cTIMER_ERROR / 6));
+    Sleep(Round( cTIMER_ERROR / 12));  // ждем 5 сек
    end;
 
    SLFilesUpdateList:=TStringList.Create;

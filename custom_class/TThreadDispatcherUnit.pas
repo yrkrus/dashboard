@@ -46,6 +46,8 @@ uses
       procedure StartThread; // Метод для запуска потока
       procedure StopThread; // Метод для остановки потока
 
+      procedure SetTimerPeriod(_timeperiod:Integer); // Уставка нового времени
+
       end;
  // class TThreadDispatcher END
 
@@ -96,6 +98,7 @@ begin
         if Assigned(FTask) then begin
           Log.Save('Executed task: '+m_taskName);
           Queue(TaskRun);   // Выполняем переданную задачу
+         // TaskRun;
         end;
       except
         on E:Exception do
@@ -145,5 +148,14 @@ begin
   // записываем в лог
   Log.Save(messclass+':'+mess, IS_ERROR);
 end;
+
+
+// Уставка нового времени
+procedure TThreadDispatcher.SetTimerPeriod(_timeperiod:Integer);
+begin
+ m_timerPeriod := _timeperiod * 1000;
+ Log.Save(Format('Task %s: timer period set to %d ms',[m_taskName, m_timerPeriod]));
+end;
+
 
 end.

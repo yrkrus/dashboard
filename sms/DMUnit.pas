@@ -60,7 +60,7 @@ end;
 
 procedure TDM.menu_DictionaryClick(Sender: TObject);
 begin
-  FormDictionary.Show;
+  FormDictionary.ShowModal;
 end;
 
 end.

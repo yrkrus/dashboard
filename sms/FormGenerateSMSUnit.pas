@@ -36,6 +36,9 @@ type
     reName: TRichEdit;
     reOtchestvo: TRichEdit;
     reReason: TRichEdit;
+    btnPrimer: TBitBtn;
+    lblAutoPodbor: TLabel;
+    lblAutoPodborError: TLabel;
     procedure FormShow(Sender: TObject);
     procedure comboxReasonSmsMessageChange(Sender: TObject);
     procedure btnGenerateMessageShowClick(Sender: TObject);
@@ -49,10 +52,19 @@ type
     procedure reReasonMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure edtSummaKeyPress(Sender: TObject; var Key: Char);
+    procedure btnPrimerClick(Sender: TObject);
+    procedure lblAutoPodborClick(Sender: TObject);
   private
     { Private declarations }
   list_clinic    :TCheckServersIK;  // список с клиниками
   serviceChoiseList:TStringList;    // выбранные услуги
+
+  phonePodbor:string;               // номер тлф для подбора имени
+  phonePodborError:string;
+  isAutoPodbor:Boolean;             // флаг того что данные заполнены из автоподбора
+  procedure AutoPodbor;             // автоподбор имени\отчетства\пола
+
+
 
   procedure Clear;
   procedure CreateReasonBox;
@@ -82,6 +94,10 @@ type
   function GetServiceChoise(_id:Integer):string;
   function  GetCountServiceChoise:Integer;
 
+  procedure SetPhonePodbor(_phone:string; const _error:string);  // установка номера тлф. для подбора
+
+  procedure SetAutoPodborValue(_name,_mid:string; _gender:enumGender); // установка параметров атоподбора
+
   end;
 
 var
@@ -90,7 +106,7 @@ var
 implementation
 
 uses
-  FunctionUnit, FormHomeUnit, GlobalVariables, TMessageGeneratorSMSUnit, FormServiceChoiseUnit, DMUnit;
+  FunctionUnit, FormHomeUnit, GlobalVariables, TMessageGeneratorSMSUnit, FormServiceChoiseUnit, DMUnit, TAutoPodborPeopleUnit, FormPodborUnit;
 
 
 {$R *.dfm}
@@ -264,6 +280,11 @@ begin
 end;
 
 
+procedure TFormGenerateSMS.lblAutoPodborClick(Sender: TObject);
+begin
+  AutoPodbor;
+end;
+
 procedure TFormGenerateSMS.reNameMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
@@ -314,6 +335,27 @@ begin
   Result:=serviceChoiseList.Count;
 end;
 
+// установка номера тлф. для подбора
+procedure TFormGenerateSMS.SetPhonePodbor(_phone:string; const _error:string);
+begin
+  phonePodbor:=_phone;
+  phonePodborError:=_error;
+end;
+
+// установка параметров атоподбора
+procedure TFormGenerateSMS.SetAutoPodborValue(_name,_mid:string; _gender:enumGender);
+begin
+  reName.Clear;
+  reName.Text:=_name;
+
+  reOtchestvo.Clear;
+  reOtchestvo.Text:=_mid;
+
+  combox_Pol.ItemIndex:=EnumGenderToInteger(_gender);
+
+  isAutoPodbor:=True;
+end;
+
 // создать сообщение
 procedure TFormGenerateSMS.CreateMessage;
 var
@@ -337,8 +379,11 @@ begin
   prichina:=reReason.Text;
   money:=edtSumma.Text;
 
+  // очищаем сообщение (так на всякий случай)
+  SharedGenerateMessage.ClearMessage;
+
   // проверка параметров перед созданием сообщения
-  if not SharedGenerateMessage.CheckParams(params, serviceChoiseList, error) then begin
+  if not SharedGenerateMessage.CheckParams(params, serviceChoiseList, isAutoPodbor, error) then begin
    Screen.Cursor:=crDefault;
    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
    Exit;
@@ -549,6 +594,8 @@ begin
   for i:=Ord(Low(enumReasonSmsMessage)) to Ord(High(enumReasonSmsMessage)) do
   begin
     reason:=enumReasonSmsMessage(i);
+    if reason = reason_Empty then Continue; // пропускаем пустой -1 
+    
     comboxReasonSmsMessage.Items.Add(EnumReasonSmsMessageToString(reason));
   end;
 end;
@@ -577,6 +624,7 @@ begin
 
   // добавляем инфо что сообщение нельзя отредактировать
   FormHome.SetEditMessage(paramStatus_DISABLED,'Сообщение из генератора не редактируется!');
+  FormHome.SetReasonSMSType( IntegerToEnumReasonSmsMessage(comboxReasonSmsMessage.ItemIndex));
 
   Screen.Cursor:=crDefault;
   Close;
@@ -590,6 +638,12 @@ begin
   MessageBox(Handle,PChar(SharedGenerateMessage.GeneretedMessage),PChar('Инфо'),MB_OK+MB_ICONINFORMATION);
 end;
 
+
+procedure TFormGenerateSMS.btnPrimerClick(Sender: TObject);
+begin
+  MessageBox(Handle,PChar(SharedGenerateMessage.GetExampleMessage(IntegerToEnumReasonSmsMessage(comboxReasonSmsMessage.ItemIndex))),
+                    PChar('Инфо'),MB_OK+MB_ICONINFORMATION);
+end;
 
 procedure TFormGenerateSMS.btnServiceListClick(Sender: TObject);
 begin
@@ -648,6 +702,10 @@ end;
 
 procedure TFormGenerateSMS.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
+  phonePodbor:='';
+  phonePodborError:='';
+  isAutoPodbor:=False;
+
   FormHome.ShowManualMessage;
 end;
 
@@ -670,6 +728,56 @@ begin
   // текущее время\дата на форме
   CurrentDateTime;
 
+  // влючить автоподбор
+  if phonePodbor<>'' then begin
+   lblAutoPodbor.Enabled:=True;
+   lblAutoPodbor.Caption:='Автоподбор имени';
+   lblAutoPodbor.ShowHint:=True;
+
+   // причина
+   lblAutoPodborError.Visible:=False;
+  end
+  else begin
+   lblAutoPodbor.Enabled:=False;
+   lblAutoPodbor.Caption:='Автоподбор имени (недоступен)';
+   lblAutoPodbor.ShowHint:=False;
+
+   // причина
+   lblAutoPodborError.Visible:=True;
+   lblAutoPodborError.Caption:='Причина: '+phonePodborError;
+  end;
+end;
+
+// автоподбор имени\отчетства\пола
+procedure TFormGenerateSMS.AutoPodbor;
+var
+ people:TAutoPodborPeople;
+begin
+  showWait(show_open);
+
+  Screen.Cursor:=crHourGlass;
+
+  people:=TAutoPodborPeople.Create(phonePodbor);
+  if people.Count = 0 then begin
+    showWait(show_close);
+    Screen.Cursor:=crDefault;
+    MessageBox(Handle,PChar('Не найдено пациентов с таким номером'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    Exit;
+  end;
+
+  if people.Count = 1 then begin
+    showWait(show_close);
+    Screen.Cursor:=crDefault;
+
+    SetAutoPodborValue(people.FirstName(0),people.MidName(0),people.Gender(0));
+  end
+  else begin
+   showWait(show_close);
+   Screen.Cursor:=crDefault;
+
+   FormPodbor.SetListPacients(people);
+   FormPodbor.ShowModal;
+  end;
 end;
 
 end.
