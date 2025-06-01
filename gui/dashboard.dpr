@@ -72,7 +72,8 @@ uses
   TUserAccessUnit in '..\custom_class\TUserAccessUnit.pas',
   GlobalVariablesLinkDLL in 'GlobalVariablesLinkDLL.pas',
   TQueueStatisticsUnit in '..\custom_class\TQueueStatisticsUnit.pas',
-  TThreadDispatcherUnit in '..\custom_class\TThreadDispatcherUnit.pas';
+  TThreadDispatcherUnit in '..\custom_class\TThreadDispatcherUnit.pas',
+  TAutoPodborPeopleUnit in '..\custom_class\TAutoPodborPeopleUnit.pas';
 
 {$R *.res}
 

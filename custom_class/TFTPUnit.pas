@@ -88,6 +88,7 @@ implementation
   error_message:string;
  begin
    inherited Create;
+
    m_log:=TLoggingFile.Create(InLogName,False);
    m_ftp:=TIdFTP.Create(nil);
    m_listFilesFTP:=TStringList.Create;

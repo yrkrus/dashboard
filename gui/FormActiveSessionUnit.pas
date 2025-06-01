@@ -38,6 +38,8 @@ type
     Label18: TLabel;
     chkbox_ConfirmKillSession: TCheckBox;
     ST_Loading: TStaticText;
+    Label19: TLabel;
+    Label20: TLabel;
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure Clear;
@@ -77,7 +79,7 @@ type
   procedure CenterForm;                                                        // центрирование окна
 
   
-  procedure UpdateOnlyUptime;                                                  // обновление времени uptime
+  procedure UpdateOnlyUptimeMemory;                                            // обновление времени uptime + memory
   procedure UpdateData;                                                        // обновление данных
 
   procedure EnableOrDisableActionButton(_role:enumRole; 
@@ -161,7 +163,7 @@ end;
 
 
 procedure TFormActiveSession.Show;
-begin 
+begin
   if not Assigned(m_active_session) then begin
     m_active_session:=TActiveSession.Create;
   end
@@ -173,11 +175,21 @@ begin
   if (m_activeCount = 0) and (not isOneUpdateData) then begin
      m_activeCount:=m_active_session.Count;
 
-     UpdateData;   
+     UpdateData;
      Exit;
   end;
 
-  UpdateData;    
+  UpdateData;
+
+ // проверим скорость работы
+ if SharedCountResponseThread.GetAverageTime('Thread_ActiveSip') > 1000 then begin
+   m_dispatcher.SetTimerPeriod( Round((SharedCountResponseThread.GetAverageTime('Thread_ActiveSip') / 1000) ) * 2);
+ end
+ else begin
+   if m_dispatcher.GetTimerPeriod <> 1000 then begin
+     m_dispatcher.SetTimerPeriod(1);
+   end;
+ end;
 end;
 
 
@@ -192,6 +204,7 @@ var
  lblUserName                :TArray<TLabel>;
  lblPC                      :TArray<TLabel>;
  lblIP                      :TArray<TLabel>;
+ lblMemory                  :TArray<TLabel>;
  lblUptime                  :TArray<TLabel>;
  btnAction                  :TArray<TBitBtn>;
  lblPeriod                  :TArray<TLabel>;
@@ -214,6 +227,7 @@ begin
   SetLength(lblUserName,counts);
   SetLength(lblPC,counts);
   SetLength(lblIP,counts);
+  SetLength(lblMemory,counts);
   SetLength(lblUptime,counts);
   SetLength(btnAction,counts);
   SetLength(lblPeriod,counts);
@@ -369,6 +383,31 @@ begin
      lblIP[i].Parent:=FormActiveSession.panel;
     end;
 
+    // memory
+    begin
+     lblMemory[i]:=TLabel.Create(FormActiveSession.panel);
+     lblMemory[i].Name:='lbl_memory_'+nameControl;
+     lblMemory[i].Tag:=1;
+
+     if m_active_session.GetOnlineStatus(i) = eOnline then begin
+       lblMemory[i].Caption:=m_active_session.GetMemory(i)+' Mb';
+     end
+     else lblMemory[i].Caption:='---';   //нет смысла показыватьт.к. пользователь не онлайн
+
+     lblMemory[i].Left:=817;
+
+     if i=0 then lblMemory[i].Top:=cTOPSTART
+     else lblMemory[i].Top:=cTOPSTART+(cSTEP * i);
+
+     lblMemory[i].Font.Name:='Tahoma';
+     lblMemory[i].Font.Size:=10;
+     lblMemory[i].AutoSize:=False;
+     lblMemory[i].Width:=90;
+     lblMemory[i].Height:=16;
+     lblMemory[i].Alignment:=taCenter;
+     lblMemory[i].Parent:=FormActiveSession.panel;
+    end;
+
     // uptime
     begin
      lblUptime[i]:=TLabel.Create(FormActiveSession.panel);
@@ -380,7 +419,7 @@ begin
      end
      else lblUptime[i].Caption:='---';  //нет смысла показывать время uptime т.к. пользователь не онлайн
 
-     lblUptime[i].Left:=818;
+     lblUptime[i].Left:=905;
 
      if i=0 then lblUptime[i].Top:=cTOPSTART
      else lblUptime[i].Top:=cTOPSTART+(cSTEP * i);
@@ -402,7 +441,7 @@ begin
       btnAction[i].Name:='btn_action_'+nameControl;
       btnAction[i].Tag:=1;
       btnAction[i].Caption:='&Завершить сессию';
-      btnAction[i].Left:=956;
+      btnAction[i].Left:=1043;
 
       if i=0 then btnAction[i].Top:=cTOPSTART_BUTTON
       else btnAction[i].Top:=cTOPSTART_BUTTON+(cSTEP * i);
@@ -433,7 +472,7 @@ begin
      end;
 
      lblPeriod[i].Caption:=GetPeriodLastOnline(m_active_session.GetLastOnline(i),lblPeriod[i])+ inQueue;
-     lblPeriod[i].Left:=1142;
+     lblPeriod[i].Left:=1229;
 
      if i=0 then lblPeriod[i].Top:=cTOPSTART
      else lblPeriod[i].Top:=cTOPSTART+(cSTEP * i);
@@ -786,8 +825,8 @@ begin
   if isOneUpdateData then begin
    if countActive = m_activeCount then
    begin
-     // обновляем только uptime
-     UpdateOnlyUptime;             
+     // обновляем только uptime + memory
+     UpdateOnlyUptimeMemory;
      Exit;
    end;
   end;
@@ -830,7 +869,7 @@ end;
 
 
 // обновление времени uptime 
-procedure TFormActiveSession.UpdateOnlyUptime;
+procedure TFormActiveSession.UpdateOnlyUptimeMemory;
 var
  i:Integer;
  counts:Integer;
@@ -873,7 +912,20 @@ begin
        end
        else FindedComponent.Caption:='---';
       end;
-    end;  
+    end;
+
+     // memory
+    begin
+       // найдем компонент
+      FindedComponent := TLabel(FormActiveSession.panel.FindComponent('lbl_memory_' + nameControl));
+
+      if Assigned(FindedComponent) then begin
+         if m_active_session.GetOnlineStatus(i) = eOnline then begin
+         FindedComponent.Caption:=m_active_session.GetMemory(i)+ ' Mb';
+       end
+       else FindedComponent.Caption:='---';
+      end;
+    end;
 
 
      // период активности

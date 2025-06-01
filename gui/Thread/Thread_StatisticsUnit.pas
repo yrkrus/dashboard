@@ -36,12 +36,11 @@ begin
 end;
 
 procedure Thread_Statistics.show;
-//var
-// val:Double;
 begin
   if not CONNECT_BD_ERROR then begin
 
     // обновляем даынне
+
     p_SharedQueueStatistics.Update;
 
     // отображаем данные

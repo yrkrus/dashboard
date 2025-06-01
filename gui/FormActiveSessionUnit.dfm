@@ -5,7 +5,7 @@ object FormActiveSession: TFormActiveSession
   BorderStyle = bsSingle
   Caption = #1040#1082#1090#1080#1074#1085#1099#1077' '#1089#1077#1089#1089#1080#1080
   ClientHeight = 142
-  ClientWidth = 1361
+  ClientWidth = 1442
   Color = clWindow
   DefaultMonitor = dmMainForm
   Font.Charset = DEFAULT_CHARSET
@@ -23,11 +23,11 @@ object FormActiveSession: TFormActiveSession
   object group: TGroupBox
     Left = 7
     Top = 35
-    Width = 1343
+    Width = 1426
     Height = 100
     TabOrder = 2
     object Label3: TLabel
-      Left = 126
+      Left = 124
       Top = 3
       Width = 65
       Height = 16
@@ -42,7 +42,7 @@ object FormActiveSession: TFormActiveSession
       ParentFont = False
     end
     object Label1: TLabel
-      Left = 215
+      Left = 213
       Top = 3
       Width = 175
       Height = 16
@@ -57,7 +57,7 @@ object FormActiveSession: TFormActiveSession
       ParentFont = False
     end
     object Label4: TLabel
-      Left = 393
+      Left = 391
       Top = 3
       Width = 175
       Height = 16
@@ -72,7 +72,7 @@ object FormActiveSession: TFormActiveSession
       ParentFont = False
     end
     object Label5: TLabel
-      Left = 579
+      Left = 577
       Top = 3
       Width = 100
       Height = 16
@@ -87,7 +87,7 @@ object FormActiveSession: TFormActiveSession
       ParentFont = False
     end
     object Label6: TLabel
-      Left = 675
+      Left = 673
       Top = 3
       Width = 140
       Height = 16
@@ -102,7 +102,7 @@ object FormActiveSession: TFormActiveSession
       ParentFont = False
     end
     object Label12: TLabel
-      Left = 819
+      Left = 904
       Top = 3
       Width = 130
       Height = 16
@@ -117,7 +117,7 @@ object FormActiveSession: TFormActiveSession
       ParentFont = False
     end
     object Label2: TLabel
-      Left = 21
+      Left = 19
       Top = 3
       Width = 90
       Height = 16
@@ -132,7 +132,7 @@ object FormActiveSession: TFormActiveSession
       ParentFont = False
     end
     object Label16: TLabel
-      Left = 956
+      Left = 1041
       Top = 2
       Width = 146
       Height = 16
@@ -147,7 +147,7 @@ object FormActiveSession: TFormActiveSession
       ParentFont = False
     end
     object Label11: TLabel
-      Left = 1143
+      Left = 1228
       Top = 2
       Width = 146
       Height = 16
@@ -161,10 +161,25 @@ object FormActiveSession: TFormActiveSession
       Font.Style = [fsBold]
       ParentFont = False
     end
+    object Label19: TLabel
+      Left = 816
+      Top = 3
+      Width = 90
+      Height = 16
+      Alignment = taCenter
+      AutoSize = False
+      Caption = #1055#1072#1084#1103#1090#1100
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+    end
     object scroll: TScrollBox
       Left = 5
       Top = 22
-      Width = 1328
+      Width = 1402
       Height = 70
       Align = alCustom
       BevelInner = bvNone
@@ -176,7 +191,7 @@ object FormActiveSession: TFormActiveSession
       object panel: TPanel
         Left = -6
         Top = -1
-        Width = 1319
+        Width = 1400
         Height = 60
         BevelOuter = bvNone
         DoubleBuffered = True
@@ -281,7 +296,7 @@ object FormActiveSession: TFormActiveSession
           Visible = False
         end
         object Label15: TLabel
-          Left = 818
+          Left = 905
           Top = 5
           Width = 130
           Height = 16
@@ -313,7 +328,7 @@ object FormActiveSession: TFormActiveSession
           Visible = False
         end
         object Label18: TLabel
-          Left = 1142
+          Left = 1229
           Top = 5
           Width = 146
           Height = 16
@@ -328,8 +343,24 @@ object FormActiveSession: TFormActiveSession
           ParentFont = False
           Visible = False
         end
+        object Label20: TLabel
+          Left = 817
+          Top = 5
+          Width = 90
+          Height = 16
+          Alignment = taCenter
+          AutoSize = False
+          Caption = #1087#1072#1084#1103#1090#1100
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+          Visible = False
+        end
         object BitBtn2: TBitBtn
-          Left = 956
+          Left = 1043
           Top = 2
           Width = 144
           Height = 26
@@ -390,7 +421,7 @@ object FormActiveSession: TFormActiveSession
           WordWrap = True
         end
         object BitBtn1: TBitBtn
-          Left = 956
+          Left = 1043
           Top = 30
           Width = 144
           Height = 26
@@ -451,9 +482,9 @@ object FormActiveSession: TFormActiveSession
           WordWrap = True
         end
         object ST_Loading: TStaticText
-          Left = 17
+          Left = 19
           Top = 28
-          Width = 1308
+          Width = 1381
           Height = 20
           Alignment = taCenter
           AutoSize = False
@@ -534,7 +565,7 @@ object FormActiveSession: TFormActiveSession
     OnClick = btnCloseAllSessionClick
   end
   object chkbox_ConfirmKillSession: TCheckBox
-    Left = 1024
+    Left = 1107
     Top = 8
     Width = 319
     Height = 17

@@ -61,6 +61,7 @@ begin
     p_InternalProcess.UpdateTimeActiveSession(PROGRAMM_UPTIME);   // обновление времени ондайна в Ѕƒ
     p_InternalProcess.CheckStatusUpdateService;                   // проверка запущена ли служба обновлени€
     p_InternalProcess.XMLUpdateLastOnline;                        // обновление времемни в settings.xml
+    p_InternalProcess.UpdateMemory;                               // обновление загрузки по пам€ти
   end;
 
 end;

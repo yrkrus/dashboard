@@ -5,7 +5,7 @@ object FormPropushennie: TFormPropushennie
   BorderStyle = bsSingle
   Caption = #1055#1088#1086#1087#1091#1097#1077#1085#1085#1099#1077' '#1079#1074#1086#1085#1082#1080' ('#1090#1086#1083#1100#1082#1086' '#1085#1077' '#1087#1077#1088#1077#1079#1074#1086#1085#1080#1074#1096#1080#1077')'
   ClientHeight = 142
-  ClientWidth = 955
+  ClientWidth = 1205
   Color = clWindow
   DefaultMonitor = dmDesktop
   Font.Charset = DEFAULT_CHARSET
@@ -52,7 +52,7 @@ object FormPropushennie: TFormPropushennie
   object group: TGroupBox
     Left = 8
     Top = 35
-    Width = 937
+    Width = 1187
     Height = 100
     TabOrder = 1
     object Label3: TLabel
@@ -86,7 +86,7 @@ object FormPropushennie: TFormPropushennie
       ParentFont = False
     end
     object Label4: TLabel
-      Left = 327
+      Left = 589
       Top = 3
       Width = 110
       Height = 16
@@ -101,7 +101,7 @@ object FormPropushennie: TFormPropushennie
       ParentFont = False
     end
     object Label5: TLabel
-      Left = 467
+      Left = 729
       Top = 3
       Width = 114
       Height = 16
@@ -116,7 +116,7 @@ object FormPropushennie: TFormPropushennie
       ParentFont = False
     end
     object Label6: TLabel
-      Left = 627
+      Left = 889
       Top = 3
       Width = 125
       Height = 16
@@ -131,7 +131,7 @@ object FormPropushennie: TFormPropushennie
       ParentFont = False
     end
     object Label12: TLabel
-      Left = 776
+      Left = 1038
       Top = 3
       Width = 125
       Height = 16
@@ -145,10 +145,25 @@ object FormPropushennie: TFormPropushennie
       Font.Style = [fsBold]
       ParentFont = False
     end
+    object Label14: TLabel
+      Left = 308
+      Top = 3
+      Width = 278
+      Height = 16
+      Alignment = taCenter
+      AutoSize = False
+      Caption = #1060#1048#1054
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+    end
     object scroll: TScrollBox
       Left = 5
       Top = 22
-      Width = 927
+      Width = 1172
       Height = 70
       Align = alCustom
       BevelInner = bvNone
@@ -160,14 +175,14 @@ object FormPropushennie: TFormPropushennie
       object panel: TPanel
         Left = -6
         Top = -1
-        Width = 916
+        Width = 1159
         Height = 60
         BevelOuter = bvNone
         DoubleBuffered = True
         ParentDoubleBuffered = False
         TabOrder = 0
         object Label10: TLabel
-          Left = 466
+          Left = 728
           Top = 5
           Width = 114
           Height = 16
@@ -231,7 +246,7 @@ object FormPropushennie: TFormPropushennie
           Visible = False
         end
         object Label9: TLabel
-          Left = 328
+          Left = 590
           Top = 5
           Width = 110
           Height = 16
@@ -249,7 +264,7 @@ object FormPropushennie: TFormPropushennie
           Visible = False
         end
         object Label13: TLabel
-          Left = 777
+          Left = 1039
           Top = 5
           Width = 125
           Height = 16
@@ -264,8 +279,24 @@ object FormPropushennie: TFormPropushennie
           ParentFont = False
           Visible = False
         end
+        object Label15: TLabel
+          Left = 309
+          Top = 5
+          Width = 278
+          Height = 16
+          Alignment = taCenter
+          AutoSize = False
+          Caption = #1085#1086#1084#1077#1088
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+          Visible = False
+        end
         object BitBtn1: TBitBtn
-          Left = 633
+          Left = 895
           Top = 30
           Width = 111
           Height = 26
@@ -326,7 +357,7 @@ object FormPropushennie: TFormPropushennie
           WordWrap = True
         end
         object BitBtn2: TBitBtn
-          Left = 633
+          Left = 895
           Top = 2
           Width = 111
           Height = 26
@@ -389,7 +420,7 @@ object FormPropushennie: TFormPropushennie
         object ST_no_missed: TStaticText
           Left = 29
           Top = 28
-          Width = 877
+          Width = 1100
           Height = 20
           Alignment = taCenter
           AutoSize = False

@@ -80,6 +80,7 @@ uses
       function Gender(_id:Integer):enumGender;
       function BirthDay(_id:Integer):string;
 
+      function GetFIO(_id:Integer):string;
 
       property Count:Integer read m_count;
 
@@ -112,7 +113,8 @@ end;
 
 constructor TAutoPodborPeople.Create(_phone:string);
 begin
-// inherited;
+ inherited Create;
+
  m_phone:=_phone;
  m_count:=0;
  firebirdConnect            :=  TpFIBDatabase.Create(nil);
@@ -124,7 +126,7 @@ begin
  firebirdQuery.Database     :=  firebirdConnect;  // Привязка к базе данных
  firebirdQuery.Transaction  :=  firebirdTransaction;
 
- m_log:=TLoggingFile.Create('sms');
+ m_log:=TLoggingFile.Create('firebirdResponse_CBD');
 
  m_listPhoneVariants:=TStringList.Create;
 
@@ -138,6 +140,8 @@ begin
 
  // пытаемся найти человеков
  Find;
+
+ //inherited Create;
 end;
 
 
@@ -183,6 +187,10 @@ begin
  Result:=DateToStr(m_list[_id].birthday);
 end;
 
+function TAutoPodborPeople.GetFIO(_id:Integer):string;
+begin
+  Result:=LastName(_id)+' '+FirstName(_id)+' '+MidName(_id)+' ('+BirthDay(_id)+')';
+end;
 
 // создание вариантов номеров которые могут быть в БД
 procedure TAutoPodborPeople.CreatePhoneVariants;
@@ -315,6 +323,7 @@ begin
 
       if Connected then begin
         response:=GetResponse;
+        firebirdQuery.SQL.Clear;
         firebirdQuery.SQL.Add(response);
 
         // Начинаем транзакцию
@@ -365,6 +374,8 @@ begin
        Connected:=False;
       end;
     end;
+
+     Connected:= False;
   end;
 
 end;

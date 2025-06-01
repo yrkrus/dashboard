@@ -12,19 +12,23 @@ unit TInternalProcessUnit;
 interface
 
 uses
-  System.Classes,
-  System.SysUtils,
-  TCustomTypeUnit,
-  Data.Win.ADODB,
-  Data.DB,
-  Variants,
-  IdException,
-  TXmlUnit;
+  System.Classes, System.SysUtils,  TCustomTypeUnit, Data.Win.ADODB,
+  Data.DB, Variants, IdException, TXmlUnit,  Winapi.PsAPI, Winapi.Windows;
 
 
  // class TInternalProcess
   type
       TInternalProcess = class
+      private
+      m_userLogonID       :Integer;                       // текущий залогиненый пользователь
+      m_startedProgrammDate: TDateTime;                   // время запуска программы
+      isSendingProgrammStarted:Boolean;                   // был ли отправлено инфо о времени запуска программы
+
+      function GetCurrentDateTimeWithTime:string;         // текущая дата + время
+      function isExistFileUpdate:Boolean;                 // загружен ли файл с обновлением
+      function GetMemoryLoad:string;                      // текущая загрузка памяти
+
+
       public
       constructor Create(InUserLogonID:Integer;
                          _startedProgrammDate:TDateTime);           overload;
@@ -35,16 +39,7 @@ uses
       procedure CheckStatusUpdateService;                     // проверка работает ли служба обновления или нет
       procedure XMLUpdateLastOnline;                          // обновление времемни в settings.xml
       procedure UpdateProgramStarted;                         // обновление времени запкуска программы
-
-
-      private
-      m_userLogonID       :Integer;                       // текущий залогиненый пользователь
-      m_startedProgrammDate: TDateTime;                   // время запуска программы
-      isSendingProgrammStarted:Boolean;                   // был ли отправлено инфо о времени запуска программы
-
-      function GetCurrentDateTimeWithTime:string;          // текущая дата + время
-      function isExistFileUpdate:Boolean;                 // загружен ли файл с обновлением
-
+      procedure UpdateMemory;                                 // обновление занимаемой оперативки
 
 
 
@@ -103,6 +98,40 @@ begin
   finally
     XML.Free;
   end;
+end;
+
+// текущая загрузка памяти
+function TInternalProcess.GetMemoryLoad:string;
+var
+ pmc: PPROCESS_MEMORY_COUNTERS;
+ cb: Integer;
+ tmp:string;
+begin
+  Result:='0';
+
+  cb := SizeOf(_PROCESS_MEMORY_COUNTERS);
+  GetMem(pmc, cb);
+  pmc^.cb := cb;
+  if GetProcessMemoryInfo(GetCurrentProcess(), pmc, cb) then
+  begin
+  // tmp:=FormatFloat('0.#',pmc^.PagefileUsage/1024/1000);
+   tmp:=FormatFloat('0.##',pmc^.WorkingSetSize/1024/1000);
+   tmp:=StringReplace(tmp,',','.',[rfReplaceAll]);
+
+   Result:=tmp;
+  end;
+
+  FreeMem(pmc);
+
+   {test.Add('Ошибок стр.: '+ FloatToStr(pmc^.PageFaultCount));
+      test.Add('Макс. использ. памяти (Kb): '+ FloatToStr(pmc^.PeakWorkingSetSize/1024));
+      test.Add('Выгружаемый пул (макс.): '+ FloatToStr(pmc^.QuotaPeakPagedPoolUsage));
+      test.Add('Выгружаемый пул : '+ FloatToStr(pmc^.QuotaPagedPoolUsage));
+      test.Add('Невыгруж. пул (макс.): '+ FloatToStr(pmc^.QuotaPeakNonPagedPoolUsage) );
+      test.Add('Невыгруж. пул : '+ FloatToStr(pmc^.QuotaNonPagedPoolUsage) );
+      test.Add('Вирт. память (Kb): '+ FloatToStr(pmc^.PagefileUsage/1024/1000));
+      test.Add('Макс. вирт. память (Kb): '+ FloatToStr(pmc^.PeakPagefileUsage/1024));
+      test.Add('Память (Kb): ' + FloatToStr(pmc^.WorkingSetSize/1024));}
 end;
 
 
@@ -193,6 +222,53 @@ begin
   end;
 
   isSendingProgrammStarted:=True;
+end;
+
+
+// обновление занимаемой оперативки
+procedure TInternalProcess.UpdateMemory;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ memory:string;
+begin
+  memory:=GetMemoryLoad;
+  if memory='0' then Exit;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('update active_session set memory = '+#39+memory+#39+' where user_id = '+#39+IntToStr(m_userLogonID)+#39);
+
+      try
+          ExecSQL;
+      except
+          on E:EIdException do begin
+             FreeAndNil(ado);
+             if Assigned(serverConnect) then begin
+               serverConnect.Close;
+               FreeAndNil(serverConnect);
+             end;
+
+             Exit;
+          end;
+      end;
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
 end;
 
 

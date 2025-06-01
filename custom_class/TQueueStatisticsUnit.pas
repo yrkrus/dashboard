@@ -12,17 +12,13 @@ unit TQueueStatisticsUnit;
 interface
 
 uses
-  System.Classes,
-  System.SysUtils,
-  Vcl.StdCtrls,
-  Data.Win.ADODB,
-  Data.DB, Variants,
-  TCustomTypeUnit;
+  System.Classes, System.SysUtils, Vcl.StdCtrls, Data.Win.ADODB,
+  Data.DB, Variants, TCustomTypeUnit, TAutoPodborPeopleUnit;
 
 
  // class TCalls
    type
-   TCalls = class
+   TCalls = class(TObject)
    private
    m_id           :Integer;
    m_dateTime     :TDateTime;
@@ -30,10 +26,14 @@ uses
    m_waiting      :string;
    m_trunk        :string;
 
-   function Clone:TCalls;
+   m_addFIO       :Boolean;           // нужно ли добавлять ФИО
+   m_fio          :TAutoPodborPeople;
+
+   function Clone(_addFIO:Boolean):TCalls;
 
    public
-   constructor Create;               overload;
+   constructor Create(_addFIO:Boolean = False);               overload;
+   destructor Destroy;
 
    end;
 // class TCalls END
@@ -41,7 +41,7 @@ uses
 
   // class TStructMissed
   type
-   TStructMissed = class
+   TStructMissed = class(TObject)
 
    private
    m_count_missed               :Integer;
@@ -52,6 +52,8 @@ uses
 
    public
    constructor Create;               overload;
+   destructor Destroy;
+
    procedure Clear;
 
    procedure Add(_missed:enumMissed; NewMissed:TCalls; isCheckExist:Boolean = False);  // добавление нового в список
@@ -67,7 +69,7 @@ uses
 
   // class TStructStatistics
   type
-    TStructStatistics = class
+    TStructStatistics = class(TObject)
     private
     m_all         :Integer;   // всего звонков
     m_ansvered    :Integer;   // всего звонков отвечено
@@ -78,6 +80,7 @@ uses
 
     public
     constructor Create;                   overload;
+    destructor Destroy;                   override;
 
     procedure Clear;      // очистка данных
 
@@ -97,7 +100,7 @@ uses
 
  // class TStructQueueStatistics
   type
-      TStructQueueStatistics = class
+      TStructQueueStatistics = class(TObject)
       private
       m_queue       :enumQueueCurrent;
       m_statistics  :TStructStatistics;
@@ -108,7 +111,8 @@ uses
       m_label_missed      :TLabel;
 
       public
-      constructor Create(_queue:enumQueueCurrent);                   overload;
+      constructor Create(_queue:enumQueueCurrent);    overload;
+      destructor Destroy;                             override;
 
       function isExistDiffMissedCalls(_missed:enumMissed):Boolean; // есть изменения в пропущенных
 
@@ -125,6 +129,7 @@ uses
 
   public
     constructor Create(_queue: enumQueueCurrent); reintroduce;
+    destructor Destroy;                           override;
   end;
 
  // class TStructQueueStatisticsDay END
@@ -132,7 +137,7 @@ uses
 
  // class TQueueStatistics
   type
-      TQueueStatistics = class
+      TQueueStatistics = class(TObject)
       private
       m_count   :Integer;
       m_list    :TArray<TStructQueueStatistics>;
@@ -160,6 +165,7 @@ uses
 
       public
       constructor Create(isCreateStatDay:Boolean = False);                   overload;
+      destructor Destroy; override;
 
       function GetCallsAll(_queue:enumQueueCurrent):Integer;          // все звонки
       function GetCallsAnswered(_queue:enumQueueCurrent):Integer;     // отвеченные
@@ -182,23 +188,13 @@ uses
       function GetCalls_ID(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer):Integer;           // m_id
       function GetCalls_DateTime(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer):TDateTime;   // m_datetime
       function GetCalls_Phone(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer):string;         // m_phone
+      function GetCalls_FIO(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer):string;           // m_fio
       function GetCalls_Trunk(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer):string;         // m_trunk
       function GetCalls_Waiting(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer):string;       // m_waiting
 
 
 
       // ================ функции TCalls END ================
-
-
-      {
-        m_id           :Integer;
-       m_dateTime     :TDateTime;
-       m_phone        :string;
-       m_waiting      :string;
-       m_trunk        :string;
-
-      }
-
 
       property Count:Integer read m_count;
       property ExistStatDay:Boolean read isExistStatDay;
@@ -209,32 +205,48 @@ uses
 implementation
 
 uses
-  FunctionUnit, GlobalVariablesLinkDLL;
+  FunctionUnit, GlobalVariablesLinkDLL, FormHome, GlobalVariables;
 
 
 // =============================================
 // TCalls
 
-constructor TCalls.Create;
+constructor TCalls.Create(_addFIO:Boolean = False);
 begin
    m_id           :=0;
    m_dateTime     :=0;
    m_phone        :='';
    m_waiting      :='';
    m_trunk        :='';
+
+   m_addFIO:=_addFIO;
+   m_fio:=nil;
+end;
+
+destructor TCalls.Destroy;
+begin
+  if Assigned(m_fio) then m_fio.Free;
+  inherited;
 end;
 
 
-
-function TCalls.Clone: TCalls;
+function TCalls.Clone(_addFIO:Boolean): TCalls;
+var
+ phone:string;
 begin
-  Result:=TCalls.Create;
+  Result:=TCalls.Create(_addFIO);
 
   Result.m_id := Self.m_id;
   Result.m_dateTime := Self.m_dateTime;
   Result.m_phone := Self.m_phone;
   Result.m_waiting := Self.m_waiting;
   Result.m_trunk := Self.m_trunk;
+
+  if _addFIO then begin
+    phone:=Self.m_phone;
+    phone:=StringReplace(phone,'+7','8',[rfReplaceAll]);
+    Result.m_fio:=TAutoPodborPeople.Create(phone);
+  end;
 end;
 
 
@@ -253,14 +265,34 @@ begin
   Clear;
 end;
 
+destructor TStructMissed.Destroy;
+begin
+  Clear;
+  inherited;
+end;
+
 
 procedure TStructMissed.Clear;
+var
+  i: Integer;
 begin
-  m_count_missed:=0;
-  m_count_missed_no_return:=0;
+  // Освобождаем массив m_missed
+  if Length(m_missed) > 0 then begin
+    for i := 0 to High(m_missed) do begin
+      FreeAndNil(m_missed[i]); // Освобождаем каждый объект
+    end;
+    SetLength(m_missed, 0); // Устанавливаем длину массива в 0
+    m_count_missed := 0; // Сбрасываем счетчик
+  end;
 
-  SetLength(m_missed,m_count_missed);
-  SetLength(m_missed_no_return,m_count_missed_no_return);
+  // Освобождаем массив m_missed_no_return
+  if Length(m_missed_no_return) > 0 then begin
+    for i := 0 to High(m_missed_no_return) do begin
+      FreeAndNil(m_missed_no_return[i]); // Освобождаем каждый объект
+    end;
+    SetLength(m_missed_no_return, 0); // Устанавливаем длину массива в 0
+    m_count_missed_no_return := 0; // Сбрасываем счетчик
+  end;
 end;
 
 // проверка на существующую запись
@@ -294,31 +326,38 @@ end;
 procedure TStructMissed.Add(_missed:enumMissed; NewMissed:TCalls; isCheckExist:Boolean = False);
 var
   CallCopy: TCalls;
+  addFIO:Boolean;  // нужно ли добавлять расширенную информацию о номере (ФИО из ЦБД)
 begin
  //  проверка на дубль записи
   if isCheckExist then begin
     if IsExist(_missed, NewMissed) then Exit;
   end;
 
-  // Создаем копию объекта
-  CallCopy := NewMissed.Clone;
-  try
-    case _missed of
-      eMissed:begin
-        SetLength(m_missed, Length(m_missed) + 1);
-        m_missed[High(m_missed)]:= CallCopy; // Добавляем копию в массив
-        Inc(m_count_missed);
-      end;
-      eMissed_no_return:begin
-        SetLength(m_missed_no_return, Length(m_missed_no_return) + 1);
-        m_missed_no_return[High(m_missed_no_return)]:= CallCopy; // Добавляем копию в массив
-        Inc(m_count_missed_no_return);
-      end;
-    end;
-  except
-    CallCopy.Free; // Освобождаем память в случае ошибки
-    raise;            // Пробрасываем исключение дальше
+  // нужно ли добавлять расширенную информацию о номере (ФИО из ЦБД)
+  case _missed of
+    eMissed:            addFIO :=False;
+    eMissed_no_return:  addFIO :=True;
   end;
+
+  // Создаем копию объекта
+  CallCopy := NewMissed.Clone(addFIO);
+
+  if not Assigned(CallCopy) then Exit;
+
+  case _missed of
+    eMissed:begin
+      SetLength(m_missed, Length(m_missed) + 1);
+      m_missed[High(m_missed)]:= CallCopy; // Добавляем копию в массив
+      Inc(m_count_missed);
+    end;
+    eMissed_no_return:begin
+      SetLength(m_missed_no_return, Length(m_missed_no_return) + 1);
+      m_missed_no_return[High(m_missed_no_return)]:= CallCopy; // Добавляем копию в массив
+
+      Inc(m_count_missed_no_return);
+    end;
+  end;
+
 end;
 
 // TStructStatistics END
@@ -335,6 +374,11 @@ begin
  Clear;
 end;
 
+destructor TStructStatistics.Destroy;
+begin
+  m_listMissed.Free;
+  inherited;
+end;
 
 // очистка данных
 procedure TStructStatistics.Clear;
@@ -367,9 +411,23 @@ begin
   m_queue:=_queue;
   m_statistics:=TStructStatistics.Create;
 
-  m_label_all         :=TLabel.Create(nil);
-  m_label_ansvered    :=TLabel.Create(nil);
-  m_label_missed      :=TLabel.Create(nil);
+//  m_label_all         :=TLabel.Create(nil);
+//  m_label_ansvered    :=TLabel.Create(nil);
+//  m_label_missed      :=TLabel.Create(nil);
+
+  m_label_all         :=nil;
+  m_label_ansvered    :=nil;
+  m_label_missed      :=nil;
+end;
+
+destructor TStructQueueStatistics.Destroy;
+begin
+  if Assigned(m_label_all) then m_label_all.Free;
+  if Assigned(m_label_ansvered) then m_label_ansvered.Free;
+  if Assigned(m_label_missed) then m_label_missed.Free;
+  if Assigned(m_statistics) then m_statistics.Free;
+
+  inherited;
 end;
 
 
@@ -407,9 +465,17 @@ end;
 constructor TStructQueueStatisticsDay.Create(_queue: enumQueueCurrent);
 begin
   inherited Create(_queue); // Вызов конструктора родительского класса
-  m_label_procent := TLabel.Create(nil);
+  //m_label_procent := TLabel.Create(nil);
+  m_label_procent := nil;
   m_statistics_procent:='0';
 end;
+
+destructor TStructQueueStatisticsDay.Destroy;
+begin
+ if Assigned(m_label_procent) then m_label_procent.Free;
+  inherited;
+end;
+
 
 // TStructQueueStatisticsDay END
 // =============================================
@@ -421,6 +487,8 @@ constructor TQueueStatistics.Create(isCreateStatDay:Boolean = False);
 var
  i:Integer;
 begin
+  inherited Create;
+
    //inherited;
   m_count:=Ord(High(enumQueueCurrent))-1;  // TODO берем только 5000 и 5050 очереди
 
@@ -434,8 +502,23 @@ begin
     m_listDay:=TStructQueueStatisticsDay.Create(queue_5000_5050);   // TODO сумму очередей 5000 + 5050
     isExistStatDay:=True;
   end;
+
 end;
 
+
+destructor TQueueStatistics.Destroy;
+var
+  i: Integer;
+begin
+  // сначала дочерние «очереди»
+  for i := 0 to High(m_list) do m_list[i].Free;
+  SetLength(m_list, 0);
+
+  // потом статистику за день
+  if isExistStatDay then  m_listDay.Free;
+
+  inherited;
+end;
 
 // занесение параметров статистики
 procedure TQueueStatistics.SetStatistics(_queue:enumQueueCurrent);
@@ -459,8 +542,8 @@ begin
 
 
       // сверяемся есть ли изменения (обновляем подробные данные по пропущенным)
-      if m_list[i].isExistDiffMissedCalls(eMissed)        then UpdateMissedCalls(_queue, stat_no_answered, eYES);
-      if m_list[i].isExistDiffMissedCalls(eMissed_no_return) then UpdateMissedCalls(_queue, stat_no_answered_return, eYES);
+      if m_list[i].isExistDiffMissedCalls(eMissed)            then UpdateMissedCalls(_queue, stat_no_answered, eNO);
+      if m_list[i].isExistDiffMissedCalls(eMissed_no_return)  then UpdateMissedCalls(_queue, stat_no_answered_return, eNO);
     end;
   end;
 end;
@@ -667,6 +750,65 @@ begin
     end;
   end;
 end;
+
+
+// TCalls -> m_fio
+function TQueueStatistics.GetCalls_FIO(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer):string;
+var
+ i:Integer;
+ countFIO:Integer;
+begin
+  for i:=0 to m_count - 1 do begin
+    if m_list[i].m_queue = _queue then begin
+      case _missed of
+        eMissed:begin
+         countFIO:=m_list[i].m_statistics.m_listMissed.m_missed[_id].m_fio.Count;
+
+           case countFIO of
+            0:begin
+              Result:='новый номер';
+            end;
+            1:begin
+              Result:=m_list[i].m_statistics.m_listMissed.m_missed[_id].m_fio.GetFIO(0);
+            end;
+            else begin
+              Result:='несколько пациентов ('+IntToStr(countFIO)+')';
+            end;
+           end;
+
+         Exit;
+        end;
+        eMissed_no_return:begin
+          countFIO:=m_list[i].m_statistics.m_listMissed.m_missed_no_return[_id].m_fio.Count;
+
+           case countFIO of
+            0:begin
+              Result:='новый номер';
+            end;
+            1:begin
+              Result:=m_list[i].m_statistics.m_listMissed.m_missed_no_return[_id].m_fio.GetFIO(0);
+            end;
+            else begin
+              Result:='несколько пациентов ('+IntToStr(countFIO)+')';
+            end;
+           end;
+
+         Exit;
+        end;
+      end;
+    end;
+  end;
+
+//  // ничего не нашли значит это 5000 и 5050
+//  // рекурсией найдем значение
+//  for i:=0 to m_count - 1 do begin
+//    Result:=GetCalls_Phone(enumQueueCurrent(i),_missed, _id);
+//    if Result <>'' then begin
+//      Exit;
+//    end;
+//  end;
+end;
+
 
 // TCalls -> m_trunk
 function TQueueStatistics.GetCalls_Trunk(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer):string;
@@ -931,11 +1073,11 @@ begin
     end;
   end;
 
-  // Освобождаем память, если это необходимо
-  if Assigned(list_calls) then
+  // Освобождаем память
+  if Length(list_calls)>0 then
   begin
+    for i := 0 to High(list_calls) do FreeAndNil(list_calls[i]);
     SetLength(list_calls, 0);
-    FreeAndNil(list_calls);
   end;
 end;
 

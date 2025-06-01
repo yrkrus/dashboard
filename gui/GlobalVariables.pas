@@ -124,9 +124,13 @@ initialization  // Инициализация
 
 
 finalization
+
   // Освобождение памяти
   GlobalExceptions.Free;
+  SharedIVR.Free;
+  SharedQueueStatistics.Free;
   SharedActiveSipOperators.Free;
   SharedCurrentUserLogon.Free;
+  SharedCountResponseThread.Free;
 
 end.

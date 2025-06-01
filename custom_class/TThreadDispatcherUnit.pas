@@ -47,6 +47,7 @@ uses
       procedure StopThread; // Метод для остановки потока
 
       procedure SetTimerPeriod(_timeperiod:Integer); // Уставка нового времени
+      function GetTimerPeriod:Integer;              // текущее значение таймера
 
       end;
  // class TThreadDispatcher END
@@ -157,5 +158,10 @@ begin
  Log.Save(Format('Task %s: timer period set to %d ms',[m_taskName, m_timerPeriod]));
 end;
 
+// текущее значение таймера
+function TThreadDispatcher.GetTimerPeriod:Integer;
+begin
+  Result:=m_timerPeriod;
+end;
 
 end.

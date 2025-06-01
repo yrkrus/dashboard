@@ -28,7 +28,7 @@ object FormMyTemplate: TFormMyTemplate
       #1080#13#10#1044#1083#1103' '#1088#1077#1076#1072#1082#1090#1080#1088#1086#1074#1072#1085#1080#1103'\'#1091#1076#1072#1083#1077#1085#1080#1103' '#1089#1086#1086#1073#1097#1077#1085#1080#1103' - '#1082#1083#1080#1082#1085#1091#1090#1100' '#1085#1072' '#1085#1077#1084' '#1087#1088#1072#1074#1086 +
       #1081' '#1082#1083#1072#1074#1080#1096#1077#1081' '#1084#1099#1096#1080' '#1080' '#1074#1099#1073#1088#1072#1090#1100' '#1085#1091#1078#1085#1099#1081' '#1087#1091#1085#1082#1090' '#1084#1077#1085#1102
     Font.Charset = DEFAULT_CHARSET
-    Font.Color = clMaroon
+    Font.Color = clGreen
     Font.Height = -11
     Font.Name = 'Tahoma'
     Font.Style = []
@@ -45,10 +45,6 @@ object FormMyTemplate: TFormMyTemplate
     TabOrder = 2
     object sheet_MyTemplate: TTabSheet
       Caption = #1052#1086#1080' '#1089#1086#1093#1088#1072#1085#1077#1085#1085#1099#1077' '#1096#1072#1073#1083#1086#1085#1099
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object list_MyTemplate: TListView
         Left = 0
         Top = 0
@@ -95,10 +91,6 @@ object FormMyTemplate: TFormMyTemplate
     object sheet_GlobalTemplate: TTabSheet
       Caption = #1043#1083#1086#1073#1072#1083#1100#1085#1099#1077' '#1096#1072#1073#1083#1086#1085#1099
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object list_GlobalTemplate: TListView
         Left = 0
         Top = 0
@@ -321,7 +313,7 @@ object FormMyTemplate: TFormMyTemplate
     Left = 704
     Top = 152
     Bitmap = {
-      494C010102005400880020002000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C0101020054008C0020002000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000800000002000000001002000000000000040
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

@@ -156,6 +156,7 @@ function CreateRemoteCommandCallback(_action:enumRemoteCommandAction; _id:Intege
 function ExecuteCommandKillActiveSession(_userID:Integer;
                                          var _errorDescription:string):Boolean;      // выполенние команды закрытые активной сессии
 
+
 implementation
 
 uses

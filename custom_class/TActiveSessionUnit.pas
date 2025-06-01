@@ -30,6 +30,7 @@ uses
       m_userName                : string;
       m_PC                      : string;
       m_IP                      : string;
+      m_memory                  : string;
       m_lastDateOnline          : TDateTime;
       m_uptime                  : Integer;
 
@@ -92,6 +93,7 @@ uses
       function GetUserName(_id:Integer)           :string;            // m_listActiveSession.m_userName
       function GetPC(_id:Integer)                 :string;            // m_listActiveSession.m_pc
       function GetIP(_id:Integer)                 :string;            // m_listActiveSession.m_ip
+      function GetMemory(_id:Integer)             :string;            // m_listActiveSession.m_memory
       function GetUptime(_id:Integer)             :Integer;           // m_listActiveSession.m_uptime
       function GetLastOnline(_id:Integer)         :TDateTime;         // m_listActiveSession.m_lastDateOnline
       // ===================== доставание данных =====================
@@ -130,6 +132,7 @@ constructor TActiveStruct.Create;
    m_userName         :='';
    m_PC               :='';
    m_IP               :='0.0.0.0';
+   m_memory           :='0';
    m_lastDateOnline   :=0;
    m_uptime           :=0;
 
@@ -441,6 +444,18 @@ begin
   end;
 end;
 
+// m_listActiveSession.m_memory
+function TActiveSession.GetMemory(_id:Integer):string;
+begin
+  if m_mutex.WaitFor(INFINITE)=wrSignaled then
+  try
+     Result:=m_listActiveSession[_id].m_memory;
+  finally
+    m_mutex.Release;
+  end;
+end;
+
+
 // m_listActiveSession.m_uptime
 function TActiveSession.GetUptime(_id:Integer):Integer;
 begin
@@ -578,7 +593,7 @@ begin
       ado.Connection:=serverConnect;
       SQL.Clear;
       SQL.Add('SELECT asession.user_id, r.name_role, CONCAT(u.familiya, '+#39' '+#39+', u.name) '+
-              ' AS full_name, asession.pc, asession.ip, asession.last_active, asession.uptime FROM active_session'+
+              ' AS full_name, asession.pc, asession.ip, asession.last_active, asession.uptime, asession.memory FROM active_session'+
               ' AS asession JOIN users AS u ON asession.user_id = u.id JOIN role AS r ON u.role = r.id');
 
       try
@@ -611,6 +626,8 @@ begin
         UpdateTimeOnline(i);
         // uptime
         m_listActiveSession[i].m_uptime:= StrToInt(VarToStr(Fields[6].Value));
+        // memory
+        m_listActiveSession[i].m_memory:= VarToStr(Fields[7].Value);
 
         // проверка роль оператора или нет
         if (AnsiPos('Оператор',VarToStr(Fields[1].Value)) <> 0) or

@@ -35,6 +35,8 @@ type
     Label12: TLabel;
     Label13: TLabel;
     ST_no_missed: TStaticText;
+    Label14: TLabel;
+    Label15: TLabel;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
@@ -153,13 +155,14 @@ const
   cTOPSTART=5;
   cTOPSTART_BUTTON=2;
 var
- lblName                        :array of TLabel;
- lblTime                        :array of TLabel;
- lblPhone                       :array of TLabel;
- lblTrunk                       :array of TLabel;
- lblWaiting                     :array of TLabel;
- btnAction                      :array of TBitBtn;
- lblPeriod                      :array of TLabel;
+ lblName                        :TArray<TLabel>;
+ lblTime                        :TArray<TLabel>;
+ lblPhone                       :TArray<TLabel>;
+ lblFIO                         :TArray<TLabel>;
+ lblTrunk                       :TArray<TLabel>;
+ lblWaiting                     :TArray<TLabel>;
+ btnAction                      :TArray<TBitBtn>;
+ lblPeriod                      :TArray<TLabel>;
 
  bmp                            :TBitmap;
  i                :Integer;
@@ -175,6 +178,7 @@ begin
   SetLength(lblName,counts);
   SetLength(lblTime,counts);
   SetLength(lblPhone,counts);
+  SetLength(lblFIO,counts);
   SetLength(lblTrunk,counts);
   SetLength(lblWaiting,counts);
   SetLength(btnAction,counts);
@@ -244,13 +248,36 @@ begin
         lblPhone[_id].Parent:=FormPropushennie.panel;
       end;
 
+      // ФИО
+      begin
+        lblFIO[_id]:=TLabel.Create(FormPropushennie.panel);
+        lblFIO[_id].Name:='lbl_fio_'+nameControl;
+        lblFIO[_id].Tag:=1;
+        lblFIO[_id].Caption:=m_missedCalls.GetCalls_FIO(_queue,_missed,i);
+        lblFIO[_id].Left:=309;
+
+        if _id=0 then lblFIO[_id].Top:=cTOPSTART
+        else lblFIO[_id].Top:=cTOPSTART+(cSTEP * _id);
+
+        lblFIO[_id].Font.Name:='Tahoma';
+        lblFIO[_id].Font.Size:=8;
+        lblFIO[_id].Font.Style:=[fsBold];
+        lblFIO[_id].Font.Color:=clHighlight;
+        lblFIO[_id].AutoSize:=False;
+        lblFIO[_id].Width:=278;
+        lblFIO[_id].Height:=16;
+        lblFIO[_id].Alignment:=taCenter;
+        lblFIO[_id].Parent:=FormPropushennie.panel;
+      end;
+
+
       // линия
       begin
         lblTrunk[_id]:=TLabel.Create(FormPropushennie.panel);
         lblTrunk[_id].Name:='lbl_trunk_'+nameControl;
         lblTrunk[_id].Tag:=1;
         lblTrunk[_id].Caption:=m_missedCalls.GetCalls_Trunk(_queue,_missed,i);
-        lblTrunk[_id].Left:=328;
+        lblTrunk[_id].Left:=590;
 
         if _id=0 then lblTrunk[_id].Top:=cTOPSTART
         else lblTrunk[_id].Top:=cTOPSTART+(cSTEP * _id);
@@ -270,7 +297,7 @@ begin
         lblWaiting[_id].Name:='lbl_waiting_'+nameControl;
         lblWaiting[_id].Tag:=1;
         lblWaiting[_id].Caption:=m_missedCalls.GetCalls_Waiting(_queue,_missed,i);
-        lblWaiting[_id].Left:=466;
+        lblWaiting[_id].Left:=728;
 
         if _id=0 then lblWaiting[_id].Top:=cTOPSTART
         else lblWaiting[_id].Top:=cTOPSTART+(cSTEP * _id);
@@ -291,7 +318,7 @@ begin
         btnAction[_id].Name:='btn_action_'+nameControl;
         btnAction[_id].Tag:=1;
         btnAction[_id].Caption:='&Перезвонить';
-        btnAction[_id].Left:=633;
+        btnAction[_id].Left:=895;
 
         if _id=0 then btnAction[_id].Top:=cTOPSTART_BUTTON
         else btnAction[_id].Top:=cTOPSTART_BUTTON+(cSTEP * _id);
@@ -313,7 +340,7 @@ begin
         lblPeriod[_id].Name:='lbl_period_'+nameControl;
         lblPeriod[_id].Tag:=1;
         lblPeriod[_id].Caption:=GetPeriodCall(m_missedCalls.GetCalls_DateTime(_queue,_missed,i), lblPeriod[_id]);
-        lblPeriod[_id].Left:=777;
+        lblPeriod[_id].Left:=1039;
 
         if _id=0 then lblPeriod[_id].Top:=cTOPSTART
         else lblPeriod[_id].Top:=cTOPSTART+(cSTEP * _id);

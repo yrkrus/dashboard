@@ -74,6 +74,7 @@ uses
 
       public
       constructor Create(var p_Log:TLoggingFile)           overload;
+      destructor Destroy;                                  override;
 
       procedure SetAddForm(var p_Form:TFormDEBUG);   // используется только для добавление линковки формы
       procedure CreateForm;                          // создание и заполнение формы дебага
@@ -85,6 +86,7 @@ uses
       procedure AddParamsTThreadShow;                // добавление параметров для работы потока отображения инфо на форме DEBUG
 
       procedure SetCurrentResponse(_name:string; _value:Integer);   // текущее значение
+      function GetAverageTime(_name:string):Integer;                // среднее время обновления
 
       property CreatedForm: Boolean read isCreatedDataWithForm;
 
@@ -234,6 +236,27 @@ begin
    m_listNameThread:=TStringList.Create;
    SetLength(m_list, 0);
    Log:=p_Log;
+end;
+
+destructor TDebugCountResponse.Destroy;
+var i: Integer;
+begin
+  // Останавливаем и освобождаем поток
+  if Assigned(m_showThread) then
+  begin
+    m_showThread.Terminate;
+    m_showThread.WaitFor;
+    m_showThread.Free;
+  end;
+
+  // Освобождаем все TDebugStruct
+  for i := 0 to High(m_list) do m_list[i].Free;
+  SetLength(m_list, 0);
+
+  // Освобождаем имя-потоков
+  m_listNameThread.Free;
+
+  inherited;
 end;
 
  // используется только для добавление линковки формы
@@ -443,5 +466,37 @@ begin
     end;
    end;
 end;
+
+// среднее время обновления
+function TDebugCountResponse.GetAverageTime(_name:string):Integer;
+var
+ i:Integer;
+begin
+  Result:=0;
+
+   try
+     for i:=0 to m_count-1 do begin
+        if (m_listNameThread.Count=0) or (i > m_count-1) then Exit;
+
+        if m_listNameThread[i] = _name then begin
+
+          if m_list[i].Mutex.WaitFor(INFINITE)= wrSignaled then
+          try
+           Result:=m_list[i].CurrentAverage;
+          finally
+            m_list[i].Mutex.Release;
+          end;
+
+          Break;
+        end;
+     end;
+   except
+    on E:Exception do
+    begin
+     Log.Save('TDebugCountResponse.GetAverageTime | '+e.ClassName+' : '+E.Message, True);
+    end;
+   end;
+end;
+
 
 end.
