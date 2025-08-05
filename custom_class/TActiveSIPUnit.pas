@@ -48,6 +48,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       talk_time                              : string;        // время разговора
       queue                                  : enumQueueCurrent;    // какая очередь
       status                                 : enumStatusOperators;       // текущий статус оператора
+      status_delay                           : enumStatusOperators; // отложенный статус (когда оператор в разговоре)
       access_dashboard                       : Boolean;       // есть ли доступ к дашборду
       operator_name                          : string;        // имя оператора
       isOnHold                               : Boolean;       // оператор находится в статусе onHold
@@ -119,8 +120,9 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       procedure updateQueue;                            // обновление текущей очереди
       procedure updateTalkTime;                         // обновление времени разговора
       procedure updateTalkTimeAll;                      // обновление времени разговора (общее)
-      procedure updateStatus;                           // обновление текущего статуса оператора
-      procedure updateStatusOnHold;                     // обновление текущего статуса оератора при разговоре (поиск onHold)
+      procedure UpdateStatus;                           // обновление текущего статуса оператора
+      procedure UpdateStatusDelay;                      // обновление текущего статуса оператора (отложенная команда)
+      procedure UpdateStatusOnHold;                     // обновление текущего статуса оератора при разговоре (поиск onHold)
       procedure updateOnline;                           // обновление времени онлайна
       procedure createUserID;                           // занесение записи user_id в память
 
@@ -140,6 +142,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       function GetListOperators_OperatorName(id:Integer):string;        // listOperators.operator_name
       function GetListOperators_SipNumber(id:Integer):string;           // listOperators.sip_number
       function GetListOperators_Status(id:Integer):enumStatusOperators; // listOperators.status
+      function GetListOperators_StatusDelay(id:Integer):enumStatusOperators; // listOperators.status_delay
       function GetListOperators_AccessDashboad(id:Integer):Boolean;     // listOperators.access_dashboard
       function GetListOperators_Queue(id:Integer):enumQueueCurrent;     // listOperators.queue
       function GetListOperators_TalkTime(id:Integer; isReducedTime:Boolean):string;            // listOperators.talk_time
@@ -154,6 +157,8 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       function GetListOperators_OnlineHide(id:Integer):Boolean;         // listOperators.online.hide
       // методы TStructSIP END
 
+
+      function IsTalkOperator(_sip:string):enumStatus;                  // разговаривает ли сейчас оператор
 
       end;
  // class TActiveSIP END
@@ -191,6 +196,7 @@ uses
    inherited;
    Self.list_talk_time_all:=TStringList.Create;
    Self.status:= eUnknown;
+   Self.status_delay:=eUnknown;
    Self.access_dashboard:=False;
    Self.online:=TOnline.Create;
    //id:=0;
@@ -214,6 +220,7 @@ uses
    Self.talk_time:='';
    Self.queue:=queue_null;
    Self.status:=eUnknown;
+   Self.status_delay:=eUnknown;
    Self.access_dashboard:=False;
    Self.operator_name:='';
    Self.isOnHold:=False;
@@ -1005,7 +1012,7 @@ end;
                 SQL.Add('select trunk from ivr where date_time > '+#39+GetNowDateTime+#39+' and phone = '+#39+listOperators[i].phone+#39+' and to_queue = ''1'' order by date_time DESC limit 1');
                 Active:=True;
 
-                if Fields[0].Value = null then listOperators[i].trunk:='mayby_lisa'
+                if Fields[0].Value = null then listOperators[i].trunk:='LISA'
                 else listOperators[i].trunk:=VarToStr(Fields[0].Value);
               end;
           end;
@@ -1087,7 +1094,7 @@ end;
  end;
 
 
- procedure TActiveSIP.updateStatus;
+procedure TActiveSIP.UpdateStatus;
 var
   i:Integer;
  ado:TADOQuery;
@@ -1148,7 +1155,69 @@ var
  end;
 
 
- procedure TActiveSIP.updateStatusOnHold;
+ procedure TActiveSIP.UpdateStatusDelay;
+ var
+  i:Integer;
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ logging:enumLogging;
+ begin
+  if getCountSipOperators=0 then Exit;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+
+     for i:=0 to Length(listOperators)-1 do begin
+
+      if Active then Active:=False;
+
+        SQL.Clear;
+        SQL.Add('select command from remote_commands where sip = '+#39+listOperators[i].sip_number+#39 + ' and delay = ''1'' and error = ''0'' ');
+        Active:=True;
+
+       try
+          if Fields[0].Value = Null then  begin
+            listOperators[i].status_delay:=eUnknown;
+          end
+          else begin
+            logging:=IntegerToEnumLogging(StrToInt(VarToStr(Fields[0].Value)));
+            listOperators[i].status_delay:=EnumLoggingToStatusOperator(logging);
+          end;
+       except
+          on E:Exception do
+          begin
+            FreeAndNil(ado);
+            if Assigned(serverConnect) then begin
+              serverConnect.Close;
+              FreeAndNil(serverConnect);
+            end;
+           Exit;
+          end;
+       end;
+
+       ado.Next;
+     end;
+
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+ end;
+
+ procedure TActiveSIP.UpdateStatusOnHold;
 var
   i:Integer;
  ado:TADOQuery;
@@ -1194,7 +1263,8 @@ var
                 FreeAndNil(serverConnect);
               end;
 
-              updateStatus;
+              UpdateStatus;
+              UpdateStatusDelay;
             end;
          end;
 
@@ -1588,6 +1658,18 @@ begin
   end;
 end;
 
+
+function TActiveSIP.GetListOperators_StatusDelay(id:Integer):enumStatusOperators;
+begin
+  if m_mutex.WaitFor(INFINITE) = wrSignaled  then begin
+    try
+      Result:=Self.listOperators[id].status_delay;
+    finally
+      m_mutex.Release;
+    end;
+  end;
+end;
+
 function TActiveSIP.GetListOperators_AccessDashboad(id:Integer):Boolean;
 begin
   if m_mutex.WaitFor(INFINITE) = wrSignaled  then begin
@@ -1732,6 +1814,32 @@ end;
 
 
  /////////////////////////////// МЕТОДЫ listOPerators  END ////////////////////////////////
+
+function TActiveSIP.IsTalkOperator(_sip:string):enumStatus;
+var
+ i:Integer;
+begin
+  Result:=eNo;
+
+  if m_mutex.WaitFor(INFINITE) = wrSignaled  then begin
+    try
+      for i:=0 to Length(listOperators)-1 do begin
+        if (_sip = listOperators[i].sip_number) then begin
+
+          if listOperators[i].phone = '' then Result:=eNo
+          else Result:=eYes;
+
+          Exit;
+        end;
+      end;
+    finally
+      m_mutex.Release;
+    end;
+  end;
+
+
+end;
+
 
 // class TList_ACTIVESIP END
 

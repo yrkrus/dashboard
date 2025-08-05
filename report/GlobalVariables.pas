@@ -35,9 +35,6 @@ var
   // внутренн€€ ошибка
   INTERNAL_ERROR          :Boolean =  False;
 
-  // разделитель
-  DELIMITER               :string = ' | ';
-
 
 implementation
 

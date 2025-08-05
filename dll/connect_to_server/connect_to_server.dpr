@@ -20,6 +20,8 @@ const
   // авторизационные данные для подключения к БД
   Shared_const_BD_Addr          :string  = 'dashboard';
   Shared_const_BD_Name          :string  = 'dashboard';
+  Shared_const_BD_NameTest      :string  = 'dashboard_test';
+
   Shared_const_BD_UserName      :string  = 'dash';
   Shared_const_BD_UserPassword  :string  = 'dash';
 
@@ -27,6 +29,10 @@ const
   Shared_const_FTP_Addr         :string = 'dashboard';
   Shared_const_FTP_User         :string = 'update_dash';
   Shared_const_FTP_Pass         :string = 'update_dash';
+
+  // tcp server dashboard
+  Shared_const_TCP_server_Addr  :string = 'voip';
+  Shared_const_TCP_server_Port  :Word = 12345;
 
 
 {$R *.res}
@@ -43,6 +49,11 @@ begin
   Result:=Shared_const_BD_Name;
 end;
 
+// функция получения имени сервера (тестовый)
+function GetServerNameTest:string;stdcall;export;
+begin
+  Result:=Shared_const_BD_NameTest;
+end;
 
 // функция получения имени
 function GetServerUser:string;stdcall;export;
@@ -75,15 +86,29 @@ begin
   Result:=Shared_const_FTP_Pass;
 end;
 
+// функция получения адреса tcp сервера dashboard
+function GetTCPServerAddress:string;stdcall;export;
+begin
+  Result:=Shared_const_TCP_server_Addr;
+end;
+
+// функция получения порта tcp сервера dashboard
+function GetTCPServerPort:Word;stdcall;export;
+begin
+  Result:=Shared_const_TCP_server_Port;
+end;
 
 
 exports  GetServerAddress,
          GetServerName,
+         GetServerNameTest,
          GetServerUser,
          GetServerPassword,
          GetFTPServerAddress,
          GetFTPServerUser,
-         GetFTPServerPassword;
+         GetFTPServerPassword,
+         GetTCPServerAddress,
+         GetTCPServerPort;
 
 begin
 end.

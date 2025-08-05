@@ -73,7 +73,9 @@ uses
   GlobalVariablesLinkDLL in 'GlobalVariablesLinkDLL.pas',
   TQueueStatisticsUnit in '..\custom_class\TQueueStatisticsUnit.pas',
   TThreadDispatcherUnit in '..\custom_class\TThreadDispatcherUnit.pas',
-  TAutoPodborPeopleUnit in '..\custom_class\TAutoPodborPeopleUnit.pas';
+  TAutoPodborPeopleUnit in '..\custom_class\TAutoPodborPeopleUnit.pas',
+  FormPropushennieShowPeopleUnit in 'FormPropushennieShowPeopleUnit.pas' {FormPropushennieShowPeople},
+  TStatusUnit in '..\custom_class\TStatusUnit.pas';
 
 {$R *.res}
 
@@ -117,5 +119,6 @@ begin
   Application.CreateForm(TFormHistoryStatusOperator, FormHistoryStatusOperator);
   Application.CreateForm(TFormServerIKWorkingTime, FormServerIKWorkingTime);
   Application.CreateForm(TFormMenuAccess, FormMenuAccess);
+  Application.CreateForm(TFormPropushennieShowPeople, FormPropushennieShowPeople);
   Application.Run;
 end.

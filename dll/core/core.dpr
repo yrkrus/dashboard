@@ -4,6 +4,7 @@ uses
   System.ShareMem, System.SysUtils, System.Classes,
   Winapi.Windows, Data.Win.ADODB, Data.DB, Variants,
   System.DateUtils, Winapi.TlHelp32,  IdIcmpClient,
+  IdTCPClient,
   GlobalVariables in 'GlobalVariables.pas',
   TCustomTypeUnit in '..\..\custom_class\TCustomTypeUnit.pas';
 
@@ -16,7 +17,7 @@ begin
 
   with TADOConnection(Result) do
   begin
-    DefaultDatabase := GetServerAddress;
+    DefaultDatabase := GetServerName;
     Provider := 'MSDASQL.1';
     ConnectionString := 'Provider=' + Provider +
                         ';Password=' + GetServerPassword +
@@ -51,7 +52,7 @@ begin
 
   with TADOConnection(Result) do
   begin
-    DefaultDatabase := GetServerAddress;
+    DefaultDatabase := GetServerName;
     Provider := 'MSDASQL.1';
     ConnectionString := 'Provider=' + Provider +
                         ';Password=' + GetServerPassword +
@@ -816,6 +817,33 @@ begin
   end;
 end;
 
+// проверка живое ли ядро дашборда
+function GetAliveCoreDashboard:Boolean; stdcall; export;
+var
+  client: TIdTCPClient;
+begin
+  Result := False;
+  client := TIdTCPClient.Create(nil);
+  try
+    client.Host := GetTCPServerAddress;
+    client.Port := GetTCPServerPort;
+    client.ConnectTimeout := 1000;
+    client.ReadTimeout    := 1000;
+    try
+      client.Connect;
+
+      Result:= client.Connected;
+
+      client.Disconnect;
+    except
+      Result:=False;
+    end;
+  finally
+    client.Free;
+  end;
+
+end;
+
 
 exports
   createServerConnect,
@@ -850,7 +878,8 @@ exports
   GetCountSendingSMSToday,
   Ping,
   IsServerIkExistWorkingTime,
-  GetClinicId;
+  GetClinicId,
+  GetAliveCoreDashboard;
 
 begin
 end.

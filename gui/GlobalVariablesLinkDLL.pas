@@ -43,16 +43,23 @@ uses
   function Ping(InIp:string):Boolean;                                   stdcall;  external 'core.dll';      // проверка ping
   function IsServerIkExistWorkingTime(_id:Integer):Boolean;             stdcall;  external 'core.dll';      // настроен ли время работы в сервере ИК
   function GetClinicId(_nameClinic:string):Integer;                     stdcall;  external 'core.dll';      // id клиники
+  function GetAliveCoreDashboard:Boolean;                               stdcall;  external 'core.dll';      // живое ли ядро дашборда
 
 
-  // --- connect_to_server.dll ---
+
+  // --- connect_to_server.dll ---  (по сути этот тут не нужно, но пусть будет)
  function GetServerAddress:string;      stdcall;   external 'connect_to_server.dll'; // адрес сервера
  function GetServerName:string;         stdcall;   external 'connect_to_server.dll'; // адрес базы
+ function GetServerNameTest:string;     stdcall;   external 'connect_to_server.dll'; // адрес базы(тестовой)
  function GetServerUser:string;         stdcall;   external 'connect_to_server.dll'; // логин
  function GetServerPassword:string;     stdcall;   external 'connect_to_server.dll'; // пароль
  function GetFTPServerAddress:string;   stdcall;   external 'connect_to_server.dll'; // адрес ftp
  function GetFTPServerUser:string;      stdcall;   external 'connect_to_server.dll'; // логин
  function GetFTPServerPassword:string;  stdcall;   external 'connect_to_server.dll'; // пароль
+ function GetTCPServerAddress:string;   stdcall;   external 'connect_to_server.dll'; // адрес tcp server core_dashboard
+ function GetTCPServerPort:Word;        stdcall;   external 'connect_to_server.dll'; // port tcp server core_dashboard
+
+
 
 implementation
 

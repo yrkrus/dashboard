@@ -305,8 +305,11 @@ begin
   try
    if (XML.isUpdate) and (isExistFileUpdate) then begin
      HomeForm.lblNewVersionDashboard.Visible:=True;
-     // подкрашиваем надпись
-     SetRandomFontColor(HomeForm.lblNewVersionDashboard);
+
+     with HomeForm.lblNewVersionDashboard do begin
+       if Visible then Visible:=False
+       else Visible:=True;
+     end;
    end;
   finally
    XML.Free;

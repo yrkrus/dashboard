@@ -1,4 +1,4 @@
-unit Thread_ACTIVESIPUnit;
+п»їunit Thread_ACTIVESIPUnit;
 
 interface
 
@@ -19,15 +19,14 @@ type
 
   private
    Log:TLoggingFile;
-   isCheckThreadSipOperators:Boolean; // флаг для первоначальной проверки всех активнх операторов, нужен только при старте дашборда
+   isCheckThreadSipOperators:Boolean; // С„Р»Р°Рі РґР»СЏ РїРµСЂРІРѕРЅР°С‡Р°Р»СЊРЅРѕР№ РїСЂРѕРІРµСЂРєРё РІСЃРµС… Р°РєС‚РёРІРЅС… РѕРїРµСЂР°С‚РѕСЂРѕРІ, РЅСѓР¶РµРЅ С‚РѕР»СЊРєРѕ РїСЂРё СЃС‚Р°СЂС‚Рµ РґР°С€Р±РѕСЂРґР°
 
-
-  // создание submenu
+   // СЃРѕР·РґР°РЅРёРµ submenu
   function CreateListSubMenuItems(var p_ActiveSipOperators: TActiveSIP;
                                       i: Integer;
                                       ListView: TListView):TListItem;
 
-  // обновление submenu
+  // РѕР±РЅРѕРІР»РµРЅРёРµ submenu
   procedure UpdateListSubMenuItems(var p_ActiveSipOperators: TActiveSIP;
                                        i: Integer;
                                        ListItem: TListItem);
@@ -44,7 +43,7 @@ uses
 
  procedure Thread_ACTIVESIP.CriticalError;
  begin
-   // записываем в лог
+   // Р·Р°РїРёСЃС‹РІР°РµРј РІ Р»РѕРі
    Log.Save(messclass+':'+mess,IS_ERROR);
  end;
 
@@ -53,18 +52,19 @@ uses
 procedure Thread_ACTIVESIP.UpdateActiveSipOperators(var p_ActiveSipOperators:TActiveSIP);
 begin
   if not CONNECT_BD_ERROR then begin
-    // проверим есть ли новые операторы
+    // РїСЂРѕРІРµСЂРёРј РµСЃС‚СЊ Р»Рё РЅРѕРІС‹Рµ РѕРїРµСЂР°С‚РѕСЂС‹
     p_ActiveSipOperators.checkNewSipOperators(isCheckThreadSipOperators);
 
-    //  обновим текущие статусы
-    p_ActiveSipOperators.updateStatus;
-    p_ActiveSipOperators.updateStatusOnHold;
+    //  РѕР±РЅРѕРІРёРј С‚РµРєСѓС‰РёРµ СЃС‚Р°С‚СѓСЃС‹
+    p_ActiveSipOperators.UpdateStatus;
+    p_ActiveSipOperators.UpdateStatusDelay;
+    p_ActiveSipOperators.UpdateStatusOnHold;
 
-    // тут просто найцдем user_id операторов всех у кого есть доступ к дашборду
-    // (по факту вызываетмся когда нет этой записи в памяти)
+    // С‚СѓС‚ РїСЂРѕСЃС‚Рѕ РЅР°Р№С†РґРµРј user_id РѕРїРµСЂР°С‚РѕСЂРѕРІ РІСЃРµС… Сѓ РєРѕРіРѕ РµСЃС‚СЊ РґРѕСЃС‚СѓРї Рє РґР°С€Р±РѕСЂРґСѓ
+    // (РїРѕ С„Р°РєС‚Сѓ РІС‹Р·С‹РІР°РµС‚РјСЃСЏ РєРѕРіРґР° РЅРµС‚ СЌС‚РѕР№ Р·Р°РїРёСЃРё РІ РїР°РјСЏС‚Рё)
     p_ActiveSipOperators.createUserID;
 
-    // обновим дату последнего онлайна
+    // РѕР±РЅРѕРІРёРј РґР°С‚Сѓ РїРѕСЃР»РµРґРЅРµРіРѕ РѕРЅР»Р°Р№РЅР°
     p_ActiveSipOperators.updateOnline;
   end;
 end;
@@ -75,6 +75,7 @@ function Thread_ACTIVESIP.CreateListSubMenuItems(var p_ActiveSipOperators: TActi
                                                      ListView: TListView):TListItem;
 var
  ListItem: TListItem;
+ TimeAnsweredSeconds:string;
 begin
 
  ListItem := ListView.Items.Add;
@@ -82,7 +83,7 @@ begin
 
   // submenu
   begin
-    // ===== ИМЯ ОПЕРАТОРА =====
+    // ===== РРњРЇ РћРџР•Р РђРўРћР Рђ =====
      if p_ActiveSipOperators.GetListOperators_OperatorName(i)<>'null' then
      begin
        ListItem.SubItems.Add(p_ActiveSipOperators.GetListOperators_OperatorName(i)+' ('+p_ActiveSipOperators.GetListOperators_SipNumber(i)+')');
@@ -92,13 +93,13 @@ begin
      end;
 
 
-     // ===== СТАТУС =====
+     // ===== РЎРўРђРўРЈРЎ =====
      begin
-       if p_ActiveSipOperators.GetListOperators_Status(i) = eUnknown then begin // статус 'НЕИЗВЕСТЕН'
+       if p_ActiveSipOperators.GetListOperators_Status(i) = eUnknown then begin // СЃС‚Р°С‚СѓСЃ 'РќР•РР—Р’Р•РЎРўР•Рќ'
 
-         // проверим есть ли доступ к дашборду
+         // РїСЂРѕРІРµСЂРёРј РµСЃС‚СЊ Р»Рё РґРѕСЃС‚СѓРї Рє РґР°С€Р±РѕСЂРґСѓ
          if p_ActiveSipOperators.GetListOperators_AccessDashboad(i) then begin
-            // проверим вдруг разговаривал оператор и просто ушел домой
+            // РїСЂРѕРІРµСЂРёРј РІРґСЂСѓРі СЂР°Р·РіРѕРІР°СЂРёРІР°Р» РѕРїРµСЂР°С‚РѕСЂ Рё РїСЂРѕСЃС‚Рѕ СѓС€РµР» РґРѕРјРѕР№
             if isOperatorGoHome(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i)))) then ListItem.SubItems.Add(getStatus(eHome))
             else begin
               if isOperatorGoHomeWithForceClosed(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i)))) then ListItem.SubItems.Add(getStatus(eHome))
@@ -106,48 +107,60 @@ begin
             end;
 
             if p_ActiveSipOperators.GetListOperators_OperatorName(i) = SharedCurrentUserLogon.GetFamiliya+' '+SharedCurrentUserLogon.GetName then begin
-             // для привязвнной форме
+             // РґР»СЏ РїСЂРёРІСЏР·РІРЅРЅРѕР№ С„РѕСЂРјРµ
              HomeForm.lblCurrentStatus.Caption:='---';
 
-             // для отвязанонй формы
-             FormOperatorStatus.Caption:='Текущий статус: ---';
+             // РґР»СЏ РѕС‚РІСЏР·Р°РЅРѕРЅР№ С„РѕСЂРјС‹
+             FormOperatorStatus.Caption:='РўРµРєСѓС‰РёР№ СЃС‚Р°С‚СѓСЃ: ---';
             end;
          end
-         else begin // доступа к дашборду нет значит это  тип "операторы (доступ без дашборда)"
+         else begin // РґРѕСЃС‚СѓРїР° Рє РґР°С€Р±РѕСЂРґСѓ РЅРµС‚ Р·РЅР°С‡РёС‚ СЌС‚Рѕ  С‚РёРї "РѕРїРµСЂР°С‚РѕСЂС‹ (РґРѕСЃС‚СѓРї Р±РµР· РґР°С€Р±РѕСЂРґР°)"
 
-            // находится ли в очереди
+            // РЅР°С…РѕРґРёС‚СЃСЏ Р»Рё РІ РѕС‡РµСЂРµРґРё
             if p_ActiveSipOperators.GetListOperators_Queue(i) <> queue_null then begin
                if p_ActiveSipOperators.GetListOperators_TalkTime(i,True) <> '' then begin
-                 ListItem.SubItems.Add('разговор');
 
+                 // РѕС‚Р»РѕР¶РµРЅРЅР°СЏ РєРѕРјР°РЅРґР° РЅР° СЃРјРµРЅСѓ СЃС‚Р°С‚СѓСЃР°
+                 if p_ActiveSipOperators.GetListOperators_StatusDelay(i) <> eUnknown then begin
+                   ListItem.SubItems.Add('СЂР°Р·РіРѕРІРѕСЂ в†’ '+ getStatus(p_ActiveSipOperators.GetListOperators_StatusDelay(i)));
+                 end
+                 else begin
+                    ListItem.SubItems.Add('СЂР°Р·РіРѕРІРѕСЂ');
+                 end;
                end
                else begin
-                ListItem.SubItems.Add('доступен');
+                ListItem.SubItems.Add('РґРѕСЃС‚СѓРїРµРЅ');
                 Inc(p_ActiveSipOperators.countFreeOperators);
                end;
             end
             else begin
-              ListItem.SubItems.Add('домой');
+              ListItem.SubItems.Add('РґРѕРјРѕР№');
 
             end;
          end;
        end
        else begin
 
-          // изменяем статус на "разговор", если доступен и разговаривают
+          // РёР·РјРµРЅСЏРµРј СЃС‚Р°С‚СѓСЃ РЅР° "СЂР°Р·РіРѕРІРѕСЂ", РµСЃР»Рё РґРѕСЃС‚СѓРїРµРЅ Рё СЂР°Р·РіРѕРІР°СЂРёРІР°СЋС‚
           if (p_ActiveSipOperators.GetListOperators_Status(i) = eAvailable) and
              (p_ActiveSipOperators.GetListOperators_Queue(i) <> queue_null) and
              ((p_ActiveSipOperators.GetListOperators_Phone(i) <> ''){ and (listOperators[i].talk_time<>'')} ) then begin
 
-            // проверим вдруг оператор в состоянии onHold
+            // РїСЂРѕРІРµСЂРёРј РІРґСЂСѓРі РѕРїРµСЂР°С‚РѕСЂ РІ СЃРѕСЃС‚РѕСЏРЅРёРё onHold
             if p_ActiveSipOperators.GetListOperators_IsOnHold(i) then begin
               ListItem.SubItems.Add('OnHold ('+getLastStatusTimeOnHold(p_ActiveSipOperators.GetListOperators_OnHoldStartTime(i))+')');
             end else begin
-              ListItem.SubItems.Add('разговор');
+             // РѕС‚Р»РѕР¶РµРЅРЅР°СЏ РєРѕРјР°РЅРґР° РЅР° СЃРјРµРЅСѓ СЃС‚Р°С‚СѓСЃР°
+             if p_ActiveSipOperators.GetListOperators_StatusDelay(i) <> eUnknown then begin
+               ListItem.SubItems.Add('СЂР°Р·РіРѕРІРѕСЂ в†’ '+ getStatus(p_ActiveSipOperators.GetListOperators_StatusDelay(i)));
+             end
+             else begin
+                ListItem.SubItems.Add('СЂР°Р·РіРѕРІРѕСЂ');
+             end;
             end;
 
           end else begin
-            // добавляем время сколько сейчас находится оператор в статусе
+            // РґРѕР±Р°РІР»СЏРµРј РІСЂРµРјСЏ СЃРєРѕР»СЊРєРѕ СЃРµР№С‡Р°СЃ РЅР°С…РѕРґРёС‚СЃСЏ РѕРїРµСЂР°С‚РѕСЂ РІ СЃС‚Р°С‚СѓСЃРµ
             if p_ActiveSipOperators.GetListOperators_Status(i) > eHome then begin
 
               ListItem.SubItems.Add(getStatus(p_ActiveSipOperators.GetListOperators_Status(i))
@@ -156,7 +169,7 @@ begin
 
             end
             else begin
-              // проверим вдруг оператор в состоянии onHold (ну типа забыли из него выйти или нечаянно в него вошли)
+              // РїСЂРѕРІРµСЂРёРј РІРґСЂСѓРі РѕРїРµСЂР°С‚РѕСЂ РІ СЃРѕСЃС‚РѕСЏРЅРёРё onHold (РЅСѓ С‚РёРїР° Р·Р°Р±С‹Р»Рё РёР· РЅРµРіРѕ РІС‹Р№С‚Рё РёР»Рё РЅРµС‡Р°СЏРЅРЅРѕ РІ РЅРµРіРѕ РІРѕС€Р»Рё)
               if p_ActiveSipOperators.GetListOperators_IsOnHold(i) then begin
                 ListItem.SubItems.Add('OnHold ('+getLastStatusTimeOnHold(p_ActiveSipOperators.GetListOperators_OnHoldStartTime(i))+')');
 
@@ -164,7 +177,7 @@ begin
               else begin
                ListItem.SubItems.Add(getStatus(p_ActiveSipOperators.GetListOperators_Status(i)));
 
-                if p_ActiveSipOperators.GetListOperators_Status(i) = eAvailable then begin // кол-во свободных операторов
+                if p_ActiveSipOperators.GetListOperators_Status(i) = eAvailable then begin // РєРѕР»-РІРѕ СЃРІРѕР±РѕРґРЅС‹С… РѕРїРµСЂР°С‚РѕСЂРѕРІ
                    Inc(p_ActiveSipOperators.countFreeOperators);
                 end;
               end;
@@ -173,34 +186,34 @@ begin
           end;
 
           if p_ActiveSipOperators.GetListOperators_OperatorName(i) = SharedCurrentUserLogon.GetFamiliya+' '+SharedCurrentUserLogon.GetName then begin
-           // для привязвнной форме
+           // РґР»СЏ РїСЂРёРІСЏР·РІРЅРЅРѕР№ С„РѕСЂРјРµ
            HomeForm.lblCurrentStatus.Caption:=getStatus(p_ActiveSipOperators.GetListOperators_Status(i))
                                       +' ('+getLastStatusTime(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i))), p_ActiveSipOperators.GetListOperators_Status(i))
                                       +')';
 
-            // для отвязанонй формы
-            FormOperatorStatus.Caption:='Текущий статус: '+getStatus(p_ActiveSipOperators.GetListOperators_Status(i))
+            // РґР»СЏ РѕС‚РІСЏР·Р°РЅРѕРЅР№ С„РѕСЂРјС‹
+            FormOperatorStatus.Caption:='РўРµРєСѓС‰РёР№ СЃС‚Р°С‚СѓСЃ: '+getStatus(p_ActiveSipOperators.GetListOperators_Status(i))
                                       +' ('+getLastStatusTime(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i))), p_ActiveSipOperators.GetListOperators_Status(i))
                                       +')';
 
-            // скрываем\отображаем кнопки статусов в зависимости от текущего статуса оператора
+            // СЃРєСЂС‹РІР°РµРј\РѕС‚РѕР±СЂР°Р¶Р°РµРј РєРЅРѕРїРєРё СЃС‚Р°С‚СѓСЃРѕРІ РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‚РµРєСѓС‰РµРіРѕ СЃС‚Р°С‚СѓСЃР° РѕРїРµСЂР°С‚РѕСЂР°
             checkCurrentStatusOperator(p_ActiveSipOperators.GetListOperators_Status(i));
           end;
        end;
      end;
 
 
-    // ===== ОТВЕЧЕНО =====
+    // ===== РћРўР’Р•Р§Р•РќРћ =====
     begin
       if p_ActiveSipOperators.GetListOperators_CountTalk(i) = 0 then ListItem.SubItems.Add('0')
       else begin
-        // если обычный оператор\старший не нужно ему показывать %
+        // РµСЃР»Рё РѕР±С‹С‡РЅС‹Р№ РѕРїРµСЂР°С‚РѕСЂ\СЃС‚Р°СЂС€РёР№ РЅРµ РЅСѓР¶РЅРѕ РµРјСѓ РїРѕРєР°Р·С‹РІР°С‚СЊ %
          if (SharedCurrentUserLogon.GetRole = role_operator) or (SharedCurrentUserLogon.GetRole = role_senior_operator) then ListItem.SubItems.Add(IntToStr(p_ActiveSipOperators.GetListOperators_CountTalk(i)))
         else ListItem.SubItems.Add(IntToStr(p_ActiveSipOperators.GetListOperators_CountTalk(i))+' ('+p_ActiveSipOperators.GetListOperators_CountProcentTalk(i)+')');
       end;
     end;
 
-    // ===== ЛИНИЯ =====
+    // ===== Р›РРќРРЇ =====
     begin
       if p_ActiveSipOperators.GetListOperators_Trunk(i) = '' then begin
        ListItem.SubItems.Add('---');
@@ -210,7 +223,7 @@ begin
       end;
     end;
 
-    // ===== НОМЕР ТЕЛЕФОНА =====
+    // ===== РќРћРњР•Р  РўР•Р›Р•Р¤РћРќРђ =====
     begin
       if p_ActiveSipOperators.GetListOperators_Phone(i) = '' then begin
        ListItem.SubItems.Add('---');
@@ -222,19 +235,19 @@ begin
       end;
     end;
 
-    // ===== ВРЕМЯ РАЗГОВОРА =====
+    // ===== Р’Р Р•РњРЇ Р РђР—Р“РћР’РћР Рђ =====
     begin
      if p_ActiveSipOperators.GetListOperators_TalkTime(i,True) = '' then ListItem.SubItems.Add('---')
      else ListItem.SubItems.Add(p_ActiveSipOperators.GetListOperators_TalkTime(i,True));
     end;
 
-    // ===== ОЧЕРЕДЬ =====
+    // ===== РћР§Р•Р Р•Р”Р¬ =====
     begin
      if p_ActiveSipOperators.GetListOperators_Queue(i) = queue_null then ListItem.SubItems.Add('---')
      else ListItem.SubItems.Add(EnumQueueCurrentToString(p_ActiveSipOperators.GetListOperators_Queue(i)));
     end;
 
-    // ===== ОБЩЕЕ ВРЕМЯ РАЗГОВОРА =====
+    // ===== РћР‘Р©Р•Р• Р’Р Р•РњРЇ Р РђР—Р“РћР’РћР Рђ =====
     begin
      if  p_ActiveSipOperators.GetListOperators_TalkTimeAll(i) = 0 then ListItem.SubItems.Add('00:00:00 | 00:00:00')
      else ListItem.SubItems.Add(GetTimeAnsweredSecondsToString(p_ActiveSipOperators.GetListOperators_TalkTimeAvg(i))
@@ -253,11 +266,11 @@ procedure Thread_ACTIVESIP.UpdateListSubMenuItems(var p_ActiveSipOperators: TAct
 
 begin
   try
- //  HomeForm.ListViewSIP.Items.BeginUpdate;
+//   HomeForm.ListViewSIP.Items.BeginUpdate;
 
     // submenu
     begin
-      // ===== ИМЯ ОПЕРАТОРА =====
+      // ===== РРњРЇ РћРџР•Р РђРўРћР Рђ =====
        if p_ActiveSipOperators.GetListOperators_OperatorName(i)<>'null' then
        begin
          ListItem.SubItems[0]:=p_ActiveSipOperators.GetListOperators_OperatorName(i)+' ('+p_ActiveSipOperators.GetListOperators_SipNumber(i)+')';
@@ -267,64 +280,77 @@ begin
        end;
 
 
-       // ===== СТАТУС =====
+       // ===== РЎРўРђРўРЈРЎ =====
        begin
-         if p_ActiveSipOperators.GetListOperators_Status(i) = eUnknown then begin // статус 'НЕИЗВЕСТЕН'
+         if p_ActiveSipOperators.GetListOperators_Status(i) = eUnknown then begin // СЃС‚Р°С‚СѓСЃ 'РќР•РР—Р’Р•РЎРўР•Рќ'
 
-           // проверим есть ли доступ к дашборду
+           // РїСЂРѕРІРµСЂРёРј РµСЃС‚СЊ Р»Рё РґРѕСЃС‚СѓРї Рє РґР°С€Р±РѕСЂРґСѓ
            if p_ActiveSipOperators.GetListOperators_AccessDashboad(i) then begin
-              // проверим вдруг разговаривал оператор и просто ушел домой
+              // РїСЂРѕРІРµСЂРёРј РІРґСЂСѓРі СЂР°Р·РіРѕРІР°СЂРёРІР°Р» РѕРїРµСЂР°С‚РѕСЂ Рё РїСЂРѕСЃС‚Рѕ СѓС€РµР» РґРѕРјРѕР№
               if isOperatorGoHome(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i)))) then ListItem.SubItems[1]:=getStatus(eHome)
-              else begin // проверим вдруг закрыли через "завепшение активной сессии"
+              else begin // РїСЂРѕРІРµСЂРёРј РІРґСЂСѓРі Р·Р°РєСЂС‹Р»Рё С‡РµСЂРµР· "Р·Р°РІРµРїС€РµРЅРёРµ Р°РєС‚РёРІРЅРѕР№ СЃРµСЃСЃРёРё"
                 if isOperatorGoHomeWithForceClosed(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i)))) then ListItem.SubItems[1]:=getStatus(eHome)
                 else ListItem.SubItems[1]:='---';
               end;
 
 
               if p_ActiveSipOperators.GetListOperators_OperatorName(i) = SharedCurrentUserLogon.GetFamiliya+' '+SharedCurrentUserLogon.GetName then begin
-                 // для привязвнной форме
+                 // РґР»СЏ РїСЂРёРІСЏР·РІРЅРЅРѕР№ С„РѕСЂРјРµ
                  HomeForm.lblCurrentStatus.Caption:='---';
 
-                 // для отвязанонй формы
-                 FormOperatorStatus.Caption:='Текущий статус: ---';
+                 // РґР»СЏ РѕС‚РІСЏР·Р°РЅРѕРЅР№ С„РѕСЂРјС‹
+                 FormOperatorStatus.Caption:='РўРµРєСѓС‰РёР№ СЃС‚Р°С‚СѓСЃ: ---';
               end;
            end
-           else begin // доступа к дашборду нет значит это  тип "операторы (доступ без дашборда)"
+           else begin // РґРѕСЃС‚СѓРїР° Рє РґР°С€Р±РѕСЂРґСѓ РЅРµС‚ Р·РЅР°С‡РёС‚ СЌС‚Рѕ  С‚РёРї "РѕРїРµСЂР°С‚РѕСЂС‹ (РґРѕСЃС‚СѓРї Р±РµР· РґР°С€Р±РѕСЂРґР°)"
 
-              // находится ли в очереди
+              // РЅР°С…РѕРґРёС‚СЃСЏ Р»Рё РІ РѕС‡РµСЂРµРґРё
               if p_ActiveSipOperators.GetListOperators_Queue(i) <> queue_null then begin
                  if p_ActiveSipOperators.GetListOperators_TalkTime(i,True) <>'' then begin
-                   ListItem.SubItems[1]:='разговор';
+
+                   // РѕС‚Р»РѕР¶РµРЅРЅР°СЏ РєРѕРјР°РЅРґР° РЅР° СЃРјРµРЅСѓ СЃС‚Р°С‚СѓСЃР°
+                   if p_ActiveSipOperators.GetListOperators_StatusDelay(i) <> eUnknown then begin
+                      ListItem.SubItems[1]:='СЂР°Р·РіРѕРІРѕСЂ в†’ '+ getStatus(p_ActiveSipOperators.GetListOperators_StatusDelay(i));
+                   end
+                   else begin
+                      ListItem.SubItems[1]:='СЂР°Р·РіРѕРІРѕСЂ';
+                   end;
 
                  end
                  else begin
-                  ListItem.SubItems[1]:='доступен';
+                  ListItem.SubItems[1]:='РґРѕСЃС‚СѓРїРµРЅ';
                   Inc(p_ActiveSipOperators.countFreeOperators);
                  end;
               end
               else begin
-                ListItem.SubItems[1]:='домой';
+                ListItem.SubItems[1]:='РґРѕРјРѕР№';
 
               end;
            end;
          end
          else begin
 
-            // изменяем статус на "разговор", если доступен и разговаривают
+            // РёР·РјРµРЅСЏРµРј СЃС‚Р°С‚СѓСЃ РЅР° "СЂР°Р·РіРѕРІРѕСЂ", РµСЃР»Рё РґРѕСЃС‚СѓРїРµРЅ Рё СЂР°Р·РіРѕРІР°СЂРёРІР°СЋС‚
             if (p_ActiveSipOperators.GetListOperators_Status(i) = eAvailable) and
                (p_ActiveSipOperators.GetListOperators_Queue(i) <> queue_null) and
                ((p_ActiveSipOperators.GetListOperators_Phone(i) <> ''){ and (listOperators[i].talk_time<>'')} ) then begin
 
-              // проверим вдруг оператор в состоянии onHold
+              // РїСЂРѕРІРµСЂРёРј РІРґСЂСѓРі РѕРїРµСЂР°С‚РѕСЂ РІ СЃРѕСЃС‚РѕСЏРЅРёРё onHold
               if p_ActiveSipOperators.GetListOperators_IsOnHold(i) then begin
                 ListItem.SubItems[1]:='OnHold ('+getLastStatusTimeOnHold(p_ActiveSipOperators.GetListOperators_OnHoldStartTime(i))+')';
 
               end else begin
-                ListItem.SubItems[1]:='разговор';
+                // РѕС‚Р»РѕР¶РµРЅРЅР°СЏ РєРѕРјР°РЅРґР° РЅР° СЃРјРµРЅСѓ СЃС‚Р°С‚СѓСЃР°
+                 if p_ActiveSipOperators.GetListOperators_StatusDelay(i) <> eUnknown then begin
+                    ListItem.SubItems[1]:='СЂР°Р·РіРѕРІРѕСЂ в†’ '+ getStatus(p_ActiveSipOperators.GetListOperators_StatusDelay(i));
+                 end
+                 else begin
+                    ListItem.SubItems[1]:='СЂР°Р·РіРѕРІРѕСЂ';
+                 end;
               end;
 
             end else begin
-              // добавляем время сколько сейчас находится оператор в статусе
+              // РґРѕР±Р°РІР»СЏРµРј РІСЂРµРјСЏ СЃРєРѕР»СЊРєРѕ СЃРµР№С‡Р°СЃ РЅР°С…РѕРґРёС‚СЃСЏ РѕРїРµСЂР°С‚РѕСЂ РІ СЃС‚Р°С‚СѓСЃРµ
               if p_ActiveSipOperators.GetListOperators_Status(i) > eHome then begin
 
                 ListItem.SubItems[1]:=getStatus(p_ActiveSipOperators.GetListOperators_Status(i))
@@ -333,7 +359,7 @@ begin
 
               end
               else begin
-                // проверим вдруг оператор в состоянии onHold (ну типа забыли из него выйти или нечаянно в него вошли)
+                // РїСЂРѕРІРµСЂРёРј РІРґСЂСѓРі РѕРїРµСЂР°С‚РѕСЂ РІ СЃРѕСЃС‚РѕСЏРЅРёРё onHold (РЅСѓ С‚РёРїР° Р·Р°Р±С‹Р»Рё РёР· РЅРµРіРѕ РІС‹Р№С‚Рё РёР»Рё РЅРµС‡Р°СЏРЅРЅРѕ РІ РЅРµРіРѕ РІРѕС€Р»Рё)
                 if p_ActiveSipOperators.GetListOperators_IsOnHold(i) then begin
                   ListItem.SubItems[1]:='OnHold ('
                                                   +getLastStatusTimeOnHold(p_ActiveSipOperators.GetListOperators_OnHoldStartTime(i))
@@ -343,7 +369,7 @@ begin
                 else begin
                  ListItem.SubItems[1]:=getStatus(p_ActiveSipOperators.GetListOperators_Status(i));
 
-                  if p_ActiveSipOperators.GetListOperators_Status(i) = eAvailable then begin // кол-во свободных операторов
+                  if p_ActiveSipOperators.GetListOperators_Status(i) = eAvailable then begin // РєРѕР»-РІРѕ СЃРІРѕР±РѕРґРЅС‹С… РѕРїРµСЂР°С‚РѕСЂРѕРІ
                      Inc(p_ActiveSipOperators.countFreeOperators);
                   end;
                 end;
@@ -352,33 +378,33 @@ begin
             end;
 
             if p_ActiveSipOperators.GetListOperators_OperatorName(i) = SharedCurrentUserLogon.GetFamiliya+' '+SharedCurrentUserLogon.GetName then begin
-             // для привязвнной форме
+             // РґР»СЏ РїСЂРёРІСЏР·РІРЅРЅРѕР№ С„РѕСЂРјРµ
              HomeForm.lblCurrentStatus.Caption:=getStatus(p_ActiveSipOperators.GetListOperators_Status(i))
                                         +' ('+getLastStatusTime(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i))), p_ActiveSipOperators.GetListOperators_Status(i))
                                         +')';
-             // для отвязанонй формы
-             FormOperatorStatus.Caption:='Текущий статус: '+getStatus(p_ActiveSipOperators.GetListOperators_Status(i))
+             // РґР»СЏ РѕС‚РІСЏР·Р°РЅРѕРЅР№ С„РѕСЂРјС‹
+             FormOperatorStatus.Caption:='РўРµРєСѓС‰РёР№ СЃС‚Р°С‚СѓСЃ: '+getStatus(p_ActiveSipOperators.GetListOperators_Status(i))
                                         +' ('+getLastStatusTime(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i))), p_ActiveSipOperators.GetListOperators_Status(i))
                                         +')';
 
-              // скрываем\отображаем кнопки статусов в зависимости от текущего статуса оператора
+              // СЃРєСЂС‹РІР°РµРј\РѕС‚РѕР±СЂР°Р¶Р°РµРј РєРЅРѕРїРєРё СЃС‚Р°С‚СѓСЃРѕРІ РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‚РµРєСѓС‰РµРіРѕ СЃС‚Р°С‚СѓСЃР° РѕРїРµСЂР°С‚РѕСЂР°
               checkCurrentStatusOperator(p_ActiveSipOperators.GetListOperators_Status(i));
             end;
          end;
        end;
 
 
-      // ===== ОТВЕЧЕНО =====
+      // ===== РћРўР’Р•Р§Р•РќРћ =====
       begin
         if p_ActiveSipOperators.GetListOperators_CountTalk(i) = 0 then ListItem.SubItems[2]:='0'
         else begin
-         // если обычный оператор\старший не нужно ему показывать %
+         // РµСЃР»Рё РѕР±С‹С‡РЅС‹Р№ РѕРїРµСЂР°С‚РѕСЂ\СЃС‚Р°СЂС€РёР№ РЅРµ РЅСѓР¶РЅРѕ РµРјСѓ РїРѕРєР°Р·С‹РІР°С‚СЊ %
          if (SharedCurrentUserLogon.GetRole = role_operator) or (SharedCurrentUserLogon.GetRole = role_senior_operator) then ListItem.SubItems[2]:=IntToStr(p_ActiveSipOperators.GetListOperators_CountTalk(i))
          else ListItem.SubItems[2]:=IntToStr(p_ActiveSipOperators.GetListOperators_CountTalk(i))+' ('+p_ActiveSipOperators.GetListOperators_CountProcentTalk(i)+')';
         end;
       end;
 
-      // ===== ЛИНИЯ =====
+      // ===== Р›РРќРРЇ =====
       begin
         if p_ActiveSipOperators.GetListOperators_Trunk(i) = '' then begin
           ListItem.SubItems[3]:='---';
@@ -390,7 +416,7 @@ begin
       end;
 
 
-      // ===== НОМЕР ТЕЛЕФОНА =====
+      // ===== РќРћРњР•Р  РўР•Р›Р•Р¤РћРќРђ =====
       begin
         if p_ActiveSipOperators.GetListOperators_Phone(i) = '' then begin
           ListItem.SubItems[4]:='---';
@@ -402,19 +428,19 @@ begin
         end;
       end;
 
-      // ===== ВРЕМЯ РАЗГОВОРА =====
+      // ===== Р’Р Р•РњРЇ Р РђР—Р“РћР’РћР Рђ =====
       begin
        if p_ActiveSipOperators.GetListOperators_TalkTime(i,True) = '' then ListItem.SubItems[5]:='---'
        else ListItem.SubItems[5]:=p_ActiveSipOperators.GetListOperators_TalkTime(i,True);
       end;
 
-      // ===== ОЧЕРЕДЬ =====
+      // ===== РћР§Р•Р Р•Р”Р¬ =====
       begin
        if p_ActiveSipOperators.GetListOperators_Queue(i) = queue_null then ListItem.SubItems[6]:='---'
        else ListItem.SubItems[6]:=EnumQueueCurrentToString(p_ActiveSipOperators.GetListOperators_Queue(i));
       end;
 
-      // ===== ОБЩЕЕ ВРЕМЯ РАЗГОВОРА =====
+      // ===== РћР‘Р©Р•Р• Р’Р Р•РњРЇ Р РђР—Р“РћР’РћР Рђ =====
       begin
        if  p_ActiveSipOperators.GetListOperators_TalkTimeAll(i) = 0 then ListItem.SubItems[7]:='00:00:00 | 00:00:00'
        else ListItem.SubItems[7]:=GetTimeAnsweredSecondsToString(p_ActiveSipOperators.GetListOperators_TalkTimeAvg(i))
@@ -425,7 +451,7 @@ begin
     end;
 
   finally
-  // HomeForm.ListViewSIP.Items.EndUpdate;
+//   HomeForm.ListViewSIP.Items.EndUpdate;
   end;
 
 end;
@@ -450,19 +476,19 @@ begin
      end;
 
      // ListViewSIP.Items.BeginUpdate;
-     // ListViewSIP.Columns[0].Width:= 0; // Установка ширины в 0 в редких вариантах почему то он без этого параметра оборажается
+     // ListViewSIP.Columns[0].Width:= 0; // РЈСЃС‚Р°РЅРѕРІРєР° С€РёСЂРёРЅС‹ РІ 0 РІ СЂРµРґРєРёС… РІР°СЂРёР°РЅС‚Р°С… РїРѕС‡РµРјСѓ С‚Рѕ РѕРЅ Р±РµР· СЌС‚РѕРіРѕ РїР°СЂР°РјРµС‚СЂР° РѕР±РѕСЂР°Р¶Р°РµС‚СЃСЏ
 
-      // Очищаем ListView перед добавлением новых элементов
+      // РћС‡РёС‰Р°РµРј ListView РїРµСЂРµРґ РґРѕР±Р°РІР»РµРЅРёРµРј РЅРѕРІС‹С… СЌР»РµРјРµРЅС‚РѕРІ
      // ListViewSIP.Clear;
 
 
-      // Проходим по всем операторам
+      // РџСЂРѕС…РѕРґРёРј РїРѕ РІСЃРµРј РѕРїРµСЂР°С‚РѕСЂР°Рј
       for i:=0 to countActiveSipOperators-1 do
       begin
         idToFind := p_ActiveSipOperators.GetListOperators_SipNumber(i);
         existingItem := nil;
 
-        // Поиск существующего элемента по id
+        // РџРѕРёСЃРє СЃСѓС‰РµСЃС‚РІСѓСЋС‰РµРіРѕ СЌР»РµРјРµРЅС‚Р° РїРѕ id
         for ListItem in ListViewSIP.Items do
         begin
           if ListItem.Caption = idToFind then
@@ -474,20 +500,20 @@ begin
 
         if existingItem = nil then
         begin
-          // Элемент не найден, добавляем новый
+          // Р­Р»РµРјРµРЅС‚ РЅРµ РЅР°Р№РґРµРЅ, РґРѕР±Р°РІР»СЏРµРј РЅРѕРІС‹Р№
           ListItem:=CreateListSubMenuItems(p_ActiveSipOperators, i, ListViewSIP);
         end
         else
         begin
-          // Обновляем существующий элемент
+          // РћР±РЅРѕРІР»СЏРµРј СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёР№ СЌР»РµРјРµРЅС‚
           UpdateListSubMenuItems(p_ActiveSipOperators, i, existingItem);
         end;
       end;
 
-      // отображаем кол-во активных\свободных операторов
+      // РѕС‚РѕР±СЂР°Р¶Р°РµРј РєРѕР»-РІРѕ Р°РєС‚РёРІРЅС‹С…\СЃРІРѕР±РѕРґРЅС‹С… РѕРїРµСЂР°С‚РѕСЂРѕРІ
        p_ActiveSipOperators.showActiveAndFreeOperatorsForm;
 
-      // Удаляем элементы, которые отсутствуют в новых данных
+      // РЈРґР°Р»СЏРµРј СЌР»РµРјРµРЅС‚С‹, РєРѕС‚РѕСЂС‹Рµ РѕС‚СЃСѓС‚СЃС‚РІСѓСЋС‚ РІ РЅРѕРІС‹С… РґР°РЅРЅС‹С…
       for i:= ListViewSIP.Items.Count - 1 downto 0 do
       begin
          if not p_ActiveSipOperators.isExistOperator(ListViewSIP.Items[i].Caption) then
@@ -523,7 +549,7 @@ begin
 
   Log:=TLoggingFile.Create(NAME_THREAD);
 
-  // вывод debug info
+  // РІС‹РІРѕРґ debug info
   try
      debugInfo:=TDebugStruct.Create(NAME_THREAD,Log);
      SharedCountResponseThread.Add(debugInfo);
@@ -536,10 +562,10 @@ begin
     end;
   end;
 
-  // добавляем ссылку на Log в класс
+  // РґРѕР±Р°РІР»СЏРµРј СЃСЃС‹Р»РєСѓ РЅР° Log РІ РєР»Р°СЃСЃ
   SharedActiveSipOperators.AddLinkLogFile(Log);
 
-  // default при первом запуске
+  // default РїСЂРё РїРµСЂРІРѕРј Р·Р°РїСѓСЃРєРµ
   isCheckThreadSipOperators:=True;
 
   while not Terminated do
@@ -552,10 +578,10 @@ begin
 
         UpdateActiveSipOperators(SharedActiveSipOperators);
 
-        //отображаем что у нас по операторам на главной форме
+        //РѕС‚РѕР±СЂР°Р¶Р°РµРј С‡С‚Рѕ Сѓ РЅР°СЃ РїРѕ РѕРїРµСЂР°С‚РѕСЂР°Рј РЅР° РіР»Р°РІРЅРѕР№ С„РѕСЂРјРµ
         Show(SharedActiveSipOperators);
 
-        // отображаем кол-во скрытых операторов если установлен параметр "не показывать ушедших домой"
+        // РѕС‚РѕР±СЂР°Р¶Р°РµРј РєРѕР»-РІРѕ СЃРєСЂС‹С‚С‹С… РѕРїРµСЂР°С‚РѕСЂРѕРІ РµСЃР»Рё СѓСЃС‚Р°РЅРѕРІР»РµРЅ РїР°СЂР°РјРµС‚СЂ "РЅРµ РїРѕРєР°Р·С‹РІР°С‚СЊ СѓС€РµРґС€РёС… РґРѕРјРѕР№"
         SharedActiveSipOperators.showHideOperatorsForm;
 
 
@@ -564,7 +590,7 @@ begin
 
         SharedCountResponseThread.SetCurrentResponse(NAME_THREAD,Duration);
 
-        // проверили орераторов
+        // РїСЂРѕРІРµСЂРёР»Рё РѕСЂРµСЂР°С‚РѕСЂРѕРІ
         if isCheckThreadSipOperators then isCheckThreadSipOperators:=False;
 
      except

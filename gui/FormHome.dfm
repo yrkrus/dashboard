@@ -2,7 +2,7 @@ object HomeForm: THomeForm
   Left = 0
   Top = 0
   Caption = #1044#1072#1096#1073#1086#1088#1076' '#1050#1086#1083#1083#1062#1077#1085#1090#1088#1072
-  ClientHeight = 745
+  ClientHeight = 801
   ClientWidth = 1454
   Color = clWindow
   DefaultMonitor = dmDesktop
@@ -20,7 +20,7 @@ object HomeForm: THomeForm
   OnShow = FormShow
   DesignSize = (
     1454
-    745)
+    801)
   PixelsPerInch = 96
   TextHeight = 15
   object Label5: TLabel
@@ -541,7 +541,7 @@ object HomeForm: THomeForm
   end
   object lblNewMessageLocalChat: TLabel
     Left = 1202
-    Top = 704
+    Top = 760
     Width = 243
     Height = 16
     Cursor = crHandPoint
@@ -695,7 +695,7 @@ object HomeForm: THomeForm
   end
   object Img8Mart: TImage
     Left = 1374
-    Top = 673
+    Top = 729
     Width = 79
     Height = 50
     Anchors = [akRight, akBottom]
@@ -822,7 +822,7 @@ object HomeForm: THomeForm
   end
   object ImageLogo: TImage
     Left = 1277
-    Top = 665
+    Top = 721
     Width = 157
     Height = 37
     Anchors = [akRight, akBottom]
@@ -989,7 +989,7 @@ object HomeForm: THomeForm
   end
   object ImgNewYear: TImage
     Left = 1389
-    Top = 645
+    Top = 701
     Width = 55
     Height = 55
     Anchors = [akRight, akBottom]
@@ -6445,7 +6445,7 @@ object HomeForm: THomeForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 724
+    Top = 780
     Width = 1454
     Height = 21
     Panels = <
@@ -6631,49 +6631,6 @@ object HomeForm: THomeForm
       Transparent = True
       OnClick = img_goHome_NOClick
     end
-    object img_SL_History_Graph: TImage
-      Left = 1069
-      Top = 5
-      Width = 19
-      Height = 15
-      Cursor = crHandPoint
-      Hint = #1043#1088#1072#1092#1080#1082' SL ('#1074' '#1088#1072#1079#1088#1072#1073#1086#1090#1082#1077')'
-      Anchors = [akTop]
-      ParentShowHint = False
-      Picture.Data = {
-        07544269746D617036030000424D360300000000000036000000280000001000
-        0000100000000100180000000000000300007412000074120000000000000000
-        0000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF1313130000000000001313
-        13FFFFFF131313000000000000131313FFFFFF131313000000000000131313FF
-        FFFFFFFFFF000000000000000000000000FFFFFF000000000000000000000000
-        FFFFFF000000000000000000000000FFFFFFFFFFFF0000000000000000000000
-        00FFFFFF000000000000000000000000FFFFFF000000000000000000000000FF
-        FFFFFFFFFF000000000000000000000000FFFFFF000000000000000000000000
-        FFFFFF000000000000000000000000FFFFFFFFFFFF0000000000000000000000
-        00FFFFFF000000000000000000000000FFFFFF000000000000000000000000FF
-        FFFFFFFFFF121212000000000000131313FFFFFF000000000000000000000000
-        FFFFFF000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-        FFFFFFFF000000000000000000000000FFFFFF000000000000000000000000FF
-        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000000000000000
-        FFFFFF000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-        FFFFFFFF000000000000000000000000FFFFFF000000000000000000000000FF
-        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000000000000000
-        FFFFFF121212000000000000131313FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-        FFFFFFFF000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000000000000000
-        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-        FFFFFFFF000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF121212000000000000131313
-        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-        FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-        FFFF}
-      ShowHint = True
-      Transparent = True
-      Visible = False
-      OnClick = img_SL_History_GraphClick
-      ExplicitLeft = 993
-    end
     object img_DownFont_ActiveSIP: TImage
       Left = 26
       Top = 5
@@ -6815,7 +6772,7 @@ object HomeForm: THomeForm
       OnMouseDown = ListViewSIPMouseDown
     end
     object ST_SL: TStaticText
-      Left = 965
+      Left = 979
       Top = 4
       Width = 101
       Height = 20
@@ -6877,15 +6834,15 @@ object HomeForm: THomeForm
       Visible = False
     end
     object StaticText1: TStaticText
-      Left = 759
+      Left = 688
       Top = 6
-      Width = 198
+      Width = 283
       Height = 20
       Hint = #1050#1086#1083'-'#1074#1086' '#1079#1072#1087#1080#1089#1077#1081' '#1087#1086#1089#1083#1077' '#1079#1074#1086#1085#1082#1072
       Alignment = taRightJustify
       Anchors = [akRight]
       AutoSize = False
-      Caption = #1047#1072#1087#1080#1089#1077#1081' '#1074' '#1048#1050': - ('#1074' '#1088#1072#1079#1088#1072#1073#1086#1090#1082#1077')'
+      Caption = #1047#1072#1087#1080#1089#1077#1081' '#1074' '#1048#1050': ('#1086#1087#1077#1088#1072#1090#1086#1088' | '#1083#1080#1079#1072') ('#1074' '#1088#1072#1079#1088#1072#1073#1086#1090#1082#1077')'
       Color = clGradientInactiveCaption
       Enabled = False
       Font.Charset = RUSSIAN_CHARSET
@@ -6962,6 +6919,7 @@ object HomeForm: THomeForm
         0049}
       ShowHint = True
       Transparent = True
+      Visible = False
       OnClick = img_ShowOperatorStatusClick
     end
     object PanelStatusIN: TPanel
@@ -7661,7 +7619,7 @@ object HomeForm: THomeForm
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 10
+    TabOrder = 9
   end
   object st_Forecast_Tomorrow: TStaticText
     Left = 35
@@ -7681,7 +7639,7 @@ object HomeForm: THomeForm
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 11
+    TabOrder = 10
     Visible = False
   end
   object st_Forecast_AfterTomorrow: TStaticText
@@ -7702,7 +7660,7 @@ object HomeForm: THomeForm
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 12
+    TabOrder = 11
     Visible = False
   end
   object Button1: TButton

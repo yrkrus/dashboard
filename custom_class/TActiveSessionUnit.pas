@@ -111,7 +111,7 @@ uses
 implementation
 
 uses
-  FunctionUnit, GlobalVariables, GlobalVariablesLinkDLL;
+  FunctionUnit, GlobalVariables, GlobalVariablesLinkDLL, TStatusUnit;
 
  const
   cTIME_ONLINE:Word = 10; // врем€ в секундах при котором считаетс€ что пользоак не онлайн
@@ -313,48 +313,14 @@ end;
 // выход из очереди активного оператора
 function TActiveSession.ForceExitOperatorInQueue(_idUser:Integer; var _errorDescription:string):Boolean;
 var
- response:string;
- soLongWait:Integer;
+ status:TStatus;
+ delay:enumStatus;
 begin
-  Result:=False;
-  _errorDescription:='';
-  soLongWait:=0;
+  delay:=eNO;
 
-  response:='insert into remote_commands (sip,command,ip,user_id,user_login_pc,pc) values ('+#39+getUserSIP(_idUser) +#39+','
-                                                                                            +#39+IntToStr(EnumLoggingToInteger(eLog_home))+#39+','
-                                                                                            +#39+SharedCurrentUserLogon.GetIP+#39+','
-                                                                                            +#39+IntToStr(SharedCurrentUserLogon.GetID)+#39+','
-                                                                                            +#39+SharedCurrentUserLogon.GetUserLoginPC+#39+','
-                                                                                            +#39+SharedCurrentUserLogon.GetPC+#39+')';
-   if not GetResponse(response,_errorDescription) then begin
-     Exit;
-   end;
-
-
-  // ждем пока отработает на core_dashboard
-  while (isExistRemoteCommand(eLog_home,_idUser)) do begin
-   Sleep(1000);
-
-   if soLongWait>6 then begin
-
-    // пробуем удалить команду
-       response:='delete from remote_commands where sip ='+#39+getUserSIP(_idUser)+#39+
-                                                         ' and command ='+#39+IntToStr(EnumLoggingToInteger(eLog_home))+#39;
-
-    if not remoteCommand_Responce(response,_errorDescription) then begin
-      Exit;
-    end;
-    _errorDescription:='—ервер не смог обработать команду'+#13+'ѕричина: команда неизвестна';
-    Exit;
-
-   end else begin
-    Inc(soLongWait);
-   end;
-  end;
-
-   Result:=True;
+  status:=TStatus.Create(_idUser, SharedCurrentUserLogon.GetUserList, False);
+  Result:=status.SendCommand(eLog_home, delay, _errorDescription);
 end;
-
 
 
 // m_listActiveSession[]

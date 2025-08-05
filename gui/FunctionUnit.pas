@@ -13,7 +13,7 @@ interface
     Data.DB, IdIcmpClient, IdException, System.DateUtils,
     FIBDatabase, pFIBDatabase, TCustomTypeUnit, TUserUnit,
     Vcl.Menus, GlobalVariables, GlobalVariablesLinkDLL, TActiveSIPUnit, System.IOUtils,
-    TLogFileUnit, Vcl.Buttons;
+    TLogFileUnit, Vcl.Buttons, IdGlobal;
 
 
 procedure KillProcess;                                                               // принудительное завершение работы
@@ -63,13 +63,13 @@ function GetUserFamiliyaName_LastSuccessEnter(InUser_login_pc,
 function GetCountAnsweredCall(InSipOperator:string):Integer;                         // кол-во отвеченных звонков оператором
 function GetCountAnsweredCallAll:Integer;                                            // кол-во отвеченных звонков всех операторов
 function CreateListAnsweredCall(InSipOperator:string):TStringList;                   // создвание списка со всем отвеченными звонками  sip оператора
-function remoteCommand_addQueue(_command:enumLogging;
-                                _userID:Integer;
-                                var _errorDescriptions:string):Boolean;              // удаленная команда (добавление в очередь)
+//function remoteCommand_addQueue(_command:enumLogging;
+//                                _userID:Integer;
+//                                var _errorDescriptions:string):Boolean;              // удаленная команда (добавление в очередь)
 procedure showWait(Status:enumShow_wait);                                            // отображение\сркытие окна запроса на сервер
 function remoteCommand_Responce(InStroka:string; var _errorDescriptions:string):boolean;  // отправка запроса на добавление удаленной команды
 function getUserSIP(InIDUser:integer):string;                                        // отображение SIP пользвоателя
-function isExistRemoteCommand(command:enumLogging;_userID:Integer):Boolean;         // проверка есть ли уже такая удаленная команда на сервера
+//function isExistRemoteCommand(command:enumLogging;_userID:Integer):Boolean;         // проверка есть ли уже такая удаленная команда на сервера
 function getStatus(InStatus:enumStatusOperators):string;                             // полчуение имени status оператора
 function getCurrentQueueOperator(InSipNumber:string):enumQueueCurrent;               // в какой очереди сейчас находится оператор
 procedure UpdateOperatorStatus(_status:enumStatusOperators;_userID:Integer);         // очитска текущего статуса оператора
@@ -155,6 +155,10 @@ function CreateRemoteCommandCallback(_action:enumRemoteCommandAction; _id:Intege
                                       var _errorDescription:string): Boolean;        // действие по удаленной команде для активной сессии или для пропущенного звонка
 function ExecuteCommandKillActiveSession(_userID:Integer;
                                          var _errorDescription:string):Boolean;      // выполенние команды закрытые активной сессии
+//function remoteCommand_GetFailStr(_userId:Integer; var _errorDescriptions:string):string;             // получение строки с ошибкой при выполнении удаленной команды
+//function remoteCommand_IsFail(command:enumLogging;_userID:Integer):boolean;         // получена ли ошибка при выполнении удаленной каоманды
+function SendCommandStatusDelay(_userID:Integer):enumStatus;                          // нужно ли делать задержку при смене статуса оператора
+
 
 
 implementation
@@ -3030,12 +3034,12 @@ begin
    with HomeForm do begin
       if InShow then begin
        ST_StatusPanel.Visible:=True;
-       img_ShowOperatorStatus.Visible:=True;
+      // img_ShowOperatorStatus.Visible:=True;
        PanelStatus.Visible:=True;
       end
       else begin
        ST_StatusPanel.Visible:=False;
-       img_ShowOperatorStatus.Visible:=False;
+      // img_ShowOperatorStatus.Visible:=False;
        PanelStatus.Visible:=False;
       end;
    end;
@@ -3298,7 +3302,6 @@ begin
      Exit;
   end;
 
-
    try
      with ado do begin
         ado.Connection:=serverConnect;
@@ -3316,7 +3319,7 @@ begin
                  serverConnect.Close;
                  FreeAndNil(serverConnect);
                end;
-               _errorDescriptions:='Сервер не смог обработать команду из за внутренней ошибки'+#13#13+e.ClassName+': '+e.Message;
+               _errorDescriptions:='Внутренняя ошибка сервера'+#13#13+e.ClassName+': '+e.Message;
                Exit;
             end;
         end;
@@ -3333,104 +3336,195 @@ begin
 end;
 
 
+//// получение строки с ошибкой при выполнении удаленной команды
+//function remoteCommand_GetFailStr(_userId:Integer; var _errorDescriptions:string):string;
+//var
+// ado:TADOQuery;
+// serverConnect:TADOConnection;
+// error:string;
+//begin
+//  Result:='Таймаут запроса';
+//
+//  ado:=TADOQuery.Create(nil);
+//  serverConnect:=createServerConnectWithError(error);
+//  if not Assigned(serverConnect) then begin
+//     ShowFormErrorMessage(error, SharedMainLog, 'remoteCommand_GetFailStr');
+//     FreeAndNil(ado);
+//     Exit;
+//  end;
+//
+//  try
+//    with ado do begin
+//      ado.Connection:=serverConnect;
+//
+//      SQL.Clear;
+//      SQL.Add('select error_str from remote_commands where error = ''1'' and user_id = '+#39+IntToStr(_userId)+#39);
+//
+//      Active:=True;
+//
+//      if ((Fields[0].Value<>null) and (VarToStr(Fields[0].Value) <> '')) then Result:=VarToStr(Fields[0].Value);
+//
+//    end;
+//  finally
+//   FreeAndNil(ado);
+//    if Assigned(serverConnect) then begin
+//      serverConnect.Close;
+//      FreeAndNil(serverConnect);
+//    end;
+//  end;
+//end;
+
+
+// получена ли ошибка при выполнении удаленной каоманды
+//function remoteCommand_IsFail(command:enumLogging;_userID:Integer):boolean;
+//var
+// ado:TADOQuery;
+// serverConnect:TADOConnection;
+// error:string;
+//begin
+//  Result:=False;
+//
+//  ado:=TADOQuery.Create(nil);
+//  serverConnect:=createServerConnectWithError(error);
+//
+//  if not Assigned(serverConnect) then begin
+//     ShowFormErrorMessage(error, SharedMainLog, 'remoteCommand_IsExistFail');
+//     FreeAndNil(ado);
+//     Exit;
+//  end;
+//
+//
+//  try
+//    with ado do begin
+//      ado.Connection:=serverConnect;
+//
+//      SQL.Clear;
+//      SQL.Add('select error from remote_commands where command = '+#39+inttostr(EnumLoggingToInteger(command)) +#39+' and user_id = '+#39+IntToStr(_userID)+#39);
+//      Active:=True;
+//
+//      if Fields[0].Value<>null then begin
+//        if VarToStr(Fields[0].Value) = '1' then Result:=True
+//        else Result:=False;
+//      end;
+//
+//    end;
+//  finally
+//    FreeAndNil(ado);
+//    if Assigned(serverConnect) then begin
+//      serverConnect.Close;
+//      FreeAndNil(serverConnect);
+//    end;
+//  end;
+//end;
+
 // проверка есть ли уже такая удаленная команда на сервера
-function isExistRemoteCommand(command:enumLogging;_userID:Integer):Boolean;
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
- error:string;
-begin
-  Result:=False;
+//function isExistRemoteCommand(command:enumLogging;_userID:Integer):Boolean;
+//var
+// ado:TADOQuery;
+// serverConnect:TADOConnection;
+// error:string;
+//begin
+//  Result:=False;
+//
+//  ado:=TADOQuery.Create(nil);
+//  serverConnect:=createServerConnectWithError(error);
+//
+//  if not Assigned(serverConnect) then begin
+//     ShowFormErrorMessage(error, SharedMainLog, 'isExistRemoteCommand');
+//     FreeAndNil(ado);
+//     Exit;
+//  end;
+//
+//
+//  try
+//    with ado do begin
+//      ado.Connection:=serverConnect;
+//
+//      SQL.Clear;
+//      SQL.Add('select count(id) from remote_commands where command = '+#39+inttostr(EnumLoggingToInteger(command)) +#39+' and user_id = '+#39+IntToStr(_userID)+#39);
+//      Active:=True;
+//
+//      if Fields[0].Value<>null then begin
+//        if Fields[0].Value <> 0 then Result:=True
+//        else Result:=False;
+//      end
+//      else Result:= True;
+//    end;
+//  finally
+//    FreeAndNil(ado);
+//    if Assigned(serverConnect) then begin
+//      serverConnect.Close;
+//      FreeAndNil(serverConnect);
+//    end;
+//  end;
+//end;
 
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnectWithError(error);
 
-  if not Assigned(serverConnect) then begin
-     ShowFormErrorMessage(error, SharedMainLog, 'isExistRemoteCommand');
-     FreeAndNil(ado);
-     Exit;
-  end;
-
-
-  try
-    with ado do begin
-      ado.Connection:=serverConnect;
-
-      SQL.Clear;
-      SQL.Add('select count(id) from remote_commands where command = '+#39+inttostr(EnumLoggingToInteger(command)) +#39+' and user_id = '+#39+IntToStr(_userID)+#39);
-      Active:=True;
-
-      if Fields[0].Value<>null then begin
-        if Fields[0].Value <> 0 then Result:=True
-        else Result:=False;
-      end
-      else Result:= True;
-    end;
-  finally
-    FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
-  end;
-end;
-
-
-// удаленная команда (добавление в очередь)
-function remoteCommand_addQueue(_command:enumLogging;
-                                _userID:Integer;
-                                var _errorDescriptions:string):Boolean;
-var
- resultat:string;
- response:string;
- soLongWait:UInt16;
-begin
-   Result:=False;
-  _errorDescriptions:='';
-
-  soLongWait:=0;
-  showWait(show_open);
-
-  response:='insert into remote_commands (sip,command,ip,user_id,user_login_pc,pc) values ('+#39+getUserSIP(_userID) +#39+','
-                                                                                            +#39+IntToStr(EnumLoggingToInteger(_command))+#39+','
-                                                                                            +#39+SharedCurrentUserLogon.GetIP+#39+','
-                                                                                            +#39+IntToStr(SharedCurrentUserLogon.GetID)+#39+','
-                                                                                            +#39+SharedCurrentUserLogon.GetUserLoginPC+#39+','
-                                                                                            +#39+SharedCurrentUserLogon.GetPC+#39+')';
-  // выполняем запрос
-  if not remoteCommand_Responce(response,_errorDescriptions) then begin
-    showWait(show_close);
-    Exit;
-  end;
-
-  // ждем пока отработает на core_dashboard
-  while (isExistRemoteCommand(_command,_userID)) do begin
-   Sleep(1000);
-   Application.ProcessMessages;
-
-   if soLongWait>6 then begin
-
-    // пробуем удалить команду
-       response:='delete from remote_commands where sip ='+#39+getUserSIP(_userID)+#39+
-                                                         ' and command ='+#39+IntToStr(EnumLoggingToInteger(_command))+#39;
-
-    if not remoteCommand_Responce(response,_errorDescriptions) then begin
-      showWait(show_close);
-      Exit;
-    end;
-
-    showWait(show_close);
-    _errorDescriptions:='Сервер не смог обработать команду'+#13+'Причина: команда неизвестна';
-    Exit;
-
-   end else begin
-    Inc(soLongWait);
-   end;
-  end;
-
-  showWait(show_close);
-  Result:=True;
-end;
+// удаленная команда
+//function remoteCommand_addQueue(_command:enumLogging;
+//                                _userID:Integer;
+//                                var _errorDescriptions:string):Boolean;
+//var
+// resultat:string;
+// response:string;
+// soLongWait:UInt16;
+//begin
+//   Result:=False;
+//  _errorDescriptions:='';
+//
+//  soLongWait:=0;
+//  showWait(show_open);
+//
+//  // отложенная команда (когда)
+//
+//
+//  response:='insert into remote_commands (sip,command,ip,user_id,user_login_pc,pc) values ('+#39+getUserSIP(_userID) +#39+','
+//                                                                                            +#39+IntToStr(EnumLoggingToInteger(_command))+#39+','
+//                                                                                            +#39+SharedCurrentUserLogon.GetIP+#39+','
+//                                                                                            +#39+IntToStr(SharedCurrentUserLogon.GetID)+#39+','
+//                                                                                            +#39+SharedCurrentUserLogon.GetUserLoginPC+#39+','
+//                                                                                            +#39+SharedCurrentUserLogon.GetPC+#39+')';
+//  // выполняем запрос
+//  if not remoteCommand_Responce(response,_errorDescriptions) then begin
+//    showWait(show_close);
+//    Exit;
+//  end;
+//
+//  // ждем пока отработает на core_dashboard
+//  while (isExistRemoteCommand(_command,_userID)) do begin
+//   Sleep(100);
+//   Application.ProcessMessages;
+//
+//   // есть ли ошибка по удаленной команде
+//   if remoteCommand_IsFail(_command,_userID) then soLongWait:=100;
+//
+//   if soLongWait>50 then begin
+//
+//    // получим строку с ошибкой
+//    resultat:=remoteCommand_GetFailStr(SharedCurrentUserLogon.GetID, _errorDescriptions);
+//
+//
+//    // пробуем удалить команду
+//       response:='delete from remote_commands where sip ='+#39+getUserSIP(_userID)+#39+
+//                                                         ' and command ='+#39+IntToStr(EnumLoggingToInteger(_command))+#39;
+//
+//    if not remoteCommand_Responce(response,_errorDescriptions) then begin
+//      showWait(show_close);
+//      Exit;
+//    end;
+//
+//    showWait(show_close);
+//    _errorDescriptions:='Сервер не смог обработать команду'+#13#13+'Причина: '+resultat;
+//    Exit;
+//
+//   end else begin
+//    Inc(soLongWait);
+//   end;
+//  end;
+//
+//  showWait(show_close);
+//  Result:=True;
+//end;
 
 
 // в какой очереди сейчас находится оператор
@@ -5015,7 +5109,7 @@ begin
  end;
 end;
 
-
+// изменение цвета надписи
 procedure SetRandomFontColor(var p_label: TLabel);
 var
   RandomColor: TColor;
@@ -5119,7 +5213,6 @@ begin
     Exit;
   end;
 
-
   if AnsiPos('Возникла ошибка при запросе на сервер!',_errorMessage)<>0 then begin
     Result:=eNeedReconnectNO;
     Exit;
@@ -5136,6 +5229,11 @@ begin
   end;
 
   if AnsiPos('Превышено максимальное кол-во попыток входа',_errorMessage)<>0 then begin
+    Result:=eNeedReconnectNO;
+    Exit;
+  end;
+
+  if AnsiPos('Критическая ошибка! Недоступно ядро дашборда',_errorMessage)<>0 then begin
     Result:=eNeedReconnectNO;
     Exit;
   end;
@@ -5458,7 +5556,7 @@ begin
       if Fields[0].Value<>null then begin
        Result:=VarToStr(Fields[0].Value);
       end
-      else Result:='mayby_lisa';
+      else Result:='LISA';
     end;
   finally
    FreeAndNil(ado);
@@ -5526,5 +5624,16 @@ begin
  end;
 end;
 
+
+// нужно ли делать задержку при смене статуса оператора
+function SendCommandStatusDelay(_userID:Integer):enumStatus;
+var
+ sip:string;
+begin
+  // проверим разговариавет ли оператор
+  sip:=getUserSIP(_userID);
+
+  Result:=SharedActiveSipOperators.IsTalkOperator(sip);
+end;
 
 end.

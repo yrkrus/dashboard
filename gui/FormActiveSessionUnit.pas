@@ -472,7 +472,7 @@ begin
      end;
 
      lblPeriod[i].Caption:=GetPeriodLastOnline(m_active_session.GetLastOnline(i),lblPeriod[i])+ inQueue;
-     lblPeriod[i].Left:=1229;
+     lblPeriod[i].Left:=1224;
 
      if i=0 then lblPeriod[i].Top:=cTOPSTART
      else lblPeriod[i].Top:=cTOPSTART+(cSTEP * i);

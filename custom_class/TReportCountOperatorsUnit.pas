@@ -29,6 +29,25 @@ uses
  type
        TReportCountOperators = class(TAbstractReport)
 
+      private
+      m_nameReport              :string;     // название отчета
+      m_onlyCurrentDay          :Boolean;   // показ только текщего дня
+      m_queue                   :TArray<TQueueHistory>;   // список с данными истории
+      countQueue                :Integer;
+      m_listCountCallOperators  :TCountRingsOperators; // список с данными по звонкам по дням
+      m_countOperators          :Integer;
+      m_detailed                :Boolean; // подробный отчет
+
+      function GetOperatorsSIP(const p_list:TCheckListBox):TStringList;  // получение SIP операторов которые нужно в отчет впиндюрить
+      procedure GenerateExcelDetailed;  // формирование данных в excel(подробный)
+      procedure GenerateExcelBrief;     // формирование данных в excel(краткий)
+
+
+      function FindFIO(InSipOperator:Integer;InCurrentDate:TDate):string;  // поиск фио оператора
+
+      procedure CreateReportDetailed(const p_list:string);    // создание отчета (подробный)
+      procedure CreateReportBrief;                            // создание отчета (краткий)
+
       public
       constructor Create(InNameReports:string;                    // название отчета
                          InDateStart,InDateStop:TDateTimePicker;  // даты отчета
@@ -40,21 +59,8 @@ uses
 
       procedure CreateReportExcel(const p_list:TCheckListBox); // создаем отчет
 
-      private
-      m_nameReport              :string;     // название отчета
-      m_onlyCurrentDay          :Boolean;   // показ только текщего дня
-      m_queue                   :array of TQueueHistory;   // список с данными истории
-      countQueue                :Integer;
-      m_operatorsSipCountCall   :array of TCountRingsOperators; // список с данными по звонкам по дням
-      countOperators            :Integer;
-      m_detailed                :Boolean; // подробный отчет
+      property CountOperators:Integer read m_countOperators;
 
-      function GetOperatorsSIP(const p_list:TCheckListBox):TStringList;  // получение SIP операторов которые нужно в отчет впиндюрить
-      procedure GenerateExcelDetailed;  // формирование данных в excel(подробный)
-      function FindFIO(InSipOperator:Integer;InCurrentDate:TDate):string;  // поиск фио оператора
-
-      procedure CreateReportDetailed(const p_list:string);    // создание отчета (подробный)
-      procedure CreateReportCount(const p_list:string);       // создание отчета (только кол-во)
 
       end;
    // class TReportCountOperators END
@@ -79,7 +85,7 @@ begin
   m_detailed:=isDetailed;
 
   countQueue:=0;
-  countOperators:=0;
+  m_countOperators:=0;
 end;
 
 
@@ -89,10 +95,6 @@ var
 begin
   if Assigned(m_queue) then begin
     for i:=Low(m_queue) to High(m_queue) do FreeAndNil(m_queue[i]);
-  end;
-
-  if Assigned(m_operatorsSipCountCall) then begin
-   for i:=Low(m_operatorsSipCountCall) to High(m_operatorsSipCountCall) do FreeAndNil(m_operatorsSipCountCall[i]);
   end;
 
   inherited Destroy;
@@ -110,7 +112,9 @@ begin
   for i:=0 to p_list.Count-1 do begin
     if p_list.Checked[i] then begin
       sip:=p_list.Items[i];
-      System.Delete(sip,AnsiPos(DELIMITER,sip),Length(sip));
+
+      System.Delete(sip,1,AnsiPos('(',sip));
+      System.Delete(sip,AnsiPos(')',sip),Length(sip));
 
       Result.Add(sip);
     end;
@@ -124,6 +128,9 @@ var
  listSIP:TStringList;
  i:Integer;
  listOperators:string;
+ sipList:TStringList;
+ table:enumReportTableCountCallsOperator;
+ tableOnHold:enumReportTableCountCallsOperatorOnHold;
 begin
   // найдем список SIP для отчета
   listSIP:=GetOperatorsSIP(p_list);
@@ -132,28 +139,42 @@ begin
     Exit;
   end;
 
+  sipList:=TStringList.Create;
+
   listOperators:='';  // список sip
   for i:=0 to listSIP.Count-1 do begin
    if listOperators='' then listOperators:=#39+listSIP[i]+#39
    else listOperators:=listOperators+','+#39+listSIP[i]+#39;
+
+   // данные на случай если выбрали урезанный отчет
+   sipList.Add(listSIP[i]);
   end;
 
-   if m_detailed then begin
+   if m_detailed then begin  // подробный отчет
      CreateReportDetailed(listOperators);
    end
-   else begin
-      // создаем список sip
-      begin
-       SetLength(m_operatorsSipCountCall,listSIP.Count);
-       countOperators:=listSIP.Count;
-       for i:=0 to countOperators-1 do begin
-        m_operatorsSipCountCall[i]:=TCountRingsOperators.Create;
-        m_operatorsSipCountCall[i].m_sip:=StrToInt(listSIP[i]);
-       end;
-      end;
+   else begin                // урезанный отчет
+      // создаем сырой список класса
+     m_countOperators:=listSIP.Count;
 
-     CreateReportCount(listOperators);
+    // из какой таблицы брать данные
+    if m_onlyCurrentDay then begin
+     table:=eTableQueue;
+     tableOnHold:=eTableOnHold;
+    end
+    else begin
+     table:=eTableHistoryQueue;
+     tableOnHold:=eTableHistoryOnHold;
+    end;
+
+
+     m_listCountCallOperators:=TCountRingsOperators.Create(sipList, GetDateStart, GetDateStop, table, tableOnHold, listOperators);
+
+     // создаем отчет
+     CreateReportBrief;
    end;
+
+   if Assigned(sipList) then FreeAndNil(sipList);
 end;
 
 
@@ -283,108 +304,16 @@ begin
 end;
 
 // создание отчета (только кол-во)
-procedure TReportCountOperators.CreateReportCount(const p_list:string);
-var
- i,j:Integer;
- ado:TADOQuery;
- serverConnect:TADOConnection;
- table:string;
- countData:Integer;
- procentLoad:Integer;
+procedure TReportCountOperators.CreateReportBrief;
 begin
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
-  end;
-
-
-  try
-    // из какой таблицы брать данные
-    if m_onlyCurrentDay then table:='queue'
-    else table:='history_queue';
-
-    with ado do begin
-      ado.Connection:=serverConnect;
-      SQL.Clear;
-      SQL.Add('select count(id) from '+table+' where sip IN ('+p_list+')' );
-      if not m_onlyCurrentDay then SQL.Add(' and date_time >='+#39+GetDateToDateBD(GetDateStart)+' 00:00:00'+#39+' and date_time<='+#39+GetDateToDateBD(GetDateStop)+' 23:59:59'+#39+' order by date_time ASC');
-
-      Active:=True;
-      countData:=Fields[0].Value;
-      if countData=0 then begin
-        FreeAndNil(ado);
-        if Assigned(serverConnect) then begin
-          serverConnect.Close;
-          FreeAndNil(serverConnect);
-        end;
-
-        Exit;
-      end;
-
-      if countData<>0 then begin
-
-         for i:=0 to countOperators-1 do // смотрим по sip операторам
-         begin
-
-
-
-         end;
-
-
-
-
-            SQL.Clear;
-            SQL.Add('select id,number_queue,phone,waiting_time,date_time,sip,talk_time from '+table+' where sip IN ('+p_list+')' );
-            if not m_onlyCurrentDay then SQL.Add(' and date_time >='+#39+GetDateToDateBD(GetDateStart)+' 00:00:00'+#39+' and date_time<='+#39+GetDateToDateBD(GetDateStop)+' 23:59:59'+#39+' order by date_time ASC');
-
-            Active:=True;
-            for i:=0 to countData-1 do begin
-               if isESC then begin
-                 FreeAndNil(ado);
-                  if Assigned(serverConnect) then begin
-                    serverConnect.Close;
-                    FreeAndNil(serverConnect);
-                  end;
-
-                  Exit;
-               end;
-
-               procentLoad:=Trunc(i*100/countData);
-
-               SetProgressStatusText('Загрузка данных с сервера ['+IntToStr(procentLoad)+'%] ...');
-               SetProgressBar(procentLoad);
-
-
-               m_queue[i].id:=StrToInt(Fields[0].Value);
-               m_queue[i].number_queue:=StringToTQueue(Fields[1].Value);
-               m_queue[i].phone:=Fields[2].Value;
-              // m_queue[i].waiting_time:=Fields[3].Value;
-               m_queue[i].date_time:=StrToDateTime(Fields[4].Value);
-               m_queue[i].sip:=StrToInt(Fields[5].Value);
-               m_queue[i].talk_time:=Fields[6].Value;
-               m_queue[i].userFIO:=FindFIO(m_queue[i].sip,m_queue[i].date_time);
-
-               ado.Next;
-
-               // проверка вдруг отменили операцию
-               GetAbout;
-            end;
-      end;
-
-    end;
-  finally
-    FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
+  if not m_listCountCallOperators.FillingData then begin
+    Exit;
   end;
 
   // создем excel
-  GenerateExcelDetailed;
+  GenerateExcelBrief;
 end;
+
 
 
 // формирование данных в excel(подробный)
@@ -471,6 +400,140 @@ begin
 
      // проверка вдруг отменили операцию
      GetAbout;
+  end;
+
+
+  // наведем красоту
+  begin
+     SetProgressStatusText('Наводим красоту ...');
+
+    // заголовок
+    m_excel.range['A1:G1'].AutoFilter;   // фильтр для заголовка
+
+    // Замораживаем заголовок
+    m_sheet.Range['A2'].Select;
+    m_excel.ActiveWindow.FreezePanes:=true;
+
+    m_excel.range['A1:G1'].select;
+    //m_excel.selection.FreezePanes:=true;
+    m_excel.selection.font.bold:=True;
+    m_excel.selection.font.size:=12;
+    m_excel.selection.font.name:='Times New Roman';
+    // перенос по словам
+    m_excel.selection.wraptext:=true;
+    // выравниевание по центру по горизонтали
+    m_excel.selection.verticalalignment:=2;
+    m_excel.selection.horizontalalignment:=3;
+
+
+
+    // выделение диапозона
+    m_excel.range['A2:G'+inttostr(countQueue+1)].select;
+    // перенос по словам
+    m_excel.selection.wraptext:=true;
+    // выравниевание по центру по горизонтали
+    m_excel.selection.verticalalignment:=2;
+    m_excel.selection.horizontalalignment:=3;
+
+    //таблица границы ячеек
+    m_excel.selection.borders.linestyle:=1;
+    // размер текста
+    m_excel.selection.font.size:=12;
+    // font name
+    m_excel.selection.font.name:='Times New Roman';
+
+
+    // заглушочка чтобы вернуться в самое начало
+    m_excel.range['A1'].select;
+  end;
+
+
+  isExistDataExcel:=True;
+end;
+
+// формирование данных в excel(краткий)
+procedure TReportCountOperators.GenerateExcelBrief;
+var
+ ColIndex:Integer;
+ i,j:Integer;
+ procentLoad:Double;
+ procentLoadSTR:string;
+// time_queue5000,time_queue5050:Integer;
+ curr_time:Integer;
+begin
+  m_excel.visible:=True;
+
+  SetProgressStatusText('Создание отчета ...');
+  SetProgressBar(0);
+
+
+   // названия колонок
+  m_sheet.cells[1,1]:='SIP';
+  m_sheet.cells[1,2]:='Оператор';
+  m_sheet.cells[1,3]:='Дата';
+  m_sheet.cells[1,4]:='Звонков';
+  m_sheet.cells[1,5]:='OnHold(сек)';
+
+
+  // ширина колонок
+  m_sheet.columns[1].columnwidth:=9;
+  m_sheet.columns[2].columnwidth:=25.29;
+  m_sheet.columns[3].columnwidth:=20.86;
+  m_sheet.columns[4].columnwidth:=11;
+  m_sheet.columns[5].columnwidth:=11;
+
+
+  // общий формат
+//  m_excel.range['B2:B'+inttostr(countQueue+1)].select;
+//  m_excel.selection.NumberFormat:='@';
+//
+//  m_excel.range['E2:E'+inttostr(countQueue+1)].select;
+//  m_excel.selection.NumberFormat:='@';
+//
+//  m_excel.range['H2:H'+inttostr(countQueue+1)].select;
+//  m_excel.selection.NumberFormat:='@';
+
+  ColIndex:=2;
+
+
+  for i:=0 to m_listCountCallOperators.Count-1 do begin
+   // for j:=0 to  := Low to High do
+
+
+
+      if isESC then  Exit;
+
+     // прогресс бар
+     procentLoad:=i*100/m_listCountCallOperators.Count-1;
+     procentLoadSTR:=FormatFloat('0.0',procentLoad);
+     procentLoadSTR:=StringReplace(procentLoadSTR,',','.',[rfReplaceAll]);
+
+     SetProgressStatusText('Создание отчета ['+procentLoadSTR+'%] ...');
+     SetProgressBar(procentLoad);
+
+      m_sheet.cells[ColIndex,1]:=IntToStr(m_queue[i].id);               // ID
+      m_sheet.cells[ColIndex,2]:=DateTimeToStr(m_queue[i].date_time);   // Дата\Время
+      m_sheet.cells[ColIndex,3]:=string(TQueueToString(m_queue[i].number_queue));     // Очередь
+
+      {curr_time:=0;
+      case m_queue[i].number_queue of     // время одидания
+       queue_5000:curr_time:=GetTimeAnsweredToSeconds(m_queue[i].waiting_time) - GetTimeAnsweredToSeconds(m_queue[i].talk_time) - time_queue5000;
+       queue_5050:curr_time:=GetTimeAnsweredToSeconds(m_queue[i].waiting_time) - GetTimeAnsweredToSeconds(m_queue[i].talk_time) - time_queue5050;
+      end;
+      if curr_time<=0 then curr_time:=0;
+      m_sheet.cells[ColIndex,4]:=string(GetTimeAnsweredSecondsToString(curr_time)); }
+
+
+      m_sheet.cells[ColIndex,4]:=m_queue[i].phone;                      // Телефон
+      m_sheet.cells[ColIndex,5]:=IntToStr(m_queue[i].sip);              // SIP
+      m_sheet.cells[ColIndex,6]:=m_queue[i].userFIO;                    // Оператор
+      m_sheet.cells[ColIndex,7]:=m_queue[i].talk_time;                  // Время разговора
+
+
+      Inc(ColIndex);
+
+       // проверка вдруг отменили операцию
+       GetAbout;
   end;
 
 

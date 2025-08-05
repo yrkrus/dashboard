@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.ComCtrls, Vcl.StdCtrls,
   Data.DB, Data.Win.ADODB, IdException, System.ImageList, Vcl.ImgList,
-  Vcl.Imaging.jpeg;
+  Vcl.Imaging.jpeg, Vcl.Menus;
 
   type
     enumFilterTime = ( time_all,
@@ -45,6 +45,8 @@ type
     lblPlayCall: TLabel;
     Label4: TLabel;
     lblProgramExit: TLabel;
+    popmenu_InfoCall: TPopupMenu;
+    menu_FIO: TMenuItem;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure list_HistoryCustomDrawItem(Sender: TCustomListView;
@@ -52,10 +54,15 @@ type
     procedure combox_TimeFilterChange(Sender: TObject);
     procedure lblDownloadCallClick(Sender: TObject);
     procedure lblPlayCallClick(Sender: TObject);
+    procedure list_HistoryMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure menu_FIOClick(Sender: TObject);
   private
     { Private declarations }
   m_id:Integer;  // id пользователя
   m_sip:Integer; // sip пользователя
+
+  SelectedItemPopMenu: TListItem; // Переменная для хранения выбранного элемента(для popmenu_InfoCalls)
 
   // кол-во времени разговоров
   m_count3,
@@ -95,7 +102,7 @@ var
 implementation
 
 uses
-  GlobalVariables, GlobalVariablesLinkDLL, FunctionUnit, TCustomTypeUnit;
+  GlobalVariables, GlobalVariablesLinkDLL, FunctionUnit, TCustomTypeUnit, FormPropushennieShowPeopleUnit, TAutoPodborPeopleUnit;
 
 {$R *.dfm}
 
@@ -162,12 +169,13 @@ end;
 
 procedure TFormHistoryCallOperator.ClearListView(var p_ListView:TListView);
 const
- cWidth_default        :Word = 660;
- cWidth_date           :Word = 21;
- cWidth_trunk          :Word = 18;
- cWidth_phone          :Word = 19;
- cWidth_queue          :Word = 19;
- cWidth_time           :Word = 20;
+ cWidth_default        :Word = 680;
+ cWidth_date           :Word = 20;
+ cWidth_trunk          :Word = 15;
+ cWidth_phone          :Word = 20;
+ cWidth_queue          :Word = 14;
+ cWidth_time           :Word = 16;
+ cWidth_timeOnHold     :Word = 14;
 begin
  with p_ListView do begin
 
@@ -183,7 +191,7 @@ begin
 
     with Columns.Add do
     begin
-      Caption:=' Дата ';
+      Caption:=' Дата\Время звонка ';
       Width:=Round((cWidth_default*cWidth_date)/100);
       Alignment:=taCenter;
     end;
@@ -213,6 +221,12 @@ begin
     begin
       Caption:=' Время разговора';
       Width:=Round((cWidth_default*cWidth_time)/100);
+      Alignment:=taCenter;
+    end;
+    with Columns.Add do
+    begin
+      Caption:=' OnHold';
+      Width:=Round((cWidth_default*cWidth_timeOnHold)/100);
       Alignment:=taCenter;
     end;
  end;
@@ -350,7 +364,7 @@ begin
     begin
       Connection := serverConnect;
       SQL.Clear;
-      SQL.Add('select count(id) from queue where sip = ' + QuotedStr(IntToStr(m_sip)) + ' and hash is not NULL');
+      SQL.Add('select count(id) from queue where date_time > '+#39+GetNowDateTime+#39+' and sip = ' + QuotedStr(IntToStr(m_sip)) + ' and hash is not NULL');
       Active := True;
       countCalls := Fields[0].Value;
 
@@ -366,7 +380,7 @@ begin
       st_NoCalls.Visible := False;
 
       SQL.Clear;
-      SQL.Add('select id, date_time, phone, number_queue, talk_time from queue where sip = ' + QuotedStr(IntToStr(m_sip)) + ' and hash is not NULL order by date_time DESC');
+      SQL.Add('select id, date_time, phone, number_queue, talk_time from queue where date_time > '+#39+GetNowDateTime+#39+' and sip = ' + QuotedStr(IntToStr(m_sip)) + ' and hash is not NULL order by date_time DESC');
       Active := True;
 
       for i := 0 to countCalls - 1 do
@@ -451,6 +465,29 @@ begin
 end;
 
 
+procedure TFormHistoryCallOperator.menu_FIOClick(Sender: TObject);
+var
+ people:TAutoPodborPeople;
+ phonePodbor:string;
+begin
+  // Проверяем, был ли выбран элемент
+  if not Assigned(SelectedItemPopMenu) then begin
+    MessageBox(Handle,PChar('Не выбран номер'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    Exit;
+  end;
+
+  phonePodbor:= SelectedItemPopMenu.SubItems[2];
+  phonePodbor:=StringReplace(phonePodbor,'+7','8',[rfReplaceAll]);
+
+  showWait(show_open);
+  people:=TAutoPodborPeople.Create(phonePodbor);
+
+  FormPropushennieShowPeople.SetListPacients(people);
+  showWait(show_close);
+
+  FormPropushennieShowPeople.ShowModal;
+end;
+
 procedure TFormHistoryCallOperator.Show(_timeFilter:enumFilterTime);
 const
  cReducedTime:Boolean = True;
@@ -534,6 +571,17 @@ begin
     begin
      SharedMainLog.Save('THomeForm.TFormHistoryCallOperator. '+e.ClassName+': '+e.Message, IS_ERROR);
     end;
+  end;
+end;
+
+procedure TFormHistoryCallOperator.list_HistoryMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  // Проверяем, был ли клик правой кнопкой мыши
+  if Button = mbRight then
+  begin
+    // Получаем элемент, на который кликнули
+    SelectedItemPopMenu := list_History.GetItemAt(X, Y);
   end;
 end;
 

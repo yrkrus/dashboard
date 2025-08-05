@@ -177,7 +177,7 @@ begin
         Active:=True;
 
          for i:=0 to countUsers-1 do begin
-           listOperators.Items.Add(getUserSIP(Fields[2].Value)+DELIMITER+ Fields[0].Value+' '+Fields[1].Value);
+           listOperators.Items.Add(Fields[0].Value+' '+Fields[1].Value + '('+getUserSIP(Fields[2].Value)+')');
            ado.Next;
          end;
       end;

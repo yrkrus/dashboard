@@ -127,7 +127,6 @@ type
     img_StatisticsQueue_Numbers: TImage;
     Label25: TLabel;
     STForecastCount: TStaticText;
-    img_SL_History_Graph: TImage;
     menu_SMS: TMenuItem;
     ST_HelpStatusInfo: TStaticText;
     img_ShowOperatorStatus: TImage;
@@ -256,7 +255,8 @@ type
    procedure WndProc(var Msg: TMessage); override;   // изменение размер шрифта по сочетанию  Ctrl + колесико
 
    procedure ViewLabel(IsBold,IsUnderline:Boolean; var p_label:TLabel); // визуальная подсветка при наведении указателя мыши
-   function SendCommand(_command:enumLogging;_userID:Integer):Boolean;     // отправка удаленной команды
+   function SendCommand(_command:enumLogging;  _delay:enumStatus; var _errorDescriptions:string):boolean; overload;    // отправка удаленной команды
+   procedure SendCommand(_command:enumLogging; _delay:enumStatus);  overload;
    procedure AddQueuePopMenu(_command:enumLogging;_userSip:Integer); // добавление в очередь из popmenu
 
 
@@ -331,7 +331,7 @@ uses
     FormActiveSessionUnit, FormRePasswordUnit, Thread_AnsweredQueueUnit, ReportsUnit, Thread_ACTIVESIP_updatetalkUnit,
     FormDEBUGUnit, FormErrorUnit,GlobalVariables, FormUsersUnit, FormServersIKUnit, FormSettingsGlobalUnit,
     FormTrunkUnit, TFTPUnit, TXmlUnit, FormStatisticsChartUnit, TForecastCallsUnit, FormStatusInfoUnit,
-    FormHistoryCallOperatorUnit, FormChatNewMessageUnit, TDebugStructUnit, FormHistoryStatusOperatorUnit, GlobalVariablesLinkDLL;
+    FormHistoryCallOperatorUnit, FormChatNewMessageUnit, TDebugStructUnit, FormHistoryStatusOperatorUnit, GlobalVariablesLinkDLL, TStatusUnit;
 
 
 {$R *.dfm}
@@ -344,23 +344,44 @@ begin
 end;
 
 
+procedure THomeForm.SendCommand(_command:enumLogging; _delay:enumStatus);
+var
+ error:string;
+begin
+   if not SendCommand(_command,_delay, error) then begin
+     MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+   end;
+end;
+
 
 procedure THomeForm.btnStatus_add_queue5000Click(Sender: TObject);
+var
+ delay:enumStatus;
 begin
+  delay:=eNO;
+
  // добавление в очередь 5000
- SendCommand(eLog_add_queue_5000,SharedCurrentUserLogon.GetID);
+ SendCommand(eLog_add_queue_5000, delay);
 end;
 
 procedure THomeForm.btnStatus_add_queue5000_5050Click(Sender: TObject);
+var
+ delay:enumStatus;
 begin
+  delay:=eNO;
+
  // добавление в очередь 5000 и 5050
-  SendCommand(eLog_add_queue_5000_5050,SharedCurrentUserLogon.GetID);
+  SendCommand(eLog_add_queue_5000_5050, delay);
 end;
 
 procedure THomeForm.btnStatus_add_queue5050Click(Sender: TObject);
+var
+ delay:enumStatus;
 begin
+ delay:=eNO;
+
  // добавление в очередь 5050
- SendCommand(eLog_add_queue_5050,SharedCurrentUserLogon.GetID);
+ SendCommand(eLog_add_queue_5050, delay);
 end;
 
 procedure THomeForm.btnStatus_availableClick(Sender: TObject);
@@ -411,76 +432,119 @@ begin
 end;
 
 procedure THomeForm.btnStatus_breakClick(Sender: TObject);
+var
+ delay:enumStatus;
 begin
- // перерыв
-  SendCommand(eLog_break,SharedCurrentUserLogon.GetID);
+  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.GetID);
+
+  // перерыв
+  SendCommand(eLog_break,delay);
 end;
 
 procedure THomeForm.btnStatus_callbackClick(Sender: TObject);
+var
+ error:string;
+ delay:Boolean;
 begin
   // callback
- if SendCommand(eLog_callback,SharedCurrentUserLogon.GetID) then begin
-   with FormPropushennie do begin
-     SetQueue(queue_5000_5050,eMissed_no_return);
-     SetCallbak;
-
-     ShowModal;
-   end;
- end;
+// if SendCommand(eLog_callback,error) then begin
+//   with FormPropushennie do begin
+//     SetQueue(queue_5000,eMissed_no_return);
+//     SetCallbak;
+//
+//     ShowModal;
+//   end;
+// end;
 end;
 
 procedure THomeForm.btnStatus_del_queue_allClick(Sender: TObject);
+var
+ delay:enumStatus;
 begin
+  delay:=eNO;
+
   // выход из всех очередей из 5000 и 5050
-  SendCommand(eLog_del_queue_5000_5050,SharedCurrentUserLogon.GetID);
+  SendCommand(eLog_del_queue_5000_5050, delay);
 end;
 
 procedure THomeForm.btnStatus_dinnerClick(Sender: TObject);
+var
+ delay:enumStatus;
 begin
+  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.GetID);
+
    // обед
-  SendCommand(eLog_dinner,SharedCurrentUserLogon.GetID);
+  SendCommand(eLog_dinner,delay);
 end;
 
 procedure THomeForm.btnStatus_exodusClick(Sender: TObject);
+var
+ delay:enumStatus;
 begin
+  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.GetID);
+
  // исход
-  SendCommand(eLog_exodus,SharedCurrentUserLogon.GetID);
+  SendCommand(eLog_exodus, delay);
 end;
 
 procedure THomeForm.btnStatus_homeClick(Sender: TObject);
+var
+ delay:enumStatus;
 begin
+  delay:=eNO;
+
  // домой
-  SendCommand(eLog_home,SharedCurrentUserLogon.GetID);
+  SendCommand(eLog_home,delay);
 end;
 
 procedure THomeForm.btnStatus_ITClick(Sender: TObject);
+var
+ delay:enumStatus;
 begin
+  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.GetID);
+
   // ИТ
-   SendCommand(eLog_IT,SharedCurrentUserLogon.GetID);
+   SendCommand(eLog_IT,delay);
 end;
 
 procedure THomeForm.btnStatus_postvyzovClick(Sender: TObject);
+var
+ delay:enumStatus;
 begin
+  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.GetID);
+
  // поствызов
-  SendCommand(eLog_postvyzov,SharedCurrentUserLogon.GetID);
+  SendCommand(eLog_postvyzov, delay);
 end;
 
 procedure THomeForm.btnStatus_reserveClick(Sender: TObject);
+var
+ delay:enumStatus;
 begin
+  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.GetID);
+
  // переносы
-  SendCommand(eLog_reserve,SharedCurrentUserLogon.GetID);
+  SendCommand(eLog_reserve,delay);
 end;
 
 procedure THomeForm.btnStatus_studiesClick(Sender: TObject);
+var
+ delay:enumStatus;
 begin
+  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.GetID);
+
  // учеба
-   SendCommand(eLog_studies,SharedCurrentUserLogon.GetID);
+   SendCommand(eLog_studies,delay);
 end;
 
 procedure THomeForm.btnStatus_transferClick(Sender: TObject);
+var
+ delay:enumStatus;
 begin
+  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.GetID);
+
 // переносы
- SendCommand(eLog_transfer,SharedCurrentUserLogon.GetID);
+ SendCommand(eLog_transfer,delay);
 end;
 
 procedure THomeForm.Button1Click(Sender: TObject);
@@ -493,6 +557,7 @@ var
   test: TDebugStruct;
 
 begin
+
 //  // Получаем размеры рабочего стола с учетом панели задач
 //  SystemParametersInfo(SPI_GETWORKAREA, 0, @ScreenRect, 0);
 //
@@ -672,6 +737,15 @@ begin
     error:='Не установлен MySQL Connector';
     ShowFormErrorMessage(error,SharedMainLog,'THomeForm.FormShow');
   end;
+
+   // доступно ли ядро (в дебаг не проверяем)
+   if not DEBUG then begin
+     if not GetAliveCoreDashboard then begin
+      error:='Критическая ошибка! Недоступно ядро дашборда'+#13#13+'Свяжитесь с отделом ИТ';
+      ShowFormErrorMessage(error,SharedMainLog,'THomeForm.FormShow');
+     end;
+   end;
+
 
   // отображение текущей версии  ctrl+shift+G (GUID) - от этого ID зависит актуальность еще
   if DEBUG then Caption:='    ===== DEBUG =====    ' + Caption+' '+GetVersion(GUID_VERSION,eGUI) + ' | '+'('+GUID_VERSION+')'
@@ -892,6 +966,9 @@ var
  id_sip:Integer;
  user_id:Integer;
  resultat:Word;
+ status: TStatus;
+ error:string;
+ delay:enumStatus;
 begin
   // Проверяем, был ли выбран элемент
   if not Assigned(SelectedItemPopMenu) then begin
@@ -916,7 +993,13 @@ begin
   end;
 
   // выход из всех очередей из 5000 и 5050
-  SendCommand(eLog_home,user_id);
+  status:=TStatus.Create(user_id,SharedCurrentUserLogon.GetUserList, True);
+  delay:=eNO;
+
+  if not status.SendCommand(eLog_home,delay,error) then begin
+    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
+    Exit;
+  end;
 
   // очистка статуса
   UpdateOperatorStatus(eUnknown,user_id);
@@ -1102,7 +1185,8 @@ begin
 
   with FormPropushennie do begin
     // берем по всем 5000
-   Show;
+   SetManualShow(true);
+   ShowModal;
   end;
 end;
 
@@ -1130,7 +1214,8 @@ begin
 
   with FormPropushennie do begin
     // берем по всем 5050
-   Show;
+   SetManualShow(true);
+   ShowModal;
   end;
 end;
 
@@ -1265,8 +1350,9 @@ begin
   end;
 
   with FormPropushennie do begin
-    // берем по всем 5000+5050
-   Show;
+    // берем по 5000
+   SetManualShow(true);
+   ShowModal;
   end;
 end;
 
@@ -1359,23 +1445,9 @@ begin
 end;
 
  // отправка удаленной команды
-function THomeForm.SendCommand(_command:enumLogging;_userID:Integer):Boolean;
-var
- error:string;
+function THomeForm.SendCommand(_command:enumLogging; _delay:enumStatus; var _errorDescriptions:string):boolean;
 begin
- Result:=False;
-
- if isExistRemoteCommand(_command,_userID) then begin
-   MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
-   Exit;
- end;
-
- if not remoteCommand_addQueue(_command,_userID, error) then begin
-   MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-  Exit;
- end;
-
- Result:=True;
+  Result:=SharedStatus.SendCommand(_command,_delay,_errorDescriptions);
 end;
 
 
@@ -1383,14 +1455,21 @@ end;
 procedure THomeForm.AddQueuePopMenu(_command:enumLogging;_userSip:Integer);
 var
  user_id:Integer;
+ status:TStatus;
+ error:string;
+ delay:enumStatus;
 begin
   // найдем id
   user_id:=getUserID(_userSip);
 
- if not SendCommand(_command,user_id) then begin
-  // todo в SendCommand messagebox с ошибками есть
-  Exit;
- end;
+  status:=TStatus.Create(user_id,SharedCurrentUserLogon.GetUserList, True);
+  delay:=eNO;
+
+
+  if not status.SendCommand(_command, delay, error) then begin
+    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
+    Exit;
+  end;
 
   // очистка статуса
   UpdateOperatorStatus(eAvailable,user_id);

@@ -15,7 +15,7 @@ uses
   TActiveSIPUnit, TUserUnit, Data.Win.ADODB,
   Data.DB, SysUtils, Windows, TLogFileUnit,
   TIVRUnit, TCustomTypeUnit, TFontSizeUnit,
-  TQueueStatisticsUnit,
+  TQueueStatisticsUnit, TStatusUnit,
   TDebugCountResponseUnit, GlobalVariablesLinkDLL;
 
  type // глобальный перехват всех незарегистрированных исключений
@@ -38,7 +38,7 @@ var
   FOLDERUPDATE      :string;
 
   // Текущая версия GUID   ctrl+shift+G (GUID)
-  GUID_VERSION      :string = '66793BBB';
+  GUID_VERSION      :string = 'AB653090';
 
   // exe родителя
   DASHBOARD_EXE     :string = 'dashboard.exe';
@@ -82,6 +82,7 @@ var
   SharedQueueStatistics     :TQueueStatistics;     // список с текущей статистикой звонков за день
   SharedFontSize            :TFontSize;            // размеры шрифтов на дашборде
   SharedCountResponseThread :TDebugCountResponse;  // список для отслеживания времени работы в потоках
+  SharedStatus              :TStatus;              // смена текущего статуса оператора
  ///////////////////// CLASSES /////////////////////
 
 
@@ -94,6 +95,7 @@ var
 
 
 implementation
+
 
 procedure TGlobalExeption.HandleGlobalException(Sender: TObject; E: Exception);
 begin
@@ -116,6 +118,8 @@ initialization  // Инициализация
   SharedMainLog             := TLoggingFile.Create('main');   // лог работы main формы
   SharedFontSize            := TFontSize.Create;
   SharedCountResponseThread := TDebugCountResponse.Create(SharedMainLog);
+  SharedStatus              := TStatus.Create(True);
+
 
   if not DEBUG then begin
     GlobalExceptions        := TGlobalExeption.Create;
@@ -132,5 +136,6 @@ finalization
   SharedActiveSipOperators.Free;
   SharedCurrentUserLogon.Free;
   SharedCountResponseThread.Free;
+  SharedStatus.Free;
 
 end.

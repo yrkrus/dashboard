@@ -5705,19 +5705,6 @@ object FormAbout: TFormAbout
     Stretch = True
     Visible = False
   end
-  object Label1: TLabel
-    Left = 31
-    Top = 126
-    Width = 48
-    Height = 16
-    Caption = #1043#1076#1077' '#1103'!?'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
   object PageInfo: TPageControl
     Left = 121
     Top = 8
@@ -5735,10 +5722,6 @@ object FormAbout: TFormAbout
     StyleElements = []
     object sheetGUI: TTabSheet
       Caption = #1044#1072#1096#1073#1086#1088#1076' '#1076#1083#1103' '#1082#1086#1083#1083#1094#1077#1085#1090#1088#1072
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Panel1: TPanel
         Left = 0
         Top = 21
@@ -5790,10 +5773,6 @@ object FormAbout: TFormAbout
     object sheetCHAT: TTabSheet
       Caption = #1051#1086#1082#1072#1083#1100#1085#1099#1081' '#1095#1072#1090
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Panel2: TPanel
         Left = 0
         Top = 21
@@ -5845,10 +5824,6 @@ object FormAbout: TFormAbout
     object sheetREPORT: TTabSheet
       Caption = #1054#1090#1095#1077#1090#1099
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object STInfoVersionREPORT: TStaticText
         Left = 0
         Top = 0
@@ -5900,10 +5875,6 @@ object FormAbout: TFormAbout
     object sheetSMS: TTabSheet
       Caption = 'SMS'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Panel4: TPanel
         Left = 0
         Top = 21
@@ -5963,7 +5934,7 @@ object FormAbout: TFormAbout
     Left = 32
     Top = 72
     Bitmap = {
-      494C0101040008001C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010104000800200010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

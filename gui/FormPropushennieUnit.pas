@@ -46,6 +46,7 @@ type
       MousePos: TPoint; var Handled: Boolean);
     procedure combox_QueueFilterChange(Sender: TObject);
     procedure btnActionClick(Sender: TObject);
+    procedure lblPeopleClick(Sender: TObject);
 
 
   private
@@ -61,6 +62,7 @@ type
 
   m_dispatcher    :TThreadDispatcher;   // планировщик
 
+  m_manualShow    :Boolean; // флаг того что руками открыли окно, а не через диспетчер
 
   procedure Show;
   procedure CreateForm(_queue:enumQueueCurrent; _missed:enumMissed);  // создание формы
@@ -85,13 +87,16 @@ type
 
 
   protected
-  procedure CreateParams(var Params: TCreateParams); override;
-  procedure WMSysCommand(var Msg: TWMSysCommand); message WM_SYSCOMMAND;
+ // procedure CreateParams(var Params: TCreateParams); override;
+ // procedure WMSysCommand(var Msg: TWMSysCommand); message WM_SYSCOMMAND;
 
   public
     { Public declarations }
   procedure SetQueue(_queue:enumQueueCurrent; _missed:enumMissed);  // установка с какой очереди будем открывать окно
   procedure SetCallbak; // открытые окна из под оператора + статус callback
+
+  procedure SetManualShow(_value:Boolean); // ручное открытие окна
+
 
   end;
 
@@ -110,29 +115,29 @@ var
 implementation
 
 uses
-  FunctionUnit, GlobalVariablesLinkDLL, GlobalImageDestination, GlobalVariables, TXmlUnit;
+  FunctionUnit, GlobalVariablesLinkDLL, GlobalImageDestination, GlobalVariables, TXmlUnit, FormPropushennieShowPeopleUnit, TAutoPodborPeopleUnit;
 
 {$R *.dfm}
 
-procedure TFormPropushennie.CreateParams(var Params: TCreateParams);
-begin
-  inherited;
-  // 1) заново добавляем WS_EX_APPWINDOW
-  Params.ExStyle := Params.ExStyle or WS_EX_APPWINDOW;
-  // 2) снимаем Owner/Parent у окна, приклеив к десктопу
-  Params.WndParent := HWND_DESKTOP;
-end;
+//procedure TFormPropushennie.CreateParams(var Params: TCreateParams);
+//begin
+//  inherited;
+//  // 1) заново добавляем WS_EX_APPWINDOW
+//  Params.ExStyle := Params.ExStyle or WS_EX_APPWINDOW;
+//  // 2) снимаем Owner/Parent у окна, приклеив к десктопу
+//  Params.WndParent := HWND_DESKTOP;
+//end;
 
-procedure TFormPropushennie.WMSysCommand(var Msg: TWMSysCommand);
-begin
-  if (Msg.CmdType and $FFF0) = SC_MINIMIZE then
-  begin
-    ShowWindow(Self.Handle, SW_MINIMIZE);
-    // и НЕ вызываем inherited, чтобы не прокатилось на всё приложение
-  end
-  else
-  inherited;
-end;
+//procedure TFormPropushennie.WMSysCommand(var Msg: TWMSysCommand);
+//begin
+//  if (Msg.CmdType and $FFF0) = SC_MINIMIZE then
+//  begin
+//    ShowWindow(Self.Handle, SW_MINIMIZE);
+//    // и НЕ вызываем inherited, чтобы не прокатилось на всё приложение
+//  end
+//  else
+//  inherited;
+//end;
 
 
 // установка с какой очереди будем открывать окно
@@ -148,6 +153,11 @@ begin
   m_callbakRun:=True;
 end;
 
+// ручное открытие окна
+procedure TFormPropushennie.SetManualShow(_value:Boolean);
+begin
+  m_manualShow:=_value;
+end;
 
 // создание формы
 procedure TFormPropushennie.CreateForm(_queue:enumQueueCurrent; _missed:enumMissed);
@@ -171,6 +181,8 @@ var
  FindedComponent  :TLabel;
 
  _id:Integer;
+
+ countPeople:Integer;
 begin
  counts:=m_missedCalls.GetMissedCount(_queue,_missed);
 
@@ -253,7 +265,7 @@ begin
         lblFIO[_id]:=TLabel.Create(FormPropushennie.panel);
         lblFIO[_id].Name:='lbl_fio_'+nameControl;
         lblFIO[_id].Tag:=1;
-        lblFIO[_id].Caption:=m_missedCalls.GetCalls_FIO(_queue,_missed,i);
+        lblFIO[_id].Caption:=m_missedCalls.GetCalls_FIO(_queue,_missed,i,countPeople);
         lblFIO[_id].Left:=309;
 
         if _id=0 then lblFIO[_id].Top:=cTOPSTART
@@ -266,6 +278,16 @@ begin
         lblFIO[_id].AutoSize:=False;
         lblFIO[_id].Width:=278;
         lblFIO[_id].Height:=16;
+        lblFIO[_id].WordWrap:=True;
+
+        // больше чем 1 пациент на номере
+        if countPeople >= 2  then begin
+          lblFIO[_id].OnClick:=lblPeopleClick;
+          lblFIO[_id].Cursor:=crHandPoint;
+          lblFIO[_id].Hint:='Показать список пациентов';
+          lblFIO[_id].ShowHint:=True;
+        end;
+
         lblFIO[_id].Alignment:=taCenter;
         lblFIO[_id].Parent:=FormPropushennie.panel;
       end;
@@ -463,6 +485,57 @@ begin
   end;
 end;
 
+
+procedure TFormPropushennie.lblPeopleClick(Sender: TObject);
+var
+  lbl: TLabel;
+  id:Integer;
+  error:string;
+  people:TAutoPodborPeople;
+  phonePodbor:string;
+  FindedComponent:TLabel;
+begin
+  // Приводим Sender к типу TLabel
+  if Sender is TLabel then
+  begin
+    lbl:= TLabel(Sender);
+
+    // найдем id
+     try
+       id := StrToInt(Copy(lbl.Name, Length('lbl_fio_') + 1, Length(lbl.Name) - Length('lbl_fio_')));
+
+       // проверим был ли уже ранее такой компонент сделан
+        FindedComponent := TLabel(FormPropushennie.panel.FindComponent('lbl_phone_' + IntToStr(id)));
+        if not Assigned(FindedComponent) then
+        begin
+         MessageBox(Handle,PChar('Возникла ошибка при парсинге id номера'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+         Exit;
+        end;
+
+       phonePodbor:=FindedComponent.Caption;
+       phonePodbor:=StringReplace(phonePodbor,'+7','8',[rfReplaceAll]);
+
+
+     except
+      on E:EIdException do begin
+       MessageBox(Handle,PChar('Возникла ошибка при парсинге id номера'+#13#13+e.Message),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+       Exit;
+      end;
+     end;
+
+     showWait(show_open);
+     people:=TAutoPodborPeople.Create(phonePodbor);
+
+     FormPropushennieShowPeople.SetListPacients(people);
+     showWait(show_close);
+
+     FormPropushennieShowPeople.ShowModal;
+  end;
+end;
+
+
+
+
 procedure TFormPropushennie.Clear;
 begin
   m_queueStart:=queue_null;
@@ -471,6 +544,8 @@ begin
   m_callbakRun:=False;
   m_missedCount:=0;
   isOneUpdateData:=False;
+
+  m_manualShow:=False;
 
   // остановливаем планировщик
   m_dispatcher.StopThread;
@@ -725,6 +800,11 @@ end;
 
 procedure TFormPropushennie.Show;
 begin
+ if m_manualShow then begin
+   showWait(show_open);
+ end;
+
+
   if not Assigned(m_missedCalls) then begin
     m_missedCalls:=TQueueStatistics.Create;
     m_missedCalls.Update;
@@ -740,10 +820,22 @@ begin
      Screen.Cursor:=crHourGlass;
      UpdateData;
      Screen.Cursor:=crDefault;
+
+     if m_manualShow then begin
+       showWait(show_close);
+       m_manualShow:=False;
+     end;
+
      Exit;
   end;
 
   UpdateData;
+
+  if m_manualShow then begin
+    showWait(show_close);
+    m_manualShow:=False;
+  end;
+
 end;
 
 procedure TFormPropushennie.FormClose(Sender: TObject;

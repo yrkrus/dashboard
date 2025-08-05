@@ -68,7 +68,7 @@ var
 begin
  list_pacients.Clear;
  for i:=0 to listPacients.Count-1 do begin
-   list_pacients.Items.Add(listPacients.LastName(i)+' '+listPacients.FirstName(i)+' '+listPacients.MidName(i)+' '+listPacients.BirthDay(i));
+   list_pacients.Items.Add(listPacients.GetFIO(i));
  end;
 
 end;

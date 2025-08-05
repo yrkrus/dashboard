@@ -518,9 +518,9 @@ begin
          // сохраняем в базу
          SaveToBase(ServerOtvet, sendMessage, _reasonSMS);
 
-       except on E: EIdHTTPProtocolException do
+       except on E:Exception do  // TODO тут потом предлагать сделать отложенную отпарвку типа есть пока проблема, как только она будет устранена смс отправиться автоматически
           begin
-           _errorDescription:=e.Message+': '+e.ErrorMessage;
+           _errorDescription:=#13+e.ClassName+': '+e.Message;
            if ssl<>nil then FreeAndNil(ssl);
            if http<>nil then FreeAndNil(http);
            Exit;

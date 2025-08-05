@@ -26,6 +26,9 @@ var
 
 implementation
 
+uses
+  FunctionUnit;
+
 {$R *.dfm}
 
 procedure TFormWait.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -36,6 +39,8 @@ end;
 procedure TFormWait.FormShow(Sender: TObject);
 begin
   if not indicator.Animate then indicator.Animate:=True;
+
+  SetRandomFontColor(Label1);
   Application.ProcessMessages;
 end;
 

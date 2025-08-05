@@ -147,9 +147,9 @@ object FormActiveSession: TFormActiveSession
       ParentFont = False
     end
     object Label11: TLabel
-      Left = 1228
+      Left = 1223
       Top = 2
-      Width = 146
+      Width = 176
       Height = 16
       Alignment = taCenter
       AutoSize = False
@@ -328,9 +328,9 @@ object FormActiveSession: TFormActiveSession
           Visible = False
         end
         object Label18: TLabel
-          Left = 1229
+          Left = 1224
           Top = 5
-          Width = 146
+          Width = 176
           Height = 16
           Alignment = taCenter
           AutoSize = False

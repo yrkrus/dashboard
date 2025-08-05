@@ -75,15 +75,15 @@ procedure TFormOperatorStatus.SendCommand(_command:enumLogging;_userID:Integer);
 var
  error:string;
 begin
- if isExistRemoteCommand(_command,_userID) then begin
-   MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
-   Exit;
- end;
-
- if not remoteCommand_addQueue(_command,_userID, error) then begin
-   MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-  Exit;
- end;
+// if isExistRemoteCommand(_command,_userID) then begin
+//   MessageBox(Handle,PChar('Предыдущая такая же команда еще не обработана'),PChar('Команда в процессе обработки'),MB_OK+MB_ICONINFORMATION);
+//   Exit;
+// end;
+//
+// if not remoteCommand_addQueue(_command,_userID, error) then begin
+//   MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+//  Exit;
+// end;
 end;
 
 

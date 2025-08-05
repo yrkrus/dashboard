@@ -40,6 +40,9 @@ uses  System.Classes,
       pc                                    : string;   // имя пк
       user_login_pc                         : string;   // login входа на pc
 
+
+      procedure Clone(_userList:TUserList);
+
       constructor Create;                     overload;
       end;
  // class TUserList END
@@ -85,7 +88,7 @@ uses  System.Classes,
 
       function GetAccess(Menu:enumAccessList):enumAccessStatus; // получение данных о том какие параметры могут быть открыты на доступе у пользователя
 
-
+      function GetUserList:TUserList; // вывод текущих данных о пользователе
 
       function GetRole                        :enumRole;
       constructor Create;                     overload;
@@ -108,6 +111,24 @@ uses
  begin
    inherited;
  end;
+
+
+ procedure TUserList.Clone(_userList:TUserList);
+begin
+  if _userList = nil then  Exit;
+  Self.name             := _userList.name;
+  Self.familiya         := _userList.familiya;
+  Self.id               := _userList.id;
+  Self.group_role       := _userList.group_role;
+  Self.login            := _userList.login;
+  Self.re_password      := _userList.re_password;
+  Self.acive_session_id := _userList.acive_session_id;
+  Self.ip               := _userList.ip;
+  Self.pc               := _userList.pc;
+  Self.user_login_pc    := _userList.user_login_pc;
+end;
+
+
 // class TUserList END
 
 
@@ -401,6 +422,11 @@ function TUser.GetIsAccessService:Boolean;
       if Access.menu_missed_calls then Result:=access_ENABLED;
     end;
    end;
+ end;
+
+ function TUser.GetUserList:TUserList;
+ begin
+   Result:=Self.Params;
  end;
 
 // class TUser END

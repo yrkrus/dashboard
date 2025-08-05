@@ -303,7 +303,7 @@ begin
   if user_pwd = pwd then successEnter:=True
   else successEnter:=False;
 
-  // глобальные паарметры пользака
+  // глобальные параретры пользака
    begin
      currentUser:=TUserList.Create;
      with currentUser do begin
@@ -320,8 +320,16 @@ begin
 
      SharedCurrentUserLogon.UpdateParams(currentUser);
      USER_STARTED_SMS_ID:=SharedCurrentUserLogon.GetID;
+
+
+     //////////////////////////////////////////////////
+     // —мена статуса (дл€ операторов)
+     SharedStatus.SetUserID(SharedCurrentUserLogon.GetID);
+     SharedStatus.SetUser(currentUser);
+
      currentUser.Free;
    end;
+
 
 
   if successEnter then begin

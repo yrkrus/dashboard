@@ -14,11 +14,16 @@ type
     st_NoCalls: TStaticText;
     chkbox_MyCalls: TCheckBox;
     Label2: TLabel;
+    editFindMessage: TEdit;
+    st_FindPhone: TStaticText;
     procedure FormShow(Sender: TObject);
     procedure chkbox_MyCallsClick(Sender: TObject);
     procedure list_HistoryCustomDrawItem(Sender: TCustomListView;
       Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
     procedure list_HistoryDblClick(Sender: TObject);
+    procedure editFindMessageClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure editFindMessageKeyPress(Sender: TObject; var Key: Char);
   private
     { Private declarations }
   procedure LoadData(_idUser:Integer);
@@ -191,7 +196,7 @@ begin
 
     with Columns.Add do
     begin
-      Caption:=' Дата ';
+      Caption:=' Дата\Время звонка ';
       Width:=Round((cWidth_default*cWidth_date)/100);
       Alignment:=taCenter;
     end;
@@ -228,6 +233,20 @@ begin
 end;
 
 
+procedure TFormManualPodbor.editFindMessageClick(Sender: TObject);
+begin
+  if st_FindPhone.Visible then st_FindPhone.Visible:=False;
+end;
+
+procedure TFormManualPodbor.editFindMessageKeyPress(Sender: TObject;
+  var Key: Char);
+begin
+  if not (Key in ['0'..'9', #8]) then  // #8 - Backspace, #13 - Enter
+  begin
+    Key := #0; // Отменяем ввод, если символ не является цифрой
+  end;
+end;
+
 procedure TFormManualPodbor.LoadData(_idUser:Integer);
 begin
   Screen.Cursor:=crHourGlass;
@@ -239,6 +258,12 @@ begin
    ShowCalls(list_History,True,_idUser);
 
   Screen.Cursor:=crDefault;
+end;
+
+procedure TFormManualPodbor.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  st_FindPhone.Visible:=True;
 end;
 
 procedure TFormManualPodbor.FormShow(Sender: TObject);

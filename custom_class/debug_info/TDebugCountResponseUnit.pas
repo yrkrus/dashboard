@@ -445,7 +445,8 @@ var
 begin
    try
      for i:=0 to m_count-1 do begin
-        if (m_listNameThread.Count=0) or (i > m_count-1) then Exit;
+
+        if m_listNameThread[i]='' then Continue;
 
         if m_listNameThread[i] = _name then begin
 

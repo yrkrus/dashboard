@@ -358,6 +358,13 @@ interface
    enumGender = (gender_male,        // мужской
                  gender_female);     // женский
 
+   type // тип из какой таблицы доставать данные при создании отчета "ќтчет по количеству звонков операторами"
+   enumReportTableCountCallsOperator = (eTableQueue,
+                                        eTableHistoryQueue);
+
+   type // тип из какой таблицы доставать данные при создании отчета "ќтчет по количеству звонков операторами"
+   enumReportTableCountCallsOperatorOnHold = (eTableOnHold,
+                                              eTableHistoryOnHold);
 
  // =================== ѕ–ќ≈ќЅ–ј«ќ¬јЌ»я ===================
 
@@ -382,6 +389,7 @@ interface
  function EnumStatusOperatorsToInteger(InStatus:enumStatusOperators):Integer;      // enumStatusOperators -> integer
  function EnumNeedReconnectBDToBoolean(inStatusReconnect:enumNeedReconnectBD):Boolean;   // enumNeedReconnectBD -> Boolean
  function StatusOperatorToEnumLogging(_operatorStatus:Integer):enumLogging;          // преобразование текущего статуса оператора из int в EnumLogging
+ function EnumLoggingToStatusOperator(_logging:enumLogging):enumStatusOperators;    // преобразование EnumLogging в текущий статус оператора
  function SettingParamsStatusToInteger(status:enumParamStatus):Integer;            // SettingParamsStatus --> Int
  function IntegerToSettingParamsStatus(status:Integer):enumParamStatus;            // Int --> SettingParamsStatus
  function EnumTypeClinicToString(typeClinic:enumTypeClinic):string;                // EnumTypeClinic -> String
@@ -413,6 +421,9 @@ interface
  function StringToEnumGender(_gender:string):enumGender;                              // String -> EnumGender
  function EnumGenderToInteger(_gender:enumGender):Integer;                            // EnumGender -> Integer
  function EnumWorkingTimeToString(_workingTime:enumWorkingTime):string;               // enumWorkingTime -> String
+ function EnumReportTableCountCallsOperatorToString(_table:enumReportTableCountCallsOperator):string; //enumReportTableCountCallsOperator -> String
+ function EnumReportTableCountCallsOperatorOnHoldToString(_table:enumReportTableCountCallsOperatorOnHold):string; //EnumReportTableCountCallsOperatorOnHold -> String
+
 
  // =================== ѕ–ќ≈ќЅ–ј«ќ¬јЌ»я ===================
  implementation
@@ -670,7 +681,7 @@ function IntegerToEnumStatusOperators(InStatusId:Integer):enumStatusOperators;
 begin
  case InStatusId of
    -1:  Result:=eUnknown;         // unknown
-    0:  Result:=eReserved0;       // резерв
+    0:  Result:=eReserved0;       // зарезервировано под новый статус
     1:  Result:=eAvailable;       // доступен
     2:  Result:=eHome;            // домой
     3:  Result:=eExodus;          // исход
@@ -734,6 +745,36 @@ begin
   end;
 end;
 
+// преобразование EnumLogging в текущий статус оператора
+function EnumLoggingToStatusOperator(_logging:enumLogging):enumStatusOperators;
+begin
+  case _logging of
+    eLog_unknown,
+    eLog_enter,
+    eLog_exit,
+    eLog_auth_error,
+    eLog_exit_force,
+    eLog_add_queue_5000,
+    eLog_add_queue_5050,
+    eLog_add_queue_5000_5050,
+    eLog_del_queue_5000,
+    eLog_del_queue_5050,
+    eLog_del_queue_5000_5050,
+    eLog_create_new_user,
+    eLog_edit_user,
+    eLog_available:   Result:=eUnknown;
+    eLog_home:        Result:=eHome;
+    eLog_exodus:      Result:=eExodus;
+    eLog_break:       Result:=eBreak;
+    eLog_dinner:      Result:=eDinner;
+    eLog_postvyzov:   Result:=ePostvyzov;
+    eLog_studies:     Result:=eStudies;
+    eLog_IT:          Result:=eIT;
+    eLog_transfer:    Result:=eTransfer;
+    eLog_reserve:     Result:=eReserve;
+    eLog_callback:    Result:=eCallback;
+  end;
+end;
 
 // SettingParamsStatus --> Int
 function SettingParamsStatusToInteger(status:enumParamStatus):Integer;
@@ -1169,6 +1210,24 @@ begin
     workingtime_Friday:     Result:='пт';
     workingtime_Saturday:   Result:='суб';
     workingtime_Sunday:     Result:='вс';
+  end;
+end;
+
+// EnumReportTableCountCallsOperator -> String
+function EnumReportTableCountCallsOperatorToString(_table:enumReportTableCountCallsOperator):string;
+begin
+  case _table of
+   eTableQueue:         Result:='queue';
+   eTableHistoryQueue:  Result:='history_queue';
+  end;
+end;
+
+//EnumReportTableCountCallsOperatorOnHold -> String
+function EnumReportTableCountCallsOperatorOnHoldToString(_table:enumReportTableCountCallsOperatorOnHold):string;
+begin
+ case _table of
+   eTableOnHold:         Result:='operators_ohhold';
+   eTableHistoryOnHold:  Result:='history_onhold';
   end;
 end;
 

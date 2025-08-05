@@ -188,7 +188,7 @@ uses
       function GetCalls_ID(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer):Integer;           // m_id
       function GetCalls_DateTime(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer):TDateTime;   // m_datetime
       function GetCalls_Phone(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer):string;         // m_phone
-      function GetCalls_FIO(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer):string;           // m_fio
+      function GetCalls_FIO(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer; var _count:Integer):string;           // m_fio
       function GetCalls_Trunk(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer):string;         // m_trunk
       function GetCalls_Waiting(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer):string;       // m_waiting
 
@@ -753,11 +753,14 @@ end;
 
 
 // TCalls -> m_fio
-function TQueueStatistics.GetCalls_FIO(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer):string;
+function TQueueStatistics.GetCalls_FIO(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer; var _count:Integer):string;
 var
  i:Integer;
  countFIO:Integer;
 begin
+ _count:=0;
+
+ try
   for i:=0 to m_count - 1 do begin
     if m_list[i].m_queue = _queue then begin
       case _missed of
@@ -798,6 +801,10 @@ begin
       end;
     end;
   end;
+ finally
+   _count:=countFIO;
+ end;
+
 
 //  // ничего не нашли значит это 5000 и 5050
 //  // рекурсией найдем значение

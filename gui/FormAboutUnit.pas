@@ -31,7 +31,6 @@ type
     Panel4: TPanel;
     REHistory_SMS: TRichEdit;
     STInfoVersionSMS: TStaticText;
-    Label1: TLabel;
     ImageList1: TImageList;
     procedure FormShow(Sender: TObject);
     procedure imgAboutClick(Sender: TObject);

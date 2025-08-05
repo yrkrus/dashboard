@@ -73,6 +73,7 @@ function SaveWord(_id:Integer;
 function IsExistSignInMessage(const _message:string):Boolean;                                 // проверка есть ли подпись в отправляемом сообщении
 function ParsePhoneNumber(const PhoneNumber: string):string;                                  // пасинг номера тлф при вствке в поле номер телефона
 function GetUserSIP(_idUser:integer):string;                                                 // отображение SIP пользвоателя
+procedure SetRandomFontColor(var p_label: TLabel);                                            // изменение цвета надписи
 
 
 implementation
@@ -1950,6 +1951,18 @@ begin
       FreeAndNil(serverConnect);
     end;
   end;
+end;
+
+// изменение цвета надписи
+procedure SetRandomFontColor(var p_label: TLabel);
+var
+  RandomColor: TColor;
+begin
+  // Генерируем случайные значения для RGB
+  RandomColor := RGB(Random(256), Random(256), Random(256));
+
+  // Устанавливаем случайный цвет шрифта для метки
+  p_label.Font.Color := RandomColor;
 end;
 
 

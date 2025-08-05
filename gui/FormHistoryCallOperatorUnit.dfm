@@ -5,7 +5,7 @@ object FormHistoryCallOperator: TFormHistoryCallOperator
   BorderStyle = bsSingle
   Caption = #1048#1089#1090#1086#1088#1080#1103' '#1079#1074#1086#1085#1082#1086#1074' (operatorID)'
   ClientHeight = 677
-  ClientWidth = 682
+  ClientWidth = 798
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -200,7 +200,7 @@ object FormHistoryCallOperator: TFormHistoryCallOperator
   object panel_History: TPanel
     Left = 8
     Top = 100
-    Width = 664
+    Width = 690
     Height = 572
     BevelInner = bvLowered
     ShowCaption = False
@@ -208,7 +208,7 @@ object FormHistoryCallOperator: TFormHistoryCallOperator
     object list_History: TListView
       Left = 2
       Top = 2
-      Width = 660
+      Width = 686
       Height = 568
       Align = alClient
       BorderStyle = bsNone
@@ -224,9 +224,12 @@ object FormHistoryCallOperator: TFormHistoryCallOperator
       RowSelect = True
       ParentDoubleBuffered = False
       ParentFont = False
+      PopupMenu = popmenu_InfoCall
       TabOrder = 0
       ViewStyle = vsReport
       OnCustomDrawItem = list_HistoryCustomDrawItem
+      OnMouseDown = list_HistoryMouseDown
+      ExplicitWidth = 660
     end
     object st_NoCalls: TStaticText
       Left = 3
@@ -490,5 +493,13 @@ object FormHistoryCallOperator: TFormHistoryCallOperator
     ParentFont = False
     TabOrder = 1
     OnChange = combox_TimeFilterChange
+  end
+  object popmenu_InfoCall: TPopupMenu
+    Left = 336
+    Top = 64
+    object menu_FIO: TMenuItem
+      Caption = #1053#1072#1081#1090#1080' '#1060#1048#1054' '#1087#1072#1094#1080#1077#1085#1090#1072' '#1087#1086' '#1085#1086#1084#1077#1088#1091
+      OnClick = menu_FIOClick
+    end
   end
 end
