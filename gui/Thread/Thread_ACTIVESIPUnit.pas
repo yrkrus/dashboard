@@ -545,6 +545,7 @@ var
 begin
   inherited;
   CoInitialize(Nil);
+  Duration:=0;
   Sleep(100);
 
   Log:=TLoggingFile.Create(NAME_THREAD);

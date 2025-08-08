@@ -956,7 +956,6 @@ var
   AMsgDialog: TForm;
   ACheckBox: TCheckBox;
   DialogResult: Integer;
-  XML:TXML;
   confirm:string;
 begin 
   AMsgDialog := CreateMessageDialog('Точно закрыть активную сессию?', mtInformation, [mbYes,mbNo]);

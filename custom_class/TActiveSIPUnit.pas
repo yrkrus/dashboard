@@ -622,9 +622,19 @@ end;
  end;
 
  procedure TActiveSIP.showActiveAndFreeOperatorsForm;
+ var
+  freeOperator:string;
+  activeCalls:string;
  begin
    with HomeForm.lblCount_ACTIVESIP do begin
-     Caption:='Активные звонки ('+IntToStr(countActiveCalls)+') | Свободные операторы ('+IntToStr(countFreeOperators)+')';
+     if countFreeOperators = 0 then freeOperator:='-'
+     else freeOperator:=IntToStr(countFreeOperators);
+
+     if countActiveCalls = 0 then activeCalls:='-'
+     else activeCalls:=IntToStr(countActiveCalls);
+
+
+     Caption:='Активные звонки ('+activeCalls+') | Свободные операторы ('+freeOperator+')';
    end;
 
    countActiveCalls:=0;
@@ -722,6 +732,8 @@ end;
  begin
    ado:=TADOQuery.Create(nil);
    serverConnect:=createServerConnect;
+   count_sip:=0;
+
   if not Assigned(serverConnect) then begin
      FreeAndNil(ado);
      Exit;
@@ -1030,7 +1042,7 @@ end;
 
  procedure TActiveSIP.updateQueue;
   var
-  i,j,countQueue:Integer;
+  i,countQueue:Integer;
   ado:TADOQuery;
   serverConnect:TADOConnection;
   tempQueue:enumQueueCurrent;

@@ -129,7 +129,7 @@ begin
   end;
 
   if isCreateInitBlockHR = False then isInitBlockHR:=True
-  else isCreateInitBlockHR:=False;
+  else isInitBlockHR:=False;
 
 
   // проверим есть ли файл лога уже
@@ -168,7 +168,6 @@ end;
 procedure TLoggingFile.CreateFileLog;
 var
  EmptyFile:TfileStream;
- i:Integer;
 begin
   // проверка есть ли папка chat_history
   if not DirectoryExists(m_file.m_rootFolder+'\'+m_file.m_nodeFolder) then CreateDir(Pchar(m_file.m_rootFolder+'\'+m_file.m_nodeFolder));

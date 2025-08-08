@@ -28,6 +28,7 @@ function GetVersion(GUID:string; programm:enumProrgamm):string;                 
 procedure showVersionAbout(programm:enumProrgamm);                                   // отображение истории вресий
 function GetVersionAbout(programm:enumProrgamm; inGUID:string):string;               // отображение истории вресий дашбоарда (только текущая версия)
 procedure CreateCheckServersInfoclinika;                                             // создание списка с серверами
+procedure CreateCheckSipTrunk;                                                       // создание списка с sip транками
 //function GetRoleID(InRole:string):Integer;                                           // получение ID TRole
 function GetUserGroupSTR(InGroup:Integer):string;                                    // отображение роли пользвоателя
 function getHashPwd(inPwd: String):Integer;                                          // хэширование пароля
@@ -98,7 +99,6 @@ function getIsExitOperatorCurrentGoHome(InCurrentRole:enumRole;InUserID:Integer)
 function GetLastStatusOperator(InUserId:Integer):enumLogging;                           // текущий стаус оператора из таблицы logging
 procedure CheckCurrentVersion;                                                       // проверка на актуальную версию
 function getCheckIP(InIPAdtress:string):Boolean;                                     // проверка корректности IP адреса
-procedure CreateFormActiveSession;                                                   // создание окна активных сессий
 function getCheckAlias(InAlias:string):Boolean;                                      // проверка на существаование такого алиаса уже, он может быть только один!
 function GetFirbirdAuth(FBType:enumFirebirdAuth):string;                             // получение авторизационных данных при подключени к БД firebird
 //function GetSMSAuth(SMSType:enumSMSAuth):string;                                     // получение авторизационных данных при отправке SMS
@@ -190,7 +190,7 @@ uses
   TOnlineChat,
   Thread_ChatUnit,
   Thread_ForecastUnit,
-  Thread_InternalProcessUnit, TActiveSessionUnit;
+  Thread_InternalProcessUnit, TActiveSessionUnit, FormTrunkSipUnit, Thread_CheckTrunkUnit;
 
 
 
@@ -433,6 +433,17 @@ begin
     end
     else UpdateCHECKSERVERSSTOP:=True;
 
+    //CheckSipTrunks
+    if CHECKSIPTRUNKS_thread=nil then
+    begin
+     FreeAndNil(CHECKSIPTRUNKS_thread);
+     CHECKSIPTRUNKS_thread:=Thread_CheckTrunks.Create(True);
+     CHECKSIPTRUNKS_thread.Priority:=tpNormal;
+     UpdateCheckSipTrunksStop:=True;
+    end
+    else UpdateCheckSipTrunksStop:=True;
+
+
     // AnsweredQueue
     if ANSWEREDQUEUE_thread=nil then
     begin
@@ -476,31 +487,33 @@ begin
     else UpdateInternalProcess:=True;
 
     // запуск потоков
-    STATISTICS_thread.Resume;
+    STATISTICS_thread.Start;
     Sleep(10);
-    IVR_thread.Resume;
+    IVR_thread.Start;
     Sleep(10);
-    QUEUE_thread.Resume;
+    QUEUE_thread.Start;
     Sleep(10);
-    ACTIVESIP_thread.Resume;
+    ACTIVESIP_thread.Start;
     Sleep(10);
-    ACTIVESIP_Queue_thread.Resume;
+    ACTIVESIP_Queue_thread.Start;
     Sleep(10);
-    ACTIVESIP_countTalk_thread.Resume;
+    ACTIVESIP_countTalk_thread.Start;
     Sleep(10);
-    ACTIVESIP_updateTalk_thread.Resume;
+    ACTIVESIP_updateTalk_thread.Start;
     Sleep(10);
-    ACTIVESIP_updateTalkPhone_thread.Resume;
+    ACTIVESIP_updateTalkPhone_thread.Start;
     Sleep(10);
-    CHECKSERVERS_thread.Resume;
+    CHECKSERVERS_thread.Start;
     Sleep(10);
-    ANSWEREDQUEUE_thread.Resume;
+    CHECKSIPTRUNKS_thread.Start;
     Sleep(10);
-    if SharedCurrentUserLogon.GetIsAccessLocalChat then ONLINECHAT_thread.Resume;
+    ANSWEREDQUEUE_thread.Start;
     Sleep(10);
-    FORECAST_thread.Resume;
+    if SharedCurrentUserLogon.GetIsAccessLocalChat then ONLINECHAT_thread.Start;
     Sleep(10);
-    INTERNALPROCESS_thread.Resume;
+    FORECAST_thread.Start;
+    Sleep(10);
+    INTERNALPROCESS_thread.Start;
   end;
 end;
 
@@ -1312,9 +1325,9 @@ var
  i:Integer;
  countServers:Integer;
 
- lblStatusServer:   array of TLabel;
- lblAddressServer:  array of TLabel;
- lblIP:             array of TLabel;
+ lblStatusServer:   TArray<TLabel>;
+ lblAddressServer:  TArray<TLabel>;
+ lblIP:             TArray<TLabel>;
  nameIP:string;
  error:string;
 begin
@@ -1462,304 +1475,140 @@ begin
   end;
 end;
 
-// создание окна активных сессий
-procedure CreateFormActiveSession;
+
+// создание списка с sip транками
+procedure CreateCheckSipTrunk;
 const
-cTOPSTART=28;
+cTOPSTART=35;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  CodOshibki:string;
  i:Integer;
- countActive:Integer;
+ countTrunk:Integer;
 
- lblUSERID:         array of TLabel;
- lblROLE:           array of TLabel;
- lblUSERNAME:       array of TLabel;
- lblPC:             array of TLabel;
- lblIP:             array of TLabel;
- lblONLINE:         array of TLabel;
- lblSTATUS:         array of TLabel;
- btnCLOSE_SESSION:  array of TButton;
- btnCLOSE_QUEUE:    array of TButton;
-
- nameID:string;
+ lblStatusTrunk:  TArray<TLabel>;
+ lblNameTrunk:    TArray<TLabel>;
+ nameTrunk:string;
  error:string;
 begin
 
-//  ado:=TADOQuery.Create(nil);
-//  serverConnect:=createServerConnectWithError(error);
-//
-//  if not Assigned(serverConnect) then begin
-//     ShowFormErrorMessage(error,SharedMainLog,'CreateFormActiveSession');
-//     FreeAndNil(ado);
-//     Exit;
-//  end;
-//
-//
-//  try
-//  with ado do begin
-//      ado.Connection:=serverConnect;
-//      SQL.Clear;
-//      SQL.Add('select count(id) from active_session');
-//
-//      try
-//          Active:=True;
-//          countActive:=Fields[0].Value;
-//      except
-//          on E:EIdException do begin
-//             FreeAndNil(ado);
-//             if Assigned(serverConnect) then begin
-//               serverConnect.Close;
-//               FreeAndNil(serverConnect);
-//             end;
-//
-//             Exit;
-//          end;
-//      end;
-//
-//      if countActive>=1 then begin
-//
-//        // выставляем размерность
-//        SetLength(lblUSERID,countActive);
-//        SetLength(lblROLE,countActive);
-//        SetLength(lblUSERNAME,countActive);
-//        SetLength(lblPC,countActive);
-//        SetLength(lblIP,countActive);
-//        SetLength(lblONLINE,countActive);
-//        SetLength(lblSTATUS,countActive);
-//        SetLength(btnCLOSE_SESSION,countActive);
-//        SetLength(btnCLOSE_QUEUE,countActive);
-//
-//        SQL.Clear;
-//        // order by id ASC
-//
-//        SQL.Add('SELECT asession.user_id, r.name_role, CONCAT(u.familiya, '+#39' '+#39+', u.name) AS full_name, asession.pc, asession.ip, asession.last_active FROM active_session AS asession JOIN users AS u ON asession.user_id = u.id JOIN role AS r ON u.role = r.id');
-//
-//        try
-//          Active:=True;
-//        except
-//            on E:EIdException do begin
-//               CodOshibki:=e.Message;
-//               FreeAndNil(ado);
-//               if Assigned(serverConnect) then begin
-//                  serverConnect.Close;
-//                  FreeAndNil(serverConnect);
-//               end;
-//
-//               Exit;
-//            end;
-//        end;
-//
-//
-//        for i:=0 to countActive-1 do begin
-//
-//          // ID
-//          begin
-//            nameID:=VarToStr(Fields[0].Value);
-//
-//            lblUSERID[i]:=TLabel.Create(FormActiveSession.PanelActive);
-//            lblUSERID[i].Name:='lblUSERID_'+nameID;
-//            lblUSERID[i].Tag:=1;
-//            lblUSERID[i].Caption:=VarToStr(Fields[0].Value);
-//            lblUSERID[i].Left:=6;
-//
-//            if i=0 then lblUSERID[i].Top:=cTOPSTART
-//            else lblUSERID[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
-//
-//            lblUSERID[i].Font.Name:='Tahoma';
-//            lblUSERID[i].Font.Size:=10;
-//            lblUSERID[i].AutoSize:=False;
-//            lblUSERID[i].Width:=79;
-//            lblUSERID[i].Height:=16;
-//            lblUSERID[i].Alignment:=taCenter;
-//            lblUSERID[i].Parent:=FormActiveSession.PanelActive;
-//
-//          end;
-//
-//          // роль
-//          begin
-//            lblROLE[i]:=TLabel.Create(FormActiveSession.PanelActive);
-//            lblROLE[i].Name:='lblROLE_'+nameID;
-//            lblROLE[i].Tag:=1;
-//            lblROLE[i].Caption:=VarToStr(Fields[1].Value);
-//            lblROLE[i].Left:=85;
-//
-//            if i=0 then lblROLE[i].Top:=cTOPSTART
-//            else lblROLE[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
-//
-//            lblROLE[i].Font.Name:='Tahoma';
-//            lblROLE[i].Font.Size:=10;
-//            lblROLE[i].AutoSize:=False;
-//            lblROLE[i].Width:=150;
-//            lblROLE[i].Height:=16;
-//            lblROLE[i].Alignment:=taCenter;
-//            lblROLE[i].Parent:=FormActiveSession.PanelActive;
-//          end;
-//
-//          // пользователь
-//          begin
-//            lblUSERNAME[i]:=TLabel.Create(FormActiveSession.PanelActive);
-//            lblUSERNAME[i].Name:='lblUSERNAME_'+nameID;
-//            lblUSERNAME[i].Tag:=1;
-//            lblUSERNAME[i].Caption:=VarToStr(Fields[2].Value);
-//            lblUSERNAME[i].Left:=235;
-//
-//            if i=0 then lblUSERNAME[i].Top:=cTOPSTART
-//            else lblUSERNAME[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
-//
-//            lblUSERNAME[i].Font.Name:='Tahoma';
-//            lblUSERNAME[i].Font.Size:=10;
-//            lblUSERNAME[i].AutoSize:=False;
-//            lblUSERNAME[i].Width:=168;
-//            lblUSERNAME[i].Height:=16;
-//            lblUSERNAME[i].Alignment:=taCenter;
-//            lblUSERNAME[i].Parent:=FormActiveSession.PanelActive;
-//          end;
-//
-//          // компьютер
-//          begin
-//            lblPC[i]:=TLabel.Create(FormActiveSession.PanelActive);
-//            lblPC[i].Name:='lblPC_'+nameID;
-//            lblPC[i].Tag:=1;
-//            lblPC[i].Caption:=VarToStr(Fields[3].Value);
-//            lblPC[i].Left:=403;
-//
-//            if i=0 then lblPC[i].Top:=cTOPSTART
-//            else lblPC[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
-//
-//            lblPC[i].Font.Name:='Tahoma';
-//            lblPC[i].Font.Size:=10;
-//            lblPC[i].AutoSize:=False;
-//            lblPC[i].Width:=87;
-//            lblPC[i].Height:=16;
-//            lblPC[i].Alignment:=taCenter;
-//            lblPC[i].Parent:=FormActiveSession.PanelActive;
-//          end;
-//
-//          // IP
-//          begin
-//            lblIP[i]:=TLabel.Create(FormActiveSession.PanelActive);
-//            lblIP[i].Name:='lblIP_'+nameID;
-//            lblIP[i].Tag:=1;
-//            lblIP[i].Caption:=VarToStr(Fields[4].Value);
-//            lblIP[i].Left:=489;
-//
-//            if i=0 then lblIP[i].Top:=cTOPSTART
-//            else lblIP[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
-//
-//            lblIP[i].Font.Name:='Tahoma';
-//            lblIP[i].Font.Size:=10;
-//            lblIP[i].AutoSize:=False;
-//            lblIP[i].Width:=120;
-//            lblIP[i].Height:=16;
-//            lblIP[i].Alignment:=taCenter;
-//            lblIP[i].Parent:=FormActiveSession.PanelActive;
-//          end;
-//
-//          // Дата онлайна
-//          begin
-//            lblONLINE[i]:=TLabel.Create(FormActiveSession.PanelActive);
-//            lblONLINE[i].Name:='lblONLINE_'+nameID;
-//            lblONLINE[i].Tag:=1;
-//            lblONLINE[i].Caption:=VarToStr(Fields[5].Value);
-//            lblONLINE[i].Left:=609;
-//
-//            if i=0 then lblONLINE[i].Top:=cTOPSTART
-//            else lblONLINE[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
-//
-//            lblONLINE[i].Font.Name:='Tahoma';
-//            lblONLINE[i].Font.Size:=10;
-//            lblONLINE[i].AutoSize:=False;
-//            lblONLINE[i].Width:=121;
-//            lblONLINE[i].Height:=16;
-//            lblONLINE[i].Alignment:=taCenter;
-//            lblONLINE[i].Parent:=FormActiveSession.PanelActive;
-//          end;
-//
-//          // Статус
-//          begin
-//            lblSTATUS[i]:=TLabel.Create(FormActiveSession.PanelActive);
-//            lblSTATUS[i].Name:='lblSTATUS_'+nameID;
-//            lblSTATUS[i].Tag:=1;
-//            lblSTATUS[i].Caption:='ONLINE!';
-//            lblSTATUS[i].Left:=730;
-//
-//            if i=0 then lblSTATUS[i].Top:=cTOPSTART
-//            else lblSTATUS[i].Top:=cTOPSTART+(Round(cTOPSTART)*i);
-//
-//            lblSTATUS[i].Font.Name:='Tahoma';
-//            lblSTATUS[i].Font.Size:=10;
-//            lblSTATUS[i].AutoSize:=False;
-//            lblSTATUS[i].Width:=94;
-//            lblSTATUS[i].Height:=16;
-//            lblSTATUS[i].Alignment:=taCenter;
-//            lblSTATUS[i].Parent:=FormActiveSession.PanelActive;
-//          end;
-//
-//          // Закрыть сессию
-//          begin
-//            btnCLOSE_SESSION[i]:=TButton.Create(FormActiveSession.PanelActive);
-//            btnCLOSE_SESSION[i].Name:='btnCLOSE_SESSION_'+nameID;
-//            btnCLOSE_SESSION[i].Tag:=1;
-//            btnCLOSE_SESSION[i].Caption:='Завершить сессию!';
-//            btnCLOSE_SESSION[i].Left:=837;
-//
-//            if i=0 then btnCLOSE_SESSION[i].Top:=cTOPSTART - 5
-//            else btnCLOSE_SESSION[i].Top:=cTOPSTART+(Round(cTOPSTART)*i)-5;
-//
-//            btnCLOSE_SESSION[i].Font.Name:='Tahoma';
-//            btnCLOSE_SESSION[i].Font.Size:=10;
-//            btnCLOSE_SESSION[i].Width:=126;
-//            btnCLOSE_SESSION[i].Height:=25;
-//            btnCLOSE_SESSION[i].Parent:=FormActiveSession.PanelActive;
-//          end;
-//
-//           // Убрать из очереди
-//          begin
-//            btnCLOSE_QUEUE[i]:=TButton.Create(FormActiveSession.PanelActive);
-//            btnCLOSE_QUEUE[i].Name:='btnCLOSE_QUEUE_'+nameID;
-//            btnCLOSE_QUEUE[i].Tag:=1;
-//            btnCLOSE_QUEUE[i].Caption:='Убрать из очереди';
-//            btnCLOSE_QUEUE[i].Left:=971;
-//
-//            if i=0 then btnCLOSE_QUEUE[i].Top:=cTOPSTART - 5
-//            else btnCLOSE_QUEUE[i].Top:=cTOPSTART+(Round(cTOPSTART)*i)-5;
-//
-//            btnCLOSE_QUEUE[i].Font.Name:='Tahoma';
-//            btnCLOSE_QUEUE[i].Font.Size:=10;
-//            btnCLOSE_QUEUE[i].Width:=126;
-//            btnCLOSE_QUEUE[i].Height:=25;
-//            btnCLOSE_QUEUE[i].Parent:=FormActiveSession.PanelActive;
-//
-//            if (AnsiPos('Оператор',VarToStr(Fields[1].Value)) <> 0) or
-//                (AnsiPos('оператор',VarToStr(Fields[1].Value))<> 0) then begin
-//              btnCLOSE_QUEUE[i].Enabled:=True;
-//            end
-//            else begin
-//              btnCLOSE_QUEUE[i].Enabled:=False;
-//            end;
-//
-//          end;
-//
-//
-//
-//          ado.Next;
-//        end;
-//      end;
-//
-//    end;
-//
-//  //FormServerIKCheck.Caption:=FormServerIKCheck.Caption+' ('+IntToStr(countServers)+')';
-//  finally
-//    FreeAndNil(ado);
-//    if Assigned(serverConnect) then begin
-//      serverConnect.Close;
-//      FreeAndNil(serverConnect);
-//    end;
-//  end;
-end;
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnectWithError(error);
 
+  if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error,SharedMainLog,'CreateCheckSipTrunk');
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+
+  try
+   with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select count(id) from sip_trunks where is_monitoring = ''1'' ');
+
+      try
+          Active:=True;
+          countTrunk:=Fields[0].Value;
+      except
+          on E:EIdException do begin
+            FreeAndNil(ado);
+            if Assigned(serverConnect) then begin
+              serverConnect.Close;
+              FreeAndNil(serverConnect);
+            end;
+             Exit;
+          end;
+      end;
+
+      if countTrunk>=1 then begin
+
+        // выставляем размерность
+        SetLength(lblStatusTrunk,countTrunk);
+        SetLength(lblNameTrunk,countTrunk);
+
+
+        SQL.Clear;
+        SQL.Add('select id,alias from sip_trunks where is_monitoring = ''1'' ');
+
+        try
+          Active:=True;
+        except
+            on E:EIdException do begin
+               CodOshibki:=e.Message;
+               FreeAndNil(ado);
+               if Assigned(serverConnect) then begin
+                 serverConnect.Close;
+                 FreeAndNil(serverConnect);
+               end;
+
+               Exit;
+            end;
+        end;
+
+
+        for i:=0 to countTrunk-1 do begin
+
+          // статус
+          begin
+            nameTrunk:=VarToStr(Fields[0].Value);
+
+            lblStatusTrunk[i]:=TLabel.Create(FormTrunkSip);
+            lblStatusTrunk[i].Name:='lbl_'+nameTrunk;
+            lblStatusTrunk[i].Tag:=1;
+            lblStatusTrunk[i].Caption:='проверка';
+            lblStatusTrunk[i].Left:=8;
+
+            if i=0 then lblStatusTrunk[i].Top:=cTOPSTART
+            else lblStatusTrunk[i].Top:=cTOPSTART+(Round(cTOPSTART/2)*i);
+
+            lblStatusTrunk[i].Font.Name:='Tahoma';
+            lblStatusTrunk[i].Font.Size:=8;
+            lblStatusTrunk[i].Font.Style:=[fsBold];
+            lblStatusTrunk[i].AutoSize:=False;
+            lblStatusTrunk[i].Width:=120;
+            lblStatusTrunk[i].Height:=14;
+            lblStatusTrunk[i].Alignment:=taCenter;
+            lblStatusTrunk[i].Parent:=FormTrunkSip;
+          end;
+
+          // название транка
+          begin
+            lblNameTrunk[i]:=TLabel.Create(FormTrunkSip);
+            lblNameTrunk[i].Name:='lblName_'+nameTrunk;
+            lblNameTrunk[i].Tag:=1;
+            lblNameTrunk[i].Caption:=VarToStr(Fields[1].Value);
+            lblNameTrunk[i].Left:=140;
+
+            if i=0 then lblNameTrunk[i].Top:=cTOPSTART
+            else lblNameTrunk[i].Top:=cTOPSTART+(Round(cTOPSTART/2)*i);
+
+            lblNameTrunk[i].Font.Name:='Tahoma';
+            lblNameTrunk[i].Font.Size:=8;
+            lblNameTrunk[i].AutoSize:=False;
+            lblNameTrunk[i].Width:=193;
+            lblNameTrunk[i].Height:=14;
+            lblNameTrunk[i].Alignment:=taCenter;
+            lblNameTrunk[i].Parent:=FormTrunkSip;
+          end;
+
+          ado.Next;
+        end;
+      end;
+
+   end;
+
+   FormTrunkSip.Caption:=FormTrunkSip.Caption+' ('+IntToStr(countTrunk)+')';
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
 
 // отображение роли пользвоателя
 function GetUserGroupSTR(InGroup:Integer):string;

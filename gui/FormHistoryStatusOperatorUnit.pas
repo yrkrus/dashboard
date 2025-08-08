@@ -267,7 +267,6 @@ procedure TFormHistoryStatusOperator.list_HistoryCustomDrawItem(
   Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
   var DefaultDraw: Boolean);
 var
- counts:Integer;
  time_talk:Integer;
  tmp_time:string;
 
@@ -275,8 +274,6 @@ begin
   if not Assigned(Item) then Exit;
 
   try
-    counts:=Item.SubItems.Count; // TODO еще подумать как можно это улучшить
-
     if Item.SubItems.Count = 4 then // ѕровер€ем, что есть достаточно SubItems
     begin
       // доступен

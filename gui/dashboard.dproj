@@ -301,6 +301,12 @@
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="..\custom_class\TStatusUnit.pas"/>
+        <DCCReference Include="FormTrunkSipUnit.pas">
+            <Form>FormTrunkSip</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\custom_class\TCheckSipTrunkUnit.pas"/>
+        <DCCReference Include="Thread\Thread_CheckTrunkUnit.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

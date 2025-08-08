@@ -67,7 +67,7 @@ uses
     m_errorDesriptions:string;    // текущая внутренная ошибка
 
 
-    function enumExtensionFTPToString(enumTypes:enumExtensionFTP):string;  // enumExtensionFTP -> string
+    //function enumExtensionFTPToString(enumTypes:enumExtensionFTP):string;  // enumExtensionFTP -> string
     function isExistFileToFTP(InFileName:string):Boolean;     // есть ли файл на сервере в папке
     function GetFileSize(InStroka:string):Int64;  // поиск размер файла на ftp
     procedure CreateFolderDownload(InFolderName:string);  // создаем папку куда будем скачивать все
@@ -191,7 +191,7 @@ begin
   if m_sizeFile=0 then begin
      m_log.Save('Не удается получить размер файла <b>'+InFileNameDownload+'</b>',IS_ERROR);
      m_errorDesriptions:='Не удается получить размер файла '+InFileNameDownload;
-     isErrorDownload:=True;
+     //isErrorDownload:=True;
      Exit;
   end;
 
@@ -254,21 +254,21 @@ begin
 end;
 
 // enumExtensionFTP -> string
-function TFTP.enumExtensionFTPToString(enumTypes:enumExtensionFTP):string;
-begin  
-  case enumTypes of
-   eFTP_Unknown:  Result:='unknown';
-   eFTP_Zip:      Result:='*.zip';
-   eFTP_Doc:      Result:='*.doc';
-   eFTP_Docx:     Result:='*.docx';
-   eFTP_Xls:      Result:='*.xls';
-   eFTP_Xlsx:     Result:='*.xlsx';
-   eFTP_Txt:      Result:='*.txt';
-   eFTP_Jpeg:     Result:='*.jpeg';
-   eFTP_Png:      Result:='*.png';
-   eFTP_Pdf:      Result:='*.pdf';    
-  end;
-end;
+//function TFTP.enumExtensionFTPToString(enumTypes:enumExtensionFTP):string;
+//begin
+//  case enumTypes of
+//   eFTP_Unknown:  Result:='unknown';
+//   eFTP_Zip:      Result:='*.zip';
+//   eFTP_Doc:      Result:='*.doc';
+//   eFTP_Docx:     Result:='*.docx';
+//   eFTP_Xls:      Result:='*.xls';
+//   eFTP_Xlsx:     Result:='*.xlsx';
+//   eFTP_Txt:      Result:='*.txt';
+//   eFTP_Jpeg:     Result:='*.jpeg';
+//   eFTP_Png:      Result:='*.png';
+//   eFTP_Pdf:      Result:='*.pdf';
+//  end;
+//end;
 
 // есть ли файл на сервере в папке
 function TFTP.isExistFileToFTP(InFileName:string):Boolean;

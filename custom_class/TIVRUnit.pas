@@ -352,17 +352,13 @@ end;
  const
   cTimeResponse:Word = 1; // время которое просматривается
  var
- i,j:Integer;
+ i:Integer;
  ado:TADOQuery;
  serverConnect:TADOConnection;
  countIVR:Integer;
- addListActive:Boolean;   // разрешено добавить в listActive! = true
- id:Integer;
 
  freeIDStructIVR:Integer; // свободный ID
  currentIDStructIVR:Integer;  // текущий просматриваемый ID
-
-
  begin
   countIVR:=0;
 

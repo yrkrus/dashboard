@@ -25,9 +25,6 @@ Coordinates=80,418,160,58
 [menu_Reports]
 Coordinates=1079,482,98,36
 
-[Label24]
-Coordinates=94,78,60,58
-
 [lblStstatisc_Queue5050_No_Answered]
 Coordinates=576,146,238,58
 
@@ -151,4 +148,7 @@ Coordinates=10,622,59,58
 
 [menu_missed_calls]
 Coordinates=1569,188,162,36
+
+[lblCheckSipTrunkAlive]
+Coordinates=94,78,60,58
 

@@ -537,7 +537,7 @@ procedure TFormHistoryCallOperator.list_HistoryCustomDrawItem(
   Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
   var DefaultDraw: Boolean);
 var
- counts:Integer;
+ //counts:Integer;
  time_talk:Integer;
  test:string;
 
@@ -545,7 +545,7 @@ begin
   if not Assigned(Item) then Exit;
 
   try
-    counts:=Item.SubItems.Count; // TODO еще подумать как можно это улучшить
+   // counts:=Item.SubItems.Count; // TODO еще подумать как можно это улучшить
 
     if Item.SubItems.Count = 5 then // Проверяем, что есть достаточно SubItems
     begin

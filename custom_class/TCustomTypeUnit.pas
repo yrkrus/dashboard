@@ -366,7 +366,12 @@ interface
    enumReportTableCountCallsOperatorOnHold = (eTableOnHold,
                                               eTableHistoryOnHold);
 
- // =================== ПРОЕОБРАЗОВАНИЯ ===================
+   type // тип статуса sip транка
+   enumTrunkStatus = (eTrunkUnknown = -1,
+                      eTrunkRegisterd = 0,
+                      eTrunkRequest = 1);
+
+  // =================== ПРОЕОБРАЗОВАНИЯ ===================
 
   // Boolean -> string
  function BooleanToString(InValue:Boolean):string;
@@ -381,7 +386,7 @@ interface
  function EnumProgrammToString(InEnumProgram:enumProrgamm):string;                 // enumProgramm -> string
  function EnumAccessListToString(AccessList:enumAccessList):string;                // enumAccessList -> String
  function EnumAccessListToStringBaseName(_access:enumAccessList):string;           // enumAccessList -> String(name BD)
- function EnumAccessStatusToBool(Status: enumAccessStatus): Boolean;               // enumAccessStatus -> Bool
+ function EnumAccessStatusToBool(_status: enumAccessStatus): Boolean;               // enumAccessStatus -> Bool
  function EnumChannelChatIDToString(InChatID:enumChatID):string;                   // enumChatID -> string
  function EnumChannelToString(InChannel:enumChannel):string;                       // enumChannel -> string
  function EnumActiveBrowserToString(InActiveBrowser:enumActiveBrowser):string;     // enumActiveBrowser -> string
@@ -390,8 +395,8 @@ interface
  function EnumNeedReconnectBDToBoolean(inStatusReconnect:enumNeedReconnectBD):Boolean;   // enumNeedReconnectBD -> Boolean
  function StatusOperatorToEnumLogging(_operatorStatus:Integer):enumLogging;          // преобразование текущего статуса оператора из int в EnumLogging
  function EnumLoggingToStatusOperator(_logging:enumLogging):enumStatusOperators;    // преобразование EnumLogging в текущий статус оператора
- function SettingParamsStatusToInteger(status:enumParamStatus):Integer;            // SettingParamsStatus --> Int
- function IntegerToSettingParamsStatus(status:Integer):enumParamStatus;            // Int --> SettingParamsStatus
+ function SettingParamsStatusToInteger(_status:enumParamStatus):Integer;            // SettingParamsStatus --> Int
+ function IntegerToSettingParamsStatus(_status:Integer):enumParamStatus;            // Int --> SettingParamsStatus
  function EnumTypeClinicToString(typeClinic:enumTypeClinic):string;                // EnumTypeClinic -> String
  function StringToEnumTypeClinic(typeClinic:string):enumTypeClinic;                // String -> EnumTypeClinic
  function EnumQueueCurrentToString(_queue:enumQueueCurrent):string;                // EnumQueueCurrent - > String
@@ -423,6 +428,7 @@ interface
  function EnumWorkingTimeToString(_workingTime:enumWorkingTime):string;               // enumWorkingTime -> String
  function EnumReportTableCountCallsOperatorToString(_table:enumReportTableCountCallsOperator):string; //enumReportTableCountCallsOperator -> String
  function EnumReportTableCountCallsOperatorOnHoldToString(_table:enumReportTableCountCallsOperatorOnHold):string; //EnumReportTableCountCallsOperatorOnHold -> String
+ function StringToEnumTrunkStatus(_status:string):enumTrunkStatus;                    // EnumTrunkStatus - > String
 
 
  // =================== ПРОЕОБРАЗОВАНИЯ ===================
@@ -465,6 +471,8 @@ begin
     eLog_callback:            Result:=20;       // callback
     eLog_create_new_user:     Result:=21;       // создание нового пользователя
     eLog_edit_user:           Result:=22;       // редактирование пользователя
+
+  else  Result:=-1;
   end;
 end;
 
@@ -496,6 +504,7 @@ begin
     20:   Result:=eLog_callback;            // callback
     21:   Result:=eLog_create_new_user;     // создание нового пользователя
     22:   Result:=eLog_edit_user;           // редактирование пользователя
+  else Result:=eLog_unknown;
   end;
 end;
 
@@ -537,12 +546,14 @@ var
  i:Integer;
  role:enumRole;
 begin
-   for i:=Ord(Low(enumRole)) to Ord(High(enumRole)) do
+  Result:=role_operator_no_dash;
+
+  for i:=Ord(Low(enumRole)) to Ord(High(enumRole)) do
   begin
     role:=enumRole(i);
     if EnumRoleToString(role) = InRole then begin
      Result:=role;
-     Break;
+     Exit;
     end;
   end;
 end;
@@ -566,6 +577,8 @@ function EnumRoleToInteger(_InRole:enumRole):Integer;
 var
  i:Integer;
 begin
+  Result:=6; // operator_no_dash
+
   for i:=Ord(Low(enumRole)) to Ord(High(enumRole)) do
   begin
     if enumRole(i) = _InRole then begin
@@ -630,10 +643,14 @@ begin
 end;
 
 // преобразование EnumAccessStatus --> Bool
-function EnumAccessStatusToBool(Status: enumAccessStatus): Boolean;
+function EnumAccessStatusToBool(_status: enumAccessStatus): Boolean;
 begin
-  if Status = access_ENABLED  then Result:=True;
-  if Status = access_DISABLED then Result:=False;
+  case _status of
+    access_ENABLED:   Result:= True;
+    access_DISABLED:  Result:= False;
+    else
+     Result:=False;
+  end;
 end;
 
 
@@ -693,6 +710,7 @@ begin
     9:  Result:=eTransfer;        // переносы
    10:  Result:=eReserve;         // резерв
    11:  Result:=eCallback;        // callback
+ else Result:=eUnknown
  end;
 end;
 
@@ -713,6 +731,7 @@ begin
    eTransfer:   Result:= 9;       // переносы
    eReserve:    Result:= 10;      // резерв
    eCallback:   Result:= 11;      // callback
+ else Result:=-1
  end;
 end;
 
@@ -723,6 +742,7 @@ begin
   case inStatusReconnect of
     eNeedReconnectYES: Result:=True;
     eNeedReconnectNO:  Result:=False;
+  else Result:=False;
   end;
 end;
 
@@ -742,6 +762,7 @@ begin
      9: Result:=eLog_transfer;
     10: Result:=eLog_reserve;
     11: Result:=eLog_callback;
+  else Result:=eLog_unknown;
   end;
 end;
 
@@ -773,24 +794,27 @@ begin
     eLog_transfer:    Result:=eTransfer;
     eLog_reserve:     Result:=eReserve;
     eLog_callback:    Result:=eCallback;
+  else Result:=eUnknown;
   end;
 end;
 
 // SettingParamsStatus --> Int
-function SettingParamsStatusToInteger(status:enumParamStatus):Integer;
+function SettingParamsStatusToInteger(_status:enumParamStatus):Integer;
 begin
-  case status of
+  case _status of
     paramStatus_ENABLED:   Result:= 1;
     paramStatus_DISABLED:  Result:= 0;
+  else Result:=0;
   end;
 end;
 
 // Int --> SettingParamsStatus
-function IntegerToSettingParamsStatus(status:Integer):enumParamStatus;
+function IntegerToSettingParamsStatus(_status:Integer):enumParamStatus;
 begin
-  case status of
+  case _status of
     0:Result:=paramStatus_DISABLED;
     1:Result:=paramStatus_ENABLED;
+  else Result:=paramStatus_DISABLED;
   end;
 end;
 
@@ -821,11 +845,17 @@ end;
 
 // String -> EnumTypeClinic
 function StringToEnumTypeClinic(typeClinic:string):enumTypeClinic;
+var
+ tmp:enumTypeClinic;
 begin
-   if typeClinic = 'ММЦ'          then Result:=eMMC;
-   if typeClinic = 'ЦЛД'          then Result:=eCLD;
-   if typeClinic = 'Лаборатория'  then Result:=eLaboratory;
-   if typeClinic = 'Прочее'       then Result:=eOther;
+   tmp:=eOther;
+
+   if typeClinic = 'ММЦ'          then tmp:=eMMC;
+   if typeClinic = 'ЦЛД'          then tmp:=eCLD;
+   if typeClinic = 'Лаборатория'  then tmp:=eLaboratory;
+   if typeClinic = 'Прочее'       then tmp:=eOther;
+
+   Result:=tmp;
 end;
 
 // EnumQueueCurrent - > String
@@ -836,7 +866,8 @@ begin
     queue_5050:       Result:='5050';
     queue_5000_5050:  Result:='5000 и 5050';
     queue_null:       Result:='null';
-    end;
+   else  Result:='null';
+   end;
 end;
 
 // EnumQueueCurrent - > Integer
@@ -1196,6 +1227,7 @@ begin
   case _gender of
    gender_male:   Result:=0;
    gender_female: Result:=1;
+  else Result:=0;
   end;
 end;
 
@@ -1229,6 +1261,20 @@ begin
    eTableOnHold:         Result:='operators_ohhold';
    eTableHistoryOnHold:  Result:='history_onhold';
   end;
+end;
+
+ // EnumTrunkStatus - > String
+function StringToEnumTrunkStatus(_status:string):enumTrunkStatus;
+var
+ tmp:enumTrunkStatus;
+begin
+  tmp:=eTrunkUnknown;
+
+  if _status = 'Unknown' then tmp:=eTrunkUnknown;
+  if _status = 'Registered' then tmp:=eTrunkRegisterd;
+  if _status = 'Request' then tmp:=eTrunkRequest;
+
+  Result:=tmp;
 end;
 
 

@@ -303,6 +303,8 @@ var
  counts:Integer;
 begin
   Result:=False;
+  counts:=0;
+
   case _missed of
     eMissed: begin
        m_array:=m_missed;
@@ -758,7 +760,7 @@ var
  i:Integer;
  countFIO:Integer;
 begin
- _count:=0;
+ countFIO:=0;
 
  try
   for i:=0 to m_count - 1 do begin

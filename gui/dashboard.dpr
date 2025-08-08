@@ -75,7 +75,10 @@ uses
   TThreadDispatcherUnit in '..\custom_class\TThreadDispatcherUnit.pas',
   TAutoPodborPeopleUnit in '..\custom_class\TAutoPodborPeopleUnit.pas',
   FormPropushennieShowPeopleUnit in 'FormPropushennieShowPeopleUnit.pas' {FormPropushennieShowPeople},
-  TStatusUnit in '..\custom_class\TStatusUnit.pas';
+  TStatusUnit in '..\custom_class\TStatusUnit.pas',
+  FormTrunkSipUnit in 'FormTrunkSipUnit.pas' {FormTrunkSip},
+  TCheckSipTrunkUnit in '..\custom_class\TCheckSipTrunkUnit.pas',
+  Thread_CheckTrunkUnit in 'Thread\Thread_CheckTrunkUnit.pas';
 
 {$R *.res}
 
@@ -120,5 +123,6 @@ begin
   Application.CreateForm(TFormServerIKWorkingTime, FormServerIKWorkingTime);
   Application.CreateForm(TFormMenuAccess, FormMenuAccess);
   Application.CreateForm(TFormPropushennieShowPeople, FormPropushennieShowPeople);
+  Application.CreateForm(TFormTrunkSip, FormTrunkSip);
   Application.Run;
 end.

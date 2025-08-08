@@ -58,7 +58,7 @@ type
     Label19: TLabel;
     menu_ChangePassword: TMenuItem;
     Label23: TLabel;
-    Label24: TLabel;
+    lblCheckSipTrunkAlive: TLabel;
     menu_About_Version: TMenuItem;
     N1: TMenuItem;
     menu_About_Debug: TMenuItem;
@@ -245,6 +245,10 @@ type
     procedure popMenu_ActionOperators_AddQueue5000Click(Sender: TObject);
     procedure popMenu_ActionOperators_AddQueue5050Click(Sender: TObject);
     procedure popMenu_ActionOperators_AddQueue5000_5050Click(Sender: TObject);
+    procedure lblCheckSipTrunkAliveMouseLeave(Sender: TObject);
+    procedure lblCheckSipTrunkAliveMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
+    procedure lblCheckSipTrunkAliveClick(Sender: TObject);
 
   private
     { Private declarations }
@@ -276,6 +280,7 @@ type
   ACTIVESIP_updateTalkPhone_thread  :TThread;
   ACTIVESIP_countTalk_thread        :TThread;
   CHECKSERVERS_thread               :TThread;
+  CHECKSIPTRUNKS_thread             :TThread;
   ANSWEREDQUEUE_thread              :TThread;
   ONLINECHAT_thread                 :TThread;
   FORECAST_thread                   :TThread;
@@ -310,6 +315,7 @@ var
   UpdateACTIVESIPtalkTimePhone:Boolean;                    // остановка обновлени€ ACTIVESIP_updateTalkPhone
   UpdateACTIVESIPcountTalk:Boolean;                        // остановка обновлени€ ACTIVESIP_countTalk_thread
   UpdateCHECKSERVERSSTOP:Boolean;                          // остановка обновлени€ CHECKSERVERSSTOP
+  UpdateCheckSipTrunksStop:Boolean;                        // остановка обновлени€ CheckSipTrunks
   UpdateAnsweredStop:Boolean;                              // остановка обновлени€ AnsweredQueue
   UpdateOnlineChatStop:Boolean;                            // остановка обновлени€ OnlineChat
   UpdateForecast:Boolean;                                  // остановка обновлени€ Forecast
@@ -331,7 +337,7 @@ uses
     FormActiveSessionUnit, FormRePasswordUnit, Thread_AnsweredQueueUnit, ReportsUnit, Thread_ACTIVESIP_updatetalkUnit,
     FormDEBUGUnit, FormErrorUnit,GlobalVariables, FormUsersUnit, FormServersIKUnit, FormSettingsGlobalUnit,
     FormTrunkUnit, TFTPUnit, TXmlUnit, FormStatisticsChartUnit, TForecastCallsUnit, FormStatusInfoUnit,
-    FormHistoryCallOperatorUnit, FormChatNewMessageUnit, TDebugStructUnit, FormHistoryStatusOperatorUnit, GlobalVariablesLinkDLL, TStatusUnit;
+    FormHistoryCallOperatorUnit, FormChatNewMessageUnit, TDebugStructUnit, FormHistoryStatusOperatorUnit, GlobalVariablesLinkDLL, TStatusUnit, FormTrunkSipUnit;
 
 
 {$R *.dfm}
@@ -442,9 +448,9 @@ begin
 end;
 
 procedure THomeForm.btnStatus_callbackClick(Sender: TObject);
-var
- error:string;
- delay:Boolean;
+//var
+// error:string;
+// delay:Boolean;
 begin
   // callback
 // if SendCommand(eLog_callback,error) then begin
@@ -548,13 +554,13 @@ begin
 end;
 
 procedure THomeForm.Button1Click(Sender: TObject);
-var
-  ScreenRect: TRect;
-  TaskbarHeight: Integer;
-
-  FlashInfo: TFlashWindowInfo;
-
-  test: TDebugStruct;
+//var
+//  ScreenRect: TRect;
+//  TaskbarHeight: Integer;
+//
+//  FlashInfo: TFlashWindowInfo;
+//
+//  test: TDebugStruct;
 
 begin
 
@@ -798,7 +804,8 @@ begin
 
   // создание списка серверов дл€ проверки доступности
   createCheckServersInfoclinika;
-
+  // создание списка sip trunk дл€ проверки
+  CreateCheckSipTrunk;
 
   // прогрузка индивидуальных настроек пользовател€
   LoadIndividualSettingUser(SharedCurrentUserLogon.GetID);
@@ -882,8 +889,7 @@ end;
 procedure THomeForm.popMenu_ActionOperators_AddQueue5000Click(Sender: TObject);
 var
  id_sip:Integer;
- user_id:Integer;
- resultat:Word;
+ //user_id:Integer;
  id:Integer;
 begin
   // ѕровер€ем, был ли выбран элемент
@@ -901,7 +907,7 @@ begin
     Exit;
   end;
 
-  user_id:=getUserID(id_sip);
+  //user_id:=getUserID(id_sip);
 
   AddQueuePopMenu(eLog_add_queue_5000, id_sip);
 end;
@@ -910,8 +916,7 @@ procedure THomeForm.popMenu_ActionOperators_AddQueue5000_5050Click(
   Sender: TObject);
 var
  id_sip:Integer;
- user_id:Integer;
- resultat:Word;
+ //user_id:Integer;
  id:Integer;
 begin
   // ѕровер€ем, был ли выбран элемент
@@ -929,7 +934,7 @@ begin
     Exit;
   end;
 
-  user_id:=getUserID(id_sip);
+ // user_id:=getUserID(id_sip);
 
   AddQueuePopMenu(eLog_add_queue_5000_5050, id_sip);
 end;
@@ -937,8 +942,7 @@ end;
 procedure THomeForm.popMenu_ActionOperators_AddQueue5050Click(Sender: TObject);
 var
  id_sip:Integer;
- user_id:Integer;
- resultat:Word;
+ //user_id:Integer;
  id:Integer;
 begin
   // ѕровер€ем, был ли выбран элемент
@@ -956,7 +960,7 @@ begin
     Exit;
   end;
 
-  user_id:=getUserID(id_sip);
+  //user_id:=getUserID(id_sip);
 
   AddQueuePopMenu(eLog_add_queue_5050, id_sip);
 end;
@@ -1151,6 +1155,22 @@ begin
  lblCheckInfocilinikaServerAlive.Font.Style:=[fsUnderline];
 end;
 
+procedure THomeForm.lblCheckSipTrunkAliveClick(Sender: TObject);
+begin
+ FormTrunkSip.Show;
+end;
+
+procedure THomeForm.lblCheckSipTrunkAliveMouseLeave(Sender: TObject);
+begin
+  lblCheckSipTrunkAlive.Font.Style:=[];
+end;
+
+procedure THomeForm.lblCheckSipTrunkAliveMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+begin
+ lblCheckSipTrunkAlive.Font.Style:=[fsUnderline];
+end;
+
 procedure THomeForm.lblNewMessageLocalChatClick(Sender: TObject);
 begin
   lblNewMessageLocalChat.Visible:=False;
@@ -1234,7 +1254,7 @@ end;
 procedure THomeForm.ListViewSIPCustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
 var
- counts:Integer;
+ //counts:Integer;
  time_talk:Integer;
  test:string;
  longtalk:string;
@@ -1242,7 +1262,7 @@ begin
   if not Assigned(Item) then Exit;
 
   try
-    counts:=Item.SubItems.Count; // TODO еще подумать как можно это улучшить
+    //counts:=Item.SubItems.Count; // TODO еще подумать как можно это улучшить
 
     if Item.SubItems.Count = 8 then // ѕровер€ем, что есть достаточно SubItems
     begin

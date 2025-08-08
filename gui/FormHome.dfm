@@ -2,7 +2,7 @@ object HomeForm: THomeForm
   Left = 0
   Top = 0
   Caption = #1044#1072#1096#1073#1086#1088#1076' '#1050#1086#1083#1083#1062#1077#1085#1090#1088#1072
-  ClientHeight = 801
+  ClientHeight = 781
   ClientWidth = 1454
   Color = clWindow
   DefaultMonitor = dmDesktop
@@ -20,7 +20,7 @@ object HomeForm: THomeForm
   OnShow = FormShow
   DesignSize = (
     1454
-    801)
+    781)
   PixelsPerInch = 96
   TextHeight = 15
   object Label5: TLabel
@@ -520,15 +520,14 @@ object HomeForm: THomeForm
     Font.Style = []
     ParentFont = False
   end
-  object Label24: TLabel
+  object lblCheckSipTrunkAlive: TLabel
     Left = 166
     Top = 5
-    Width = 78
+    Width = 67
     Height = 16
     Cursor = crHandPoint
-    Hint = #1055#1086#1082#1072#1079#1072#1090#1100' '#1089#1090#1072#1090#1091#1089#1099' '#1089#1077#1088#1074#1077#1088#1086#1074' '#1080#1085#1092#1086#1082#1083#1080#1085#1080#1082#1080
-    Caption = #1074' '#1088#1072#1079#1088#1072#1073#1086#1090#1082#1077
-    Enabled = False
+    Hint = #1055#1086#1082#1072#1079#1072#1090#1100' '#1089#1090#1072#1090#1091#1089#1099' sip '#1090#1088#1072#1085#1082#1086#1074
+    Caption = #1087#1088#1086#1074#1077#1088#1082#1072'...'
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
@@ -536,12 +535,14 @@ object HomeForm: THomeForm
     Font.Style = []
     ParentFont = False
     ParentShowHint = False
-    ShowHint = False
-    OnClick = lblCheckInfocilinikaServerAliveClick
+    ShowHint = True
+    OnClick = lblCheckSipTrunkAliveClick
+    OnMouseMove = lblCheckSipTrunkAliveMouseMove
+    OnMouseLeave = lblCheckSipTrunkAliveMouseLeave
   end
   object lblNewMessageLocalChat: TLabel
     Left = 1202
-    Top = 760
+    Top = 740
     Width = 243
     Height = 16
     Cursor = crHandPoint
@@ -695,7 +696,7 @@ object HomeForm: THomeForm
   end
   object Img8Mart: TImage
     Left = 1374
-    Top = 729
+    Top = 709
     Width = 79
     Height = 50
     Anchors = [akRight, akBottom]
@@ -822,7 +823,7 @@ object HomeForm: THomeForm
   end
   object ImageLogo: TImage
     Left = 1277
-    Top = 721
+    Top = 701
     Width = 157
     Height = 37
     Anchors = [akRight, akBottom]
@@ -989,7 +990,7 @@ object HomeForm: THomeForm
   end
   object ImgNewYear: TImage
     Left = 1389
-    Top = 701
+    Top = 681
     Width = 55
     Height = 55
     Anchors = [akRight, akBottom]
@@ -6445,7 +6446,7 @@ object HomeForm: THomeForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 780
+    Top = 760
     Width = 1454
     Height = 21
     Panels = <
@@ -7639,7 +7640,7 @@ object HomeForm: THomeForm
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 10
+    TabOrder = 11
     Visible = False
   end
   object st_Forecast_AfterTomorrow: TStaticText
@@ -7660,7 +7661,7 @@ object HomeForm: THomeForm
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 11
+    TabOrder = 12
     Visible = False
   end
   object Button1: TButton
