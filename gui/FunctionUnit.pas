@@ -80,7 +80,7 @@ function getLastStatusTime(InUserid:Integer; InOperatorStatus:enumStatusOperator
 function isOperatorGoHome(inUserID:Integer):Boolean;                                 // проверка оператор ушел домой или нет
 function isOperatorGoHomeWithForceClosed(inUserID:Integer):Boolean;                  // проверка оператор ушел домой или нет (через завершение активной сессии)
 function getIsExitOperatorCurrentQueue(InCurrentRole:enumRole;InUserID:Integer):Boolean;// проверка вдруг оператор забыл выйти из линии
-function getLastStatusTimeOnHold(InStartTimeonHold:string):string;                   // подсчет времени в статусе OnHold
+function GetLastStatusTimeOnHold(InStartTimeonHold:string):string;                   // подсчет времени в статусе OnHold
 function getTranslate(Stroka: string):string;                                        // Транслитерация из рус - > транлирт
 //function getUserFIO(InUserID:Integer):string;                                      // полчуение имени пользователя из его UserID
 function getUserFamiliya(InUserID:Integer):string;                                   // полчуение фамилии пользователя из его UserID
@@ -1404,11 +1404,11 @@ begin
             else lblStatusServer[i].Top:=cTOPSTART+(Round(cTOPSTART/2)*i);
 
             lblStatusServer[i].Font.Name:='Tahoma';
-            lblStatusServer[i].Font.Size:=8;
+            lblStatusServer[i].Font.Size:=10;
             lblStatusServer[i].Font.Style:=[fsBold];
             lblStatusServer[i].AutoSize:=False;
-            lblStatusServer[i].Width:=78;
-            lblStatusServer[i].Height:=13;
+            lblStatusServer[i].Width:=90;
+            lblStatusServer[i].Height:=19;
             lblStatusServer[i].Alignment:=taCenter;
             lblStatusServer[i].Parent:=FormServerIKCheck;
           end;
@@ -1425,16 +1425,16 @@ begin
             end
             else lblAddressServer[i].Caption:=VarToStr(Fields[2].Value);
 
-            lblAddressServer[i].Left:=90;
+            lblAddressServer[i].Left:=109;
 
             if i=0 then lblAddressServer[i].Top:=cTOPSTART
             else lblAddressServer[i].Top:=cTOPSTART+(Round(cTOPSTART/2)*i);
 
             lblAddressServer[i].Font.Name:='Tahoma';
-            lblAddressServer[i].Font.Size:=8;
+            lblAddressServer[i].Font.Size:=10;
             lblAddressServer[i].AutoSize:=False;
             lblAddressServer[i].Width:=333;
-            lblAddressServer[i].Height:=13;
+            lblAddressServer[i].Height:=19;
             lblAddressServer[i].Alignment:=taCenter;
             lblAddressServer[i].Parent:=FormServerIKCheck;
           end;
@@ -1445,16 +1445,16 @@ begin
             lblIP[i].Name:='lblIP_'+nameIP;
             lblIP[i].Tag:=1;
             lblIP[i].Caption:=VarToStr(Fields[1].Value);
-            lblIP[i].Left:=427;
+            lblIP[i].Left:=454;
 
             if i=0 then lblIP[i].Top:=cTOPSTART
             else lblIP[i].Top:=cTOPSTART+(Round(cTOPSTART/2)*i);
 
             lblIP[i].Font.Name:='Tahoma';
-            lblIP[i].Font.Size:=8;
+            lblIP[i].Font.Size:=10;
             lblIP[i].AutoSize:=False;
             lblIP[i].Width:=144;
-            lblIP[i].Height:=13;
+            lblIP[i].Height:=19;
             lblIP[i].Alignment:=taCenter;
             lblIP[i].Parent:=FormServerIKCheck;
           end;
@@ -1489,6 +1489,7 @@ var
 
  lblStatusTrunk:  TArray<TLabel>;
  lblNameTrunk:    TArray<TLabel>;
+ lblTimeUpdate:   TArray<TLabel>;
  nameTrunk:string;
  error:string;
 begin
@@ -1528,10 +1529,11 @@ begin
         // выставляем размерность
         SetLength(lblStatusTrunk,countTrunk);
         SetLength(lblNameTrunk,countTrunk);
+        SetLength(lblTimeUpdate,countTrunk);
 
 
         SQL.Clear;
-        SQL.Add('select id,alias from sip_trunks where is_monitoring = ''1'' ');
+        SQL.Add('select id,alias,date_time_update from sip_trunks where is_monitoring = ''1'' ');
 
         try
           Active:=True;
@@ -1565,11 +1567,11 @@ begin
             else lblStatusTrunk[i].Top:=cTOPSTART+(Round(cTOPSTART/2)*i);
 
             lblStatusTrunk[i].Font.Name:='Tahoma';
-            lblStatusTrunk[i].Font.Size:=8;
+            lblStatusTrunk[i].Font.Size:=10;
             lblStatusTrunk[i].Font.Style:=[fsBold];
             lblStatusTrunk[i].AutoSize:=False;
             lblStatusTrunk[i].Width:=120;
-            lblStatusTrunk[i].Height:=14;
+            lblStatusTrunk[i].Height:=19;
             lblStatusTrunk[i].Alignment:=taCenter;
             lblStatusTrunk[i].Parent:=FormTrunkSip;
           end;
@@ -1586,12 +1588,32 @@ begin
             else lblNameTrunk[i].Top:=cTOPSTART+(Round(cTOPSTART/2)*i);
 
             lblNameTrunk[i].Font.Name:='Tahoma';
-            lblNameTrunk[i].Font.Size:=8;
+            lblNameTrunk[i].Font.Size:=10;
             lblNameTrunk[i].AutoSize:=False;
-            lblNameTrunk[i].Width:=193;
-            lblNameTrunk[i].Height:=14;
+            lblNameTrunk[i].Width:=160;
+            lblNameTrunk[i].Height:=19;
             lblNameTrunk[i].Alignment:=taCenter;
             lblNameTrunk[i].Parent:=FormTrunkSip;
+          end;
+
+          // время обновления
+          begin
+            lblTimeUpdate[i]:=TLabel.Create(FormTrunkSip);
+            lblTimeUpdate[i].Name:='lblTime_'+nameTrunk;
+            lblTimeUpdate[i].Tag:=1;
+            lblTimeUpdate[i].Caption:=VarToStr(Fields[2].Value);
+            lblTimeUpdate[i].Left:=314;
+
+            if i=0 then lblTimeUpdate[i].Top:=cTOPSTART
+            else lblTimeUpdate[i].Top:=cTOPSTART+(Round(cTOPSTART/2)*i);
+
+            lblTimeUpdate[i].Font.Name:='Tahoma';
+            lblTimeUpdate[i].Font.Size:=10;
+            lblTimeUpdate[i].AutoSize:=False;
+            lblTimeUpdate[i].Width:=160;
+            lblTimeUpdate[i].Height:=19;
+            lblTimeUpdate[i].Alignment:=taCenter;
+            lblTimeUpdate[i].Parent:=FormTrunkSip;
           end;
 
           ado.Next;
@@ -3801,17 +3823,21 @@ end;
 
 
 // подсчет времени в статусе OnHold
-function getLastStatusTimeOnHold(InStartTimeonHold:string):string;
+function GetLastStatusTimeOnHold(InStartTimeonHold:string):string;
 var
  dateToBD:TDateTime;
  dateNOW:TDateTime;
  diff:Integer;
+ fullTime:string;
 begin
   // разница во времени
    dateToBD:=StrToDateTime(InStartTimeonHold);
    dateNOW:=Now;
    diff:=Round((dateNOW - dateToBD) * 24 * 60 * 60 );
-   Result:=GetTimeAnsweredSecondsToString(diff);
+
+   fullTime:=GetTimeAnsweredSecondsToString(diff);
+
+   Result:=Copy(fullTime, 4, 5);  // формат (mm::ss)
 end;
 
 // проверка оператор ушел домой или нет
@@ -5484,5 +5510,7 @@ begin
 
   Result:=SharedActiveSipOperators.IsTalkOperator(sip);
 end;
+
+
 
 end.

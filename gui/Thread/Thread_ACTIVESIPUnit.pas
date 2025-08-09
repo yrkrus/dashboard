@@ -148,7 +148,7 @@ begin
 
             // проверим вдруг оператор в состоянии onHold
             if p_ActiveSipOperators.GetListOperators_IsOnHold(i) then begin
-              ListItem.SubItems.Add('OnHold ('+getLastStatusTimeOnHold(p_ActiveSipOperators.GetListOperators_OnHoldStartTime(i))+')');
+              ListItem.SubItems.Add('OnHold ('+GetLastStatusTimeOnHold(p_ActiveSipOperators.GetListOperators_OnHoldStartTime(i))+')');
             end else begin
              // отложенная команда на смену статуса
              if p_ActiveSipOperators.GetListOperators_StatusDelay(i) <> eUnknown then begin
@@ -171,7 +171,7 @@ begin
             else begin
               // проверим вдруг оператор в состоянии onHold (ну типа забыли из него выйти или нечаянно в него вошли)
               if p_ActiveSipOperators.GetListOperators_IsOnHold(i) then begin
-                ListItem.SubItems.Add('OnHold ('+getLastStatusTimeOnHold(p_ActiveSipOperators.GetListOperators_OnHoldStartTime(i))+')');
+                ListItem.SubItems.Add('OnHold ('+GetLastStatusTimeOnHold(p_ActiveSipOperators.GetListOperators_OnHoldStartTime(i))+')');
 
               end
               else begin
@@ -337,7 +337,7 @@ begin
 
               // проверим вдруг оператор в состоянии onHold
               if p_ActiveSipOperators.GetListOperators_IsOnHold(i) then begin
-                ListItem.SubItems[1]:='OnHold ('+getLastStatusTimeOnHold(p_ActiveSipOperators.GetListOperators_OnHoldStartTime(i))+')';
+                ListItem.SubItems[1]:='OnHold ('+GetLastStatusTimeOnHold(p_ActiveSipOperators.GetListOperators_OnHoldStartTime(i))+')';
 
               end else begin
                 // отложенная команда на смену статуса
@@ -361,10 +361,7 @@ begin
               else begin
                 // проверим вдруг оператор в состоянии onHold (ну типа забыли из него выйти или нечаянно в него вошли)
                 if p_ActiveSipOperators.GetListOperators_IsOnHold(i) then begin
-                  ListItem.SubItems[1]:='OnHold ('
-                                                  +getLastStatusTimeOnHold(p_ActiveSipOperators.GetListOperators_OnHoldStartTime(i))
-                                                  +')';
-
+                  ListItem.SubItems[1]:='OnHold ('+GetLastStatusTimeOnHold(p_ActiveSipOperators.GetListOperators_OnHoldStartTime(i))+')';
                 end
                 else begin
                  ListItem.SubItems[1]:=getStatus(p_ActiveSipOperators.GetListOperators_Status(i));

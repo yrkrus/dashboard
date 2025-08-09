@@ -1763,6 +1763,7 @@ begin
   end;
 end;
 
+
 function TActiveSIP.GetListOperators_CountTalk(id:Integer):Integer;
 begin
   if m_mutex.WaitFor(INFINITE) = wrSignaled  then begin

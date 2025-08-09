@@ -26,6 +26,7 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
        id              :Integer;
        status          :enumTrunkStatus;
        alias           :string;
+       time_update     :string;
        is_alive        :Boolean; // живой транк или нет true - живой
 
       constructor Create;             overload;
@@ -52,6 +53,7 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
 
       procedure Check;        // внутренн€€ проверка состо€ние sip транков
       function GetStateTrunk(_id:Integer):enumTrunkStatus;  // статус транка
+      function GetTimeUpdate(_id:Integer):string;  // врем€ обновлени€ статуса транка
 
       public
       constructor Create(var p_Log:TLoggingFile;
@@ -86,6 +88,7 @@ constructor TStructTrunk.Create;
     Self.id:=0;
     Self.status:=eTrunkUnknown;
     Self.alias:='';
+    Self.time_update:='';
     Self.is_alive:=False;
  end;
 
@@ -170,7 +173,7 @@ begin
         if Active then ACtive:=false;
 
         SQL.Clear;
-        response:='select id,state,alias from sip_trunks where is_monitoring = ''1''';
+        response:='select id,state,alias,date_time_update from sip_trunks where is_monitoring = ''1''';
 
         SQL.Add(response);
 
@@ -193,6 +196,7 @@ begin
            m_listTrunk[i].id:=StrToInt(VarToStr(Fields[0].Value));
            m_listTrunk[i].status:=StringToEnumTrunkStatus(VarToStr(Fields[1].Value));
            m_listTrunk[i].alias:=VarToStr(Fields[2].Value);
+           m_listTrunk[i].time_update:=VarToStr(Fields[3].Value);
 
            // живой ли транк
            if m_listTrunk[i].status = eTrunkRegisterd then  m_listTrunk[i].is_alive:=True;
@@ -221,6 +225,8 @@ begin
     // живой ли транк
     if m_listTrunk[i].status = eTrunkRegisterd then m_listTrunk[i].is_alive:=True
     else m_listTrunk[i].is_alive:=False;
+
+    m_listTrunk[i].time_update:=GetTimeUpdate(m_listTrunk[i].id);
   end;
 end;
 
@@ -272,6 +278,53 @@ begin
   end;
 end;
 
+// врем€ обновлени€ статуса транка
+function TCheckSipTrunk.GetTimeUpdate(_id:Integer):string;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ response:string;
+begin
+  Result:='';
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+
+      SQL.Clear;
+      response:='select date_time_update from sip_trunks where id = '+#39+IntToStr(_id)+#39+'';
+      SQL.Add(response);
+
+      try
+          Active:=True;
+          if Fields[0].Value <> null then Result:=VarToStr(Fields[0].Value);
+      except
+          on E:EIdException do begin
+             FreeAndNil(ado);
+             if Assigned(serverConnect) then begin
+               serverConnect.Close;
+               FreeAndNil(serverConnect);
+             end;
+             Exit;
+          end;
+      end;
+
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
 
 procedure TCheckSipTrunk.CheckSipTrunk;
 const
@@ -306,7 +359,13 @@ begin
             else begin                                  // ≈—“№ ќЎ»Ѕ ј!!!
                (Components[j] as TLabel).Caption:='не доступен';
                (Components[j] as TLabel).Font.Color:=colorError;
+               Inc(allCountErrors);
             end;
+          end;
+
+          // врем€ обновлени€
+          if Components[j].Name='lblTime_'+IntToStr(m_listTrunk[i].id) then begin
+            (Components[j] as TLabel).Caption:=m_listTrunk[i].time_update;
           end;
         end;
 
@@ -315,22 +374,17 @@ begin
 
   // надпись после проверки
   begin
-      for i:=0 to Count-1 do begin
-
-          // кол-во с ошибками
-          for j:=0 to Count-1 do begin
-            if not m_listTrunk[j].is_alive then begin
-               Inc(allCountErrors);
-            end;
-          end;
-
+      if allCountErrors = 0 then begin
+        p_checkTrunkInfo.Caption:='отсутствуют';
+        p_checkTrunkInfo.Font.Color:=colorOk;
+      end
+      else begin
+        for i:=0 to Count-1 do begin
           case allCountErrors of
            1:begin
             for j:=0 to Count-1 do begin
               if not m_listTrunk[j].is_alive then begin
                 p_checkTrunkInfo.Caption:=m_listTrunk[j].alias;
-                p_checkTrunkInfo.InitiateAction;
-                p_checkTrunkInfo.Repaint;
               end;
             end;
            end;
@@ -345,9 +399,6 @@ begin
                 else begin
                   p_checkTrunkInfo.Caption:=p_checkTrunkInfo.Caption+' и '+m_listTrunk[j].alias;
                 end;
-
-                p_checkTrunkInfo.InitiateAction;
-                p_checkTrunkInfo.Repaint;
               end;
             end;
            end;
@@ -363,19 +414,18 @@ begin
                   p_checkTrunkInfo.Caption:=p_checkTrunkInfo.Caption+' и '+m_listTrunk[j].alias;
                   inc(viewErrors);
                 end;
-
-                p_checkTrunkInfo.InitiateAction;
-                p_checkTrunkInfo.Repaint;
               end;
             end;
 
             if viewErrors>=2 then begin
              p_checkTrunkInfo.Caption:=p_checkTrunkInfo.Caption+' и еще '+IntToStr(allCountErrors-2)+' (нажмите сюда дл€ показа...)';
-             p_checkTrunkInfo.InitiateAction;
-             p_checkTrunkInfo.Repaint;
             end;
           end;
+        end;
 
+        p_checkTrunkInfo.Font.Color:=colorError;
+        p_checkTrunkInfo.InitiateAction;
+        p_checkTrunkInfo.Repaint;
       end;
   end;
 

@@ -5,7 +5,7 @@ object FormHistoryCallOperator: TFormHistoryCallOperator
   BorderStyle = bsSingle
   Caption = #1048#1089#1090#1086#1088#1080#1103' '#1079#1074#1086#1085#1082#1086#1074' (operatorID)'
   ClientHeight = 677
-  ClientWidth = 798
+  ClientWidth = 708
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -33,50 +33,8 @@ object FormHistoryCallOperator: TFormHistoryCallOperator
     ParentFont = False
     WordWrap = True
   end
-  object img_play_or_downloads: TImage
-    Left = 652
-    Top = 45
-    Width = 16
-    Height = 16
-    Cursor = crHandPoint
-    Enabled = False
-    Picture.Data = {
-      0A544A504547496D616765B4030000FFD8FFE000104A46494600010101007800
-      780000FFE100584578696600004D4D002A000000080004013100020000001100
-      00003E5110000100000001010000005111000400000001000000765112000400
-      00000100000076000000007777772E696E6B73636170652E6F72670000FFDB00
-      4300020101020101020202020202020203050303030303060404030507060707
-      0706070708090B0908080A0807070A0D0A0A0B0C0C0C0C07090E0F0D0C0E0B0C
-      0C0CFFDB004301020202030303060303060C0807080C0C0C0C0C0C0C0C0C0C0C
-      0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C
-      0C0C0C0C0C0C0CFFC00011080010001003012200021101031101FFC4001F0000
-      010501010101010100000000000000000102030405060708090A0BFFC400B510
-      0002010303020403050504040000017D01020300041105122131410613516107
-      227114328191A1082342B1C11552D1F02433627282090A161718191A25262728
-      292A3435363738393A434445464748494A535455565758595A63646566676869
-      6A737475767778797A838485868788898A92939495969798999AA2A3A4A5A6A7
-      A8A9AAB2B3B4B5B6B7B8B9BAC2C3C4C5C6C7C8C9CAD2D3D4D5D6D7D8D9DAE1E2
-      E3E4E5E6E7E8E9EAF1F2F3F4F5F6F7F8F9FAFFC4001F01000301010101010101
-      01010000000000000102030405060708090A0BFFC400B5110002010204040304
-      0705040400010277000102031104052131061241510761711322328108144291
-      A1B1C109233352F0156272D10A162434E125F11718191A262728292A35363738
-      393A434445464748494A535455565758595A636465666768696A737475767778
-      797A82838485868788898A92939495969798999AA2A3A4A5A6A7A8A9AAB2B3B4
-      B5B6B7B8B9BAC2C3C4C5C6C7C8C9CAD2D3D4D5D6D7D8D9DAE2E3E4E5E6E7E8E9
-      EAF2F3F4F5F6F7F8F9FAFFDA000C03010002110311003F00FB1BF6A2D33E20FF
-      00C11BBE34F8CBE27DADDF8CFE257EC93F15AFE7BCF887A28D42E6EB5CF86779
-      7476CDABD84C1FCF366C5B322230688E1948C02327F641FDA8F5CFF825378E7C
-      0BF0F3C65E2CBCF8ABFB23FC5C9E08BE0FFC55331BC97C3AF73836FA36A928EB
-      130204139C00060E1032DBEAFED43AA7C40FF82C8FC69F197C31B6B5F19FC35F
-      D927E14DFCF69F10F5A1A7DCDAEB9F132F2D0969B48B084279E2CD4AE247452D
-      29C2A83900E4FEC7FF00B2EEB9FF00055BF1CF813E2278CBC2779F0AFF00647F
-      8493DBCBF07FE15184D9C9E227B6C0B6D6B548874894006080E4107272859AE0
-      03FFD9}
-    Stretch = True
-    Visible = False
-  end
   object lblDownloadCall: TLabel
-    Left = 501
+    Left = 529
     Top = 75
     Width = 53
     Height = 16
@@ -97,7 +55,7 @@ object FormHistoryCallOperator: TFormHistoryCallOperator
     OnClick = lblDownloadCallClick
   end
   object Image1: TImage
-    Left = 477
+    Left = 505
     Top = 76
     Width = 16
     Height = 16
@@ -137,7 +95,7 @@ object FormHistoryCallOperator: TFormHistoryCallOperator
     Visible = False
   end
   object Image2: TImage
-    Left = 564
+    Left = 592
     Top = 75
     Width = 16
     Height = 16
@@ -177,7 +135,7 @@ object FormHistoryCallOperator: TFormHistoryCallOperator
     Visible = False
   end
   object lblPlayCall: TLabel
-    Left = 588
+    Left = 616
     Top = 75
     Width = 81
     Height = 16
@@ -229,7 +187,6 @@ object FormHistoryCallOperator: TFormHistoryCallOperator
       ViewStyle = vsReport
       OnCustomDrawItem = list_HistoryCustomDrawItem
       OnMouseDown = list_HistoryMouseDown
-      ExplicitWidth = 660
     end
     object st_NoCalls: TStaticText
       Left = 3
@@ -252,7 +209,7 @@ object FormHistoryCallOperator: TFormHistoryCallOperator
   object panel_program: TPanel
     Left = 8
     Top = 5
-    Width = 664
+    Width = 690
     Height = 61
     BevelInner = bvLowered
     TabOrder = 0
@@ -283,7 +240,7 @@ object FormHistoryCallOperator: TFormHistoryCallOperator
       ParentFont = False
     end
     object Label1: TLabel
-      Left = 429
+      Left = 452
       Top = 7
       Width = 61
       Height = 16
@@ -296,7 +253,7 @@ object FormHistoryCallOperator: TFormHistoryCallOperator
       ParentFont = False
     end
     object lblCountCall: TLabel
-      Left = 495
+      Left = 518
       Top = 7
       Width = 15
       Height = 16
@@ -309,7 +266,7 @@ object FormHistoryCallOperator: TFormHistoryCallOperator
       ParentFont = False
     end
     object Label3: TLabel
-      Left = 527
+      Left = 550
       Top = 7
       Width = 87
       Height = 16
@@ -322,7 +279,7 @@ object FormHistoryCallOperator: TFormHistoryCallOperator
       ParentFont = False
     end
     object lblCountCallProcent: TLabel
-      Left = 620
+      Left = 643
       Top = 7
       Width = 15
       Height = 16
@@ -335,7 +292,7 @@ object FormHistoryCallOperator: TFormHistoryCallOperator
       ParentFont = False
     end
     object Label6: TLabel
-      Left = 185
+      Left = 190
       Top = 35
       Width = 90
       Height = 16
@@ -350,7 +307,7 @@ object FormHistoryCallOperator: TFormHistoryCallOperator
       ParentFont = False
     end
     object lbl_3_10: TLabel
-      Left = 283
+      Left = 288
       Top = 35
       Width = 15
       Height = 16
@@ -365,7 +322,7 @@ object FormHistoryCallOperator: TFormHistoryCallOperator
       ParentFont = False
     end
     object Label8: TLabel
-      Left = 350
+      Left = 355
       Top = 35
       Width = 91
       Height = 16
@@ -395,7 +352,7 @@ object FormHistoryCallOperator: TFormHistoryCallOperator
       ParentFont = False
     end
     object Label10: TLabel
-      Left = 503
+      Left = 508
       Top = 35
       Width = 90
       Height = 16
@@ -410,7 +367,7 @@ object FormHistoryCallOperator: TFormHistoryCallOperator
       ParentFont = False
     end
     object lbl_15: TLabel
-      Left = 601
+      Left = 606
       Top = 35
       Width = 15
       Height = 16
@@ -425,7 +382,7 @@ object FormHistoryCallOperator: TFormHistoryCallOperator
       ParentFont = False
     end
     object Label12: TLabel
-      Left = 26
+      Left = 31
       Top = 35
       Width = 90
       Height = 16
@@ -440,7 +397,7 @@ object FormHistoryCallOperator: TFormHistoryCallOperator
       ParentFont = False
     end
     object lbl_3: TLabel
-      Left = 124
+      Left = 129
       Top = 35
       Width = 15
       Height = 16

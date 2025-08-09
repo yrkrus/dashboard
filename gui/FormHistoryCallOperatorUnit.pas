@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.ComCtrls, Vcl.StdCtrls,
-  Data.DB, Data.Win.ADODB, IdException, System.ImageList, Vcl.ImgList,
+  Data.DB, Data.Win.ADODB, IdException, System.ImageList, Vcl.ImgList, System.DateUtils,
   Vcl.Imaging.jpeg, Vcl.Menus;
 
   type
@@ -38,7 +38,6 @@ type
     lbl_3: TLabel;
     Label2: TLabel;
     combox_TimeFilter: TComboBox;
-    img_play_or_downloads: TImage;
     lblDownloadCall: TLabel;
     Image1: TImage;
     Image2: TImage;
@@ -72,6 +71,7 @@ type
 
   procedure Show(_timeFilter:enumFilterTime);
   procedure LoadCountCalls(isShowAllCalls:Boolean);
+  function GetTimeOnHoldCall(_sip:Integer; _phone:string):Integer;  // время сколько номер телефона был в OnHold
 
   procedure ClearListView(var p_ListView:TListView);
   procedure LoadComboxFilterValue(_timeFilter:enumFilterTime);
@@ -82,7 +82,7 @@ type
 
 
   procedure ClearData(isClearUserID:Boolean = True);      // очистка данных
-  procedure AddListItem(const id, dateTime, trunk, phone, numberQueue, talkTime: string;
+  procedure AddListItem(const id, dateTime, trunk, phone, numberQueue, talkTime, onHoldTime: string;
                       isReducedTime: Boolean;
                       var p_ListView: TListView;
                       var m_count3, m_count3_10, m_count10_15, m_count15: Integer);
@@ -172,9 +172,9 @@ const
  cWidth_default        :Word = 680;
  cWidth_date           :Word = 20;
  cWidth_trunk          :Word = 15;
- cWidth_phone          :Word = 20;
- cWidth_queue          :Word = 14;
- cWidth_time           :Word = 16;
+ cWidth_phone          :Word = 19;
+ cWidth_queue          :Word = 13;
+ cWidth_time           :Word = 17;
  cWidth_timeOnHold     :Word = 14;
 begin
  with p_ListView do begin
@@ -223,6 +223,7 @@ begin
       Width:=Round((cWidth_default*cWidth_time)/100);
       Alignment:=taCenter;
     end;
+
     with Columns.Add do
     begin
       Caption:=' OnHold';
@@ -271,7 +272,74 @@ begin
 end;
 
 
-procedure TFormHistoryCallOperator.AddListItem(const id, dateTime, trunk, phone, numberQueue, talkTime: string;
+// время сколько номер телефона был в OnHold
+function TFormHistoryCallOperator.GetTimeOnHoldCall(_sip:Integer; _phone:string):Integer;
+var
+ i:Integer;
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ countData:Integer;
+ seconds:Integer;
+ secondsAll:Integer;
+begin
+  Result:=0;
+  secondsAll:=0;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+
+      SQL.Clear;
+      SQL.Add('select count(id) from operators_ohhold where sip IN ('+IntToStr(_sip)+')'+
+              ' and phone =' + #39 + _phone + #39 +' and date_time_stop is not NULL');
+
+      Active:=True;
+      countData:=Fields[0].Value;
+
+      if countData=0 then begin
+        FreeAndNil(ado);
+        if Assigned(serverConnect) then begin
+          serverConnect.Close;
+          FreeAndNil(serverConnect);
+        end;
+
+       Exit;
+      end;
+
+      SQL.Clear;
+      SQL.Add('select date_time_start,date_time_stop from operators_ohhold where sip IN ('+IntToStr(_sip)+')'+
+              ' and phone =' + #39 + _phone + #39 +' and date_time_stop is not NULL');
+
+      Active:=True;
+      for i:=0 to countData-1 do begin
+        seconds:= SecondsBetween(StrToDateTime(Fields[0].Value), StrToDateTime(Fields[1].Value));
+
+        //общее время
+        secondsAll := secondsAll + seconds;
+
+        ado.Next;
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+
+  Result:=secondsAll;
+end;
+
+
+procedure TFormHistoryCallOperator.AddListItem(const id, dateTime, trunk, phone, numberQueue, talkTime, onHoldTime: string;
                       isReducedTime: Boolean;
                       var p_ListView: TListView;
                       var m_count3, m_count3_10, m_count10_15, m_count15: Integer);
@@ -281,12 +349,11 @@ var
   bitmap: TBitmap;
 begin
   ListItem := p_ListView.Items.Add;
-  ListItem.Caption := id;      // id
-  ListItem.SubItems.Add(dateTime); // дата время
-  ListItem.SubItems.Add(trunk);     // транк
-  ListItem.SubItems.Add(phone);   // номер телефона
-  ListItem.SubItems.Add(numberQueue); // очередь
-
+  ListItem.Caption := id;               // id
+  ListItem.SubItems.Add(dateTime);      // дата время
+  ListItem.SubItems.Add(trunk);         // транк
+  ListItem.SubItems.Add(phone);         // номер телефона
+  ListItem.SubItems.Add(numberQueue);   // очередь
 
   // Получаем время разговора
   if isReducedTime then
@@ -299,6 +366,8 @@ begin
     ListItem.SubItems.Add(VarToStr(talkTime));
     time_talk := GetTimeAnsweredToSeconds(VarToStr(talkTime), False);
   end;
+
+  ListItem.SubItems.Add(onHoldTime);    // время в OnHold
 
   // Увеличиваем счетчики в зависимости от времени разговора
   case time_talk of
@@ -326,10 +395,12 @@ var
   ado: TADOQuery;
   serverConnect: TADOConnection;
   i, countCalls: Integer;
+  fullTimeOnHold:string;
+  diffTime:Integer;
   time_talk: Integer;
   program_started: TDateTime;
   program_exit: TDateTime;
-  id, dateTime, trunk, phone, numberQueue, talkTime:string;
+  id, dateTime, trunk, phone, numberQueue, talkTime, onHold:string;
   filteringCount:Integer;
 begin
   Caption := 'История звонков: ' + GetUserNameOperators(IntToStr(m_sip));
@@ -392,12 +463,24 @@ begin
         numberQueue :=VarToStr(Fields[3].Value);
         talkTime    :=VarToStr(Fields[4].Value);
 
+        // время в onHold
+        begin
+         diffTime:=GetTimeOnHoldCall(m_sip, phone);
+         if diffTime<>0 then begin
+            fullTimeOnHold:=GetTimeAnsweredSecondsToString(diffTime);
+            onHold:=Copy(fullTimeOnHold, 4, 5);  // формат (mm::ss)
+         end
+         else begin
+           onHold:='---';
+         end;
+        end;
+
         trunk:=GetPhoneTrunkQueue(phone,dateTime);
 
         if _filterTime = time_all then
         begin
           // Элемент не найден, добавляем новый
-          AddListItem(id, dateTime,trunk, phone, numberQueue, talkTime,
+          AddListItem(id, dateTime,trunk, phone, numberQueue, talkTime, onHold,
                       isReducedTime,
                       p_ListView,
                       m_count3, m_count3_10, m_count10_15, m_count15);
@@ -436,7 +519,7 @@ begin
           end;
 
           inc(filteringCount);
-          AddListItem(id, dateTime,trunk, phone, numberQueue, talkTime,
+          AddListItem(id, dateTime,trunk, phone, numberQueue, talkTime, onHold,
                       isReducedTime,
                       p_ListView,
                       m_count3, m_count3_10, m_count10_15, m_count15);
@@ -451,7 +534,6 @@ begin
         if filteringCount > 0 then st_NoCalls.Visible := False
         else st_NoCalls.Visible := True;
       end;
-
 
     end;
   finally
