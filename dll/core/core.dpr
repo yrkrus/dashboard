@@ -10,6 +10,19 @@ uses
 
 {$R *.res}
 
+// ======== СМЕНА АДРЕСА БАЗЫ ДАННЫХ =========
+function _DefaultDataBase:string;
+begin
+  Result:=GetServerName;
+  // Result:=GetServerNameTest;
+end;
+
+function GetDefaultDataBase:PChar; stdcall; export;
+begin
+  Result:=PChar(_DefaultDataBase);
+end;
+
+
 // создание подключения к серверу
 function createServerConnect: Pointer; stdcall; overload; // Возвращаем указатель
 begin
@@ -17,7 +30,7 @@ begin
 
   with TADOConnection(Result) do
   begin
-    DefaultDatabase := GetServerName;
+    DefaultDatabase := _DefaultDataBase;
     Provider := 'MSDASQL.1';
     ConnectionString := 'Provider=' + Provider +
                         ';Password=' + GetServerPassword +
@@ -52,7 +65,7 @@ begin
 
   with TADOConnection(Result) do
   begin
-    DefaultDatabase := GetServerName;
+    DefaultDatabase := _DefaultDataBase;
     Provider := 'MSDASQL.1';
     ConnectionString := 'Provider=' + Provider +
                         ';Password=' + GetServerPassword +
@@ -846,6 +859,7 @@ end;
 
 
 exports
+  GetDefaultDataBase,
   createServerConnect,
   createServerConnectWithError,
   GetCopyright,

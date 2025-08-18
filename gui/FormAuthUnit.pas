@@ -590,7 +590,7 @@ begin
   if showUserNameAuthForm then begin
     comboxUser.Visible:=False;
 
-    lblUserAuth.Font.Color:=clActiveCaption;
+    lblUserAuth.Font.Color:=clHighlight;
     lblUserAuth.Caption:=comboxUser.Text;
     lblUserAuth.Visible:=True;
     lblUserAuth.Top:=99;

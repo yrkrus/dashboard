@@ -26,10 +26,10 @@ object FormPodbor: TFormPodbor
     AutoSize = False
     Caption = #1053#1072#1081#1076#1077#1085#1085#1099#1077' '#1087#1072#1094#1080#1077#1085#1090#1099' '#1087#1086' '#1085#1086#1084#1077#1088#1091' '#1090#1077#1083#1077#1092#1086#1085#1072
     Font.Charset = DEFAULT_CHARSET
-    Font.Color = clMaroon
+    Font.Color = clGreen
     Font.Height = -13
     Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
+    Font.Style = []
     ParentFont = False
   end
   object Label2: TLabel

@@ -29,10 +29,10 @@ object FormSettingsGlobal: TFormSettingsGlobal
     TabOrder = 2
     object GroupBox1: TGroupBox
       Left = 20
-      Top = 16
+      Top = 9
       Width = 402
       Height = 92
-      Caption = ' '#1058#1077#1082#1091#1097#1072#1103' '#1082#1086#1088#1088#1077#1082#1090#1080#1088#1086#1074#1082#1072' '#1074#1088#1077#1084#1077#1085#1080' '#1074' '#1086#1095#1077#1088#1077#1076#1103#1093'  '
+      Caption = '  '#1050#1086#1088#1088#1077#1082#1090#1080#1088#1086#1074#1082#1072' '#1074#1088#1077#1084#1077#1085#1080' '#1074' '#1086#1095#1077#1088#1077#1076#1103#1093'  '
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
@@ -41,7 +41,7 @@ object FormSettingsGlobal: TFormSettingsGlobal
       ParentFont = False
       TabOrder = 0
       object Label3: TLabel
-        Left = 30
+        Left = 32
         Top = 27
         Width = 276
         Height = 16
@@ -54,7 +54,7 @@ object FormSettingsGlobal: TFormSettingsGlobal
         ParentFont = False
       end
       object Label4: TLabel
-        Left = 30
+        Left = 32
         Top = 57
         Width = 276
         Height = 16
@@ -67,8 +67,8 @@ object FormSettingsGlobal: TFormSettingsGlobal
         ParentFont = False
       end
       object lblQueue_5000: TLabel
-        Left = 323
-        Top = 26
+        Left = 317
+        Top = 27
         Width = 16
         Height = 16
         Alignment = taRightJustify
@@ -81,8 +81,8 @@ object FormSettingsGlobal: TFormSettingsGlobal
         ParentFont = False
       end
       object lblQueue_5050: TLabel
-        Left = 323
-        Top = 55
+        Left = 317
+        Top = 57
         Width = 16
         Height = 16
         Alignment = taRightJustify
@@ -95,19 +95,19 @@ object FormSettingsGlobal: TFormSettingsGlobal
         ParentFont = False
       end
       object StaticText1: TStaticText
-        Left = 343
+        Left = 337
         Top = 27
         Width = 23
-        Height = 20
+        Height = 18
         Caption = #1089#1077#1082
         Enabled = False
         TabOrder = 0
       end
       object StaticText2: TStaticText
-        Left = 343
-        Top = 56
+        Left = 337
+        Top = 57
         Width = 23
-        Height = 20
+        Height = 18
         Caption = #1089#1077#1082
         Enabled = False
         TabOrder = 1
@@ -194,7 +194,7 @@ object FormSettingsGlobal: TFormSettingsGlobal
       ParentFont = False
       ParentShowHint = False
       ShowHint = False
-      TabOrder = 1
+      TabOrder = 2
       WordWrap = True
       OnClick = btnAddServerClick
     end
@@ -279,18 +279,130 @@ object FormSettingsGlobal: TFormSettingsGlobal
       ParentFont = False
       ParentShowHint = False
       ShowHint = False
-      TabOrder = 2
+      TabOrder = 3
       WordWrap = True
       OnClick = btnEditUserClick
     end
+    object GroupBox3: TGroupBox
+      Left = 20
+      Top = 116
+      Width = 402
+      Height = 51
+      Caption = '  '#1056#1072#1073#1086#1095#1077#1077' '#1074#1088#1077#1084#1103' '#1082#1086#1083#1083#1094#1077#1085#1090#1088#1072'  '
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 1
+      object Label9: TLabel
+        Left = 50
+        Top = 22
+        Width = 92
+        Height = 16
+        Caption = #1045#1078#1077#1076#1085#1077#1074#1085#1086' '#1089' '
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object lblWorkTimeCallCenterStart: TLabel
+        Left = 145
+        Top = 22
+        Width = 16
+        Height = 16
+        Alignment = taRightJustify
+        Caption = '00'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clNavy
+        Font.Height = -13
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object Label10: TLabel
+        Left = 166
+        Top = 22
+        Width = 21
+        Height = 16
+        Caption = #1076#1086' '
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object lblWorkTimeCallCenterStop: TLabel
+        Left = 189
+        Top = 22
+        Width = 16
+        Height = 16
+        Alignment = taRightJustify
+        Caption = '00'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clNavy
+        Font.Height = -13
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object btnEditWorkingTimeCallCentre: TBitBtn
+        Left = 287
+        Top = 15
+        Width = 105
+        Height = 29
+        Caption = ' &'#1048#1079#1084#1077#1085#1080#1090#1100
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        Glyph.Data = {
+          36030000424D3603000000000000360000002800000010000000100000000100
+          1800000000000003000074120000741200000000000000000000FFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          F7F7F7C9C9C9FFFFFFFDFDFDB7B7B7AAAAAAB0B0B0F7F7F7F7F7F7AFAFAFAAAA
+          AAC6C6C6FFFFFFFFFFFFFFFFFFFFFFFFB0B0B0050505FFFFFF7F7F7F00000000
+          0000050505C9C9C9C9C9C90505050000000000009B9B9BFFFFFFFFFFFFFFFFFF
+          AAAAAA000000FFFFFF555555555555FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          FF4F4F4F585858FFFFFFFFFFFFFFFFFFAAAAAA000000FFFFFF6262621C1C1C55
+          55557F7F7FFDFDFDFFFFFFADADAD555555171717757575FFFFFFFFFFFFE2E2E2
+          8D8D8D000000FFFFFFE1E1E1616161555555000000B8B8B8FFFFFFADADAD5555
+          55171717757575FFFFFFFFFFFF767676010101000000FFFFFFFFFFFFFFFFFFFF
+          FFFF000000AAAAAAFFFFFFFFFFFFFFFFFF4F4F4F585858FFFFFFFFFFFFF6F6F6
+          454545040404FFFFFF797979000000000000030303D2D2D2C9C9C90505050000
+          000000009B9B9BFFFFFFFFFFFFFFFFFFF7F7F7C7C7C7FFFFFFE0E0E0AAAAAAAA
+          AAAAD1D1D1FFFFFFF7F7F7AFAFAFAAAAAACACACAFFFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+        ParentFont = False
+        ParentShowHint = False
+        ShowHint = False
+        TabOrder = 0
+        WordWrap = True
+        OnClick = btnEditWorkingTimeCallCentreClick
+      end
+    end
   end
   object panel_footer: TPanel
-    Left = 5
-    Top = 5
-    Width = 631
+    Left = 191
+    Top = 3
+    Width = 445
     Height = 28
     BevelOuter = bvNone
-    BorderStyle = bsSingle
     Caption = #1043#1083#1086#1073#1072#1083#1100#1085#1099#1077' '#1085#1072#1089#1090#1088#1086#1081#1082#1080
     Color = clGradientInactiveCaption
     Font.Charset = RUSSIAN_CHARSET
@@ -300,11 +412,11 @@ object FormSettingsGlobal: TFormSettingsGlobal
     Font.Style = [fsBold]
     ParentBackground = False
     ParentFont = False
-    TabOrder = 0
+    TabOrder = 1
   end
   object panel_firebird: TPanel
     Left = 24
-    Top = 355
+    Top = 292
     Width = 445
     Height = 249
     BevelOuter = bvNone
@@ -642,21 +754,21 @@ object FormSettingsGlobal: TFormSettingsGlobal
       Top = 82
       Width = 140
       Height = 21
-      TabOrder = 2
+      TabOrder = 1
     end
     object edtPassword_SMS: TEdit
       Left = 267
-      Top = 80
+      Top = 82
       Width = 155
       Height = 21
       PasswordChar = '*'
-      TabOrder = 1
+      TabOrder = 2
     end
     object STSMS_viewPwd: TStaticText
-      Left = 361
-      Top = 83
-      Width = 59
-      Height = 17
+      Left = 363
+      Top = 84
+      Width = 57
+      Height = 15
       Cursor = crHandPoint
       Caption = #1087#1086#1082#1072#1079#1072#1090#1100
       Color = clWindow
@@ -945,15 +1057,15 @@ object FormSettingsGlobal: TFormSettingsGlobal
   end
   object group_tree: TGroupBox
     Left = 5
-    Top = 34
+    Top = 3
     Width = 183
-    Height = 251
-    TabOrder = 1
+    Height = 283
+    TabOrder = 0
     object tree_menu: TTreeView
       Left = 2
       Top = 15
       Width = 179
-      Height = 234
+      Height = 266
       Align = alClient
       BorderStyle = bsNone
       Font.Charset = DEFAULT_CHARSET

@@ -255,7 +255,6 @@ begin
   // показ только текщего дня
   if chkboxOnlyCurrentDay.Checked then onlyCurrentDay:=True;
 
-
   // создаем отчет
   report:=TReportCountOperators.Create('Отчет по количеству звонков операторами',dateStart,dateStop,onlyCurrentDay,m_detailed);
   report.ShowProgress; //показываем прогресс бар

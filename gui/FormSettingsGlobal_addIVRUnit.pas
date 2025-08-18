@@ -111,7 +111,10 @@ end;
 
 function getCheckFields:string;
 var
- DateNachalo,CurrentTime:TDateTime;
+ dtPicker: TDateTimePicker; // Kind = dtkDate
+ tmPicker: TDateTimePicker; // Kind = dtkTime
+ combined: TDateTime;
+ unixTime,unixCurrentTime:Int64;
 begin
   Result:='OK';
 
@@ -129,10 +132,13 @@ begin
 
     // проверка даты
     if chkboxMyTime.Checked then begin
-      DateNachalo:=DateQueue.Date;
-      CurrentTime:=Now;
+      combined := Trunc(DateQueue.DateTime)         // только «дата» в виде целого
+                + Frac(TimeQueue.DateTime);        // только время в виде дробной части
 
-      if DateNachalo>CurrentTime then begin
+      unixTime:=DateTimeToUnix(combined);
+      unixCurrentTime:=DateTimeToUnix(Now);
+
+      if unixTime>unixCurrentTime then begin
        Result:='ОШИБКА! Дата не может быть из будущего';
        Exit;
 

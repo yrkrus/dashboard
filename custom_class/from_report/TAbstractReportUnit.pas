@@ -40,8 +40,11 @@ uses
 
       procedure ShowExcel; // отображение окна excel
 
-      function GetDateStart:string;
-      function GetDateStop:string;
+      function GetDateStartAsString:string;
+      function GetDateStopAsString:string;
+      function GetDateStartAsDate:TDate;
+      function GetDateStopAsDate:TDate;
+
 
       protected
       m_excel           :OleVariant;
@@ -174,14 +177,24 @@ begin
 end;
 
 
-function TAbstractReport.GetDateStart:string;
+function TAbstractReport.GetDateStartAsString:string;
 begin
   Result:=DateToStr(Self.m_dateStart);
 end;
 
-function TAbstractReport.GetDateStop:string;
+function TAbstractReport.GetDateStopAsString:string;
 begin
   Result:=DateToStr(Self.m_dateStop);
+end;
+
+function TAbstractReport.GetDateStartAsDate:TDate;
+begin
+  Result:=Self.m_dateStart;
+end;
+
+function TAbstractReport.GetDateStopAsDate:TDate;
+begin
+  Result:=Self.m_dateStop;
 end;
 
 // нажали отмену генерации

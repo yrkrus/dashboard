@@ -312,7 +312,6 @@ end;
 
 // установка mysql connector
 procedure InstallMySQLConnector(InFileName:string);
-
 begin
   Writeln('Установка MySQL Connector "'+InFileName+'"');
 

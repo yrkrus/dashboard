@@ -78,7 +78,9 @@ uses
   TStatusUnit in '..\custom_class\TStatusUnit.pas',
   FormTrunkSipUnit in 'FormTrunkSipUnit.pas' {FormTrunkSip},
   TCheckSipTrunkUnit in '..\custom_class\TCheckSipTrunkUnit.pas',
-  Thread_CheckTrunkUnit in 'Thread\Thread_CheckTrunkUnit.pas';
+  Thread_CheckTrunkUnit in 'Thread\Thread_CheckTrunkUnit.pas',
+  FormWorkTimeCallCenterUnit in 'FormWorkTimeCallCenterUnit.pas' {FormWorkTimeCallCenter},
+  TWorkTimeCallCenterUnit in '..\custom_class\TWorkTimeCallCenterUnit.pas';
 
 {$R *.res}
 
@@ -124,5 +126,6 @@ begin
   Application.CreateForm(TFormMenuAccess, FormMenuAccess);
   Application.CreateForm(TFormPropushennieShowPeople, FormPropushennieShowPeople);
   Application.CreateForm(TFormTrunkSip, FormTrunkSip);
+  Application.CreateForm(TFormWorkTimeCallCenter, FormWorkTimeCallCenter);
   Application.Run;
 end.

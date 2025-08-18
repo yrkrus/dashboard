@@ -11,17 +11,9 @@ unit TReportCountOperatorsUnit;
 interface
 
 uses
-  System.SysUtils,
-  System.Classes,
-  System.SyncObjs,
-  ActiveX, ComObj,
-  ComCtrls,
-  TAbstractReportUnit,
-  Vcl.CheckLst,
-  TQueueHistoryUnit,
-  TCountRingsOperatorsUnit,
+  System.SysUtils, System.Classes, System.SyncObjs, ActiveX, ComObj, ComCtrls,
+  TAbstractReportUnit, Vcl.CheckLst, TQueueHistoryUnit, TCountRingsOperatorsUnit,
   Data.Win.ADODB, Data.DB;
-
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -168,7 +160,7 @@ begin
     end;
 
 
-     m_listCountCallOperators:=TCountRingsOperators.Create(sipList, GetDateStart, GetDateStop, table, tableOnHold, listOperators);
+     m_listCountCallOperators:=TCountRingsOperators.Create(sipList, GetDateStartAsString, GetDateStopAsString, table, tableOnHold, listOperators);
 
      // создаем отчет
      CreateReportBrief;
@@ -224,14 +216,15 @@ begin
 
   try
     // из какой таблицы брать данные
-    if m_onlyCurrentDay then table:='queue'
-    else table:='history_queue';
+
+    if m_onlyCurrentDay then table:=EnumReportTableCountCallsOperatorToString(eTableQueue)
+    else table:=EnumReportTableCountCallsOperatorToString(eTableHistoryQueue);
 
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
       SQL.Add('select count(id) from '+table+' where sip IN ('+p_list+')' );
-      if not m_onlyCurrentDay then SQL.Add(' and date_time >='+#39+GetDateToDateBD(GetDateStart)+' 00:00:00'+#39+' and date_time<='+#39+GetDateToDateBD(GetDateStop)+' 23:59:59'+#39+' order by date_time ASC');
+      if not m_onlyCurrentDay then SQL.Add(' and date_time >='+#39+GetDateToDateBD(GetDateStartAsString)+' 00:00:00'+#39+' and date_time<='+#39+GetDateToDateBD(GetDateStopAsString)+' 23:59:59'+#39+' order by date_time ASC');
 
       Active:=True;
       countData:=Fields[0].Value;
@@ -254,7 +247,7 @@ begin
 
         SQL.Clear;
         SQL.Add('select id,number_queue,phone,waiting_time,date_time,sip,talk_time from '+table+' where sip IN ('+p_list+')' );
-        if not m_onlyCurrentDay then SQL.Add(' and date_time >='+#39+GetDateToDateBD(GetDateStart)+' 00:00:00'+#39+' and date_time<='+#39+GetDateToDateBD(GetDateStop)+' 23:59:59'+#39+' order by date_time ASC');
+        if not m_onlyCurrentDay then SQL.Add(' and date_time >='+#39+GetDateToDateBD(GetDateStartAsString)+' 00:00:00'+#39+' and date_time<='+#39+GetDateToDateBD(GetDateStopAsString)+' 23:59:59'+#39+' order by date_time ASC');
 
         Active:=True;
         for i:=0 to countData-1 do begin
@@ -324,7 +317,6 @@ var
  procentLoad:Double;
  procentLoadSTR:string;
 // time_queue5000,time_queue5050:Integer;
- curr_time:Integer;
 begin
   SetProgressStatusText('Создание отчета ...');
   SetProgressBar(0);
@@ -458,14 +450,11 @@ var
  i,j:Integer;
  procentLoad:Double;
  procentLoadSTR:string;
-// time_queue5000,time_queue5050:Integer;
- curr_time:Integer;
+ sip:string;
+ operatorFIO:string;
 begin
-  m_excel.visible:=True;
-
   SetProgressStatusText('Создание отчета ...');
   SetProgressBar(0);
-
 
    // названия колонок
   m_sheet.cells[1,1]:='SIP';
@@ -474,36 +463,17 @@ begin
   m_sheet.cells[1,4]:='Звонков';
   m_sheet.cells[1,5]:='OnHold(сек)';
 
-
   // ширина колонок
   m_sheet.columns[1].columnwidth:=9;
   m_sheet.columns[2].columnwidth:=25.29;
   m_sheet.columns[3].columnwidth:=20.86;
-  m_sheet.columns[4].columnwidth:=11;
-  m_sheet.columns[5].columnwidth:=11;
-
-
-  // общий формат
-//  m_excel.range['B2:B'+inttostr(countQueue+1)].select;
-//  m_excel.selection.NumberFormat:='@';
-//
-//  m_excel.range['E2:E'+inttostr(countQueue+1)].select;
-//  m_excel.selection.NumberFormat:='@';
-//
-//  m_excel.range['H2:H'+inttostr(countQueue+1)].select;
-//  m_excel.selection.NumberFormat:='@';
+  m_sheet.columns[4].columnwidth:=12;
+  m_sheet.columns[5].columnwidth:=14;
 
   ColIndex:=2;
 
-
   for i:=0 to m_listCountCallOperators.Count-1 do begin
-   // for j:=0 to  := Low to High do
-
-
-
-      if isESC then  Exit;
-
-     // прогресс бар
+    // прогресс бар
      procentLoad:=i*100/m_listCountCallOperators.Count-1;
      procentLoadSTR:=FormatFloat('0.0',procentLoad);
      procentLoadSTR:=StringReplace(procentLoadSTR,',','.',[rfReplaceAll]);
@@ -511,29 +481,28 @@ begin
      SetProgressStatusText('Создание отчета ['+procentLoadSTR+'%] ...');
      SetProgressBar(procentLoad);
 
-      m_sheet.cells[ColIndex,1]:=IntToStr(m_queue[i].id);               // ID
-      m_sheet.cells[ColIndex,2]:=DateTimeToStr(m_queue[i].date_time);   // Дата\Время
-      m_sheet.cells[ColIndex,3]:=string(TQueueToString(m_queue[i].number_queue));     // Очередь
+    if isESC then  Exit;
+    if not m_listCountCallOperators.Items[i].IsExistData then Continue;
 
-      {curr_time:=0;
-      case m_queue[i].number_queue of     // время одидания
-       queue_5000:curr_time:=GetTimeAnsweredToSeconds(m_queue[i].waiting_time) - GetTimeAnsweredToSeconds(m_queue[i].talk_time) - time_queue5000;
-       queue_5050:curr_time:=GetTimeAnsweredToSeconds(m_queue[i].waiting_time) - GetTimeAnsweredToSeconds(m_queue[i].talk_time) - time_queue5050;
-      end;
-      if curr_time<=0 then curr_time:=0;
-      m_sheet.cells[ColIndex,4]:=string(GetTimeAnsweredSecondsToString(curr_time)); }
+    // проверка вдруг отменили операцию
+     GetAbout;
 
+    // пробегаемся по массиву
+    for j:=0 to m_listCountCallOperators.Items[i].Count-1 do begin
+      sip:=IntToStr(m_listCountCallOperators.Items[i].m_sip);
+      operatorFIO:=GetUserNameOperators(sip);
 
-      m_sheet.cells[ColIndex,4]:=m_queue[i].phone;                      // Телефон
-      m_sheet.cells[ColIndex,5]:=IntToStr(m_queue[i].sip);              // SIP
-      m_sheet.cells[ColIndex,6]:=m_queue[i].userFIO;                    // Оператор
-      m_sheet.cells[ColIndex,7]:=m_queue[i].talk_time;                  // Время разговора
-
+      m_sheet.cells[ColIndex,1]:=sip;                           // SIP
+      m_sheet.cells[ColIndex,2]:=operatorFIO;      // Оператор  // TODO сделать проверку на уволенного сотрудника
+      m_sheet.cells[ColIndex,3]:=m_listCountCallOperators.Items[i].ItemData[j].m_date_time; // Дата
+      m_sheet.cells[ColIndex,4]:=IntToStr(m_listCountCallOperators.Items[i].ItemData[j].m_callsCount);         // Звонков
+      m_sheet.cells[ColIndex,5]:=IntToStr(m_listCountCallOperators.Items[i].ItemData[j].m_ohHold);         // OnHold(сек)
 
       Inc(ColIndex);
 
        // проверка вдруг отменили операцию
-       GetAbout;
+     GetAbout;
+    end;
   end;
 
 
@@ -542,13 +511,13 @@ begin
      SetProgressStatusText('Наводим красоту ...');
 
     // заголовок
-    m_excel.range['A1:G1'].AutoFilter;   // фильтр для заголовка
+    m_excel.range['A1:E1'].AutoFilter;   // фильтр для заголовка
 
     // Замораживаем заголовок
     m_sheet.Range['A2'].Select;
     m_excel.ActiveWindow.FreezePanes:=true;
 
-    m_excel.range['A1:G1'].select;
+    m_excel.range['A1:E1'].select;
     //m_excel.selection.FreezePanes:=true;
     m_excel.selection.font.bold:=True;
     m_excel.selection.font.size:=12;
@@ -562,7 +531,7 @@ begin
 
 
     // выделение диапозона
-    m_excel.range['A2:G'+inttostr(countQueue+1)].select;
+    m_excel.range['A2:E'+inttostr(ColIndex-1)].select;
     // перенос по словам
     m_excel.selection.wraptext:=true;
     // выравниевание по центру по горизонтали
@@ -580,7 +549,6 @@ begin
     // заглушочка чтобы вернуться в самое начало
     m_excel.range['A1'].select;
   end;
-
 
   isExistDataExcel:=True;
 end;

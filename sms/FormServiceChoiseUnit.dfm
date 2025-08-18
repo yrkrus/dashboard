@@ -25,7 +25,7 @@ object FormServiceChoise: TFormServiceChoise
     Height = 13
     Caption = #1076#1083#1103' '#1074#1099#1073#1086#1088#1072' '#1085#1091#1078#1085#1086' 2 '#1088#1072#1079#1072' '#1082#1083#1080#1082#1085#1091#1090#1100' '#1085#1072' '#1085#1091#1078#1085#1091#1102' '#1091#1089#1083#1091#1075#1091
     Font.Charset = DEFAULT_CHARSET
-    Font.Color = clMaroon
+    Font.Color = clGreen
     Font.Height = -11
     Font.Name = 'Tahoma'
     Font.Style = []
@@ -57,7 +57,7 @@ object FormServiceChoise: TFormServiceChoise
   object st_FindMessage: TStaticText
     Left = 114
     Top = 11
-    Width = 114
+    Width = 116
     Height = 17
     Caption = #1055#1086#1080#1089#1082' ('#1084#1080#1085' 3 '#1089#1080#1084#1074#1086#1083#1072')'
     Enabled = False

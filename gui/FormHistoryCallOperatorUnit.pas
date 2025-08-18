@@ -46,6 +46,8 @@ type
     lblProgramExit: TLabel;
     popmenu_InfoCall: TPopupMenu;
     menu_FIO: TMenuItem;
+    lblOpenExcel: TLabel;
+    Image0: TImage;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure list_HistoryCustomDrawItem(Sender: TCustomListView;
@@ -88,6 +90,9 @@ type
                       var m_count3, m_count3_10, m_count10_15, m_count15: Integer);
 
   procedure ZAGLUSHKA;
+
+  procedure SetColorLink;
+
   public
     { Public declarations }
 
@@ -110,6 +115,14 @@ uses
 procedure TFormHistoryCallOperator.ZAGLUSHKA;
 begin
  MessageBox(0,PChar('Функционал в разработке ... '),PChar('Заглушка'),MB_OK+MB_ICONINFORMATION);
+end;
+
+
+procedure TFormHistoryCallOperator.SetColorLink;
+begin
+  SetLinkColor(lblDownloadCall);
+  SetLinkColor(lblPlayCall);
+  SetLinkColor(lblOpenExcel);
 end;
 
 function EnumFilterTimeToString(_time:enumFilterTime):string;
@@ -600,6 +613,9 @@ end;
 
 procedure TFormHistoryCallOperator.FormShow(Sender: TObject);
 begin
+  // установка цвета на ссылки
+  SetColorLink;
+
   Show(time_all);
   list_History.SetFocus;
 end;

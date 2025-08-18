@@ -11,6 +11,7 @@ uses
   p_TADOConnection = Pointer; // Указатель на TADOConnection
   function createServerConnect: p_TADOConnection; overload;             stdcall;  external 'core.dll';       // Создание подключения к серверу
   function createServerConnectWithError(var _errorDescriptions: string): p_TADOConnection; overload;             stdcall;  external 'core.dll';       // Создание подключения к серверу
+  function GetDefaultDataBase:PChar;                                    stdcall;  external 'core.dll';       // текущий адрес базы данных к которому идет подключений
   function GetCopyright:Pchar;                                          stdcall;  external 'core.dll';       // copyright
   function GetUserNameFIO(InUserID:Integer):PChar;                      stdcall;  external 'core.dll';       // полчуение имени пользователя из его UserID
   function GetRoleID(InRole:string):Integer;                            stdcall;  external 'core.dll';       // получение ID TRole

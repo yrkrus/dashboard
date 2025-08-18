@@ -171,6 +171,8 @@ begin
 
 
   // пробуем добавить
+  FormTrunkEdit.p_editID:=panel_Trunks_ID;
+
   resultat:=FormTrunkEdit.getResponseBD(server_delete,panel_Trunks_Alias,panel_Trunks_Login,monitoring_DISABLE);
 
   if AnsiPos('ОШИБКА',resultat)<>0  then begin

@@ -113,7 +113,7 @@ uses
  end;
 
 
- procedure TUserList.Clone(_userList:TUserList);
+procedure TUserList.Clone(_userList:TUserList);
 begin
   if _userList = nil then  Exit;
   Self.name             := _userList.name;

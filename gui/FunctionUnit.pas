@@ -3,17 +3,12 @@ unit FunctionUnit;
 interface
 
   uses
-    Windows, Messages, SysUtils, Variants, Classes,
-    Graphics, Controls, Forms, Dialogs, Registry,
-    IniFiles, TlHelp32, IdBaseComponent, IdComponent,
-    ShellAPI, StdCtrls, ComCtrls, ExtCtrls, WinSock,
-    Math, IdHashCRC, Nb30, IdMessage, StrUtils, WinSvc,
-    System.Win.ComObj, IdSMTP, IdText, IdSSL, IdSSLOpenSSL,
-    IdAttachmentFile, DMUnit, FormHome, Data.Win.ADODB,
-    Data.DB, IdIcmpClient, IdException, System.DateUtils,
-    FIBDatabase, pFIBDatabase, TCustomTypeUnit, TUserUnit,
-    Vcl.Menus, GlobalVariables, GlobalVariablesLinkDLL, TActiveSIPUnit, System.IOUtils,
-    TLogFileUnit, Vcl.Buttons, IdGlobal;
+    Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs, Registry,
+    IniFiles, TlHelp32, IdBaseComponent, IdComponent, ShellAPI, StdCtrls, ComCtrls, ExtCtrls, WinSock,
+    Math, IdHashCRC, Nb30, IdMessage, StrUtils, WinSvc, System.Win.ComObj, IdSMTP, IdText, IdSSL, IdSSLOpenSSL,
+    IdAttachmentFile, DMUnit, FormHome, Data.Win.ADODB, Data.DB, IdIcmpClient, IdException, System.DateUtils,
+    FIBDatabase, pFIBDatabase, TCustomTypeUnit, TUserUnit, Vcl.Menus, GlobalVariables, GlobalVariablesLinkDLL,
+    TActiveSIPUnit, System.IOUtils, TLogFileUnit, Vcl.Buttons, IdGlobal;
 
 
 procedure KillProcess;                                                               // принудительное завершение работы
@@ -101,7 +96,6 @@ procedure CheckCurrentVersion;                                                  
 function getCheckIP(InIPAdtress:string):Boolean;                                     // проверка корректности IP адреса
 function getCheckAlias(InAlias:string):Boolean;                                      // проверка на существаование такого алиаса уже, он может быть только один!
 function GetFirbirdAuth(FBType:enumFirebirdAuth):string;                             // получение авторизационных данных при подключени к БД firebird
-//function GetSMSAuth(SMSType:enumSMSAuth):string;                                     // получение авторизационных данных при отправке SMS
 function GetStatusMonitoring(status:Integer):enumMonitoringTrunk;                    // мониторится ли транк
 function GetCountServersIK:Integer;                                                  // получение кол-ва серверов ИК
 procedure SetAccessMenu(InNameMenu:enumAccessList; InStatus: enumAccessStatus);      // установка разрешение\запрет на доступ к меню
@@ -155,45 +149,21 @@ function CreateRemoteCommandCallback(_action:enumRemoteCommandAction; _id:Intege
                                       var _errorDescription:string): Boolean;        // действие по удаленной команде для активной сессии или для пропущенного звонка
 function ExecuteCommandKillActiveSession(_userID:Integer;
                                          var _errorDescription:string):Boolean;      // выполенние команды закрытые активной сессии
-//function remoteCommand_GetFailStr(_userId:Integer; var _errorDescriptions:string):string;             // получение строки с ошибкой при выполнении удаленной команды
-//function remoteCommand_IsFail(command:enumLogging;_userID:Integer):boolean;         // получена ли ошибка при выполнении удаленной каоманды
 function SendCommandStatusDelay(_userID:Integer):enumStatus;                          // нужно ли делать задержку при смене статуса оператора
+procedure SetLinkColor(var _label:TLabel);                                          // установка цвета на label если на него можно нажать
 
 
 
 implementation
 
 uses
-  FormPropushennieUnit,
-  Thread_StatisticsUnit,
-  Thread_IVRUnit,
-  Thread_QUEUEUnit,
-  Thread_ACTIVESIPUnit,
-  FormAboutUnit,
-  FormServerIKCheckUnit,
-  Thread_CHECKSERVERSUnit,
-  FormSettingsUnit,
-  FormAuthUnit,
-  FormErrorUnit,
-  FormWaitUnit,
-  Thread_AnsweredQueueUnit,
-  FormUsersUnit,
-  TTranslirtUnit,
-  Thread_ACTIVESIP_updatetalkUnit,
-  Thread_ACTIVESIP_updatePhoneTalkUnit,
-  Thread_ACTIVESIP_countTalkUnit,
-  Thread_ACTIVESIP_QueueUnit,
-  FormActiveSessionUnit,
-  TIVRUnit,
-  FormOperatorStatusUnit,
-  TXmlUnit,
-  TOnlineChat,
-  Thread_ChatUnit,
-  Thread_ForecastUnit,
+  FormPropushennieUnit, Thread_StatisticsUnit, Thread_IVRUnit, Thread_QUEUEUnit,
+  Thread_ACTIVESIPUnit, FormAboutUnit, FormServerIKCheckUnit, Thread_CHECKSERVERSUnit,
+  FormSettingsUnit, FormAuthUnit, FormErrorUnit, FormWaitUnit, Thread_AnsweredQueueUnit,
+  FormUsersUnit, TTranslirtUnit, Thread_ACTIVESIP_updatetalkUnit, Thread_ACTIVESIP_updatePhoneTalkUnit,
+  Thread_ACTIVESIP_countTalkUnit, Thread_ACTIVESIP_QueueUnit, FormActiveSessionUnit, TIVRUnit,
+  FormOperatorStatusUnit, TXmlUnit, TOnlineChat, Thread_ChatUnit, Thread_ForecastUnit,
   Thread_InternalProcessUnit, TActiveSessionUnit, FormTrunkSipUnit, Thread_CheckTrunkUnit;
-
-
-
 
  // логирование действий
 procedure LoggingRemote(InLoggingID:enumLogging; _userID:Integer);
@@ -3207,197 +3177,6 @@ begin
 end;
 
 
-//// получение строки с ошибкой при выполнении удаленной команды
-//function remoteCommand_GetFailStr(_userId:Integer; var _errorDescriptions:string):string;
-//var
-// ado:TADOQuery;
-// serverConnect:TADOConnection;
-// error:string;
-//begin
-//  Result:='Таймаут запроса';
-//
-//  ado:=TADOQuery.Create(nil);
-//  serverConnect:=createServerConnectWithError(error);
-//  if not Assigned(serverConnect) then begin
-//     ShowFormErrorMessage(error, SharedMainLog, 'remoteCommand_GetFailStr');
-//     FreeAndNil(ado);
-//     Exit;
-//  end;
-//
-//  try
-//    with ado do begin
-//      ado.Connection:=serverConnect;
-//
-//      SQL.Clear;
-//      SQL.Add('select error_str from remote_commands where error = ''1'' and user_id = '+#39+IntToStr(_userId)+#39);
-//
-//      Active:=True;
-//
-//      if ((Fields[0].Value<>null) and (VarToStr(Fields[0].Value) <> '')) then Result:=VarToStr(Fields[0].Value);
-//
-//    end;
-//  finally
-//   FreeAndNil(ado);
-//    if Assigned(serverConnect) then begin
-//      serverConnect.Close;
-//      FreeAndNil(serverConnect);
-//    end;
-//  end;
-//end;
-
-
-// получена ли ошибка при выполнении удаленной каоманды
-//function remoteCommand_IsFail(command:enumLogging;_userID:Integer):boolean;
-//var
-// ado:TADOQuery;
-// serverConnect:TADOConnection;
-// error:string;
-//begin
-//  Result:=False;
-//
-//  ado:=TADOQuery.Create(nil);
-//  serverConnect:=createServerConnectWithError(error);
-//
-//  if not Assigned(serverConnect) then begin
-//     ShowFormErrorMessage(error, SharedMainLog, 'remoteCommand_IsExistFail');
-//     FreeAndNil(ado);
-//     Exit;
-//  end;
-//
-//
-//  try
-//    with ado do begin
-//      ado.Connection:=serverConnect;
-//
-//      SQL.Clear;
-//      SQL.Add('select error from remote_commands where command = '+#39+inttostr(EnumLoggingToInteger(command)) +#39+' and user_id = '+#39+IntToStr(_userID)+#39);
-//      Active:=True;
-//
-//      if Fields[0].Value<>null then begin
-//        if VarToStr(Fields[0].Value) = '1' then Result:=True
-//        else Result:=False;
-//      end;
-//
-//    end;
-//  finally
-//    FreeAndNil(ado);
-//    if Assigned(serverConnect) then begin
-//      serverConnect.Close;
-//      FreeAndNil(serverConnect);
-//    end;
-//  end;
-//end;
-
-// проверка есть ли уже такая удаленная команда на сервера
-//function isExistRemoteCommand(command:enumLogging;_userID:Integer):Boolean;
-//var
-// ado:TADOQuery;
-// serverConnect:TADOConnection;
-// error:string;
-//begin
-//  Result:=False;
-//
-//  ado:=TADOQuery.Create(nil);
-//  serverConnect:=createServerConnectWithError(error);
-//
-//  if not Assigned(serverConnect) then begin
-//     ShowFormErrorMessage(error, SharedMainLog, 'isExistRemoteCommand');
-//     FreeAndNil(ado);
-//     Exit;
-//  end;
-//
-//
-//  try
-//    with ado do begin
-//      ado.Connection:=serverConnect;
-//
-//      SQL.Clear;
-//      SQL.Add('select count(id) from remote_commands where command = '+#39+inttostr(EnumLoggingToInteger(command)) +#39+' and user_id = '+#39+IntToStr(_userID)+#39);
-//      Active:=True;
-//
-//      if Fields[0].Value<>null then begin
-//        if Fields[0].Value <> 0 then Result:=True
-//        else Result:=False;
-//      end
-//      else Result:= True;
-//    end;
-//  finally
-//    FreeAndNil(ado);
-//    if Assigned(serverConnect) then begin
-//      serverConnect.Close;
-//      FreeAndNil(serverConnect);
-//    end;
-//  end;
-//end;
-
-
-// удаленная команда
-//function remoteCommand_addQueue(_command:enumLogging;
-//                                _userID:Integer;
-//                                var _errorDescriptions:string):Boolean;
-//var
-// resultat:string;
-// response:string;
-// soLongWait:UInt16;
-//begin
-//   Result:=False;
-//  _errorDescriptions:='';
-//
-//  soLongWait:=0;
-//  showWait(show_open);
-//
-//  // отложенная команда (когда)
-//
-//
-//  response:='insert into remote_commands (sip,command,ip,user_id,user_login_pc,pc) values ('+#39+getUserSIP(_userID) +#39+','
-//                                                                                            +#39+IntToStr(EnumLoggingToInteger(_command))+#39+','
-//                                                                                            +#39+SharedCurrentUserLogon.GetIP+#39+','
-//                                                                                            +#39+IntToStr(SharedCurrentUserLogon.GetID)+#39+','
-//                                                                                            +#39+SharedCurrentUserLogon.GetUserLoginPC+#39+','
-//                                                                                            +#39+SharedCurrentUserLogon.GetPC+#39+')';
-//  // выполняем запрос
-//  if not remoteCommand_Responce(response,_errorDescriptions) then begin
-//    showWait(show_close);
-//    Exit;
-//  end;
-//
-//  // ждем пока отработает на core_dashboard
-//  while (isExistRemoteCommand(_command,_userID)) do begin
-//   Sleep(100);
-//   Application.ProcessMessages;
-//
-//   // есть ли ошибка по удаленной команде
-//   if remoteCommand_IsFail(_command,_userID) then soLongWait:=100;
-//
-//   if soLongWait>50 then begin
-//
-//    // получим строку с ошибкой
-//    resultat:=remoteCommand_GetFailStr(SharedCurrentUserLogon.GetID, _errorDescriptions);
-//
-//
-//    // пробуем удалить команду
-//       response:='delete from remote_commands where sip ='+#39+getUserSIP(_userID)+#39+
-//                                                         ' and command ='+#39+IntToStr(EnumLoggingToInteger(_command))+#39;
-//
-//    if not remoteCommand_Responce(response,_errorDescriptions) then begin
-//      showWait(show_close);
-//      Exit;
-//    end;
-//
-//    showWait(show_close);
-//    _errorDescriptions:='Сервер не смог обработать команду'+#13#13+'Причина: '+resultat;
-//    Exit;
-//
-//   end else begin
-//    Inc(soLongWait);
-//   end;
-//  end;
-//
-//  showWait(show_close);
-//  Result:=True;
-//end;
-
-
 // в какой очереди сейчас находится оператор
 function getCurrentQueueOperator(InSipNumber:string):enumQueueCurrent;
 var
@@ -4459,57 +4238,6 @@ begin
 end;
 
 
-//// получение авторизационных данных при отправке SMS
-//function GetSMSAuth(SMSType:enumSMSAuth):string;   // TODO потом эти данные перенести в класс для отправки SMS
-//var
-// ado:TADOQuery;
-// serverConnect:TADOConnection;
-//begin
-//   Result:='null';
-//
-//   ado:=TADOQuery.Create(nil);
-//   serverConnect:=createServerConnect;
-//  if not Assigned(serverConnect) then begin
-//     FreeAndNil(ado);
-//     Exit;
-//  end;
-//
-//  try
-//    with ado do begin
-//      ado.Connection:=serverConnect;
-//      SQL.Clear;
-//
-//      case SMSType of
-//       sms_server_addr:begin
-//         SQL.Add('select url from sms_settings');
-//       end;
-//       sms_login:begin
-//         SQL.Add('select sms_login from sms_settings');
-//       end;
-//       sms_pwd:begin
-//         SQL.Add('select sms_pwd from sms_settings');
-//       end;
-//       sms_sign:begin
-//         SQL.Add('select sign from sms_settings');
-//       end;
-//      end;
-//
-//      Active:=True;
-//      if Fields[0].Value<>null then begin
-//        if Length(VarToStr(Fields[0].Value)) <> 0 then Result:=VarToStr(Fields[0].Value);
-//      end;
-//
-//    end;
-//  finally
-//    FreeAndNil(ado);
-//    if Assigned(serverConnect) then begin
-//      serverConnect.Close;
-//      FreeAndNil(serverConnect);
-//    end;
-//  end;
-//end;
-
-
 // мониторится ли транк
 function GetStatusMonitoring(status:Integer):enumMonitoringTrunk;
 begin
@@ -5108,7 +4836,7 @@ begin
     Exit;
   end;
 
-  if AnsiPos('Критическая ошибка! Недоступно ядро дашборда',_errorMessage)<>0 then begin
+  if AnsiPos('Критическая ошибка!',_errorMessage)<>0 then begin
     Result:=eNeedReconnectNO;
     Exit;
   end;
@@ -5154,7 +4882,7 @@ begin
 
   // Есть ошибка подключения к БД
   if AnsiPos('EDatabaseError',_errorMessage )<> 0 then begin
-    _errorMessage:='Сервер чёт приуныл и стал недоступным';
+    _errorMessage:='Что то пошло не так и база данных стала недоступна';
     EggMessage:='Слыш,'+#13+'давай поднимайся!';
   end;
 
@@ -5511,6 +5239,11 @@ begin
   Result:=SharedActiveSipOperators.IsTalkOperator(sip);
 end;
 
+// установка цвета на label если на него можно нажать
+procedure SetLinkColor(var _label:TLabel);
+begin
+  _label.Font.Color:=clHighlight;
+end;
 
 
 end.

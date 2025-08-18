@@ -40,6 +40,8 @@ uses
 
       m_data        : TArray<TStructInfo>;
 
+      function GetData(_index:Integer):TStructInfo;
+
       function Size:Integer; // размер массива
 
       public
@@ -48,10 +50,12 @@ uses
       constructor Create(_sip:Integer; _dateStart:string; _dateStop:string);
       destructor Destroy;            override;
 
-      procedure SetCount(_count:Integer);
       procedure Add(_data:TStructInfo);
 
       function IsExistData:Boolean;
+      property Count:Integer read m_count;
+      property ItemData[_index:integer]: TStructInfo read GetData; default;
+
 
       end;
  // class TStructCount END
@@ -61,7 +65,7 @@ uses
   type
       TCountRingsOperators = class(TAbstractReport)
       private
-      m_count       : Integer;
+      m_count       : Integer;                              // кол-во структур в m_listData
       m_listData    : TArray<TStructCount>;
       m_table       : enumReportTableCountCallsOperator;    // в какой таблице находим данные
       m_tableOnHold : enumReportTableCountCallsOperatorOnHold;  // в какой таблице находим данные onHold
@@ -73,7 +77,7 @@ uses
       function GetDateStart(_sip:Integer):string;
       function GetDateStop(_sip:Integer):string;
 
-
+      function GetData(_index:Integer):TStructCount;
 
       public
 
@@ -87,11 +91,10 @@ uses
 
       function FillingData:Boolean;   // заполнение данными
 
-      procedure SetCount(_sip:Integer; _count:Integer);
       procedure SetCountCalls(_sip:Integer; _data:TStructInfo); // установка кол-ва звонокв в конкретную дату
 
       function IsExistData:Boolean;   // есть ли какие то данные
-
+      property Items[Index: Integer]: TStructCount read GetData; default;
       property Count:Integer read m_count;
 
 
@@ -149,15 +152,15 @@ begin
 end;
 
 
-procedure TStructCount.SetCount(_count:Integer);
-begin
-  m_count:=_count;
-end;
-
 // размер массива
 function TStructCount.Size:Integer;
 begin
   Result:=Length(m_data);
+end;
+
+function TStructCount.GetData(_index:Integer):TStructInfo;
+begin
+  Result:=m_data[_index];
 end;
 
 procedure TStructCount.Add(_data:TStructInfo);
@@ -168,6 +171,7 @@ begin
   SetLength(m_data,index+1);
 
   m_data[index]:=_data;
+  Inc(m_count);
 end;
 
 
@@ -221,7 +225,7 @@ end;
 // заполнение данными
 function TCountRingsOperators.FillingData:Boolean;
 var
- i,j:Integer;
+ i:Integer;
  ado:TADOQuery;
  serverConnect:TADOConnection;
  countData:Integer;
@@ -267,9 +271,6 @@ begin
 
           Continue;
         end;
-
-        // устанавливаем кол-во
-        SetCount(StrToInt(sipList[i]), countData);
 
 
         // находим кол-во в разрезе периода
@@ -317,18 +318,6 @@ begin
 end;
 
 
-procedure TCountRingsOperators.SetCount(_sip:Integer; _count:Integer);
-var
- i:Integer;
-begin
-  for i:=0 to m_count-1 do begin
-    if m_listData[i].m_sip = _sip then begin
-      m_listData[i].SetCount(_count);
-      Exit;
-    end;
-  end;
-end;
-
 // установка кол-ва звонокв в конкретную дату
 procedure TCountRingsOperators.SetCountCalls(_sip:Integer; _data:TStructInfo);
 var
@@ -356,6 +345,8 @@ begin
       end;
   end;
 end;
+
+
 
 // достанем список sip по которым нужно найти данные
 function TCountRingsOperators.GetSipAll:TStringList;
@@ -395,5 +386,9 @@ begin
   end;
 end;
 
+function TCountRingsOperators.GetData(_index:Integer):TStructCount;
+begin
+  Result:= m_listData[_index];
+end;
 
 end.

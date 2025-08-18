@@ -24,7 +24,7 @@ uses
   procedure SetStatusProgressBar(InProgress:Double);   overload;             // установка статуса прогресс бара
   function GetAboutGenerateReport:Boolean;                                   // отмена генерации отчета
   function CountOnHoldPhone(_sip:string; _date:TDate; _table:enumReportTableCountCallsOperatorOnHold):Integer;  // кол-во секунд в статусе onHold
-
+  procedure CursourHover(var _label:TLabel; _state:enumCursorHover);        // изменение стиля label при наведении\убирании мышки
 
 
 implementation
@@ -301,6 +301,25 @@ begin
   Result:=secondsAll;
 end;
 
+// изменение стиля label при наведении\убирании мышки
+procedure CursourHover(var _label:TLabel; _state:enumCursorHover);
+begin
+  _label.Cursor:=crHandPoint;
 
+  case _state of
+   eMouseLeave:begin
+     _label.Font.Style:=[fsBold];
+   end;
+   eMouseMove:begin
+    _label.Font.Style:=[fsUnderline,fsBold];
+   end;
+  end;
+end;
+
+
+procedure LoadingListOperators(var _listUsers:TCheckListBox; InShowDisableUsers:Boolean = False);
+begin
+
+end;
 
 end.

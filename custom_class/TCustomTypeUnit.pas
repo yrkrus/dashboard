@@ -363,6 +363,10 @@ interface
                                         eTableHistoryQueue);
 
    type // тип из какой таблицы доставать данные при создании отчета "ќтчет по количеству звонков операторами"
+   enumReportTableIVR = (eTableIVR,
+                         eTableHistoryIVR);
+
+   type // тип из какой таблицы доставать данные при создании отчета "ќтчет по звонкам после рабочего времени"
    enumReportTableCountCallsOperatorOnHold = (eTableOnHold,
                                               eTableHistoryOnHold);
 
@@ -370,6 +374,10 @@ interface
    enumTrunkStatus = (eTrunkUnknown = -1,
                       eTrunkRegisterd = 0,
                       eTrunkRequest = 1);
+
+   type //тип статуса при котором мы наводим\убираем курсор с label
+   enumCursorHover = (eMouseLeave,
+                      eMouseMove);
 
   // =================== ѕ–ќ≈ќЅ–ј«ќ¬јЌ»я ===================
 
@@ -429,6 +437,7 @@ interface
  function EnumReportTableCountCallsOperatorToString(_table:enumReportTableCountCallsOperator):string; //enumReportTableCountCallsOperator -> String
  function EnumReportTableCountCallsOperatorOnHoldToString(_table:enumReportTableCountCallsOperatorOnHold):string; //EnumReportTableCountCallsOperatorOnHold -> String
  function StringToEnumTrunkStatus(_status:string):enumTrunkStatus;                    // EnumTrunkStatus - > String
+ function EnumReportTableIVRToString(_table:enumReportTableIVR):string;               // EnumReportTableIVRToString -> String
 
 
  // =================== ѕ–ќ≈ќЅ–ј«ќ¬јЌ»я ===================
@@ -1275,6 +1284,16 @@ begin
   if _status = 'Request' then tmp:=eTrunkRequest;
 
   Result:=tmp;
+end;
+
+
+// EnumReportTableIVRToString -> String
+function EnumReportTableIVRToString(_table:enumReportTableIVR):string;
+begin
+  case _table of
+   eTableIVR:         Result:='ivr';
+   eTableHistoryIVR:  Result:='history_ivr';
+  end;
 end;
 
 

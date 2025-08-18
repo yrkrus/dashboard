@@ -1,4 +1,4 @@
-unit FormHome;
+п»їunit FormHome;
 
 interface
 
@@ -252,16 +252,16 @@ type
 
   private
     { Private declarations }
-   FDragging: Boolean;      // состояние что панель со статусами операторов перемещается
+   FDragging: Boolean;      // СЃРѕСЃС‚РѕСЏРЅРёРµ С‡С‚Рѕ РїР°РЅРµР»СЊ СЃРѕ СЃС‚Р°С‚СѓСЃР°РјРё РѕРїРµСЂР°С‚РѕСЂРѕРІ РїРµСЂРµРјРµС‰Р°РµС‚СЃСЏ
    FMouseOffset: TPoint;
-   SelectedItemPopMenu: TListItem; // Переменная для хранения выбранного элемента(для popmenu_ActionOPerators)
+   SelectedItemPopMenu: TListItem; // РџРµСЂРµРјРµРЅРЅР°СЏ РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РІС‹Р±СЂР°РЅРЅРѕРіРѕ СЌР»РµРјРµРЅС‚Р°(РґР»СЏ popmenu_ActionOPerators)
 
-   procedure WndProc(var Msg: TMessage); override;   // изменение размер шрифта по сочетанию  Ctrl + колесико
+   procedure WndProc(var Msg: TMessage); override;   // РёР·РјРµРЅРµРЅРёРµ СЂР°Р·РјРµСЂ С€СЂРёС„С‚Р° РїРѕ СЃРѕС‡РµС‚Р°РЅРёСЋ  Ctrl + РєРѕР»РµСЃРёРєРѕ
 
-   procedure ViewLabel(IsBold,IsUnderline:Boolean; var p_label:TLabel); // визуальная подсветка при наведении указателя мыши
-   function SendCommand(_command:enumLogging;  _delay:enumStatus; var _errorDescriptions:string):boolean; overload;    // отправка удаленной команды
+   procedure ViewLabel(IsBold,IsUnderline:Boolean; var p_label:TLabel); // РІРёР·СѓР°Р»СЊРЅР°СЏ РїРѕРґСЃРІРµС‚РєР° РїСЂРё РЅР°РІРµРґРµРЅРёРё СѓРєР°Р·Р°С‚РµР»СЏ РјС‹С€Рё
+   function SendCommand(_command:enumLogging;  _delay:enumStatus; var _errorDescriptions:string):boolean; overload;    // РѕС‚РїСЂР°РІРєР° СѓРґР°Р»РµРЅРЅРѕР№ РєРѕРјР°РЅРґС‹
    procedure SendCommand(_command:enumLogging; _delay:enumStatus);  overload;
-   procedure AddQueuePopMenu(_command:enumLogging;_userSip:Integer); // добавление в очередь из popmenu
+   procedure AddQueuePopMenu(_command:enumLogging;_userSip:Integer); // РґРѕР±Р°РІР»РµРЅРёРµ РІ РѕС‡РµСЂРµРґСЊ РёР· popmenu
 
 
 
@@ -270,7 +270,7 @@ type
 
   Log:TLoggingFile;
 
-  ///////// ПОТОКИ ////////////
+  ///////// РџРћРўРћРљР ////////////
   STATISTICS_thread                 :TThread;
   IVR_thread                        :TThread;
   QUEUE_thread                      :TThread;
@@ -285,20 +285,20 @@ type
   ONLINECHAT_thread                 :TThread;
   FORECAST_thread                   :TThread;
   INTERNALPROCESS_thread            :TThread;
-  ///////// ПОТОКИ ////////////
+  ///////// РџРћРўРћРљР ////////////
   ///
   end;
 
-  ///   asterisk -rx "queue add member Local/НОМЕР_ОПЕРАОРА@from-queue/n to НОМЕР_ОЧЕРЕДИ penalty 0 as НОМЕР_ОПЕРАТОРА state_interface hint:НОМЕР_ОПЕРАТОРА@ext-local"
-  ///   asterisk -rx "queue remove member Local/НОМЕР_ОПЕРАОРА@from-queue/n from НОМЕР_ОЧЕРЕДИ"
+  ///   asterisk -rx "queue add member Local/РќРћРњР•Р _РћРџР•Р РђРћР Рђ@from-queue/n to РќРћРњР•Р _РћР§Р•Р Р•Р”Р penalty 0 as РќРћРњР•Р _РћРџР•Р РђРўРћР Рђ state_interface hint:РќРћРњР•Р _РћРџР•Р РђРўРћР Рђ@ext-local"
+  ///   asterisk -rx "queue remove member Local/РќРћРњР•Р _РћРџР•Р РђРћР Рђ@from-queue/n from РќРћРњР•Р _РћР§Р•Р Р•Р”Р"
 
   const
-  FLASHW_STOP = $00000000; // Остановить мерцание
-  FLASHW_CAPTION = $00000001; // Мерцание заголовка окна
-  FLASHW_TRAY = $00000002; // Мерцание иконки в трее
-  FLASHW_ALL = FLASHW_CAPTION or FLASHW_TRAY; // Мерцание всего
-  FLASHW_TIMER = $00000004; // Использовать таймер для мерцания
-  FLASHW_TIMERNOFG = $00000008; // Использовать таймер, даже если окно не активно
+  FLASHW_STOP = $00000000; // РћСЃС‚Р°РЅРѕРІРёС‚СЊ РјРµСЂС†Р°РЅРёРµ
+  FLASHW_CAPTION = $00000001; // РњРµСЂС†Р°РЅРёРµ Р·Р°РіРѕР»РѕРІРєР° РѕРєРЅР°
+  FLASHW_TRAY = $00000002; // РњРµСЂС†Р°РЅРёРµ РёРєРѕРЅРєРё РІ С‚СЂРµРµ
+  FLASHW_ALL = FLASHW_CAPTION or FLASHW_TRAY; // РњРµСЂС†Р°РЅРёРµ РІСЃРµРіРѕ
+  FLASHW_TIMER = $00000004; // РСЃРїРѕР»СЊР·РѕРІР°С‚СЊ С‚Р°Р№РјРµСЂ РґР»СЏ РјРµСЂС†Р°РЅРёСЏ
+  FLASHW_TIMERNOFG = $00000008; // РСЃРїРѕР»СЊР·РѕРІР°С‚СЊ С‚Р°Р№РјРµСЂ, РґР°Р¶Рµ РµСЃР»Рё РѕРєРЅРѕ РЅРµ Р°РєС‚РёРІРЅРѕ
 
 
 var
@@ -306,26 +306,26 @@ var
 
 
   // **************** Thread Update ****************
-  UpdateStatistiscSTOP:Boolean;                            // остановка обновления статичтики
-  UpdateIVRSTOP:Boolean;                                   // остановка обновления IVR
-  UpdateQUEUESTOP:Boolean;                                 // остановка обновления QUEUE
-  UpdateACTIVESIPSTOP:Boolean;                             // остановка обновления ACTIVESIP
-  UpdateACTIVESIPQueue:Boolean;                            // остановка обновления ACTIVESIP_Queue
-  UpdateACTIVESIPtalkTime:Boolean;                         // остановка обновления ACTIVESIP_updateTalk
-  UpdateACTIVESIPtalkTimePhone:Boolean;                    // остановка обновления ACTIVESIP_updateTalkPhone
-  UpdateACTIVESIPcountTalk:Boolean;                        // остановка обновления ACTIVESIP_countTalk_thread
-  UpdateCHECKSERVERSSTOP:Boolean;                          // остановка обновления CHECKSERVERSSTOP
-  UpdateCheckSipTrunksStop:Boolean;                        // остановка обновления CheckSipTrunks
-  UpdateAnsweredStop:Boolean;                              // остановка обновления AnsweredQueue
-  UpdateOnlineChatStop:Boolean;                            // остановка обновления OnlineChat
-  UpdateForecast:Boolean;                                  // остановка обновления Forecast
-  UpdateInternalProcess:Boolean;                           // остановка обновления InternalProcess
+  UpdateStatistiscSTOP:Boolean;                            // РѕСЃС‚Р°РЅРѕРІРєР° РѕР±РЅРѕРІР»РµРЅРёСЏ СЃС‚Р°С‚РёС‡С‚РёРєРё
+  UpdateIVRSTOP:Boolean;                                   // РѕСЃС‚Р°РЅРѕРІРєР° РѕР±РЅРѕРІР»РµРЅРёСЏ IVR
+  UpdateQUEUESTOP:Boolean;                                 // РѕСЃС‚Р°РЅРѕРІРєР° РѕР±РЅРѕРІР»РµРЅРёСЏ QUEUE
+  UpdateACTIVESIPSTOP:Boolean;                             // РѕСЃС‚Р°РЅРѕРІРєР° РѕР±РЅРѕРІР»РµРЅРёСЏ ACTIVESIP
+  UpdateACTIVESIPQueue:Boolean;                            // РѕСЃС‚Р°РЅРѕРІРєР° РѕР±РЅРѕРІР»РµРЅРёСЏ ACTIVESIP_Queue
+  UpdateACTIVESIPtalkTime:Boolean;                         // РѕСЃС‚Р°РЅРѕРІРєР° РѕР±РЅРѕРІР»РµРЅРёСЏ ACTIVESIP_updateTalk
+  UpdateACTIVESIPtalkTimePhone:Boolean;                    // РѕСЃС‚Р°РЅРѕРІРєР° РѕР±РЅРѕРІР»РµРЅРёСЏ ACTIVESIP_updateTalkPhone
+  UpdateACTIVESIPcountTalk:Boolean;                        // РѕСЃС‚Р°РЅРѕРІРєР° РѕР±РЅРѕРІР»РµРЅРёСЏ ACTIVESIP_countTalk_thread
+  UpdateCHECKSERVERSSTOP:Boolean;                          // РѕСЃС‚Р°РЅРѕРІРєР° РѕР±РЅРѕРІР»РµРЅРёСЏ CHECKSERVERSSTOP
+  UpdateCheckSipTrunksStop:Boolean;                        // РѕСЃС‚Р°РЅРѕРІРєР° РѕР±РЅРѕРІР»РµРЅРёСЏ CheckSipTrunks
+  UpdateAnsweredStop:Boolean;                              // РѕСЃС‚Р°РЅРѕРІРєР° РѕР±РЅРѕРІР»РµРЅРёСЏ AnsweredQueue
+  UpdateOnlineChatStop:Boolean;                            // РѕСЃС‚Р°РЅРѕРІРєР° РѕР±РЅРѕРІР»РµРЅРёСЏ OnlineChat
+  UpdateForecast:Boolean;                                  // РѕСЃС‚Р°РЅРѕРІРєР° РѕР±РЅРѕРІР»РµРЅРёСЏ Forecast
+  UpdateInternalProcess:Boolean;                           // РѕСЃС‚Р°РЅРѕРІРєР° РѕР±РЅРѕРІР»РµРЅРёСЏ InternalProcess
   // **************** Thread Update ****************
 
 
 
  const
-  // Размер панели "Статусы операторов"
+  // Р Р°Р·РјРµСЂ РїР°РЅРµР»Рё "РЎС‚Р°С‚СѓСЃС‹ РѕРїРµСЂР°С‚РѕСЂРѕРІ"
   cPanelStatusHeight_default:Word   = 72;
   cPanelStatusHeight_showqueue:Word = 110;
 
@@ -346,7 +346,7 @@ function FlashWindowEx(var pwfi: TFlashWindowInfo): BOOL; stdcall; external user
 
 procedure OnDevelop;
 begin
-  MessageBox(HomeForm.Handle,PChar('Данный функционал в разработке!'),PChar('В разработке'),MB_OK+MB_ICONINFORMATION);
+  MessageBox(HomeForm.Handle,PChar('Р”Р°РЅРЅС‹Р№ С„СѓРЅРєС†РёРѕРЅР°Р» РІ СЂР°Р·СЂР°Р±РѕС‚РєРµ!'),PChar('Р’ СЂР°Р·СЂР°Р±РѕС‚РєРµ'),MB_OK+MB_ICONINFORMATION);
 end;
 
 
@@ -355,7 +355,7 @@ var
  error:string;
 begin
    if not SendCommand(_command,_delay, error) then begin
-     MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+     MessageBox(Handle,PChar(error),PChar('РћС€РёР±РєР°'),MB_OK+MB_ICONERROR);
    end;
 end;
 
@@ -366,7 +366,7 @@ var
 begin
   delay:=eNO;
 
- // добавление в очередь 5000
+ // РґРѕР±Р°РІР»РµРЅРёРµ РІ РѕС‡РµСЂРµРґСЊ 5000
  SendCommand(eLog_add_queue_5000, delay);
 end;
 
@@ -376,7 +376,7 @@ var
 begin
   delay:=eNO;
 
- // добавление в очередь 5000 и 5050
+ // РґРѕР±Р°РІР»РµРЅРёРµ РІ РѕС‡РµСЂРµРґСЊ 5000 Рё 5050
   SendCommand(eLog_add_queue_5000_5050, delay);
 end;
 
@@ -386,7 +386,7 @@ var
 begin
  delay:=eNO;
 
- // добавление в очередь 5050
+ // РґРѕР±Р°РІР»РµРЅРёРµ РІ РѕС‡РµСЂРµРґСЊ 5050
  SendCommand(eLog_add_queue_5050, delay);
 end;
 
@@ -404,7 +404,7 @@ begin
 
    PanelStatusIN.Height:=cPanelStatusHeight_showqueue;
 
-    // проверяем в какой очереди находится оператор
+    // РїСЂРѕРІРµСЂСЏРµРј РІ РєР°РєРѕР№ РѕС‡РµСЂРµРґРё РЅР°С…РѕРґРёС‚СЃСЏ РѕРїРµСЂР°С‚РѕСЂ
     curr_queue:=getCurrentQueueOperator(getUserSIP(SharedCurrentUserLogon.GetID));
 
     case curr_queue of
@@ -443,7 +443,7 @@ var
 begin
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.GetID);
 
-  // перерыв
+  // РїРµСЂРµСЂС‹РІ
   SendCommand(eLog_break,delay);
 end;
 
@@ -469,7 +469,7 @@ var
 begin
   delay:=eNO;
 
-  // выход из всех очередей из 5000 и 5050
+  // РІС‹С…РѕРґ РёР· РІСЃРµС… РѕС‡РµСЂРµРґРµР№ РёР· 5000 Рё 5050
   SendCommand(eLog_del_queue_5000_5050, delay);
 end;
 
@@ -479,7 +479,7 @@ var
 begin
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.GetID);
 
-   // обед
+   // РѕР±РµРґ
   SendCommand(eLog_dinner,delay);
 end;
 
@@ -489,7 +489,7 @@ var
 begin
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.GetID);
 
- // исход
+ // РёСЃС…РѕРґ
   SendCommand(eLog_exodus, delay);
 end;
 
@@ -499,7 +499,7 @@ var
 begin
   delay:=eNO;
 
- // домой
+ // РґРѕРјРѕР№
   SendCommand(eLog_home,delay);
 end;
 
@@ -509,7 +509,7 @@ var
 begin
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.GetID);
 
-  // ИТ
+  // РРў
    SendCommand(eLog_IT,delay);
 end;
 
@@ -519,7 +519,7 @@ var
 begin
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.GetID);
 
- // поствызов
+ // РїРѕСЃС‚РІС‹Р·РѕРІ
   SendCommand(eLog_postvyzov, delay);
 end;
 
@@ -529,7 +529,7 @@ var
 begin
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.GetID);
 
- // переносы
+ // РїРµСЂРµРЅРѕСЃС‹
   SendCommand(eLog_reserve,delay);
 end;
 
@@ -539,7 +539,7 @@ var
 begin
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.GetID);
 
- // учеба
+ // СѓС‡РµР±Р°
    SendCommand(eLog_studies,delay);
 end;
 
@@ -549,7 +549,7 @@ var
 begin
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.GetID);
 
-// переносы
+// РїРµСЂРµРЅРѕСЃС‹
  SendCommand(eLog_transfer,delay);
 end;
 
@@ -564,14 +564,14 @@ procedure THomeForm.Button1Click(Sender: TObject);
 
 begin
 
-//  // Получаем размеры рабочего стола с учетом панели задач
+//  // РџРѕР»СѓС‡Р°РµРј СЂР°Р·РјРµСЂС‹ СЂР°Р±РѕС‡РµРіРѕ СЃС‚РѕР»Р° СЃ СѓС‡РµС‚РѕРј РїР°РЅРµР»Рё Р·Р°РґР°С‡
 //  SystemParametersInfo(SPI_GETWORKAREA, 0, @ScreenRect, 0);
 //
-//  // Устанавливаем позицию формы
-//  FormChatNewMessage.Left := ScreenRect.Right - FormChatNewMessage.Width - 10; // 10 - отступ от края экрана
-//  FormChatNewMessage.Top := ScreenRect.Bottom - FormChatNewMessage.Height - 10; // 10 - отступ от края экрана
+//  // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїРѕР·РёС†РёСЋ С„РѕСЂРјС‹
+//  FormChatNewMessage.Left := ScreenRect.Right - FormChatNewMessage.Width - 10; // 10 - РѕС‚СЃС‚СѓРї РѕС‚ РєСЂР°СЏ СЌРєСЂР°РЅР°
+//  FormChatNewMessage.Top := ScreenRect.Bottom - FormChatNewMessage.Height - 10; // 10 - РѕС‚СЃС‚СѓРї РѕС‚ РєСЂР°СЏ СЌРєСЂР°РЅР°
 //
-//  // Показываем форму
+//  // РџРѕРєР°Р·С‹РІР°РµРј С„РѕСЂРјСѓ
 //
 //
 //  FormChatNewMessage.Show;
@@ -580,10 +580,10 @@ begin
 //
 //
 //  FlashInfo.cbSize := SizeOf(TFlashWindowInfo);
-//  FlashInfo.hwnd := Handle; // Указываем дескриптор окна
-//  FlashInfo.dwFlags := FLASHW_ALL; // Мерцание всего окна
-//  FlashInfo.uCount := 999999999; // Количество мерцаний
-//  FlashInfo.dwTimeout := 0; // Интервал между мерцаниями (0 - стандартный)
+//  FlashInfo.hwnd := Handle; // РЈРєР°Р·С‹РІР°РµРј РґРµСЃРєСЂРёРїС‚РѕСЂ РѕРєРЅР°
+//  FlashInfo.dwFlags := FLASHW_ALL; // РњРµСЂС†Р°РЅРёРµ РІСЃРµРіРѕ РѕРєРЅР°
+//  FlashInfo.uCount := 999999999; // РљРѕР»РёС‡РµСЃС‚РІРѕ РјРµСЂС†Р°РЅРёР№
+//  FlashInfo.dwTimeout := 0; // РРЅС‚РµСЂРІР°Р» РјРµР¶РґСѓ РјРµСЂС†Р°РЅРёСЏРјРё (0 - СЃС‚Р°РЅРґР°СЂС‚РЅС‹Р№)
 //
 //  FlashWindowEx(FlashInfo);
 
@@ -623,42 +623,42 @@ var
 begin
   if DEBUG then KillProcess;  
 
-  // проверка вдруг роль оператора и он не вышел из линии
+  // РїСЂРѕРІРµСЂРєР° РІРґСЂСѓРі СЂРѕР»СЊ РѕРїРµСЂР°С‚РѕСЂР° Рё РѕРЅ РЅРµ РІС‹С€РµР» РёР· Р»РёРЅРёРё
   if getIsExitOperatorCurrentQueue(SharedCurrentUserLogon.GetRole, SharedCurrentUserLogon.GetID) then begin
-    CanClose:= Application.MessageBox(PChar('Вы забыли выйти из очереди'), 'Ошибка при выходе', MB_OK + MB_ICONERROR) = IDNO;
+    CanClose:= Application.MessageBox(PChar('Р’С‹ Р·Р°Р±С‹Р»Рё РІС‹Р№С‚Рё РёР· РѕС‡РµСЂРµРґРё'), 'РћС€РёР±РєР° РїСЂРё РІС‹С…РѕРґРµ', MB_OK + MB_ICONERROR) = IDNO;
   end
   else begin
-    // проверяем правильно ли оператор вышел через команду
+    // РїСЂРѕРІРµСЂСЏРµРј РїСЂР°РІРёР»СЊРЅРѕ Р»Рё РѕРїРµСЂР°С‚РѕСЂ РІС‹С€РµР» С‡РµСЂРµР· РєРѕРјР°РЅРґСѓ
     if getIsExitOperatorCurrentGoHome(SharedCurrentUserLogon.GetRole, SharedCurrentUserLogon.GetID) then begin
-      CanClose:= Application.MessageBox(PChar('Прежде чем закрыть, необходимо выбрать статус "Домой"'), 'Ошибка при выходе', MB_OK + MB_ICONERROR) = IDNO;
+      CanClose:= Application.MessageBox(PChar('РџСЂРµР¶РґРµ С‡РµРј Р·Р°РєСЂС‹С‚СЊ, РЅРµРѕР±С…РѕРґРёРјРѕ РІС‹Р±СЂР°С‚СЊ СЃС‚Р°С‚СѓСЃ "Р”РѕРјРѕР№"'), 'РћС€РёР±РєР° РїСЂРё РІС‹С…РѕРґРµ', MB_OK + MB_ICONERROR) = IDNO;
     end
     else begin
       if getStatusIndividualSettingsUser(SharedCurrentUserLogon.GetID,settingUsers_noConfirmExit) = paramStatus_DISABLED then begin
 
-        AMsgDialog := CreateMessageDialog('Вы действительно хотите завершить работу?', mtConfirmation, [mbYes, mbNo]);
+        AMsgDialog := CreateMessageDialog('Р’С‹ РґРµР№СЃС‚РІРёС‚РµР»СЊРЅРѕ С…РѕС‚РёС‚Рµ Р·Р°РІРµСЂС€РёС‚СЊ СЂР°Р±РѕС‚Сѓ?', mtConfirmation, [mbYes, mbNo]);
         ACheckBox := TCheckBox.Create(AMsgDialog);
 
         with AMsgDialog do
         try
-          Caption:= 'Уточнение выхода';
+          Caption:= 'РЈС‚РѕС‡РЅРµРЅРёРµ РІС‹С…РѕРґР°';
           Height:= 150;
-          (FindComponent('Yes') as TButton).Caption := 'Да';
-          (FindComponent('No')  as TButton).Caption := 'Нет';
+          (FindComponent('Yes') as TButton).Caption := 'Р”Р°';
+          (FindComponent('No')  as TButton).Caption := 'РќРµС‚';
 
           with ACheckBox do begin
             Parent:= AMsgDialog;
-            Caption:= 'Не показывать больше это сообщение';
+            Caption:= 'РќРµ РїРѕРєР°Р·С‹РІР°С‚СЊ Р±РѕР»СЊС€Рµ СЌС‚Рѕ СЃРѕРѕР±С‰РµРЅРёРµ';
             Top:= 100;
             Left:= 8;
             Width:= AMsgDialog.Width;
           end;
 
-          DialogResult:= ShowModal; // Сохраняем результат в переменной
+          DialogResult:= ShowModal; // РЎРѕС…СЂР°РЅСЏРµРј СЂРµР·СѓР»СЊС‚Р°С‚ РІ РїРµСЂРµРјРµРЅРЅРѕР№
 
           if DialogResult = ID_YES then
           begin
             if ACheckBox.Checked then begin
-              // созраняем параметр чтобы больше не показывать это окно
+              // СЃРѕР·СЂР°РЅСЏРµРј РїР°СЂР°РјРµС‚СЂ С‡С‚РѕР±С‹ Р±РѕР»СЊС€Рµ РЅРµ РїРѕРєР°Р·С‹РІР°С‚СЊ СЌС‚Рѕ РѕРєРЅРѕ
               saveIndividualSettingUser(SharedCurrentUserLogon.GetID,settingUsers_noConfirmExit,paramStatus_ENABLED);
             end;
 
@@ -666,7 +666,7 @@ begin
           end
           else if DialogResult = ID_NO then
           begin
-            Abort; // Отмена выхода
+            Abort; // РћС‚РјРµРЅР° РІС‹С…РѕРґР°
           end else Abort;
 
         finally
@@ -685,17 +685,17 @@ var
 begin
   FolderDll:= FOLDERPATH + 'dll';
 
-  // Проверка на существование папки
+  // РџСЂРѕРІРµСЂРєР° РЅР° СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ РїР°РїРєРё
   if DirectoryExists(FolderDll) then begin
-    // путь к папке с DLL
+    // РїСѓС‚СЊ Рє РїР°РїРєРµ СЃ DLL
     SetDllDirectory(PChar(FolderDll));
   end
   else begin
-    MessageBox(Handle,PChar('Не найдена папка с dll библиотеками'+#13#13+FolderDll),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-    KillProcess; // Завершаем выполнение процедуры, чтобы не продолжать дальше
+    MessageBox(Handle,PChar('РќРµ РЅР°Р№РґРµРЅР° РїР°РїРєР° СЃ dll Р±РёР±Р»РёРѕС‚РµРєР°РјРё'+#13#13+FolderDll),PChar('РћС€РёР±РєР°'),MB_OK+MB_ICONERROR);
+    KillProcess; // Р—Р°РІРµСЂС€Р°РµРј РІС‹РїРѕР»РЅРµРЅРёРµ РїСЂРѕС†РµРґСѓСЂС‹, С‡С‚РѕР±С‹ РЅРµ РїСЂРѕРґРѕР»Р¶Р°С‚СЊ РґР°Р»СЊС€Рµ
   end;
 
-  // размер панели "Статусы операторов" по default
+  // СЂР°Р·РјРµСЂ РїР°РЅРµР»Рё "РЎС‚Р°С‚СѓСЃС‹ РѕРїРµСЂР°С‚РѕСЂРѕРІ" РїРѕ default
   PanelStatusIN.Height:=cPanelStatusHeight_default;
   FDragging:=False;
 end;
@@ -705,18 +705,18 @@ procedure THomeForm.FormResize(Sender: TObject);
 var
  XML:TXML;
 begin
- // изсеняем размер формы
- // активные операторы
+ // РёР·СЃРµРЅСЏРµРј СЂР°Р·РјРµСЂ С„РѕСЂРјС‹
+ // Р°РєС‚РёРІРЅС‹Рµ РѕРїРµСЂР°С‚РѕСЂС‹
   clearList_SIP(Width - DEFAULT_SIZE_PANEL_ACTIVESIP, SharedFontSize.GetSize(eActiveSip));
 
   if Assigned(SharedCurrentUserLogon) then begin
     if SharedCurrentUserLogon.GetIsOperator then begin
-      // подгонем размер статусов оператора
+      // РїРѕРґРіРѕРЅРµРј СЂР°Р·РјРµСЂ СЃС‚Р°С‚СѓСЃРѕРІ РѕРїРµСЂР°С‚РѕСЂР°
       ResizeCentrePanelStatusOperators(Width - DEFAULT_SIZE_PANEL_ACTIVESIP);
     end;
   end;
 
-  // сохраняем размер главной формы
+  // СЃРѕС…СЂР°РЅСЏРµРј СЂР°Р·РјРµСЂ РіР»Р°РІРЅРѕР№ С„РѕСЂРјС‹
   begin
     XML:=TXML.Create;
     case WindowState of
@@ -733,56 +733,57 @@ var
  error:string;
 begin
  try
-  // остаток свободного места на диске
+  // РѕСЃС‚Р°С‚РѕРє СЃРІРѕР±РѕРґРЅРѕРіРѕ РјРµСЃС‚Р° РЅР° РґРёСЃРєРµ
   if not isExistFreeSpaceDrive(error) then begin
     ShowFormErrorMessage(error,SharedMainLog,'THomeForm.FormShow');
   end;
 
-  // проверка установлен ли MySQL Connector
+  // РїСЂРѕРІРµСЂРєР° СѓСЃС‚Р°РЅРѕРІР»РµРЅ Р»Рё MySQL Connector
   if not isExistMySQLConnector then begin
-    error:='Не установлен MySQL Connector';
+    error:='РќРµ СѓСЃС‚Р°РЅРѕРІР»РµРЅ MySQL Connector';
     ShowFormErrorMessage(error,SharedMainLog,'THomeForm.FormShow');
   end;
 
-   // доступно ли ядро (в дебаг не проверяем)
+   // РґРѕСЃС‚СѓРїРЅРѕ Р»Рё СЏРґСЂРѕ (РІ РґРµР±Р°Рі РЅРµ РїСЂРѕРІРµСЂСЏРµРј)
    if not DEBUG then begin
      if not GetAliveCoreDashboard then begin
-      error:='Критическая ошибка! Недоступно ядро дашборда'+#13#13+'Свяжитесь с отделом ИТ';
+      error:='РљСЂРёС‚РёС‡РµСЃРєР°СЏ РѕС€РёР±РєР°! РќРµРґРѕСЃС‚СѓРїРµРЅ TCP СЃРµСЂРІРµСЂ РґР°С€Р±РѕСЂРґР°'+#13+
+                                   '('+GetTCPServerAddress+':'+IntToStr(GetTCPServerPort)+')'+#13#13+
+                                   'РЎРІСЏР¶РёС‚РµСЃСЊ СЃ РѕС‚РґРµР»РѕРј РРў';
       ShowFormErrorMessage(error,SharedMainLog,'THomeForm.FormShow');
      end;
    end;
 
-
-  // отображение текущей версии  ctrl+shift+G (GUID) - от этого ID зависит актуальность еще
-  if DEBUG then Caption:='    ===== DEBUG =====    ' + Caption+' '+GetVersion(GUID_VERSION,eGUI) + ' | '+'('+GUID_VERSION+')'
+  // РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ С‚РµРєСѓС‰РµР№ РІРµСЂСЃРёРё  ctrl+shift+G (GUID) - РѕС‚ СЌС‚РѕРіРѕ ID Р·Р°РІРёСЃРёС‚ Р°РєС‚СѓР°Р»СЊРЅРѕСЃС‚СЊ РµС‰Рµ
+  if DEBUG then Caption:='    ===== DEBUG | (base:'+GetDefaultDataBase+') =====    ' + Caption+' '+GetVersion(GUID_VERSION,eGUI) + ' | '+'('+GUID_VERSION+')'
   else Caption:=Caption+' '+GetVersion(GUID_VERSION,eGUI) + ' | '+'('+GUID_VERSION+')';
 
 
 
-  // проверка на ткущую версию
+  // РїСЂРѕРІРµСЂРєР° РЅР° С‚РєСѓС‰СѓСЋ РІРµСЂСЃРёСЋ
   CheckCurrentVersion;
 
-  // очистка от временных файлов после автообновления
+  // РѕС‡РёСЃС‚РєР° РѕС‚ РІСЂРµРјРµРЅРЅС‹С… С„Р°Р№Р»РѕРІ РїРѕСЃР»Рµ Р°РІС‚РѕРѕР±РЅРѕРІР»РµРЅРёСЏ
   ClearAfterUpdate;
 
-   // проверка на 2ую копию дошборда
+   // РїСЂРѕРІРµСЂРєР° РЅР° 2СѓСЋ РєРѕРїРёСЋ РґРѕС€Р±РѕСЂРґР°
   if GetCloneRun(PChar(DASHBOARD_EXE)) then begin
-    MessageBox(HomeForm.Handle,PChar('Обнаружен запуск 2ой копии программы'+#13#13+
-                                     'Для продолжения закройте предыдущую копию'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
+    MessageBox(HomeForm.Handle,PChar('РћР±РЅР°СЂСѓР¶РµРЅ Р·Р°РїСѓСЃРє 2РѕР№ РєРѕРїРёРё РїСЂРѕРіСЂР°РјРјС‹'+#13#13+
+                                     'Р”Р»СЏ РїСЂРѕРґРѕР»Р¶РµРЅРёСЏ Р·Р°РєСЂРѕР№С‚Рµ РїСЂРµРґС‹РґСѓС‰СѓСЋ РєРѕРїРёСЋ'),PChar('РћС€РёР±РєР° Р·Р°РїСѓСЃРєР°'),MB_OK+MB_ICONERROR);
     KillProcess;
   end;
 
    Screen.Cursor:=crHourGlass;
 
-   // текущий залогиненый пользователь
+   // С‚РµРєСѓС‰РёР№ Р·Р°Р»РѕРіРёРЅРµРЅС‹Р№ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ
   SharedCurrentUserLogon:=TUser.Create;
 
 
  ////////////////////////////////////
-  // авторизация
+  // Р°РІС‚РѕСЂРёР·Р°С†РёСЏ
   FormAuth.ShowModal;
 
-  // нужно ли сменить пароль
+  // РЅСѓР¶РЅРѕ Р»Рё СЃРјРµРЅРёС‚СЊ РїР°СЂРѕР»СЊ
   if SharedCurrentUserLogon.GetRePassword then begin
     Screen.Cursor:=crDefault;
     FormRePassword.ShowModal;
@@ -791,53 +792,53 @@ begin
 
   Screen.Cursor:=crHourGlass;
 
-   // стататус бар
+   // СЃС‚Р°С‚Р°С‚СѓСЃ Р±Р°СЂ
    with StatusBar do begin
     Panels[2].Text:=SharedCurrentUserLogon.GetFamiliya+' '+SharedCurrentUserLogon.GetName;
     Panels[3].Text:=getUserRoleSTR(SharedCurrentUserLogon.GetID);
     Panels[4].Text:=GetCopyright;
    end;
 
-   // заведение данных о текущей сесии
+   // Р·Р°РІРµРґРµРЅРёРµ РґР°РЅРЅС‹С… Рѕ С‚РµРєСѓС‰РµР№ СЃРµСЃРёРё
    CreateCurrentActiveSession(SharedCurrentUserLogon.GetID);
 
 
-  // создание списка серверов для проверки доступности
+  // СЃРѕР·РґР°РЅРёРµ СЃРїРёСЃРєР° СЃРµСЂРІРµСЂРѕРІ РґР»СЏ РїСЂРѕРІРµСЂРєРё РґРѕСЃС‚СѓРїРЅРѕСЃС‚Рё
   createCheckServersInfoclinika;
-  // создание списка sip trunk для проверки
+  // СЃРѕР·РґР°РЅРёРµ СЃРїРёСЃРєР° sip trunk РґР»СЏ РїСЂРѕРІРµСЂРєРё
   CreateCheckSipTrunk;
 
-  // прогрузка индивидуальных настроек пользователя
+  // РїСЂРѕРіСЂСѓР·РєР° РёРЅРґРёРІРёРґСѓР°Р»СЊРЅС‹С… РЅР°СЃС‚СЂРѕРµРє РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
   LoadIndividualSettingUser(SharedCurrentUserLogon.GetID);
 
 
-  // выставление прав доступа
+  // РІС‹СЃС‚Р°РІР»РµРЅРёРµ РїСЂР°РІ РґРѕСЃС‚СѓРїР°
   accessRights(SharedCurrentUserLogon);
 
-  // пасхалки
+  // РїР°СЃС…Р°Р»РєРё
    Egg;
 
-  // линковка окна формы debug info в класс для подсчета статистики работы потоков
+  // Р»РёРЅРєРѕРІРєР° РѕРєРЅР° С„РѕСЂРјС‹ debug info РІ РєР»Р°СЃСЃ РґР»СЏ РїРѕРґСЃС‡РµС‚Р° СЃС‚Р°С‚РёСЃС‚РёРєРё СЂР°Р±РѕС‚С‹ РїРѕС‚РѕРєРѕРІ
   SharedCountResponseThread.SetAddForm(FormDEBUG);
 
-  // очищаем все лист боксы
+  // РѕС‡РёС‰Р°РµРј РІСЃРµ Р»РёСЃС‚ Р±РѕРєСЃС‹
   clearAllLists;
 
-   // размер главной офрмы экрана
+   // СЂР°Р·РјРµСЂ РіР»Р°РІРЅРѕР№ РѕС„СЂРјС‹ СЌРєСЂР°РЅР°
   WindowStateInit;
 
   Screen.Cursor:=crDefault;
 
-  // дата+время старта
+  // РґР°С‚Р°+РІСЂРµРјСЏ СЃС‚Р°СЂС‚Р°
   PROGRAM_STARTED:=Now;
 
-  // создаем все потоки (ВСЕГДА ДОЛЖНЫ ПОСЛЕДНИМИ ИНИЦИАЛИЗИРОВАТЬСЯ!!)
+  // СЃРѕР·РґР°РµРј РІСЃРµ РїРѕС‚РѕРєРё (Р’РЎР•Р“Р”Рђ Р”РћР›Р–РќР« РџРћРЎР›Р•Р”РќРРњР РРќРР¦РРђР›РР—РР РћР’РђРўР¬РЎРЇ!!)
   START_THREAD_ALLl.Click;
   except
   on E: Exception do begin
-    error:='Этой надписи никогда не должно было быть!'+#13+
-           'Возникла критическая ошибка'+#13#13+
-           'Код ошибки: '+E.ClassName+#13+E.Message;
+    error:='Р­С‚РѕР№ РЅР°РґРїРёСЃРё РЅРёРєРѕРіРґР° РЅРµ РґРѕР»Р¶РЅРѕ Р±С‹Р»Рѕ Р±С‹С‚СЊ!'+#13+
+           'РљСЂРёС‚РёС‡РµСЃРєР°СЏ РѕС€РёР±РєР°!'+#13+
+           'РљРѕРґ РѕС€РёР±РєРё: '+E.ClassName+#13+E.Message;
     ShowFormErrorMessage(error, SharedMainLog, 'THomeForm.FormShow');
   end;
  end;
@@ -859,7 +860,7 @@ begin
   if Button = mbLeft then
   begin
     FDragging:= True;
-    // Сохраняем смещение мыши относительно панели
+    // РЎРѕС…СЂР°РЅСЏРµРј СЃРјРµС‰РµРЅРёРµ РјС‹С€Рё РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ РїР°РЅРµР»Рё
     FMouseOffset:= Point(X, Y);
   end;
 end;
@@ -869,7 +870,7 @@ procedure THomeForm.PanelStatusINMouseMove(Sender: TObject; Shift: TShiftState;
 begin
   if FDragging then
   begin
-    // Перемещаем панель, учитывая смещение мыши
+    // РџРµСЂРµРјРµС‰Р°РµРј РїР°РЅРµР»СЊ, СѓС‡РёС‚С‹РІР°СЏ СЃРјРµС‰РµРЅРёРµ РјС‹С€Рё
     PanelStatus.Left := PanelStatus.Left + (Mouse.CursorPos.X - PanelStatus.Left - FMouseOffset.X);
     PanelStatus.Top := PanelStatus.Top + (Mouse.CursorPos.Y - PanelStatus.Top - FMouseOffset.Y);
     Screen.Cursor:=crHandPoint;
@@ -892,18 +893,18 @@ var
  //user_id:Integer;
  id:Integer;
 begin
-  // Проверяем, был ли выбран элемент
+  // РџСЂРѕРІРµСЂСЏРµРј, Р±С‹Р» Р»Рё РІС‹Р±СЂР°РЅ СЌР»РµРјРµРЅС‚
   if not Assigned(SelectedItemPopMenu) then begin
-    MessageBox(Handle,PChar('Не выбран оператор'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    MessageBox(Handle,PChar('РќРµ РІС‹Р±СЂР°РЅ РѕРїРµСЂР°С‚РѕСЂ'),PChar('РћС€РёР±РєР°'),MB_OK+MB_ICONERROR);
     Exit;
   end;
   id_sip:=StrToInt(SelectedItemPopMenu.Caption);
 
-  // в очереди ли находится оператор
+  // РІ РѕС‡РµСЂРµРґРё Р»Рё РЅР°С…РѕРґРёС‚СЃСЏ РѕРїРµСЂР°С‚РѕСЂ
   id:=SharedActiveSipOperators.GetListOperators_ID(id_sip);
 
   if SharedActiveSipOperators.GetListOperators_Queue(id) = queue_5000 then begin
-    MessageBox(Handle,PChar('Оператор и так в этой очереди'),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
+    MessageBox(Handle,PChar('РћРїРµСЂР°С‚РѕСЂ Рё С‚Р°Рє РІ СЌС‚РѕР№ РѕС‡РµСЂРµРґРё'),PChar('РћС€РёР±РєР°'),MB_OK+MB_ICONINFORMATION);
     Exit;
   end;
 
@@ -919,18 +920,18 @@ var
  //user_id:Integer;
  id:Integer;
 begin
-  // Проверяем, был ли выбран элемент
+  // РџСЂРѕРІРµСЂСЏРµРј, Р±С‹Р» Р»Рё РІС‹Р±СЂР°РЅ СЌР»РµРјРµРЅС‚
   if not Assigned(SelectedItemPopMenu) then begin
-    MessageBox(Handle,PChar('Не выбран оператор'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    MessageBox(Handle,PChar('РќРµ РІС‹Р±СЂР°РЅ РѕРїРµСЂР°С‚РѕСЂ'),PChar('РћС€РёР±РєР°'),MB_OK+MB_ICONERROR);
     Exit;
   end;
   id_sip:=StrToInt(SelectedItemPopMenu.Caption);
 
-  // в очереди ли находится оператор
+  // РІ РѕС‡РµСЂРµРґРё Р»Рё РЅР°С…РѕРґРёС‚СЃСЏ РѕРїРµСЂР°С‚РѕСЂ
   id:=SharedActiveSipOperators.GetListOperators_ID(id_sip);
 
   if SharedActiveSipOperators.GetListOperators_Queue(id) = queue_5000_5050 then begin
-    MessageBox(Handle,PChar('Оператор и так в этой очереди'),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
+    MessageBox(Handle,PChar('РћРїРµСЂР°С‚РѕСЂ Рё С‚Р°Рє РІ СЌС‚РѕР№ РѕС‡РµСЂРµРґРё'),PChar('РћС€РёР±РєР°'),MB_OK+MB_ICONINFORMATION);
     Exit;
   end;
 
@@ -945,18 +946,18 @@ var
  //user_id:Integer;
  id:Integer;
 begin
-  // Проверяем, был ли выбран элемент
+  // РџСЂРѕРІРµСЂСЏРµРј, Р±С‹Р» Р»Рё РІС‹Р±СЂР°РЅ СЌР»РµРјРµРЅС‚
   if not Assigned(SelectedItemPopMenu) then begin
-    MessageBox(Handle,PChar('Не выбран оператор'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    MessageBox(Handle,PChar('РќРµ РІС‹Р±СЂР°РЅ РѕРїРµСЂР°С‚РѕСЂ'),PChar('РћС€РёР±РєР°'),MB_OK+MB_ICONERROR);
     Exit;
   end;
   id_sip:=StrToInt(SelectedItemPopMenu.Caption);
 
-  // в очереди ли находится оператор
+  // РІ РѕС‡РµСЂРµРґРё Р»Рё РЅР°С…РѕРґРёС‚СЃСЏ РѕРїРµСЂР°С‚РѕСЂ
   id:=SharedActiveSipOperators.GetListOperators_ID(id_sip);
 
   if SharedActiveSipOperators.GetListOperators_Queue(id) = queue_5050 then begin
-    MessageBox(Handle,PChar('Оператор и так в этой очереди'),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
+    MessageBox(Handle,PChar('РћРїРµСЂР°С‚РѕСЂ Рё С‚Р°Рє РІ СЌС‚РѕР№ РѕС‡РµСЂРµРґРё'),PChar('РћС€РёР±РєР°'),MB_OK+MB_ICONINFORMATION);
     Exit;
   end;
 
@@ -974,38 +975,38 @@ var
  error:string;
  delay:enumStatus;
 begin
-  // Проверяем, был ли выбран элемент
+  // РџСЂРѕРІРµСЂСЏРµРј, Р±С‹Р» Р»Рё РІС‹Р±СЂР°РЅ СЌР»РµРјРµРЅС‚
   if not Assigned(SelectedItemPopMenu) then begin
-    MessageBox(Handle,PChar('Не выбран оператор'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    MessageBox(Handle,PChar('РќРµ РІС‹Р±СЂР°РЅ РѕРїРµСЂР°С‚РѕСЂ'),PChar('РћС€РёР±РєР°'),MB_OK+MB_ICONERROR);
     Exit;
   end;
 
   id_sip:=StrToInt(SelectedItemPopMenu.Caption);
 
-  // в очереди ли находится оператор
+  // РІ РѕС‡РµСЂРµРґРё Р»Рё РЅР°С…РѕРґРёС‚СЃСЏ РѕРїРµСЂР°С‚РѕСЂ
   if not SharedActiveSipOperators.isExistOperatorInQueue(IntToStr(id_sip)) then begin
-    MessageBox(Handle,PChar('Оператор не в очереди'),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
+    MessageBox(Handle,PChar('РћРїРµСЂР°С‚РѕСЂ РЅРµ РІ РѕС‡РµСЂРµРґРё'),PChar('РћС€РёР±РєР°'),MB_OK+MB_ICONINFORMATION);
     Exit;
   end;
 
-  // найдем id и передадим его дальше
+  // РЅР°Р№РґРµРј id Рё РїРµСЂРµРґР°РґРёРј РµРіРѕ РґР°Р»СЊС€Рµ
   user_id:=getUserID(id_sip);
 
-  resultat:=MessageBox(0,PChar('Точно удалить из очереди?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
+  resultat:=MessageBox(0,PChar('РўРѕС‡РЅРѕ СѓРґР°Р»РёС‚СЊ РёР· РѕС‡РµСЂРµРґРё?'),PChar('РЈС‚РѕС‡РЅРµРЅРёРµ'),MB_YESNO+MB_ICONQUESTION);
   if resultat=mrNo then begin
     Exit;
   end;
 
-  // выход из всех очередей из 5000 и 5050
+  // РІС‹С…РѕРґ РёР· РІСЃРµС… РѕС‡РµСЂРµРґРµР№ РёР· 5000 Рё 5050
   status:=TStatus.Create(user_id,SharedCurrentUserLogon.GetUserList, True);
   delay:=eNO;
 
   if not status.SendCommand(eLog_home,delay,error) then begin
-    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
+    MessageBox(Handle,PChar(error),PChar('РћС€РёР±РєР°'),MB_OK+MB_ICONINFORMATION);
     Exit;
   end;
 
-  // очистка статуса
+  // РѕС‡РёСЃС‚РєР° СЃС‚Р°С‚СѓСЃР°
   UpdateOperatorStatus(eUnknown,user_id);
 
   LoggingRemote(eLog_home,user_id);
@@ -1017,12 +1018,12 @@ var
  id_sip:Integer;
  user_id:Integer;
 begin
-  // Проверяем, был ли выбран элемент
+  // РџСЂРѕРІРµСЂСЏРµРј, Р±С‹Р» Р»Рё РІС‹Р±СЂР°РЅ СЌР»РµРјРµРЅС‚
   if Assigned(SelectedItemPopMenu) then
   begin
     id_sip:=StrToInt(SelectedItemPopMenu.Caption);
 
-    // найдем id и передадим его дальше
+    // РЅР°Р№РґРµРј id Рё РїРµСЂРµРґР°РґРёРј РµРіРѕ РґР°Р»СЊС€Рµ
     user_id:=getUserID(id_sip);
     FormHistoryCallOperator.SetID(user_id);
     FormHistoryCallOperator.SetSip(id_sip);
@@ -1031,7 +1032,7 @@ begin
   end
   else
   begin
-   MessageBox(Handle,PChar('Не выбран оператор'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+   MessageBox(Handle,PChar('РќРµ РІС‹Р±СЂР°РЅ РѕРїРµСЂР°С‚РѕСЂ'),PChar('РћС€РёР±РєР°'),MB_OK+MB_ICONERROR);
   end;
 end;
 
@@ -1041,12 +1042,12 @@ var
  id_sip:Integer;
  user_id:Integer;
 begin
-  // Проверяем, был ли выбран элемент
+  // РџСЂРѕРІРµСЂСЏРµРј, Р±С‹Р» Р»Рё РІС‹Р±СЂР°РЅ СЌР»РµРјРµРЅС‚
   if Assigned(SelectedItemPopMenu) then
   begin
     id_sip:=StrToInt(SelectedItemPopMenu.Caption);
 
-    // найдем id и передадим его дальше
+    // РЅР°Р№РґРµРј id Рё РїРµСЂРµРґР°РґРёРј РµРіРѕ РґР°Р»СЊС€Рµ
     user_id:=getUserID(id_sip);
     FormHistoryStatusOperator.SetID(user_id);
     FormHistoryStatusOperator.SetSip(id_sip);
@@ -1055,7 +1056,7 @@ begin
   end
   else
   begin
-   MessageBox(Handle,PChar('Не выбран оператор'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+   MessageBox(Handle,PChar('РќРµ РІС‹Р±СЂР°РЅ РѕРїРµСЂР°С‚РѕСЂ'),PChar('РћС€РёР±РєР°'),MB_OK+MB_ICONERROR);
   end;
 end;
 
@@ -1190,21 +1191,21 @@ end;
 
 procedure THomeForm.lblNewVersionDashboardClick(Sender: TObject);
 begin
-  MessageBox(Handle,PChar('Для применения обновления закройте программу'+#13+'и подождите около 30 сек'),PChar('Информация'),MB_OK+MB_ICONINFORMATION);
+  MessageBox(Handle,PChar('Р”Р»СЏ РїСЂРёРјРµРЅРµРЅРёСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ Р·Р°РєСЂРѕР№С‚Рµ РїСЂРѕРіСЂР°РјРјСѓ'+#13+'Рё РїРѕРґРѕР¶РґРёС‚Рµ РѕРєРѕР»Рѕ 30 СЃРµРє'),PChar('РРЅС„РѕСЂРјР°С†РёСЏ'),MB_OK+MB_ICONINFORMATION);
 end;
 
 procedure THomeForm.lblStstatisc_Queue5000_No_AnsweredClick(Sender: TObject);
 var
  error:string;
 begin
- // есть ли доступ к пропущенным
+ // РµСЃС‚СЊ Р»Рё РґРѕСЃС‚СѓРї Рє РїСЂРѕРїСѓС‰РµРЅРЅС‹Рј
   if not OpenMissedCalls(error, queue_5000, eMissed_no_return) then begin
-    MessageBox(HomeForm.Handle,PChar(error),PChar('Отсутствует доступ'),MB_OK+MB_ICONINFORMATION);
+    MessageBox(HomeForm.Handle,PChar(error),PChar('РћС‚СЃСѓС‚СЃС‚РІСѓРµС‚ РґРѕСЃС‚СѓРї'),MB_OK+MB_ICONINFORMATION);
     Exit;
   end;
 
   with FormPropushennie do begin
-    // берем по всем 5000
+    // Р±РµСЂРµРј РїРѕ РІСЃРµРј 5000
    SetManualShow(true);
    ShowModal;
   end;
@@ -1226,14 +1227,14 @@ procedure THomeForm.lblStstatisc_Queue5050_No_AnsweredClick(Sender: TObject);
 var
  error:string;
 begin
- // есть ли доступ к пропущенным
+ // РµСЃС‚СЊ Р»Рё РґРѕСЃС‚СѓРї Рє РїСЂРѕРїСѓС‰РµРЅРЅС‹Рј
   if not OpenMissedCalls(error, queue_5050, eMissed_no_return) then begin
-    MessageBox(HomeForm.Handle,PChar(error),PChar('Отсутствует доступ'),MB_OK+MB_ICONINFORMATION);
+    MessageBox(HomeForm.Handle,PChar(error),PChar('РћС‚СЃСѓС‚СЃС‚РІСѓРµС‚ РґРѕСЃС‚СѓРї'),MB_OK+MB_ICONINFORMATION);
     Exit;
   end;
 
   with FormPropushennie do begin
-    // берем по всем 5050
+    // Р±РµСЂРµРј РїРѕ РІСЃРµРј 5050
    SetManualShow(true);
    ShowModal;
   end;
@@ -1262,12 +1263,12 @@ begin
   if not Assigned(Item) then Exit;
 
   try
-    //counts:=Item.SubItems.Count; // TODO еще подумать как можно это улучшить
+    //counts:=Item.SubItems.Count; // TODO РµС‰Рµ РїРѕРґСѓРјР°С‚СЊ РєР°Рє РјРѕР¶РЅРѕ СЌС‚Рѕ СѓР»СѓС‡С€РёС‚СЊ
 
-    if Item.SubItems.Count = 8 then // Проверяем, что есть достаточно SubItems
+    if Item.SubItems.Count = 8 then // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РµСЃС‚СЊ РґРѕСЃС‚Р°С‚РѕС‡РЅРѕ SubItems
     begin
 
-      if Item.SubItems.Strings[1] = 'доступен' then
+      if Item.SubItems.Strings[1] = 'РґРѕСЃС‚СѓРїРµРЅ' then
       begin
         Sender.Canvas.Font.Color := EnumColorStatusToTColor(color_Good);
         Exit;
@@ -1290,7 +1291,7 @@ begin
         end;
 
       end
-      else if AnsiPos('поствызов',Item.SubItems.Strings[1])<> 0 then begin
+      else if AnsiPos('РїРѕСЃС‚РІС‹Р·РѕРІ',Item.SubItems.Strings[1])<> 0 then begin
         longtalk:=Item.SubItems.Strings[1];
         System.Delete(longtalk, 1, AnsiPos('(',longtalk));
         System.Delete(longtalk, AnsiPos(')',longtalk),Length(longtalk));
@@ -1303,8 +1304,8 @@ begin
         end;
       end;
 
-      if (AnsiPos('обед',Item.SubItems.Strings[1]) <> 0) or
-         (AnsiPos('перерыв',Item.SubItems.Strings[1]) <> 0) then
+      if (AnsiPos('РѕР±РµРґ',Item.SubItems.Strings[1]) <> 0) or
+         (AnsiPos('РїРµСЂРµСЂС‹РІ',Item.SubItems.Strings[1]) <> 0) then
       begin
         Sender.Canvas.Font.Color := EnumColorStatusToTColor(color_Break);
         Exit;
@@ -1323,10 +1324,10 @@ end;
 procedure THomeForm.ListViewSIPMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
-  // Проверяем, был ли клик правой кнопкой мыши
+  // РџСЂРѕРІРµСЂСЏРµРј, Р±С‹Р» Р»Рё РєР»РёРє РїСЂР°РІРѕР№ РєРЅРѕРїРєРѕР№ РјС‹С€Рё
   if Button = mbRight then
   begin
-    // Получаем элемент, на который кликнули
+    // РџРѕР»СѓС‡Р°РµРј СЌР»РµРјРµРЅС‚, РЅР° РєРѕС‚РѕСЂС‹Р№ РєР»РёРєРЅСѓР»Рё
     SelectedItemPopMenu := ListViewSIP.GetItemAt(X, Y);
   end;
 end;
@@ -1363,14 +1364,14 @@ procedure THomeForm.menu_missed_callsClick(Sender: TObject);
 var
  error:string;
 begin
-  // есть ли доступ к пропущенным
+  // РµСЃС‚СЊ Р»Рё РґРѕСЃС‚СѓРї Рє РїСЂРѕРїСѓС‰РµРЅРЅС‹Рј
   if not OpenMissedCalls(error, queue_5000, eMissed_no_return) then begin
-    MessageBox(HomeForm.Handle,PChar(error),PChar('Отсутствует доступ'),MB_OK+MB_ICONINFORMATION);
+    MessageBox(HomeForm.Handle,PChar(error),PChar('РћС‚СЃСѓС‚СЃС‚РІСѓРµС‚ РґРѕСЃС‚СѓРї'),MB_OK+MB_ICONINFORMATION);
     Exit;
   end;
 
   with FormPropushennie do begin
-    // берем по 5000
+    // Р±РµСЂРµРј РїРѕ 5000
    SetManualShow(true);
    ShowModal;
   end;
@@ -1398,7 +1399,7 @@ end;
 
 procedure THomeForm.Timer_Thread_StartTimer(Sender: TObject);
 begin
-  // создание потоков + запуск
+  // СЃРѕР·РґР°РЅРёРµ РїРѕС‚РѕРєРѕРІ + Р·Р°РїСѓСЃРє
   createThreadDashboard;
 
   Timer_Thread_Start.Enabled:=False;
@@ -1415,7 +1416,7 @@ begin
 end;
 
 
-// изменение размер шрифта по сочетанию  Ctrl + колесико
+// РёР·РјРµРЅРµРЅРёРµ СЂР°Р·РјРµСЂ С€СЂРёС„С‚Р° РїРѕ СЃРѕС‡РµС‚Р°РЅРёСЋ  Ctrl + РєРѕР»РµСЃРёРєРѕ
 procedure THomeForm.WndProc(var Msg: TMessage);
 var
   Shift: TShiftState;
@@ -1425,36 +1426,36 @@ begin
 
   if Msg.Msg = WM_MOUSEWHEEL then
   begin
-    // Получаем значение прокрутки
+    // РџРѕР»СѓС‡Р°РµРј Р·РЅР°С‡РµРЅРёРµ РїСЂРѕРєСЂСѓС‚РєРё
     WheelDelta := Smallint(HIWORD(Msg.WParam));
 
-    // Определяем, находится ли курсор над ListView
+    // РћРїСЂРµРґРµР»СЏРµРј, РЅР°С…РѕРґРёС‚СЃСЏ Р»Рё РєСѓСЂСЃРѕСЂ РЅР°Рґ ListView
     if PtInRect(ListViewSIP.ClientRect, ListViewSIP.ScreenToClient(Mouse.CursorPos)) then
     begin
-      // Получаем состояние клавиш
+      // РџРѕР»СѓС‡Р°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РєР»Р°РІРёС€
       Shift := KeyDataToShiftState(Msg.WParam);
 
       if (Shift * [ssCtrl] <> []) then
       begin
         if WheelDelta > 0 then
         begin
-          // Ctrl + колесико вверх
+          // Ctrl + РєРѕР»РµСЃРёРєРѕ РІРІРµСЂС…
            ChangeFontSize(eFontUP,eActiveSip);
         end
         else
         begin
-          // Ctrl + колесико вниз
+          // Ctrl + РєРѕР»РµСЃРёРєРѕ РІРЅРёР·
           ChangeFontSize(eFontDonw,eActiveSip);
         end;
-        Msg.Result := 1; // Отметить, что событие обработано
+        Msg.Result := 1; // РћС‚РјРµС‚РёС‚СЊ, С‡С‚Рѕ СЃРѕР±С‹С‚РёРµ РѕР±СЂР°Р±РѕС‚Р°РЅРѕ
       end
-      else Msg.Result := 1; // Отметить, что событие обработано
+      else Msg.Result := 1; // РћС‚РјРµС‚РёС‚СЊ, С‡С‚Рѕ СЃРѕР±С‹С‚РёРµ РѕР±СЂР°Р±РѕС‚Р°РЅРѕ
     end;
   end;
 end;
 
 
-// визуальная подсветка при наведении указателя мыши
+// РІРёР·СѓР°Р»СЊРЅР°СЏ РїРѕРґСЃРІРµС‚РєР° РїСЂРё РЅР°РІРµРґРµРЅРёРё СѓРєР°Р·Р°С‚РµР»СЏ РјС‹С€Рё
 procedure THomeForm.ViewLabel(IsBold,IsUnderline:Boolean; var p_label:TLabel);
 begin
   if not (IsBold) and not (IsUnderline) then p_label.Font.Style:=[];
@@ -1464,14 +1465,14 @@ begin
   if (IsBold) and not (IsUnderline) then p_label.Font.Style:=[fsBold];
 end;
 
- // отправка удаленной команды
+ // РѕС‚РїСЂР°РІРєР° СѓРґР°Р»РµРЅРЅРѕР№ РєРѕРјР°РЅРґС‹
 function THomeForm.SendCommand(_command:enumLogging; _delay:enumStatus; var _errorDescriptions:string):boolean;
 begin
   Result:=SharedStatus.SendCommand(_command,_delay,_errorDescriptions);
 end;
 
 
-// добавление в очередь из popmenu
+// РґРѕР±Р°РІР»РµРЅРёРµ РІ РѕС‡РµСЂРµРґСЊ РёР· popmenu
 procedure THomeForm.AddQueuePopMenu(_command:enumLogging;_userSip:Integer);
 var
  user_id:Integer;
@@ -1479,7 +1480,7 @@ var
  error:string;
  delay:enumStatus;
 begin
-  // найдем id
+  // РЅР°Р№РґРµРј id
   user_id:=getUserID(_userSip);
 
   status:=TStatus.Create(user_id,SharedCurrentUserLogon.GetUserList, True);
@@ -1487,11 +1488,11 @@ begin
 
 
   if not status.SendCommand(_command, delay, error) then begin
-    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
+    MessageBox(Handle,PChar(error),PChar('РћС€РёР±РєР°'),MB_OK+MB_ICONINFORMATION);
     Exit;
   end;
 
-  // очистка статуса
+  // РѕС‡РёСЃС‚РєР° СЃС‚Р°С‚СѓСЃР°
   UpdateOperatorStatus(eAvailable,user_id);
   LoggingRemote(eLog_available,user_id);
 end;

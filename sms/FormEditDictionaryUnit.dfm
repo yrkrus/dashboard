@@ -27,10 +27,10 @@ object FormEditDictionary: TFormEditDictionary
     AutoSize = False
     Caption = #1057#1083#1086#1074#1086' '#1089#1086#1093#1088#1072#1085#1080#1090#1089#1103' '#1072#1074#1090#1086#1084#1072#1090#1080#1095#1077#1089#1082#1080' '#1087#1086#1089#1083#1077' '#1079#1072#1082#1088#1099#1090#1080#1103' '#1086#1082#1085#1072
     Font.Charset = RUSSIAN_CHARSET
-    Font.Color = clMaroon
-    Font.Height = -13
-    Font.Name = 'Times New Roman'
-    Font.Style = [fsBold]
+    Font.Color = clGreen
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
     ParentFont = False
     WordWrap = True
   end

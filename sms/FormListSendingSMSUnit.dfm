@@ -27,10 +27,10 @@ object FormListSendingSMS: TFormListSendingSMS
     AutoSize = False
     Caption = #1053#1086#1074#1099#1081' '#1085#1086#1084#1077#1088' '#1089' '#1085#1086#1074#1086#1081' '#1089#1090#1088#1086#1082#1080
     Font.Charset = RUSSIAN_CHARSET
-    Font.Color = clMaroon
-    Font.Height = -13
-    Font.Name = 'Times New Roman'
-    Font.Style = [fsBold]
+    Font.Color = clGreen
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
     ParentFont = False
     WordWrap = True
   end

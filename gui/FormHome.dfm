@@ -2,7 +2,7 @@ object HomeForm: THomeForm
   Left = 0
   Top = 0
   Caption = #1044#1072#1096#1073#1086#1088#1076' '#1050#1086#1083#1083#1062#1077#1085#1090#1088#1072
-  ClientHeight = 826
+  ClientHeight = 814
   ClientWidth = 1454
   Color = clWindow
   DefaultMonitor = dmDesktop
@@ -20,7 +20,7 @@ object HomeForm: THomeForm
   OnShow = FormShow
   DesignSize = (
     1454
-    826)
+    814)
   PixelsPerInch = 96
   TextHeight = 15
   object Label5: TLabel
@@ -542,7 +542,7 @@ object HomeForm: THomeForm
   end
   object lblNewMessageLocalChat: TLabel
     Left = 1202
-    Top = 785
+    Top = 773
     Width = 243
     Height = 16
     Cursor = crHandPoint
@@ -696,7 +696,7 @@ object HomeForm: THomeForm
   end
   object Img8Mart: TImage
     Left = 1374
-    Top = 754
+    Top = 742
     Width = 79
     Height = 50
     Anchors = [akRight, akBottom]
@@ -823,7 +823,7 @@ object HomeForm: THomeForm
   end
   object ImageLogo: TImage
     Left = 1277
-    Top = 746
+    Top = 734
     Width = 157
     Height = 37
     Anchors = [akRight, akBottom]
@@ -990,7 +990,7 @@ object HomeForm: THomeForm
   end
   object ImgNewYear: TImage
     Left = 1389
-    Top = 726
+    Top = 714
     Width = 55
     Height = 55
     Anchors = [akRight, akBottom]
@@ -6446,7 +6446,7 @@ object HomeForm: THomeForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 805
+    Top = 793
     Width = 1454
     Height = 21
     Panels = <
@@ -6477,7 +6477,7 @@ object HomeForm: THomeForm
         Text = 'developer by     '
         Width = 150
       end>
-    ExplicitTop = 740
+    ExplicitTop = 785
   end
   object START_THREAD_ALLl: TButton
     Left = 288

@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ExtCtrls,
   Vcl.ComCtrls,FunctionUnit, Data.Win.ADODB, Data.DB, IdException,
-  System.ImageList, Vcl.ImgList, TCustomTypeUnit;
+  System.ImageList, Vcl.ImgList, TCustomTypeUnit, TWorkTimeCallCenterUnit;
 
 
 
@@ -49,6 +49,12 @@ type
     btnEditAccessMenu: TBitBtn;
     group_tree: TGroupBox;
     tree_menu: TTreeView;
+    GroupBox3: TGroupBox;
+    Label9: TLabel;
+    lblWorkTimeCallCenterStart: TLabel;
+    Label10: TLabel;
+    lblWorkTimeCallCenterStop: TLabel;
+    btnEditWorkingTimeCallCentre: TBitBtn;
     procedure FormShow(Sender: TObject);
     procedure btnAddServerClick(Sender: TObject);
     procedure LoadSettings;
@@ -62,7 +68,10 @@ type
     procedure STSMS_viewPwdClick(Sender: TObject);
     procedure tree_menuClick(Sender: TObject);
     procedure btnEditAccessMenuClick(Sender: TObject);
+    procedure btnEditWorkingTimeCallCentreClick(Sender: TObject);
   private
+
+   m_workTimeCallCenter:TWorkTimeCallCenter;  // время работы коллцентра
 
    procedure SetFirebirdAuth;
    procedure SetButtonCheckFirebirdServer;
@@ -75,6 +84,7 @@ type
     { Private declarations }
   public
     { Public declarations }
+   procedure ShowWorkTimeCallCenter;
   end;
 
 const
@@ -90,7 +100,7 @@ implementation
 uses
   FormSettingsGlobal_addIVRUnit, FormSettingsGlobal_listIVRUnit,
   FormGlobalSettingCheckFirebirdConnectUnit, GlobalVariables,
-  GlobalVariablesLinkDLL, TSendSMSUint, FormMenuAccessUnit;
+  GlobalVariablesLinkDLL, TSendSMSUint, FormMenuAccessUnit, FormWorkTimeCallCenterUnit;
 
 {$R *.dfm}
 
@@ -257,7 +267,6 @@ begin
   end;
 
 
-
   try
     with ado do begin
       ado.Connection:=serverConnect;
@@ -342,6 +351,20 @@ begin
   ShowPanel(StringToEnumTreeSettings(treeString));
 end;
 
+
+// отображение времени работы колл центра
+procedure TFormSettingsGlobal.ShowWorkTimeCallCenter;
+begin
+  if not Assigned(m_workTimeCallCenter) then begin
+   m_workTimeCallCenter:=TWorkTimeCallCenter.Create;
+  end
+  else m_workTimeCallCenter.UpdateTime;
+
+  lblWorkTimeCallCenterStart.Caption:=m_workTimeCallCenter.StartTimeStr;
+  lblWorkTimeCallCenterStop.Caption:=m_workTimeCallCenter.StopTimeStr;
+end;
+
+
 // прогрузка текущих параметров
 procedure TFormSettingsGlobal.LoadSettings;
 var
@@ -353,6 +376,9 @@ begin
    // корректировка времени
    lblQueue_5000.Caption:=IntToStr(GetIVRTimeQueue(queue_5000));
    lblQueue_5050.Caption:=IntToStr(GetIVRTimeQueue(queue_5050));
+
+   // время работы коллцентра
+   ShowWorkTimeCallCenter;
 
    //подключение к firebird
    if (GetFirbirdAuth(firebird_login)<>'null') and (GetFirbirdAuth(firebird_pwd)<>'null') then begin
@@ -399,6 +425,12 @@ end;
 procedure TFormSettingsGlobal.btnEditUserClick(Sender: TObject);
 begin
   FormSettingsGlobal_listIVR.ShowModal;
+end;
+
+procedure TFormSettingsGlobal.btnEditWorkingTimeCallCentreClick(
+  Sender: TObject);
+begin
+ FormWorkTimeCallCenter.ShowModal;
 end;
 
 procedure TFormSettingsGlobal.btnSaveFirebirdSettingsClick(Sender: TObject);

@@ -149,12 +149,23 @@
             <Form>FormWait</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="..\custom_class\TAbstractReportUnit.pas"/>
         <DCCReference Include="..\custom_class\TCustomTypeUnit.pas"/>
-        <DCCReference Include="..\custom_class\TQueueHistoryUnit.pas"/>
-        <DCCReference Include="..\custom_class\TReportCountOperatorsUnit.pas"/>
-        <DCCReference Include="..\custom_class\TCountRingsOperatorsUnit.pas"/>
         <DCCReference Include="..\gui\GlobalVariablesLinkDLL.pas"/>
+        <DCCReference Include="..\custom_class\TWorkTimeCallCenterUnit.pas"/>
+        <DCCReference Include="FormReportShowRingsAfterWorkTimeUnit.pas">
+            <Form>FormReportShowRingsAfterWorkTime</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\custom_class\from_report\TAbstractReportUnit.pas"/>
+        <DCCReference Include="..\custom_class\from_report\TCountRingsOperatorsUnit.pas"/>
+        <DCCReference Include="..\custom_class\from_report\TReportCountOperatorsUnit.pas"/>
+        <DCCReference Include="..\custom_class\from_report\TReportShowRingsAfterWorkTimeUnit.pas"/>
+        <DCCReference Include="..\custom_class\from_report\TQueueHistoryUnit.pas"/>
+        <DCCReference Include="..\custom_class\from_report\TIVRHistoryUnit.pas"/>
+        <DCCReference Include="FormReportShowStatusOperatorsUnit.pas">
+            <Form>FormReportShowStatusOperators</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

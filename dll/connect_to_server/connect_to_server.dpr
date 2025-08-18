@@ -17,6 +17,7 @@ uses
   Winapi.Windows;
 
 const
+  /////////////////// PROJECT DASHBOARD ///////////////////
   // авторизационные данные для подключения к БД
   Shared_const_BD_Addr          :string  = 'dashboard';
   Shared_const_BD_Name          :string  = 'dashboard';
@@ -34,6 +35,16 @@ const
   Shared_const_TCP_server_Addr  :string = 'voip';
   Shared_const_TCP_server_Port  :Word = 12345;
 
+  /////////////////// PROJECT DASHBOARD ///////////////////
+
+  // *************************************************** //
+
+  ////////////////// PROJECT CORP HEALTH //////////////////
+  Shared_const_BD_Addr_Health       :string  = 'corp_health';
+  Shared_const_BD_Name_Health       :string  = 'corp_health';
+  // логин&пароль такой же dash=dash не стал менять и делать новый
+  ////////////////// PROJECT CORP HEALTH //////////////////
+
 
 {$R *.res}
 
@@ -41,12 +52,14 @@ const
 function GetServerAddress:string;stdcall;export;
 begin
   Result:=Shared_const_BD_Addr;
+ //  Result:=Shared_const_BD_Addr_Health;
 end;
 
 // функция получения имени сервера
 function GetServerName:string;stdcall;export;
 begin
-  Result:=Shared_const_BD_Name;
+   Result:=Shared_const_BD_Name;
+  //   Result:=Shared_const_BD_Name_Health;
 end;
 
 // функция получения имени сервера (тестовый)
