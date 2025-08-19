@@ -17,7 +17,10 @@ uses
   TReportShowRingsAfterWorkTimeUnit in '..\custom_class\from_report\TReportShowRingsAfterWorkTimeUnit.pas',
   TQueueHistoryUnit in '..\custom_class\from_report\TQueueHistoryUnit.pas',
   TIVRHistoryUnit in '..\custom_class\from_report\TIVRHistoryUnit.pas',
-  FormReportShowStatusOperatorsUnit in 'FormReportShowStatusOperatorsUnit.pas' {FormReportShowStatusOperators};
+  FormReportShowStatusOperatorsUnit in 'FormReportShowStatusOperatorsUnit.pas' {FormReportShowStatusOperators},
+  TAutoPodborPeopleUnit in '..\custom_class\TAutoPodborPeopleUnit.pas',
+  TLogFileUnit in '..\custom_class\TLogFileUnit.pas',
+  GlobalImageDestination in '..\gui\GlobalImageDestination.pas';
 
 {$R *.res}
 

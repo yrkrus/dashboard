@@ -22,6 +22,7 @@ type
     chkboxShowAll: TCheckBox;
     chkboxUvolennie: TCheckBox;
     chkboxOnlyCurrentDay: TCheckBox;
+    chkboxFindFIO: TCheckBox;
     procedure FormShow(Sender: TObject);
     procedure chkboxShowOperatorsClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -36,7 +37,6 @@ type
     procedure FormDefault;
     procedure FormShowOperators;
     procedure FormCenter;
-    procedure LoadingListOperators(InShowDisableUsers:Boolean = False); // прогрузка операторов в список
 
     procedure FinalizationClose;
     function GetCheckValue(var _errorDescription:string):Boolean;  // проверка значений
@@ -48,14 +48,14 @@ type
   end;
 
 const
-  ShowOperatorsHeight:Word  = 448;
+  ShowOperatorsHeight:Word  = 462;
   ShowOperatorsWidth:Word   = 313;
   ShowOperatorsLeft:Word    = 8;
-  ShowOperatorsTop:Word     = 367;
+  ShowOperatorsTop:Word     = 380;
 
-  HideOperatorsButtonTop:Word   = 119;
+  HideOperatorsButtonTop:Word   = 131;
   HideOperatorsWidth:Word       = 312;
-  HideOperatorsHeight:Word      = 204;
+  HideOperatorsHeight:Word      = 215;
 
 var
   FormReportCountRingsOperators: TFormReportCountRingsOperators;
@@ -123,75 +123,10 @@ begin
  chkboxUvolennie.Checked:=False;
  chkboxShowAll.Checked:=False;
  chkboxOnlyCurrentDay.Checked:=False;
+ chkboxFindFIO.Checked:=False;
 end;
 
-// прогрузка текущих пользователей
-procedure TFormReportCountRingsOperators.LoadingListOperators(InShowDisableUsers:Boolean = False);
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
- countUsers,i:Integer;
- only_operators_roleID:TStringList;
- id_operators:string;
-begin
-  Screen.Cursor:=crHourGlass;
 
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
-  end;
-
-  try
-     with ado do begin
-      ado.Connection:=serverConnect;
-      SQL.Clear;
-
-      begin
-        only_operators_roleID:=GetOnlyOperatorsRoleID;
-        for i:=0 to only_operators_roleID.Count-1 do begin
-          if id_operators='' then id_operators:=#39+only_operators_roleID[i]+#39
-          else id_operators:=id_operators+','#39+only_operators_roleID[i]+#39;
-        end;
-
-        if InShowDisableUsers=False then SQL.Add('select count(id) from users where disabled =''0'' and role IN('+id_operators+') ')
-        else SQL.Add('select count(id) from users where disabled =''1'' and role IN('+id_operators+') ');
-       if only_operators_roleID<>nil then FreeAndNil(only_operators_roleID);
-      end;
-
-      Active:=True;
-
-      countUsers:=Fields[0].Value;
-    end;
-
-    listOperators.Clear;
-
-      with ado do begin
-        SQL.Clear;
-        begin
-         if InShowDisableUsers=False then SQL.Add('select familiya,name,id from users where disabled = ''0'' and role IN('+id_operators+') order by familiya ASC')
-         else SQL.Add('select familiya,name,id from users where disabled = ''1'' and role IN('+id_operators+') order by familiya ASC');
-        end;
-
-        Active:=True;
-
-         for i:=0 to countUsers-1 do begin
-           listOperators.Items.Add(Fields[0].Value+' '+Fields[1].Value + '('+getUserSIP(Fields[2].Value)+')');
-           ado.Next;
-         end;
-      end;
-
-  finally
-    FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
-
-    Screen.Cursor:=crDefault;
-  end;
-end;
 
 procedure TFormReportCountRingsOperators.FormCenter;
 begin
@@ -209,7 +144,7 @@ end;
 procedure TFormReportCountRingsOperators.FormShowOperators;
 begin
   // подгружаем операторов
-  LoadingListOperators;
+  LoadingListOperatorsForm(listOperators);
 
   PanelOperators.Visible:=True;
   btnGenerate.Top:=ShowOperatorsTop;
@@ -228,6 +163,10 @@ begin
   Width:=HideOperatorsWidth;
   Height:=HideOperatorsHeight;
 
+  if m_detailed then chkboxFindFIO.Enabled:=True
+  else chkboxFindFIO.Enabled:=False;
+
+
     // центрируем окно
   FormCenter;
 end;
@@ -239,8 +178,10 @@ var
  report:TReportCountOperators;
  error:string;
  onlyCurrentDay:Boolean;
+ findFIO:Boolean;
 begin
   onlyCurrentDay:=False;
+  findFIO:=False;
 
   if DEBUG then begin
     while (GetTask('EXCEL.EXE')) do KillTask('EXCEL.EXE');
@@ -255,17 +196,19 @@ begin
   // показ только текщего дня
   if chkboxOnlyCurrentDay.Checked then onlyCurrentDay:=True;
 
+  // поиск ФИО
+  if chkboxFindFIO.Checked then findFIO:=True;
+
   // создаем отчет
-  report:=TReportCountOperators.Create('Отчет по количеству звонков операторами',dateStart,dateStop,onlyCurrentDay,m_detailed);
+  report:=TReportCountOperators.Create('Отчет по количеству звонков операторами',dateStart,dateStop,onlyCurrentDay,m_detailed,findFIO);
   report.ShowProgress; //показываем прогресс бар
   report.SetProgressStatusText('Загрузка данных с сервера ...');
 
   // на случай если не выбрали парметр "выбрать операторов"
   if not chkboxShowOperators.Checked then begin
-   LoadingListOperators;
+   LoadingListOperatorsForm(listOperators);
    AllCheckedListOperatorsSip;
   end;
-
 
   report.CreateReportExcel(listOperators);
 
@@ -332,8 +275,8 @@ end;
 
 procedure TFormReportCountRingsOperators.chkboxUvolennieClick(Sender: TObject);
 begin
-  if chkboxUvolennie.Checked then LoadingListOperators(True)
-  else LoadingListOperators;
+  if chkboxUvolennie.Checked then LoadingListOperatorsForm(listOperators,True)
+  else LoadingListOperatorsForm(listOperators);
 end;
 
 procedure TFormReportCountRingsOperators.FormShow(Sender: TObject);

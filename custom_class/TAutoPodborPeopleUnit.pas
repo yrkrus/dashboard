@@ -59,6 +59,8 @@ uses
       firebirdQuery                         :TpFIBQuery;          // Добавляем поле для запроса
       firebirdTransaction                   :TpFIBTransaction;    // Поле для транзакции
 
+      procedure Init(_phone:string);                  // инициализация
+
       procedure CreateAuthFirebird;
       procedure CreatePhoneVariants;    // создание вариантов номеров которые могут быть в БД
       procedure Find;                   // поиск в БД человека
@@ -68,19 +70,29 @@ uses
                           _gender:Integer;
                           _bith:TDate); // добавление в структуру
 
+      procedure SetPhoneVariants;  // делаем формат тлф под базу
+
+      function LastName(_id:Integer):string;
+      function BirthDay(_id:Integer):string;
 
       public
 
-      constructor Create(_phone:string);                   overload;
+      constructor Create(_phone:string);    overload;
+      constructor Create;                   overload;
+
       destructor Destroy;                                  override; // Объявление деструктора
 
-      function LastName(_id:Integer):string;
+      procedure SetPhone(_phone:string);    // установка номера тлф
+      procedure Add(const _people:TAutoPodborPeople);
+
+      function GetFIO(_id:Integer):string; overload;
+      function GetFIO:string; overload;
       function FirstName(_id:Integer):string;
       function MidName(_id:Integer):string;
       function Gender(_id:Integer):enumGender;
-      function BirthDay(_id:Integer):string;
 
-      function GetFIO(_id:Integer):string;
+      procedure Clear;
+
 
       property Count:Integer read m_count;
 
@@ -114,8 +126,26 @@ end;
 constructor TAutoPodborPeople.Create(_phone:string);
 begin
  inherited Create;
+ Init(_phone);
+end;
 
- m_phone:=_phone;
+
+constructor TAutoPodborPeople.Create;
+begin
+ inherited Create;
+ Init('');
+end;
+
+// инициализация
+procedure TAutoPodborPeople.Init(_phone:string);
+var
+ isExistPhone:Boolean;
+begin
+ if _phone='' then isExistPhone:=False
+ else isExistPhone:=True;
+
+ if isExistPhone then m_phone:=_phone;
+
  m_count:=0;
  firebirdConnect            :=  TpFIBDatabase.Create(nil);
 
@@ -128,18 +158,18 @@ begin
 
  m_log:=TLoggingFile.Create('firebirdResponse_CBD');
 
- m_listPhoneVariants:=TStringList.Create;
-
  SetLength(m_list,0);
 
- // делаем формат тлф под базу
- CreatePhoneVariants;
+
 
  // находим логин\пароль от БД
  CreateAuthFirebird;
 
  // пытаемся найти человеков
- Find;
+ if isExistPhone then begin
+   SetPhoneVariants;  // делаем формат тлф под базу
+   Find;
+ end;
 
  //inherited Create;
 end;
@@ -161,6 +191,61 @@ begin
   inherited;                // Вызов деструктора родительского класса
 end;
 
+
+// делаем формат тлф под базу
+procedure TAutoPodborPeople.SetPhoneVariants;
+begin
+ m_listPhoneVariants:=TStringList.Create;
+ // делаем формат тлф под базу
+ CreatePhoneVariants;
+end;
+
+// установка номера тлф
+procedure TAutoPodborPeople.SetPhone(_phone:string);
+begin
+  m_phone:=_phone;
+
+  // делаем формат тлф под базу
+  SetPhoneVariants;
+
+  // поиск ФИО
+  Find;
+end;
+
+procedure TAutoPodborPeople.Add(const _people:TAutoPodborPeople);
+var
+  i: Integer;
+  src: TStructPeople;
+begin
+  m_phone:=_people.m_phone;
+
+  // перебираем всех людей в источнике
+  for i:= 0 to _people.Count - 1 do
+  begin
+    // получаем ссылку на исходный объект
+    src:= _people.m_list[i];
+
+    // добавляем в свой список глубокую копию
+    AddPeople(src.lastName,src.firstName, src.midName,  Ord(src.gender), src.birthday);
+  end;
+end;
+
+procedure TAutoPodborPeople.Clear;
+var
+  i: Integer;
+begin
+  // Освободить все объекты
+  for i := Low(m_list) to High(m_list) do begin
+    if Assigned(m_list[i]) then m_list[i].Free;
+  end;
+  // Обнулить список и счётчик
+  SetLength(m_list, 0);
+  m_count:= 0;
+
+  if Assigned(m_listPhoneVariants) then m_listPhoneVariants.Clear;
+
+  m_phone:='';
+end;
 
 function TAutoPodborPeople.LastName(_id:Integer):string;
 begin
@@ -190,6 +275,25 @@ end;
 function TAutoPodborPeople.GetFIO(_id:Integer):string;
 begin
   Result:=LastName(_id)+' '+FirstName(_id)+' '+MidName(_id)+' ('+BirthDay(_id)+')';
+end;
+
+// отобрадение ФИО
+function TAutoPodborPeople.GetFIO:string;
+var
+ countFIO:Integer;
+begin
+  countFIO:=m_count;
+  case countFIO of
+    0:begin
+      Result:='новый номер';
+    end;
+    1:begin
+      Result:=GetFIO(0);
+    end;
+    else begin
+      Result:='несколько пациентов ('+IntToStr(countFIO)+')';
+    end;
+   end;
 end;
 
 // создание вариантов номеров которые могут быть в БД

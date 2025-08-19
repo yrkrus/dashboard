@@ -12,72 +12,103 @@ unit TIVRHistoryUnit;
 interface
 
 uses
-  System.Classes, System.SysUtils, TCustomTypeUnit;
+  System.Classes, System.SysUtils, TCustomTypeUnit, TAutoPodborPeopleUnit;
 
 
  // class TIVRHistory
   type
       TIVRHistory = class
+      private
+      m_people    :TAutoPodborPeople;
+
       public
-      id        :Integer;
-      phone     :string;
-      date_time :string;
-      trunk     :string;
-      to_queue  :Boolean;
-     //  to_robot   :Boolean;
+      id            :Integer;
+      waiting_time  :string;
+      phone         :string;
+      date_time     :string;
+      trunk         :string;
+      to_queue      :Boolean;
       phone_operator  :string;
-      region    :string;
+      region        :string;
 
       constructor Create;                      overload;
-      constructor Create(_call:TIVRHistory);   overload;
+      constructor Create(const _call:TIVRHistory);   overload;
+      destructor  Destroy; override;
 
       procedure Clear;
-      function Clone(_call:TIVRHistory):TIVRHistory;
+      procedure SetPhonePeople(_phone:string);
+
+      function  Clone: TIVRHistory;
+
+      function GetFIOPeople:string; // отображдение фио звонящего
 
       end;
  // class TIVRHistory END
 
 implementation
 
+
+
 constructor TIVRHistory.Create;
  begin
    inherited;
+   m_people:=TAutoPodborPeople.Create;
+
    Clear;
  end;
 
- constructor TIVRHistory.Create(_call:TIVRHistory);
+ constructor TIVRHistory.Create(const _call:TIVRHistory);
+ var
+  i:Integer;
  begin
-  Self.id:=_call.id;
-  Self.phone:=_call.phone;
-  Self.date_time:=_call.date_time;
-  Self.trunk:=_call.trunk;
-  Self.to_queue:=_call.to_queue;
-  Self.phone_operator:=_call.phone_operator;
-  Self.region:=_call.region;
+  Create;
+
+  id:=_call.id;
+  waiting_time:=_call.waiting_time;
+  phone:=_call.phone;
+  date_time:=_call.date_time;
+  trunk:=_call.trunk;
+  to_queue:=_call.to_queue;
+  phone_operator:=_call.phone_operator;
+  region:=_call.region;
+
+  m_people.Clear;
+  m_people.Add(_call.m_people);
  end;
+
+destructor TIVRHistory.Destroy;
+begin
+  if Assigned(m_people) then m_people.Free;
+  inherited;
+end;
 
  procedure TIVRHistory.Clear;
  begin
   id:=0;
+  waiting_time:='';
   phone:='';
   date_time:='';
   trunk:='';
   to_queue:=False;
   phone_operator:='';
   region:='';
+  if Assigned(m_people) then m_people.Clear;
  end;
 
-function TIVRHistory.Clone(_call:TIVRHistory):TIVRHistory;
+procedure TIVRHistory.SetPhonePeople(_phone:string);
 begin
-  Result:=TIVRHistory.Create;
+  m_people.SetPhone(_phone);
+end;
 
-  Result.id:=_call.id;
-  Result.phone:=_call.phone;
-  Result.date_time:=_call.date_time;
-  Result.trunk:=_call.trunk;
-  Result.to_queue:=_call.to_queue;
-  Result.phone_operator:=_call.phone_operator;
-  Result.region:=_call.region;
+function TIVRHistory.Clone: TIVRHistory;
+begin
+  // просто возвращаем полную копию
+  Result:=TIVRHistory.Create(Self);
+end;
+
+function TIVRHistory.GetFIOPeople:string; // отображдение фио звонящего
+begin
+  Result:=m_people.GetFIO;
 end;
 
 end.

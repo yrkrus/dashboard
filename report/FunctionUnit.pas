@@ -7,10 +7,11 @@ uses
   Data.Win.ADODB, Data.DB, Winapi.Windows, Winapi.Messages, System.SysUtils,
   System.Variants, System.Classes, Vcl.Graphics,Vcl.Controls, Vcl.Forms,
   Vcl.Dialogs, Vcl.ComCtrls, Vcl.StdCtrls,System.DateUtils, ActiveX,
-  System.Win.ComObj, TCustomTypeUnit;
+  System.Win.ComObj, TCustomTypeUnit, Vcl.CheckLst, Vcl.ExtCtrls;
 
 
   procedure createCopyright;                                                 // создание Copyright
+  procedure HappyNewYear;                                                    // пасхалка с новым годом
   function GetOnlyOperatorsRoleID:TStringList;                               // получение только операторские ID роли
   function getUserSIP(InIDUser:integer):string;                              // отображение SIP пользвоател€
   function SetFindDate(var _startDate:TDateTimePicker;                       // установка дата начала и конца времени отбора
@@ -25,18 +26,35 @@ uses
   function GetAboutGenerateReport:Boolean;                                   // отмена генерации отчета
   function CountOnHoldPhone(_sip:string; _date:TDate; _table:enumReportTableCountCallsOperatorOnHold):Integer;  // кол-во секунд в статусе onHold
   procedure CursourHover(var _label:TLabel; _state:enumCursorHover);        // изменение стил€ label при наведении\убирании мышки
-
+  procedure LoadingListOperatorsForm(var _listUsers:TCheckListBox;
+                                          InShowDisableUsers:Boolean = False);   // прогрузка текущих пользователей на форму
+  procedure CreateImageReport(_countRepot:Word);                                   // создание иконки р€дом с отчетами
 
 implementation
 
 uses
- FormHomeUnit, GlobalVariables, FormWaitUnit, GlobalVariablesLinkDLL;
+ FormHomeUnit, GlobalVariables, FormWaitUnit, GlobalVariablesLinkDLL, GlobalImageDestination;
 
 // создание Copyright
 procedure createCopyright;
 begin
   with FormHome.StatusBar do begin
     Panels[0].Text:=GetCopyright;
+  end;
+end;
+
+// пасхалка с новым годом
+procedure HappyNewYear;
+var
+  DateNachalo: TDateTime;
+begin
+  // ќпредел€ем дату Ќового года
+  DateNachalo := EncodeDateTime(YearOf(Now) + 1, 1, 1, 0, 0, 0, 0);
+
+  // ѕровер€ем, находитс€ ли текуща€ дата в диапазоне от 7 дней до Ќового года и 8 дней после
+  if (DaysBetween(Now, DateNachalo) <= 8) and (DaysBetween(Now, DateNachalo) >= -7) then
+  begin
+   FormHome.ImgNewYear.Visible:=True;
   end;
 end;
 
@@ -316,10 +334,111 @@ begin
   end;
 end;
 
-
-procedure LoadingListOperators(var _listUsers:TCheckListBox; InShowDisableUsers:Boolean = False);
+// прогрузка текущих пользователей на форму
+procedure LoadingListOperatorsForm(var _listUsers:TCheckListBox; InShowDisableUsers:Boolean = False);
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ countUsers,i:Integer;
+ only_operators_roleID:TStringList;
+ id_operators:string;
 begin
+  Screen.Cursor:=crHourGlass;
 
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+     with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+
+      begin
+        only_operators_roleID:=GetOnlyOperatorsRoleID;
+        for i:=0 to only_operators_roleID.Count-1 do begin
+          if id_operators='' then id_operators:=#39+only_operators_roleID[i]+#39
+          else id_operators:=id_operators+','#39+only_operators_roleID[i]+#39;
+        end;
+
+        if InShowDisableUsers=False then SQL.Add('select count(id) from users where disabled =''0'' and role IN('+id_operators+') ')
+        else SQL.Add('select count(id) from users where disabled =''1'' and role IN('+id_operators+') ');
+       if only_operators_roleID<>nil then FreeAndNil(only_operators_roleID);
+      end;
+
+      Active:=True;
+
+      countUsers:=Fields[0].Value;
+    end;
+
+    _listUsers.Clear;
+
+      with ado do begin
+        SQL.Clear;
+        begin
+         if InShowDisableUsers=False then SQL.Add('select familiya,name,id from users where disabled = ''0'' and role IN('+id_operators+') order by familiya ASC')
+         else SQL.Add('select familiya,name,id from users where disabled = ''1'' and role IN('+id_operators+') order by familiya ASC');
+        end;
+
+        Active:=True;
+
+         for i:=0 to countUsers-1 do begin
+           _listUsers.Items.Add(Fields[0].Value+' '+Fields[1].Value + '('+getUserSIP(Fields[2].Value)+')');
+           ado.Next;
+         end;
+      end;
+
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+
+    Screen.Cursor:=crDefault;
+  end;
 end;
+
+// создание иконки р€дом с отчетами
+procedure CreateImageReport(_countRepot:Word);
+const
+ cSTEP:Word = 20; // шаг
+ cTOP_START:Word = 10;
+ cLEFT:Word = 10;
+var
+  bmp:TBitmap;
+  imgLbl:TArray<TImage>;  // массив с
+  i:Integer;
+begin
+  if not FileExists(ICON_REPORT) then Exit;
+
+  // —оздание объекта TBitmap
+  bmp:=TBitmap.Create;
+  try
+    // «агрузка изображени€ из файла
+    bmp.LoadFromFile(ICON_REPORT);
+  except
+
+  end;
+  if not Assigned(bmp) then Exit;
+
+  SetLength(imgLbl, _countRepot);
+
+  for i:=0 to _countRepot - 1 do begin
+   imgLbl[i]:=TImage.Create(FormHome);
+   imgLbl[i].Picture.Bitmap.Assign(bmp);
+
+   // позиционирование
+   imgLbl[i].Parent := FormHome;
+   imgLbl[i].Left   := cLEFT;
+
+   if i=0 then imgLbl[i].Top:=cTOP_START
+   else imgLbl[i].Top:=cTOP_START+(cSTEP * i);
+  end;
+end;
+
 
 end.

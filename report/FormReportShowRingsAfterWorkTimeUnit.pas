@@ -15,6 +15,7 @@ type
     dateStop: TDateTimePicker;
     chkboxOnlyCurrentDay: TCheckBox;
     btnGenerate: TBitBtn;
+    chkboxFindFIO: TCheckBox;
     procedure FormShow(Sender: TObject);
     procedure chkboxOnlyCurrentDayClick(Sender: TObject);
     procedure btnGenerateClick(Sender: TObject);
@@ -43,6 +44,7 @@ uses
 procedure TFormReportShowRingsAfterWorkTime.FinalizationClose;
 begin
  chkboxOnlyCurrentDay.Checked:=False;
+ chkboxFindFIO.Checked:=False;
 end;
 
 
@@ -75,8 +77,10 @@ var
  report: TReportShowRingsAfterWorkTime;
  error:string;
  onlyCurrentDay:Boolean;
+ findFIO:Boolean;
 begin
   onlyCurrentDay:=False;
+  findFIO:=False;
 
   if DEBUG then begin
     while (GetTask('EXCEL.EXE')) do KillTask('EXCEL.EXE');
@@ -91,9 +95,12 @@ begin
   // показ только текщего дня
   if chkboxOnlyCurrentDay.Checked then onlyCurrentDay:=True;
 
+  // поиск ФИО по номеру телефона
+  if chkboxFindFIO.Checked then findFIO:=True;
+
 
   // создаем отчет
-  report:=TReportShowRingsAfterWorkTime.Create('Отчет по звонкам после рабочего времени',dateStart,dateStop,onlyCurrentDay);
+  report:=TReportShowRingsAfterWorkTime.Create('Отчет по звонкам после рабочего времени',dateStart,dateStop,onlyCurrentDay,findFIO);
   report.ShowProgress; //показываем прогресс бар
   report.SetProgressStatusText('Загрузка данных с сервера ...');
 

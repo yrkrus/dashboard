@@ -13,7 +13,7 @@ interface
 uses
   System.SysUtils, System.Classes, System.SyncObjs, ActiveX, ComObj, ComCtrls,
   TAbstractReportUnit, Vcl.CheckLst, TQueueHistoryUnit, TCountRingsOperatorsUnit,
-  Data.Win.ADODB, Data.DB;
+  Data.Win.ADODB, Data.DB, TAutoPodborPeopleUnit;
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -24,10 +24,12 @@ uses
       private
       m_nameReport              :string;     // название отчета
       m_onlyCurrentDay          :Boolean;   // показ только текщего дня
+      m_findFIO                 :Boolean;    // поиск ФИО звонящего из БД Инфоклинки
       m_queue                   :TArray<TQueueHistory>;   // список с данными истории
       countQueue                :Integer;
       m_listCountCallOperators  :TCountRingsOperators; // список с данными по звонкам по дням
       m_countOperators          :Integer;
+      m_people                  :TAutoPodborPeople;
       m_detailed                :Boolean; // подробный отчет
 
       function GetOperatorsSIP(const p_list:TCheckListBox):TStringList;  // получение SIP операторов которые нужно в отчет впиндюрить
@@ -44,7 +46,8 @@ uses
       constructor Create(InNameReports:string;                    // название отчета
                          InDateStart,InDateStop:TDateTimePicker;  // даты отчета
                          InOnlyCurrentDay:Boolean;                // только текщий день
-                         isDetailed:Boolean                      // подробный отчет
+                         isDetailed:Boolean;                      // подробный отчет
+                         isFindFIO:Boolean                        // поиск ФИО
                          );            overload;
 
       destructor Destroy;            override;
@@ -67,7 +70,8 @@ uses
 constructor TReportCountOperators.Create(InNameReports:string;
                                          InDateStart,InDateStop:TDateTimePicker;
                                          InOnlyCurrentDay:Boolean;
-                                         isDetailed:Boolean);
+                                         isDetailed:Boolean;
+                                         isFindFIO:Boolean);
 begin
   // инициализацуия родительского класса
   inherited Create(InDateStart.Date,InDateStop.Date);
@@ -78,6 +82,9 @@ begin
 
   countQueue:=0;
   m_countOperators:=0;
+
+  m_findFIO:=isFindFIO;
+  if m_findFIO then m_people:=TAutoPodborPeople.Create;
 end;
 
 
@@ -177,18 +184,17 @@ var
  isFinded:Boolean; // найдено фио
 begin
 
-  // TODO сделать !!! проверяем это уволенный сотрудник или нет
-
+  // TODO сделать !!! проверяем это уволенный сотрудник или нет очеень долгий это тпроцесс!! надо как то оптимизировать!!!
 
 
   isFinded:=False;
 
   for i:=0 to countQueue-1 do begin
     if m_queue[i].sip = InSipOperator  then begin
-      if m_queue[i].userFIO <> '' then begin
+      if m_queue[i].operatorFIO <> '' then begin
         isFinded:=True;
 
-        Result:=m_queue[i].userFIO;
+        Result:=m_queue[i].operatorFIO;
         Exit;
       end;
     end;
@@ -206,7 +212,13 @@ var
  table:string;
  countData:Integer;
  procentLoad:Integer;
+ isFindFIO:Boolean;
+ isAbout:Boolean;
+ waitingTime:string;
+ phone:string;
 begin
+  isAbout:=False;
+
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
   if not Assigned(serverConnect) then begin
@@ -216,14 +228,13 @@ begin
 
   try
     // из какой таблицы брать данные
-
     if m_onlyCurrentDay then table:=EnumReportTableCountCallsOperatorToString(eTableQueue)
     else table:=EnumReportTableCountCallsOperatorToString(eTableHistoryQueue);
 
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
-      SQL.Add('select count(id) from '+table+' where sip IN ('+p_list+')' );
+      SQL.Add('select count(id) from '+table+' where sip IN ('+p_list+') and answered = ''1''' );
       if not m_onlyCurrentDay then SQL.Add(' and date_time >='+#39+GetDateToDateBD(GetDateStartAsString)+' 00:00:00'+#39+' and date_time<='+#39+GetDateToDateBD(GetDateStopAsString)+' 23:59:59'+#39+' order by date_time ASC');
 
       Active:=True;
@@ -243,10 +254,29 @@ begin
         // создаем список с данными
         SetLength(m_queue,countData);
         countQueue:=countData;
-        for i:=0 to countData-1 do m_queue[i]:=TQueueHistory.Create;
+        if m_findFIO then isFindFIO:=True
+        else isFindFIO:=False;
+
+        for i:=0 to countData-1 do begin
+           // процесс может быть длительный по этому делаем прогресс бар
+           if m_findFIO then begin
+             procentLoad:=Trunc(i*100/countData);
+             SetProgressStatusText('Настройка отчета ['+IntToStr(procentLoad)+'%] ...');
+             SetProgressBar(procentLoad);
+           end;
+
+           m_queue[i]:=TQueueHistory.Create(isFindFIO);
+           // проверка вдруг отменили операцию
+           if GetAbout then begin
+             isAbout:=True;
+             Break;
+           end;
+        end;
+
+        if isAbout then Exit;
 
         SQL.Clear;
-        SQL.Add('select id,number_queue,phone,waiting_time,date_time,sip,talk_time from '+table+' where sip IN ('+p_list+')' );
+        SQL.Add('select id,number_queue,phone,waiting_time,date_time,sip,talk_time from '+table+' where sip IN ('+p_list+') and answered = ''1''');
         if not m_onlyCurrentDay then SQL.Add(' and date_time >='+#39+GetDateToDateBD(GetDateStartAsString)+' 00:00:00'+#39+' and date_time<='+#39+GetDateToDateBD(GetDateStopAsString)+' 23:59:59'+#39+' order by date_time ASC');
 
         Active:=True;
@@ -270,16 +300,26 @@ begin
            m_queue[i].id:=StrToInt(Fields[0].Value);
            m_queue[i].number_queue:=StringToTQueue(Fields[1].Value);
            m_queue[i].phone:=Fields[2].Value;
-          // m_queue[i].waiting_time:=Fields[3].Value;
+
+           // время ожидания (waiting_time - talk_time)
+           waitingTime:=GetTimeAnsweredSecondsToString(GetTimeAnsweredToSeconds(Fields[3].Value) - GetTimeAnsweredToSeconds(Fields[6].Value));
+           m_queue[i].waiting_time:=waitingTime;
+
            m_queue[i].date_time:=StrToDateTime(Fields[4].Value);
            m_queue[i].sip:=StrToInt(Fields[5].Value);
            m_queue[i].talk_time:=Fields[6].Value;
-           m_queue[i].userFIO:=FindFIO(m_queue[i].sip,m_queue[i].date_time);
+           m_queue[i].operatorFIO:=FindFIO(m_queue[i].sip,m_queue[i].date_time);
+
+           if m_findFIO then begin
+             phone:=m_queue[i].phone;
+             phone:=StringReplace(phone,'+7','8',[rfReplaceAll]);
+             m_queue[i].SetPhonePeople(phone);
+           end;
 
            ado.Next;
 
            // проверка вдруг отменили операцию
-           GetAbout;
+           if GetAbout then Break;
         end;
       end;
 
@@ -326,22 +366,36 @@ begin
   m_sheet.cells[1,1]:='ID';
   m_sheet.cells[1,2]:='Дата\Время';
   m_sheet.cells[1,3]:='Очередь';
- // m_sheet.cells[1,4]:='Время ожидания';
-  m_sheet.cells[1,4]:='Телефон';
-  m_sheet.cells[1,5]:='SIP';
-  m_sheet.cells[1,6]:='Оператор';
-  m_sheet.cells[1,7]:='Время разговора';
+  m_sheet.cells[1,4]:='Ожидание в очереди';
+  m_sheet.cells[1,5]:='Телефон';
+  m_sheet.cells[1,6]:='Линия';
+  m_sheet.cells[1,7]:='Оператор';
+  m_sheet.cells[1,8]:='Регион';
+  m_sheet.cells[1,9]:='SIP';
+  m_sheet.cells[1,10]:='Оператор';
+  m_sheet.cells[1,11]:='Время разговора';
+  m_sheet.cells[1,12]:='OnHold(сек)';
 
+  if m_findFIO then begin
+    m_sheet.cells[1,13]:='ФИО';
+  end;
 
   // ширина колонок
   m_sheet.columns[1].columnwidth:=11;
   m_sheet.columns[2].columnwidth:=20.86;
   m_sheet.columns[3].columnwidth:=10.43;
- // m_sheet.columns[4].columnwidth:=15.43;
-  m_sheet.columns[4].columnwidth:=15.29;
-  m_sheet.columns[5].columnwidth:=9;
-  m_sheet.columns[6].columnwidth:=25.29;
-  m_sheet.columns[7].columnwidth:=15.43;
+  m_sheet.columns[4].columnwidth:=13.43;
+  m_sheet.columns[5].columnwidth:=15.29;
+  m_sheet.columns[6].columnwidth:=15.29;
+  m_sheet.columns[7].columnwidth:=22;
+  m_sheet.columns[8].columnwidth:=35;
+  m_sheet.columns[9].columnwidth:=9;
+  m_sheet.columns[10].columnwidth:=25.29;
+  m_sheet.columns[11].columnwidth:=15.43;
+  m_sheet.columns[12].columnwidth:=14;
+  if m_findFIO then begin
+    m_sheet.columns[13].columnwidth:=55;
+  end;
 
   // общий формат
 //  m_excel.range['B2:B'+inttostr(countQueue+1)].select;
@@ -384,7 +438,7 @@ begin
 
     m_sheet.cells[ColIndex,4]:=m_queue[i].phone;                      // Телефон
     m_sheet.cells[ColIndex,5]:=IntToStr(m_queue[i].sip);              // SIP
-    m_sheet.cells[ColIndex,6]:=m_queue[i].userFIO;                    // Оператор
+    m_sheet.cells[ColIndex,6]:=m_queue[i].operatorFIO;                    // Оператор
     m_sheet.cells[ColIndex,7]:=m_queue[i].talk_time;                  // Время разговора
 
 
@@ -452,9 +506,13 @@ var
  procentLoadSTR:string;
  sip:string;
  operatorFIO:string;
+ countCallsAll, countHold:Integer;
 begin
   SetProgressStatusText('Создание отчета ...');
   SetProgressBar(0);
+
+  countCallsAll:=0;
+  countHold:=0;
 
    // названия колонок
   m_sheet.cells[1,1]:='SIP';
@@ -498,6 +556,10 @@ begin
       m_sheet.cells[ColIndex,4]:=IntToStr(m_listCountCallOperators.Items[i].ItemData[j].m_callsCount);         // Звонков
       m_sheet.cells[ColIndex,5]:=IntToStr(m_listCountCallOperators.Items[i].ItemData[j].m_ohHold);         // OnHold(сек)
 
+      // общий подсчет звонков+hold
+      countCallsAll:=countCallsAll + m_listCountCallOperators.Items[i].ItemData[j].m_callsCount;
+      countHold:=countHold + m_listCountCallOperators.Items[i].ItemData[j].m_ohHold;
+
       Inc(ColIndex);
 
        // проверка вдруг отменили операцию
@@ -505,6 +567,9 @@ begin
     end;
   end;
 
+  // общее кол-во звонков + hold
+  m_sheet.cells[ColIndex,4]:=IntToStr(countCallsAll);
+  m_sheet.cells[ColIndex,5]:=IntToStr(countHold);
 
   // наведем красоту
   begin
@@ -544,6 +609,20 @@ begin
     m_excel.selection.font.size:=12;
     // font name
     m_excel.selection.font.name:='Times New Roman';
+
+
+    // общее кол-во звонков + hold
+    // выделение диапозона
+    m_excel.range['D'+inttostr(ColIndex)+':E'+inttostr(ColIndex)].select;
+    m_excel.selection.font.size:=12;
+    m_excel.selection.font.name:='Times New Roman';
+    // перенос по словам
+    m_excel.selection.wraptext:=true;
+    // выравниевание по центру по горизонтали
+    m_excel.selection.verticalalignment:=2;
+    m_excel.selection.horizontalalignment:=3;
+    m_excel.selection.Style:='Хороший';
+    m_excel.selection.font.bold:=True;
 
 
     // заглушочка чтобы вернуться в самое начало

@@ -234,8 +234,10 @@ var
  currentDay:TDate;
  newData:TStructInfo;
  onHoldCount:Integer;
+ aboutNow:Boolean;
 begin
   Result:=False;
+  aboutNow:=False;
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
@@ -296,13 +298,18 @@ begin
             SetCountCalls(StrToInt(sipList[i]),newData);
 
             currentDay := IncDay(currentDay,1);
-        end;
-        procentLoad:=Trunc(i*100/sipList.Count-1);
-        SetProgressStatusText('Загрузка данных с сервера ['+IntToStr(procentLoad)+'%] ...');
-        SetProgressBar(procentLoad);
 
-        // проверка вдруг отменили операцию
-        GetAbout;
+            procentLoad:=Trunc(i*100/sipList.Count-1);
+            SetProgressStatusText('Загрузка данных с сервера ['+IntToStr(procentLoad)+'%] ...');
+            SetProgressBar(procentLoad);
+
+            // проверка вдруг отменили операцию
+            aboutNow:=GetAbout;
+            if aboutNow then break;
+
+        end;
+
+        if aboutNow then Break;
       end;
 
     end;

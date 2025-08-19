@@ -244,7 +244,7 @@ begin
   LoadData;
 //  LoadComboxFilterValue(_timeFilter);
 
-  m_dispatcher.StartThread;
+  //m_dispatcher.StartThread;  TODO пока выкл
   Screen.Cursor:=crDefault;
 end;
 

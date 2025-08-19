@@ -31,7 +31,6 @@ type
      procedure FormDefault;
      procedure FormCenter;
      procedure FormShowOperators;
-     procedure LoadingListOperators(InShowDisableUsers:Boolean = False); // прогрузка операторов в список
      procedure AllCheckedListOperatorsSip;   // на случай если не выбрали параметр "выбрать операторов"
   public
     { Public declarations }
@@ -99,79 +98,11 @@ begin
 end;
 
 
-// прогрузка текущих пользователей
-procedure TFormReportShowStatusOperators.LoadingListOperators(InShowDisableUsers:Boolean = False);
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
- countUsers,i:Integer;
- only_operators_roleID:TStringList;
- id_operators:string;
-begin
-  Screen.Cursor:=crHourGlass;
-
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
-  end;
-
-  try
-     with ado do begin
-      ado.Connection:=serverConnect;
-      SQL.Clear;
-
-      begin
-        only_operators_roleID:=GetOnlyOperatorsRoleID;
-        for i:=0 to only_operators_roleID.Count-1 do begin
-          if id_operators='' then id_operators:=#39+only_operators_roleID[i]+#39
-          else id_operators:=id_operators+','#39+only_operators_roleID[i]+#39;
-        end;
-
-        if InShowDisableUsers=False then SQL.Add('select count(id) from users where disabled =''0'' and role IN('+id_operators+') ')
-        else SQL.Add('select count(id) from users where disabled =''1'' and role IN('+id_operators+') ');
-       if only_operators_roleID<>nil then FreeAndNil(only_operators_roleID);
-      end;
-
-      Active:=True;
-
-      countUsers:=Fields[0].Value;
-    end;
-
-    listOperators.Clear;
-
-      with ado do begin
-        SQL.Clear;
-        begin
-         if InShowDisableUsers=False then SQL.Add('select familiya,name,id from users where disabled = ''0'' and role IN('+id_operators+') order by familiya ASC')
-         else SQL.Add('select familiya,name,id from users where disabled = ''1'' and role IN('+id_operators+') order by familiya ASC');
-        end;
-
-        Active:=True;
-
-         for i:=0 to countUsers-1 do begin
-           listOperators.Items.Add(Fields[0].Value+' '+Fields[1].Value + '('+getUserSIP(Fields[2].Value)+')');
-           ado.Next;
-         end;
-      end;
-
-  finally
-    FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
-
-    Screen.Cursor:=crDefault;
-  end;
-end;
-
 
 procedure TFormReportShowStatusOperators.FormShowOperators;
 begin
   // подгружаем операторов
-  LoadingListOperators;
+  LoadingListOperatorsForm(listOperators);
 
   PanelOperators.Visible:=True;
   btnGenerate.Top:=ShowOperatorsTop;

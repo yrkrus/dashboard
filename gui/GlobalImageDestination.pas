@@ -18,9 +18,10 @@ var
 
   // ================ ПУТИ ПАПОК ================
    FOLDER_ICON                        :string; // абсолютный путь до иконок
-   FOLDER_ICON_DESTINATION_AUTH       :string; // папка -> images\auth
-   FOLDER_ICON_MISSED_CALLS           :string; // папка -> images\missed_calls
-   FOLDER_ICON_ACTIVE_SESSION         :string; // папка -> images\active_session
+   FOLDER_ICON_DESTINATION_AUTH       :string; // папка -> images\auth              | dashboard.exe
+   FOLDER_ICON_MISSED_CALLS           :string; // папка -> images\missed_calls      | dashboard.exe
+   FOLDER_ICON_ACTIVE_SESSION         :string; // папка -> images\active_session    | dashboard.exe
+   FOLDER_ICON_REPORT                 :string; // папка -> images\report            | report.exe
   //================ ПУТИ ПАПОК ================
 
   // иконка авторизации(images\auth)
@@ -33,21 +34,24 @@ var
   // иконка kill session (images\active_session)
   ICON_ACTIVE_SESSION:string;
 
+  // иконка excel (images\report)
+  ICON_REPORT:string;
+
 
 implementation
 
 initialization
   // ================ ПУТИ ПАПОК INIT ================
-  FOLDER_ICON                   := FOLDERPATH+'images\';            // абсолютный путь до иконок
-  FOLDER_ICON_DESTINATION_AUTH  := FOLDER_ICON+'auth\';             // папка -> images\auth
-  FOLDER_ICON_MISSED_CALLS      := FOLDER_ICON+'missed_calls\';     // папка -> images\auth
-  FOLDER_ICON_ACTIVE_SESSION    := FOLDER_ICON+'active_session\';   // папка -> images\active_session
+  FOLDER_ICON                   := FOLDERPATH   + 'images\';           // абсолютный путь до иконок
+  FOLDER_ICON_DESTINATION_AUTH  := FOLDER_ICON  + 'auth\';             // папка -> images\auth
+  FOLDER_ICON_MISSED_CALLS      := FOLDER_ICON  + 'missed_calls\';     // папка -> images\auth
+  FOLDER_ICON_ACTIVE_SESSION    := FOLDER_ICON  + 'active_session\';   // папка -> images\active_session
+  FOLDER_ICON_REPORT            := FOLDER_ICON  + 'report\';           // папка -> images\report
 
-  // ================ ПУТИ ПАПОК INIT  ================
-
-  // иконка авторизации(images\auth)
+  // ================== ИКОНКИ INIT  =================
   ICON_AUTH_USER          := FOLDER_ICON_DESTINATION_AUTH + 'user_icon_auth.png';
   ICON_AUTH_USER_ADMIN    := FOLDER_ICON_DESTINATION_AUTH + 'user_icon_auth_admin.png';
   ICON_MISSED_CALLS       := FOLDER_ICON_MISSED_CALLS     + 'phone_16.bmp';
   ICON_ACTIVE_SESSION     := FOLDER_ICON_ACTIVE_SESSION   + 'kill_session.bmp';
+  ICON_REPORT             := FOLDER_ICON_REPORT           + 'excel.bmp';
 end.

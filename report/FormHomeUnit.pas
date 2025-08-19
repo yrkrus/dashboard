@@ -10,27 +10,22 @@ uses
 type
   TFormHome = class(TForm)
     StatusBar: TStatusBar;
-    GroupBox1: TGroupBox;
-    Label1: TLabel;
-    Label10: TLabel;
-    Label12: TLabel;
-    Label13: TLabel;
-    Label3: TLabel;
-    Label4: TLabel;
-    Label6: TLabel;
-    Label8: TLabel;
-    Label9: TLabel;
-    Label7: TLabel;
     lblReportCountRingsOperators: TLabel;
     lblReportShowRingsOperators: TLabel;
     lblReportShowRingsAfterWorkTime: TLabel;
     Image0: TImage;
-    Image1: TImage;
-    Image2: TImage;
     ImageLogo: TImage;
     ImgNewYear: TImage;
     lblReportShowStatusOperators: TLabel;
-    Image3: TImage;
+    Label4: TLabel;
+    Label7: TLabel;
+    Label13: TLabel;
+    Label12: TLabel;
+    Label10: TLabel;
+    Label9: TLabel;
+    Label8: TLabel;
+    Label6: TLabel;
+    Label3: TLabel;
     procedure ProcessCommandLineParams(DEBUG:Boolean = False);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -69,8 +64,22 @@ GlobalVariables, FunctionUnit, FormReportCountRingsOperatorsUnit, GlobalVariable
 {$R *.dfm}
 
 procedure TFormHome.FormCreate(Sender: TObject);
+var
+ FolderDll:string;
 begin
-   // проверка на запуска 2ой копи
+  FolderDll:= FOLDERPATH + 'dll';
+
+  // Проверка на существование папки
+  if DirectoryExists(FolderDll) then begin
+    // путь к папке с DLL
+    SetDllDirectory(PChar(FolderDll));
+  end
+  else begin
+    MessageBox(Handle,PChar('Не найдена папка с dll библиотеками'+#13#13+FolderDll),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    KillProcessNow; // Завершаем выполнение процедуры, чтобы не продолжать дальше
+  end;
+
+  // проверка на запуска 2ой копи
   if GetCloneRun(Pchar(REPORT_EXE)) then begin
     MessageBox(Handle,PChar('Обнаружен запуск 2ой копии отчетов'+#13#13+
                             'Для продолжения закройте предыдущую копию'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
@@ -79,6 +88,7 @@ begin
 
   ProcessCommandLineParams(DEBUG);
 end;
+
 
 procedure TFormHome.FormShow(Sender: TObject);
 var
@@ -92,9 +102,15 @@ begin
 
   // проаерка существует ли excel
   if not isExistExcel(error) then begin
-   MessageBox(Handle,PChar('Excel не установлен'+#13#13+error),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
+   MessageBox(Handle,PChar('Microsoft Excel не установлен'+#13#13+error),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
    KillProcessNow;
   end;
+
+  // создание иконки рядом с отчетами
+  CreateImageReport(MAX_COUNT_REPORT);
+
+  // пасхалка с новым годом
+  HappyNewYear;
 end;
 
 procedure TFormHome.lblReportCountRingsOperatorsClick(Sender: TObject);

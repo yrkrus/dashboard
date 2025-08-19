@@ -80,7 +80,8 @@ uses
   TCheckSipTrunkUnit in '..\custom_class\TCheckSipTrunkUnit.pas',
   Thread_CheckTrunkUnit in 'Thread\Thread_CheckTrunkUnit.pas',
   FormWorkTimeCallCenterUnit in 'FormWorkTimeCallCenterUnit.pas' {FormWorkTimeCallCenter},
-  TWorkTimeCallCenterUnit in '..\custom_class\TWorkTimeCallCenterUnit.pas';
+  TWorkTimeCallCenterUnit in '..\custom_class\TWorkTimeCallCenterUnit.pas',
+  TCallInfoUnit in '..\custom_class\TCallInfoUnit.pas';
 
 {$R *.res}
 

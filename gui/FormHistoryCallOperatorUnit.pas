@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.ComCtrls, Vcl.StdCtrls,
   Data.DB, Data.Win.ADODB, IdException, System.ImageList, Vcl.ImgList, System.DateUtils,
-  Vcl.Imaging.jpeg, Vcl.Menus;
+  Vcl.Imaging.jpeg, Vcl.Menus, Vcl.MPlayer;
 
   type
     enumFilterTime = ( time_all,
@@ -46,8 +46,7 @@ type
     lblProgramExit: TLabel;
     popmenu_InfoCall: TPopupMenu;
     menu_FIO: TMenuItem;
-    lblOpenExcel: TLabel;
-    Image0: TImage;
+    lblCallInfo: TLabel;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure list_HistoryCustomDrawItem(Sender: TCustomListView;
@@ -90,8 +89,8 @@ type
                       var m_count3, m_count3_10, m_count10_15, m_count15: Integer);
 
   procedure ZAGLUSHKA;
-
   procedure SetColorLink;
+  procedure ShowCallInfo;
 
   public
     { Public declarations }
@@ -122,7 +121,24 @@ procedure TFormHistoryCallOperator.SetColorLink;
 begin
   SetLinkColor(lblDownloadCall);
   SetLinkColor(lblPlayCall);
-  SetLinkColor(lblOpenExcel);
+end;
+
+// отображение прослушать\скачать
+procedure TFormHistoryCallOperator.ShowCallInfo;
+var
+ callDate,phone,timeCall:string;
+begin
+  if not Assigned(SelectedItemPopMenu) then Exit;
+
+  callDate:=SelectedItemPopMenu.SubItems[0];
+  phone:=SelectedItemPopMenu.SubItems[2];
+  timeCall:=SelectedItemPopMenu.SubItems[4];
+
+  lblCallInfo.Caption:=callDate+' '+phone+'('+timeCall+')';
+
+  lblCallInfo.Visible:=True;
+  lblDownloadCall.Enabled:=True;
+  lblPlayCall.Enabled:=True;
 end;
 
 function EnumFilterTimeToString(_time:enumFilterTime):string;
@@ -177,6 +193,12 @@ begin
   lbl_3_10.Caption:='---';
   lbl_10_15.Caption:='---';
   lbl_15.Caption:='---';
+
+  // подменю прослушать\скачать звонок
+  lblDownloadCall.Enabled:=False;
+  lblPlayCall.Enabled:=False;
+  lblCallInfo.Caption:='';
+  lblCallInfo.Visible:=False;
 end;
 
 
@@ -436,7 +458,6 @@ begin
 
   ado := TADOQuery.Create(nil);
   serverConnect := createServerConnect;
-
   if not Assigned(serverConnect) then
   begin
     FreeAndNil(ado);
@@ -675,11 +696,11 @@ end;
 procedure TFormHistoryCallOperator.list_HistoryMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-  // ѕровер€ем, был ли клик правой кнопкой мыши
-  if Button = mbRight then
-  begin
-    // ѕолучаем элемент, на который кликнули
-    SelectedItemPopMenu := list_History.GetItemAt(X, Y);
+  SelectedItemPopMenu := list_History.GetItemAt(X, Y);
+
+  // выбор варианта на прослушку\скачивание
+  if Button = mbLeft then begin
+    ShowCallInfo;
   end;
 end;
 
