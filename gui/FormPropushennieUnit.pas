@@ -51,7 +51,7 @@ type
 
   private
     { Private declarations }
-  m_queueStart    :enumQueueCurrent;  // текущие очереди с которых будет открываться окно
+  m_queueStart    :enumQueue;  // текущие очереди с которых будет открываться окно
   m_missedStart   :enumMissed;
   m_callbakRun    :BOOL;
   m_missedCalls   :TQueueStatistics;
@@ -65,8 +65,8 @@ type
   m_manualShow    :Boolean; // флаг того что руками открыли окно, а не через диспетчер
 
   procedure Show;
-  procedure CreateForm(_queue:enumQueueCurrent; _missed:enumMissed);  // создание формы
-  procedure LoadData(_queue:enumQueueCurrent;_missed:enumMissed);
+  procedure CreateForm(_queue:enumQueue; _missed:enumMissed);  // создание формы
+  procedure LoadData(_queue:enumQueue;_missed:enumMissed);
   procedure Clear;
   procedure ClearForm;                 // очитска формы
   procedure CreateComboxChoiseQueue;   // создвание листа с выбором фильтра по очередям
@@ -92,7 +92,7 @@ type
 
   public
     { Public declarations }
-  procedure SetQueue(_queue:enumQueueCurrent; _missed:enumMissed);  // установка с какой очереди будем открывать окно
+  procedure SetQueue(_queue:enumQueue; _missed:enumMissed);  // установка с какой очереди будем открывать окно
   procedure SetCallbak; // открытые окна из под оператора + статус callback
 
   procedure SetManualShow(_value:Boolean); // ручное открытие окна
@@ -141,7 +141,7 @@ uses
 
 
 // установка с какой очереди будем открывать окно
-procedure TFormPropushennie.SetQueue(_queue:enumQueueCurrent; _missed:enumMissed);
+procedure TFormPropushennie.SetQueue(_queue:enumQueue; _missed:enumMissed);
 begin
   m_queueStart:=_queue;
   m_missedStart:=_missed;
@@ -160,7 +160,7 @@ begin
 end;
 
 // создание формы
-procedure TFormPropushennie.CreateForm(_queue:enumQueueCurrent; _missed:enumMissed);
+procedure TFormPropushennie.CreateForm(_queue:enumQueue; _missed:enumMissed);
 const
   cTOPSTART=5;
   cTOPSTART_BUTTON=2;
@@ -382,7 +382,7 @@ begin
    if Assigned(bmp) then bmp.Free;
 end;
 
-procedure TFormPropushennie.LoadData(_queue:enumQueueCurrent; _missed:enumMissed);
+procedure TFormPropushennie.LoadData(_queue:enumQueue; _missed:enumMissed);
 begin
  // очищавем форму
  ClearForm;
@@ -446,7 +446,7 @@ end;
 
 procedure TFormPropushennie.combox_QueueFilterChange(Sender: TObject);
 var
- queue:enumQueueCurrent;
+ queue:enumQueue;
 begin
   queue:=StringToEnumQueueCurrent(combox_QueueFilter.Text);
   m_queueStart    :=queue;

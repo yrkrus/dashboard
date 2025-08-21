@@ -35,17 +35,19 @@ uses
   function GetDateToDateBD(InDateTime:string):PChar;                    stdcall;  external 'core.dll';       // перевод даты в ненормальный вид для BD
   function GetTimeAnsweredToSeconds(InTimeAnswered:string; isReducedTime:Boolean = False):Integer; stdcall;  external 'core.dll'; // перевод времени разговора оператора типа 00:00:00 в секунды
   function GetTimeAnsweredSecondsToString(InSecondAnswered:Integer):PChar;                  stdcall;  external 'core.dll'; // перевод времени разговора оператора типа из секунд в 00:00:00
-  function GetIVRTimeQueue(InQueue:enumQueueCurrent):Integer;           stdcall;  external 'core.dll';      // время которое необходимо отнимать от текущего звонка в очереди
-  function StringToTQueue(InQueueSTR:string):enumQueueCurrent;          stdcall;  external 'core.dll';      // конвертер из string в TQueue
-  function TQueueToString(InQueueSTR:enumQueueCurrent):PChar;           stdcall;  external 'core.dll';      // конвертер из TQueue в string
+  function GetIVRTimeQueue(InQueue:enumQueue):Integer;           stdcall;  external 'core.dll';      // время которое необходимо отнимать от текущего звонка в очереди
+  function StringToTQueue(InQueueSTR:string):enumQueue;          stdcall;  external 'core.dll';      // конвертер из string в TQueue
+  function TQueueToString(InQueueSTR:enumQueue):PChar;           stdcall;  external 'core.dll';      // конвертер из TQueue в string
   function GetUserNameOperators(InSip:string):PChar;                    stdcall;  external 'core.dll';      // полчуение имени пользователя из его SIP номера
   function GetCurrentUserNamePC:PChar;                                  stdcall;  external 'core.dll';      // получение имени залогиненого пользователя (из системы)
   function GetCountSendingSMSToday:Integer;                             stdcall;  external 'core.dll';      // кол-во отправленных за сегодня смс
   function Ping(InIp:string):Boolean;                                   stdcall;  external 'core.dll';      // проверка ping
   function IsServerIkExistWorkingTime(_id:Integer):Boolean;             stdcall;  external 'core.dll';      // настроен ли время работы в сервере ИК
   function GetClinicId(_nameClinic:string):Integer;                     stdcall;  external 'core.dll';      // id клиники
-  function GetAliveCoreDashboard:Boolean;                               stdcall;  external 'core.dll';      // живое ли ядро дашборда
-
+  function GetAliveCoreDashboard:Boolean;                               stdcall;  external 'core.dll';      // есть ли подключение к ядро дашборда по tcp:12345 порту
+  function GetPhoneTrunkQueue(_table:enumReportTableIVR; _phone:string;_timecall:string):PChar; stdcall;  external 'core.dll';   // нахождение на какой транк звонил номер который ушел в очередь
+  function GetPhoneOperatorQueue(_table:enumReportTableIVR; _phone:string;_timecall:string):PChar; stdcall;  external 'core.dll'; // нахождение у какого оператора зарегистрирован телефон
+  function GetPhoneRegionQueue(_table:enumReportTableIVR; _phone:string;_timecall:string):PChar; stdcall;  external 'core.dll'; // нахождение у в каком регионе зарегистрирован телефон
 
 
   // --- connect_to_server.dll ---  (по сути этот тут не нужно, но пусть будет)

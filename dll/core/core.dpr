@@ -14,7 +14,7 @@ uses
 function _DefaultDataBase:string;
 begin
   Result:=GetServerName;
-  // Result:=GetServerNameTest;
+ //  Result:=GetServerNameTest;
 end;
 
 function GetDefaultDataBase:PChar; stdcall; export;
@@ -858,6 +858,120 @@ begin
 end;
 
 
+// нахождение на какой транк звонил номер который ушел в очередь
+function GetPhoneTrunkQueue(_table:enumReportTableIVR; _phone:string;_timecall:string):PChar; stdcall; export;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ table:string;
+begin
+  Result:=PChar('null');
+  table:=EnumReportTableIVRToString(_table);
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select trunk from '+table+' where phone = '+#39+_phone+#39+' and date_time < '+#39+GetDateTimeToDateBD(_timecall)+#39+' and to_queue = 1 limit 1');
+
+      Active:=True;
+      if Fields[0].Value<>null then begin
+       Result:=PChar(VarToStr(Fields[0].Value));
+      end
+      else Result:=PChar('LISA');
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+
+// нахождение у какого оператора зарегистрирован телефон
+function GetPhoneOperatorQueue(_table:enumReportTableIVR; _phone:string;_timecall:string):PChar; stdcall; export;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ table:string;
+begin
+  Result:=PChar('null');
+  table:=EnumReportTableIVRToString(_table);
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select operator from '+table+' where phone = '+#39+_phone+#39+' and date_time < '+#39+GetDateTimeToDateBD(_timecall)+#39+' and to_queue = 1 limit 1');
+
+      Active:=True;
+      if Fields[0].Value<>null then begin
+       Result:=PChar(VarToStr(Fields[0].Value));
+      end;
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+// нахождение у в каком регионе зарегистрирован телефон
+function GetPhoneRegionQueue(_table:enumReportTableIVR; _phone:string;_timecall:string):PChar; stdcall; export;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ table:string;
+begin
+  Result:=PChar('null');
+  table:=EnumReportTableIVRToString(_table);
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select region from '+table+' where phone = '+#39+_phone+#39+' and date_time < '+#39+GetDateTimeToDateBD(_timecall)+#39+' and to_queue = 1 limit 1');
+
+      Active:=True;
+      if Fields[0].Value<>null then begin
+       Result:=PChar(VarToStr(Fields[0].Value));
+      end;
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+
 exports
   GetDefaultDataBase,
   createServerConnect,
@@ -893,7 +1007,10 @@ exports
   Ping,
   IsServerIkExistWorkingTime,
   GetClinicId,
-  GetAliveCoreDashboard;
+  GetAliveCoreDashboard,
+  GetPhoneTrunkQueue,
+  GetPhoneOperatorQueue,
+  GetPhoneRegionQueue;
 
 begin
 end.

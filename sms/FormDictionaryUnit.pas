@@ -137,7 +137,7 @@ begin
 
       SQL.Clear;
       SQL.Add('select id,date_time,user_id,word from sms_dictionary order by date_time DESC');
-      Caption:='Словарь. Слов - '+IntToStr(countDictionary);
+      Caption:='Словарь. Слов['+IntToStr(countDictionary)+']';
 
       Active:=True;
 

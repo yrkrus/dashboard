@@ -257,39 +257,50 @@ begin
    Exit;
   end;
 
-
   try
     with ado do begin
       ado.Connection:=serverConnect;
       // пробегаемся по нужным sip
       for i:=0 to sipList.Count-1 do begin
         SQL.Clear;
-        SQL.Add('select count(id) from '+EnumReportTableCountCallsOperatorToString(m_table)+' where sip IN ('+sipList[i]+')' );
+        SQL.Add('select count(id) from '+EnumReportTableCountCallsOperatorToString(m_table)+' where sip IN ('+sipList[i]+') and answered = ''1''');
         if not m_onlyCurrentDay then SQL.Add(' and date_time >='+#39+GetDateToDateBD(GetDateStart(StrToInt(sipList[i])))+' 00:00:00'+#39+' and date_time<='+#39+GetDateToDateBD(GetDateStop(StrToInt(sipList[i])))+' 23:59:59'+#39+' order by date_time ASC');
 
         Active:=True;
         countData:=Fields[0].Value;
         if countData=0 then begin
-
           Continue;
         end;
-
 
         // находим кол-во в разрезе периода
         currentDay:=StrToDate(GetDateStart(StrToInt(sipList[i])));
         while currentDay <= StrToDate(GetDateStop(StrToInt(sipList[i]))) do  begin
+
+            procentLoad:=Trunc(i*100/sipList.Count-1);
+            if procentLoad < 0 then procentLoad:=0;
+
+            SetProgressStatusText('Загрузка данных с сервера ['+IntToStr(procentLoad)+'%] ...');
+            SetProgressBar(procentLoad);
+
             SQL.Clear;
-            SQL.Add('select count(id) from '+EnumReportTableCountCallsOperatorToString(m_table)+' where sip IN ('+sipList[i]+')'+
+            SQL.Add('select count(id) from '+EnumReportTableCountCallsOperatorToString(m_table)+' where sip IN ('+sipList[i]+') and answered = ''1'''+
                     ' and date_time >='+#39+GetDateToDateBD(DateToStr(currentDay))+' 00:00:00'+#39+
                     ' and date_time <='+#39+GetDateToDateBD(DateToStr(currentDay))+' 23:59:59'+#39+
                     ' order by date_time ASC');
 
             Active:=True;
             countData:=Fields[0].Value;
+            if countData = 0 then begin
+               currentDay := IncDay(currentDay,1);
+               // проверка вдруг отменили операцию
+              aboutNow:=GetAbout;
+              if aboutNow then break;
 
+              Continue;
+            end;
 
             // подсчет кол-ва времени в onhold
-            onHoldCount:=CountOnHoldPhone(sipList[i],currentDay,m_tableOnHold);
+            onHoldCount:=CountOnHoldPhoneAll(sipList[i],currentDay,m_tableOnHold);
 
 
             newData:=TStructInfo.Create(DateToStr(currentDay), countData, onHoldCount);
@@ -298,10 +309,6 @@ begin
             SetCountCalls(StrToInt(sipList[i]),newData);
 
             currentDay := IncDay(currentDay,1);
-
-            procentLoad:=Trunc(i*100/sipList.Count-1);
-            SetProgressStatusText('Загрузка данных с сервера ['+IntToStr(procentLoad)+'%] ...');
-            SetProgressBar(procentLoad);
 
             // проверка вдруг отменили операцию
             aboutNow:=GetAbout;

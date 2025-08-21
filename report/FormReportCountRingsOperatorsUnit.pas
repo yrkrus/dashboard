@@ -39,8 +39,9 @@ type
     procedure FormCenter;
 
     procedure FinalizationClose;
-    function GetCheckValue(var _errorDescription:string):Boolean;  // проверка значений
-    procedure AllCheckedListOperatorsSip;   // на случай если не выбрали параметр "выбрать операторов"
+    function GetCheckValue(var _errorDescription:string):Boolean;   // проверка значений
+    procedure CheckedListOperatorsSip(const _listSipChecked:TStringList); overload; // на случай если не выбрали параметр "выбрать операторов"
+    procedure CheckedListOperatorsSip; overload;
 
   public
 
@@ -107,7 +108,34 @@ begin
 end;
 
 // на случай если не выбрали параметр "выбрать операторов"
-procedure TFormReportCountRingsOperators.AllCheckedListOperatorsSip;
+procedure TFormReportCountRingsOperators.CheckedListOperatorsSip(const _listSipChecked:TStringList);
+var
+ i,j:Integer;
+ sip:string;
+begin
+  // очистим на всякий случай listBox
+  for i:=0 to listOperators.Count-1 do begin
+    if listOperators.Checked[i] then listOperators.Checked[i]:=False;
+  end;
+
+  for i:=0 to listOperators.Count-1 do begin
+    for j:=0 to _listSipChecked.Count-1 do begin
+
+      sip:=listOperators.Items[i];
+      System.Delete(sip,1,AnsiPos('(',sip));
+      System.Delete(sip,AnsiPos(')',sip),Length(sip));
+
+      if _listSipChecked[j] = sip then  begin
+        listOperators.Checked[i]:=True;
+        Break;
+      end;
+    end;
+  end;
+end;
+
+
+// на случай если не выбрали параметр "выбрать операторов"
+procedure TFormReportCountRingsOperators.CheckedListOperatorsSip;
 var
  i:Integer;
 begin
@@ -166,6 +194,7 @@ begin
   if m_detailed then chkboxFindFIO.Enabled:=True
   else chkboxFindFIO.Enabled:=False;
 
+  chkboxShowAll.Checked:=False;
 
     // центрируем окно
   FormCenter;
@@ -179,6 +208,7 @@ var
  error:string;
  onlyCurrentDay:Boolean;
  findFIO:Boolean;
+ listSip:TStringList;
 begin
   onlyCurrentDay:=False;
   findFIO:=False;
@@ -206,8 +236,17 @@ begin
 
   // на случай если не выбрали парметр "выбрать операторов"
   if not chkboxShowOperators.Checked then begin
-   LoadingListOperatorsForm(listOperators);
-   AllCheckedListOperatorsSip;
+   // находим список sip которые разговаривали за период дат
+   listSip:=TStringList.Create;
+
+   LoadingListOperatorsForm(listOperators); // подгружаем операторов
+
+   if not onlyCurrentDay then begin
+     FindSipCallOperators(listSip,dateStart.Date,dateStop.Date);
+     // выберем нужные sip
+     CheckedListOperatorsSip(listSip);
+   end
+   else CheckedListOperatorsSip;
   end;
 
   report.CreateReportExcel(listOperators);
@@ -257,7 +296,7 @@ var
  i:Integer;
 begin
   if chkboxShowAll.Checked then begin
-   AllCheckedListOperatorsSip;
+   CheckedListOperatorsSip;
   end
   else begin
    for i:=0 to listOperators.Count-1 do begin

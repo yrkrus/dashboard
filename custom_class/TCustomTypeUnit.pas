@@ -52,7 +52,7 @@ interface
 
 
  type   // тип запрошенных данных из очереди ! TODO ВАЖНО в TQueueStatistics  береться только queue_5000 и queue_5050
- enumQueueCurrent =  (queue_5000,            // 5000 очередь
+ enumQueue =  (queue_5000,            // 5000 очередь
                       queue_5050,            // 5050 очередь
                       queue_5000_5050,       // 5000 и 5050 очередь
                       queue_null             // нет очереди
@@ -271,7 +271,8 @@ interface
                       color_NotBad,         // разговор от 3мин до 10мин  | поствызов >= 3мин
                       color_Bad,            // разговор от 10мин до 15мин
                       color_Very_Bad,       // разговор >= 15мин
-                      color_Break);         // обед или перерыв
+                      color_Break,          // обед или перерыв
+                      color_OnHold);        // onHold
 
 
    type // тип причины отправки смс
@@ -407,9 +408,9 @@ interface
  function IntegerToSettingParamsStatus(_status:Integer):enumParamStatus;            // Int --> SettingParamsStatus
  function EnumTypeClinicToString(typeClinic:enumTypeClinic):string;                // EnumTypeClinic -> String
  function StringToEnumTypeClinic(typeClinic:string):enumTypeClinic;                // String -> EnumTypeClinic
- function EnumQueueCurrentToString(_queue:enumQueueCurrent):string;                // EnumQueueCurrent - > String
- function EnumQueueCurrentToInteger(_queue:enumQueueCurrent):Integer;              // EnumQueueCurrent - > Integer
- function StringToEnumQueueCurrent(_queue:string):enumQueueCurrent;                // String -> EnumQueueCurrent
+ function EnumQueueCurrentToString(_queue:enumQueue):string;                // EnumQueueCurrent - > String
+ function EnumQueueCurrentToInteger(_queue:enumQueue):Integer;              // EnumQueueCurrent - > Integer
+ function StringToEnumQueueCurrent(_queue:string):enumQueue;                // String -> EnumQueueCurrent
  function StringToSettingParamsStatus(status:string):enumParamStatus;             // String (Да\Нет) --> SettingParamsStatus
  function StrToBoolean(InValue:string):Boolean;                                    // string -> boolean
  function EnumStatusToString(InStatus:enumStatus):string;                          // enumStatus -> String
@@ -868,7 +869,7 @@ begin
 end;
 
 // EnumQueueCurrent - > String
-function EnumQueueCurrentToString(_queue:enumQueueCurrent):string;
+function EnumQueueCurrentToString(_queue:enumQueue):string;
 begin
    case _queue of
     queue_5000:       Result:='5000';
@@ -880,12 +881,12 @@ begin
 end;
 
 // EnumQueueCurrent - > Integer
-function EnumQueueCurrentToInteger(_queue:enumQueueCurrent):Integer;
+function EnumQueueCurrentToInteger(_queue:enumQueue):Integer;
 var
  i:Integer;
 begin
-  for i:=0 to Ord(High(enumQueueCurrent)) do begin
-    if enumQueueCurrent(i) = _queue then begin
+  for i:=0 to Ord(High(enumQueue)) do begin
+    if enumQueue(i) = _queue then begin
       Result:=i;
       Exit;
     end;
@@ -893,7 +894,7 @@ begin
 end;
 
 // String -> EnumQueueCurrent
-function StringToEnumQueueCurrent(_queue:string):enumQueueCurrent;
+function StringToEnumQueueCurrent(_queue:string):enumQueue;
 begin
   if _queue = '5000' then         Result:=queue_5000;
   if _queue = '5050' then         Result:=queue_5050;
@@ -989,6 +990,7 @@ begin
     color_Bad:        Result := $0000008A;  // разговор от 10мин до 15мин
     color_Very_Bad:   Result := clBlue;     // разговор >= 15мин
     color_Break:      Result := $00DDB897;  // обед или перерыв
+    color_OnHold:     Result := $00E714AD;  // onHold
   else
     Result := clBlack;
   end;

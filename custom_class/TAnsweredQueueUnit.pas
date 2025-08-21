@@ -12,16 +12,8 @@ unit TAnsweredQueueUnit;
 
 interface
 
-uses  System.Classes,
-      Data.Win.ADODB,
-      Data.DB,
-      System.SysUtils,
-      Variants,
-      Graphics,
-      TCustomTypeUnit,
-      Vcl.Forms,
-      StdCtrls,
-      TLogFileUnit;
+uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
+      Graphics, TCustomTypeUnit, Vcl.Forms, StdCtrls, TLogFileUnit;
 
 
    // class TStructAnswered_list
@@ -29,7 +21,7 @@ uses  System.Classes,
       TStructAnswered_list = class
       public
       id                                     :Integer;
-      queue                                  :enumQueueCurrent;
+      queue                                  :enumQueue;
       waiting_time                           :string;
       talk_time                              :string;
 
@@ -65,6 +57,19 @@ uses  System.Classes,
   // class TAnsweredQueue
   type
       TAnsweredQueue = class
+
+      private
+      m_maxAnsweredTime                   : Integer;     // (время) максимальное время ожидания в очереди
+      m_maxAnsweredID                     : Integer;     // (id по БД) ID этого звонка
+      SL                                  : Double;      // текущее значение SL = 0.0   ↑↓
+
+      function isExistAnsweredId(id:Integer): Boolean;                  // есть ли такой id в памяти
+      procedure addAnswered(id,answered_time:Integer);                  // добавление в память
+      procedure FindMaxAnsweredTime;                  // нахождене максимального времени ожидания в очереди
+      procedure ShowSL(InNewSL:Double);               // отображение нового SL
+      function GetProcent(InNewProcent:Double; isShowDelimiter:Boolean = true):string; overload;     // отображение процента в заивисимости от того какой результат по процентам
+
+
       public
       list                                  : array of TStructAnswered; // список
       updateAnsweredNow                     : Boolean;                  // нужно ли обновить весь свписок
@@ -82,18 +87,6 @@ uses  System.Classes,
       procedure Clear;                                                  // очитска от всех текущих данных
 
 
-      private
-      m_maxAnsweredTime                   : Integer;     // (время) максимальное время ожидания в очереди
-      m_maxAnsweredID                     : Integer;     // (id по БД) ID этого звонка
-      SL                                  : Double;      // текущее значение SL = 0.0   ↑↓
-
-
-
-      function isExistAnsweredId(id:Integer): Boolean;                  // есть ли такой id в памяти
-      procedure addAnswered(id,answered_time:Integer);                  // добавление в память
-      procedure FindMaxAnsweredTime;                  // нахождене максимального времени ожидания в очереди
-      procedure ShowSL(InNewSL:Double);               // отображение нового SL
-      function GetProcent(InNewProcent:Double; isShowDelimiter:Boolean = true):string; overload;     // отображение процента в заивисимости от того какой результат по процентам
 
 
       end;
@@ -240,11 +233,13 @@ end;
  var
   i:Integer;
   procent:Double;
+
+  SLVALUE:Double;  // текущее значение SL
  begin
    for i:=0 to cGLOBAL_ListAnswered-1 do begin
     with HomeForm do begin
       procent:=list[i].count * 100 / getCountAllAnswered;
-
+      SLVALUE:=100;
      case i of
        0: begin
          lblStatistics_Answered30.Caption:=IntToStr(list[i].count) + ' ('+GetProcent(procent)+'%)';
@@ -260,6 +255,8 @@ end;
          end;
 
          // отображаем  новый SL
+
+
          ShowSL(procent);  // old value = list[i].count / getCountAllAnswered * 100
        end;
        1: begin

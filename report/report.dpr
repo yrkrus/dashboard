@@ -8,7 +8,6 @@ uses
   FormReportCountRingsOperatorsUnit in 'FormReportCountRingsOperatorsUnit.pas' {FormReportCountRingsOperators},
   FormWaitUnit in 'FormWaitUnit.pas' {FormWait},
   TCustomTypeUnit in '..\custom_class\TCustomTypeUnit.pas',
-  GlobalVariablesLinkDLL in '..\gui\GlobalVariablesLinkDLL.pas',
   TWorkTimeCallCenterUnit in '..\custom_class\TWorkTimeCallCenterUnit.pas',
   FormReportShowRingsAfterWorkTimeUnit in 'FormReportShowRingsAfterWorkTimeUnit.pas' {FormReportShowRingsAfterWorkTime},
   TAbstractReportUnit in '..\custom_class\from_report\TAbstractReportUnit.pas',
@@ -20,7 +19,8 @@ uses
   FormReportShowStatusOperatorsUnit in 'FormReportShowStatusOperatorsUnit.pas' {FormReportShowStatusOperators},
   TAutoPodborPeopleUnit in '..\custom_class\TAutoPodborPeopleUnit.pas',
   TLogFileUnit in '..\custom_class\TLogFileUnit.pas',
-  GlobalImageDestination in '..\gui\GlobalImageDestination.pas';
+  GlobalImageDestination in '..\gui\GlobalImageDestination.pas',
+  GlobalVariablesLinkDLL in '..\gui\GlobalVariablesLinkDLL.pas';
 
 {$R *.res}
 

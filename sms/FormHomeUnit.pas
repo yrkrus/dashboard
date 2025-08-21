@@ -719,7 +719,7 @@ begin
 
   // debug node
   if DEBUG then begin
-    Caption:='    ===== DEBUG =====    ' + Caption;
+    Caption:='    ===== DEBUG | (base:'+GetDefaultDataBase+') =====    '+Caption;
   end
   else begin
     // скрываем отправку рассылки для обычных операторов

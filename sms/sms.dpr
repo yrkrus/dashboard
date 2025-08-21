@@ -34,7 +34,8 @@ uses
   TAutoPodborPeopleUnit in '..\custom_class\TAutoPodborPeopleUnit.pas',
   GlobalVariablesLinkDLL in '..\gui\GlobalVariablesLinkDLL.pas',
   FormPodborUnit in 'FormPodborUnit.pas' {FormPodbor},
-  FormManualPodborUnit in 'FormManualPodborUnit.pas' {FormManualPodbor};
+  FormManualPodborUnit in 'FormManualPodborUnit.pas' {FormManualPodbor},
+  TSMSCallTalkInfoUnit in '..\custom_class\TSMSCallTalkInfoUnit.pas';
 
 {$R *.res}
 

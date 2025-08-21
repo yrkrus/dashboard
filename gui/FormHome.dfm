@@ -2,7 +2,7 @@ object HomeForm: THomeForm
   Left = 0
   Top = 0
   Caption = #1044#1072#1096#1073#1086#1088#1076' '#1050#1086#1083#1083#1062#1077#1085#1090#1088#1072
-  ClientHeight = 814
+  ClientHeight = 774
   ClientWidth = 1454
   Color = clWindow
   DefaultMonitor = dmDesktop
@@ -20,7 +20,7 @@ object HomeForm: THomeForm
   OnShow = FormShow
   DesignSize = (
     1454
-    814)
+    774)
   PixelsPerInch = 96
   TextHeight = 15
   object Label5: TLabel
@@ -542,7 +542,7 @@ object HomeForm: THomeForm
   end
   object lblNewMessageLocalChat: TLabel
     Left = 1202
-    Top = 773
+    Top = 733
     Width = 243
     Height = 16
     Cursor = crHandPoint
@@ -696,7 +696,7 @@ object HomeForm: THomeForm
   end
   object Img8Mart: TImage
     Left = 1374
-    Top = 742
+    Top = 702
     Width = 79
     Height = 50
     Anchors = [akRight, akBottom]
@@ -823,7 +823,7 @@ object HomeForm: THomeForm
   end
   object ImageLogo: TImage
     Left = 1277
-    Top = 734
+    Top = 694
     Width = 157
     Height = 37
     Anchors = [akRight, akBottom]
@@ -990,7 +990,7 @@ object HomeForm: THomeForm
   end
   object ImgNewYear: TImage
     Left = 1389
-    Top = 714
+    Top = 674
     Width = 55
     Height = 55
     Anchors = [akRight, akBottom]
@@ -6446,7 +6446,7 @@ object HomeForm: THomeForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 793
+    Top = 753
     Width = 1454
     Height = 21
     Panels = <
@@ -6477,7 +6477,6 @@ object HomeForm: THomeForm
         Text = 'developer by     '
         Width = 150
       end>
-    ExplicitTop = 785
   end
   object START_THREAD_ALLl: TButton
     Left = 288
@@ -7247,6 +7246,7 @@ object HomeForm: THomeForm
           #1054#1073#1088#1072#1090#1085#1099#1081' '#1079#1074#1086#1085#1086#1082', '#1087#1086#1074#1090#1086#1088#1085#1072#1103' '#1087#1086#1087#1099#1090#1082#1072' '#1076#1086#1079#1074#1086#1085#1072' '#1076#1083#1103' '#13#10#1087#1088#1086#1087#1091#1097#1077#1085#1085#1086#1075#1086' '#1079#1074 +
           #1086#1085#1082#1072
         Caption = 'CallBack'
+        Enabled = False
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -7622,7 +7622,7 @@ object HomeForm: THomeForm
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 9
+    TabOrder = 10
   end
   object st_Forecast_Tomorrow: TStaticText
     Left = 35
@@ -7642,7 +7642,7 @@ object HomeForm: THomeForm
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 10
+    TabOrder = 11
     Visible = False
   end
   object st_Forecast_AfterTomorrow: TStaticText
@@ -7663,7 +7663,7 @@ object HomeForm: THomeForm
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 11
+    TabOrder = 12
     Visible = False
   end
   object Button1: TButton

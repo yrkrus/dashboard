@@ -134,7 +134,7 @@ begin
   phone:=SelectedItemPopMenu.SubItems[2];
   timeCall:=SelectedItemPopMenu.SubItems[4];
 
-  lblCallInfo.Caption:=callDate+' '+phone+'('+timeCall+')';
+  lblCallInfo.Caption:=callDate+' '+phone+' ('+timeCall+')';
 
   lblCallInfo.Visible:=True;
   lblDownloadCall.Enabled:=True;
@@ -509,7 +509,7 @@ begin
          end;
         end;
 
-        trunk:=GetPhoneTrunkQueue(phone,dateTime);
+        trunk:=GetPhoneTrunkQueue(eTableIVR,phone,dateTime);
 
         if _filterTime = time_all then
         begin
@@ -656,16 +656,12 @@ procedure TFormHistoryCallOperator.list_HistoryCustomDrawItem(
   Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
   var DefaultDraw: Boolean);
 var
- //counts:Integer;
  time_talk:Integer;
  test:string;
-
 begin
   if not Assigned(Item) then Exit;
 
   try
-   // counts:=Item.SubItems.Count; // TODO еще подумать как можно это улучшить
-
     if Item.SubItems.Count = 5 then // Проверяем, что есть достаточно SubItems
     begin
         test:=Item.SubItems.Strings[4];

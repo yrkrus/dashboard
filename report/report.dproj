@@ -153,7 +153,6 @@
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="..\custom_class\TCustomTypeUnit.pas"/>
-        <DCCReference Include="..\gui\GlobalVariablesLinkDLL.pas"/>
         <DCCReference Include="..\custom_class\TWorkTimeCallCenterUnit.pas"/>
         <DCCReference Include="FormReportShowRingsAfterWorkTimeUnit.pas">
             <Form>FormReportShowRingsAfterWorkTime</Form>
@@ -172,6 +171,7 @@
         <DCCReference Include="..\custom_class\TAutoPodborPeopleUnit.pas"/>
         <DCCReference Include="..\custom_class\TLogFileUnit.pas"/>
         <DCCReference Include="..\gui\GlobalImageDestination.pas"/>
+        <DCCReference Include="..\gui\GlobalVariablesLinkDLL.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

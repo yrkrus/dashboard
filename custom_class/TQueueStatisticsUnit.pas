@@ -102,7 +102,7 @@ uses
   type
       TStructQueueStatistics = class(TObject)
       private
-      m_queue       :enumQueueCurrent;
+      m_queue       :enumQueue;
       m_statistics  :TStructStatistics;
 
       // ссылки на TLabel на форме
@@ -111,7 +111,7 @@ uses
       m_label_missed      :TLabel;
 
       public
-      constructor Create(_queue:enumQueueCurrent);    overload;
+      constructor Create(_queue:enumQueue);    overload;
       destructor Destroy;                             override;
 
       function isExistDiffMissedCalls(_missed:enumMissed):Boolean; // есть изменения в пропущенных
@@ -128,7 +128,7 @@ uses
     m_statistics_procent  :string;
 
   public
-    constructor Create(_queue: enumQueueCurrent); reintroduce;
+    constructor Create(_queue: enumQueue); reintroduce;
     destructor Destroy;                           override;
   end;
 
@@ -145,18 +145,18 @@ uses
 
       isExistStatDay:Boolean;
 
-      procedure SetStatistics(_queue:enumQueueCurrent); overload; // занесение параметров статистики
+      procedure SetStatistics(_queue:enumQueue); overload; // занесение параметров статистики
       procedure SetStatistics; overload;                          // занесение параметров статистики
-      procedure ShowQueue(_queue:enumQueueCurrent);               // показываем данные в разрезе очереди
+      procedure ShowQueue(_queue:enumQueue);               // показываем данные в разрезе очереди
       procedure ShowDay;                                          // показываем данные в разрезе текущего дня
-      procedure UpdateQueue(_queue:enumQueueCurrent);             // обвнление данных по очередям
+      procedure UpdateQueue(_queue:enumQueue);             // обвнление данных по очередям
       procedure UpdateDay;                                        // обвнление данных за текущий день
 
 
-      function GetMissedCalls(_queue:enumQueueCurrent; _stat:enumStatistiscDay;
+      function GetMissedCalls(_queue:enumQueue; _stat:enumStatistiscDay;
                               var _countCalls:Integer):TArray<TCalls>;  // получение массива пропущенных звонков
 
-      procedure UpdateMissedCalls(_queue:enumQueueCurrent;
+      procedure UpdateMissedCalls(_queue:enumQueue;
                                   _stat:enumStatistiscDay;
                                   _beforeClear:enumStatus); //обновление подробностьей о пропущенных звонках
 
@@ -167,15 +167,15 @@ uses
       constructor Create(isCreateStatDay:Boolean = False);                   overload;
       destructor Destroy; override;
 
-      function GetCallsAll(_queue:enumQueueCurrent):Integer;          // все звонки
-      function GetCallsAnswered(_queue:enumQueueCurrent):Integer;     // отвеченные
-      function GetCallsMissedAll(_queue:enumQueueCurrent):Integer;    // пропущенные все
-      function GetCallsMissed(_queue:enumQueueCurrent):Integer;       // пропущенные не перезвонившие
+      function GetCallsAll(_queue:enumQueue):Integer;          // все звонки
+      function GetCallsAnswered(_queue:enumQueue):Integer;     // отвеченные
+      function GetCallsMissedAll(_queue:enumQueue):Integer;    // пропущенные все
+      function GetCallsMissed(_queue:enumQueue):Integer;       // пропущенные не перезвонившие
 
       procedure Update;  // обновление данных
       procedure Show; // показ данных
 
-      procedure SetLinkLabel(_queue:enumQueueCurrent;
+      procedure SetLinkLabel(_queue:enumQueue;
                              var _label_all,_label_ansvered,_label_missed : TLabel); //линкова TLabel (только при старте нкужна)
 
 
@@ -184,13 +184,13 @@ uses
 
 
       // ================ функции TCalls ====================
-      function GetMissedCount(_queue:enumQueueCurrent; _missed:enumMissed):Integer;  // получение кол-ва пропущенных
-      function GetCalls_ID(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer):Integer;           // m_id
-      function GetCalls_DateTime(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer):TDateTime;   // m_datetime
-      function GetCalls_Phone(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer):string;         // m_phone
-      function GetCalls_FIO(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer; var _count:Integer):string;           // m_fio
-      function GetCalls_Trunk(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer):string;         // m_trunk
-      function GetCalls_Waiting(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer):string;       // m_waiting
+      function GetMissedCount(_queue:enumQueue; _missed:enumMissed):Integer;  // получение кол-ва пропущенных
+      function GetCalls_ID(_queue:enumQueue; _missed:enumMissed; _id:Integer):Integer;           // m_id
+      function GetCalls_DateTime(_queue:enumQueue; _missed:enumMissed; _id:Integer):TDateTime;   // m_datetime
+      function GetCalls_Phone(_queue:enumQueue; _missed:enumMissed; _id:Integer):string;         // m_phone
+      function GetCalls_FIO(_queue:enumQueue; _missed:enumMissed; _id:Integer; var _count:Integer):string;           // m_fio
+      function GetCalls_Trunk(_queue:enumQueue; _missed:enumMissed; _id:Integer):string;         // m_trunk
+      function GetCalls_Waiting(_queue:enumQueue; _missed:enumMissed; _id:Integer):string;       // m_waiting
 
 
 
@@ -407,7 +407,7 @@ end;
 // =============================================
 // TStructQueueStatistics
 
-constructor TStructQueueStatistics.Create(_queue:enumQueueCurrent);
+constructor TStructQueueStatistics.Create(_queue:enumQueue);
 begin
   // inherited;
   m_queue:=_queue;
@@ -464,7 +464,7 @@ end;
 // TStructQueueStatisticsDay
 
 // Реализация конструктора
-constructor TStructQueueStatisticsDay.Create(_queue: enumQueueCurrent);
+constructor TStructQueueStatisticsDay.Create(_queue: enumQueue);
 begin
   inherited Create(_queue); // Вызов конструктора родительского класса
   //m_label_procent := TLabel.Create(nil);
@@ -492,11 +492,11 @@ begin
   inherited Create;
 
    //inherited;
-  m_count:=Ord(High(enumQueueCurrent))-1;  // TODO берем только 5000 и 5050 очереди
+  m_count:=Ord(High(enumQueue))-1;  // TODO берем только 5000 и 5050 очереди
 
    // создадим массив
   SetLength(m_list,m_count);
-  for i:=0 to m_count do m_list[i]:=TStructQueueStatistics.Create(enumQueueCurrent(i));
+  for i:=0 to m_count do m_list[i]:=TStructQueueStatistics.Create(enumQueue(i));
 
 
   // нужно ли создавать обект для статистики за день
@@ -523,7 +523,7 @@ begin
 end;
 
 // занесение параметров статистики
-procedure TQueueStatistics.SetStatistics(_queue:enumQueueCurrent);
+procedure TQueueStatistics.SetStatistics(_queue:enumQueue);
  var
   i,j:Integer;
 begin
@@ -562,7 +562,7 @@ begin
 end;
 
  // показываем данные в разрезе очереди
-procedure TQueueStatistics.ShowQueue(_queue:enumQueueCurrent);
+procedure TQueueStatistics.ShowQueue(_queue:enumQueue);
 var
  i:Integer;
 begin
@@ -588,7 +588,7 @@ begin
 end;
 
 
-procedure TQueueStatistics.SetLinkLabel(_queue:enumQueueCurrent;
+procedure TQueueStatistics.SetLinkLabel(_queue:enumQueue;
                            var _label_all,_label_ansvered,_label_missed : TLabel); //линкова TLabel (только при старте нкужна)
 
 var
@@ -619,7 +619,7 @@ end;
 
 
 // получение кол-ва пропущенных
-function TQueueStatistics.GetMissedCount(_queue:enumQueueCurrent; _missed:enumMissed):Integer;
+function TQueueStatistics.GetMissedCount(_queue:enumQueue; _missed:enumMissed):Integer;
 var
  i:Integer;
  queue_summa:Integer;
@@ -663,7 +663,7 @@ begin
 end;
 
 // TCalls -> m_id
-function TQueueStatistics.GetCalls_ID(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer):Integer;
+function TQueueStatistics.GetCalls_ID(_queue:enumQueue; _missed:enumMissed; _id:Integer):Integer;
 var
  i:Integer;
 begin
@@ -685,7 +685,7 @@ begin
   // ничего не нашли значит это 5000 и 5050
   // рекурсией найдем значение
   for i:=0 to m_count - 1 do begin
-    Result:=GetCalls_ID(enumQueueCurrent(i),_missed, _id);
+    Result:=GetCalls_ID(enumQueue(i),_missed, _id);
     if Result > 0 then begin
       Exit;
     end;
@@ -693,7 +693,7 @@ begin
 end;
 
 // TCalls -> m_datetime
-function TQueueStatistics.GetCalls_DateTime(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer):TDateTime;
+function TQueueStatistics.GetCalls_DateTime(_queue:enumQueue; _missed:enumMissed; _id:Integer):TDateTime;
 var
  i:Integer;
 begin
@@ -715,7 +715,7 @@ begin
   // ничего не нашли значит это 5000 и 5050
   // рекурсией найдем значение
   for i:=0 to m_count - 1 do begin
-    Result:=GetCalls_DateTime(enumQueueCurrent(i),_missed, _id);
+    Result:=GetCalls_DateTime(enumQueue(i),_missed, _id);
     if Result > 0 then begin
       Exit;
     end;
@@ -724,7 +724,7 @@ end;
 
 
 // TCalls -> m_phone
-function  TQueueStatistics.GetCalls_Phone(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer):string;
+function  TQueueStatistics.GetCalls_Phone(_queue:enumQueue; _missed:enumMissed; _id:Integer):string;
 var
  i:Integer;
 begin
@@ -746,7 +746,7 @@ begin
   // ничего не нашли значит это 5000 и 5050
   // рекурсией найдем значение
   for i:=0 to m_count - 1 do begin
-    Result:=GetCalls_Phone(enumQueueCurrent(i),_missed, _id);
+    Result:=GetCalls_Phone(enumQueue(i),_missed, _id);
     if Result <>'' then begin
       Exit;
     end;
@@ -755,7 +755,7 @@ end;
 
 
 // TCalls -> m_fio
-function TQueueStatistics.GetCalls_FIO(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer; var _count:Integer):string;
+function TQueueStatistics.GetCalls_FIO(_queue:enumQueue; _missed:enumMissed; _id:Integer; var _count:Integer):string;
 var
  i:Integer;
  countFIO:Integer;
@@ -820,7 +820,7 @@ end;
 
 
 // TCalls -> m_trunk
-function TQueueStatistics.GetCalls_Trunk(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer):string;
+function TQueueStatistics.GetCalls_Trunk(_queue:enumQueue; _missed:enumMissed; _id:Integer):string;
 var
  i:Integer;
 begin
@@ -842,7 +842,7 @@ begin
   // ничего не нашли значит это 5000 и 5050
   // рекурсией найдем значение
   for i:=0 to m_count - 1 do begin
-    Result:=GetCalls_Trunk(enumQueueCurrent(i),_missed, _id);
+    Result:=GetCalls_Trunk(enumQueue(i),_missed, _id);
     if Result <> 'null' then begin
       Exit;
     end;
@@ -851,7 +851,7 @@ begin
 end;
 
 // TCalls -> m_waiting
-function TQueueStatistics.GetCalls_Waiting(_queue:enumQueueCurrent; _missed:enumMissed; _id:Integer):string;
+function TQueueStatistics.GetCalls_Waiting(_queue:enumQueue; _missed:enumMissed; _id:Integer):string;
 var
  i:Integer;
 begin
@@ -873,7 +873,7 @@ begin
   // ничего не нашли значит это 5000 и 5050
   // рекурсией найдем значение
   for i:=0 to m_count - 1 do begin
-    Result:=GetCalls_Waiting(enumQueueCurrent(i),_missed, _id);
+    Result:=GetCalls_Waiting(enumQueue(i),_missed, _id);
     if Result <> '' then begin
       Exit;
     end;
@@ -882,7 +882,7 @@ end;
 
 
 // все звонки
-function TQueueStatistics.GetCallsAll(_queue:enumQueueCurrent):Integer;
+function TQueueStatistics.GetCallsAll(_queue:enumQueue):Integer;
 var
  i:Integer;
 begin
@@ -895,7 +895,7 @@ begin
 end;
 
 // отвеченные
-function TQueueStatistics.GetCallsAnswered(_queue:enumQueueCurrent):Integer;
+function TQueueStatistics.GetCallsAnswered(_queue:enumQueue):Integer;
 var
  i:Integer;
 begin
@@ -909,7 +909,7 @@ end;
 
 
 // пропущенные все
-function TQueueStatistics.GetCallsMissedAll(_queue:enumQueueCurrent):Integer;
+function TQueueStatistics.GetCallsMissedAll(_queue:enumQueue):Integer;
 var
  i:Integer;
 begin
@@ -923,7 +923,7 @@ end;
 
 
 // пропущенные не перезвонившие
-function TQueueStatistics.GetCallsMissed(_queue:enumQueueCurrent):Integer;
+function TQueueStatistics.GetCallsMissed(_queue:enumQueue):Integer;
 var
  i:Integer;
 begin
@@ -937,7 +937,7 @@ end;
 
 
 // обвнление данных по 5000 очереди
-procedure TQueueStatistics.UpdateQueue(_queue:enumQueueCurrent);
+procedure TQueueStatistics.UpdateQueue(_queue:enumQueue);
 begin
   SetStatistics(_queue);
 end;
@@ -950,7 +950,7 @@ end;
 
 
 // получение массива пропущенных звонков
-function TQueueStatistics.GetMissedCalls(_queue:enumQueueCurrent; _stat:enumStatistiscDay;
+function TQueueStatistics.GetMissedCalls(_queue:enumQueue; _stat:enumStatistiscDay;
                                          var _countCalls:Integer):TArray<TCalls>;
 var
   ado:TADOQuery;
@@ -1016,7 +1016,7 @@ begin
        call.m_waiting   := correct_time;
 
        call.m_dateTime  :=StrToDateTime(VarToStr(Fields[3].Value));
-       call.m_trunk     :=GetPhoneTrunkQueue(call.m_phone, DateTimeToStr(call.m_dateTime));
+       call.m_trunk     :=GetPhoneTrunkQueue(eTableIVR, call.m_phone, DateTimeToStr(call.m_dateTime));
 
 
        Result[i]:=call;
@@ -1035,7 +1035,7 @@ end;
 
 
 //обновление подробностьей о пропущенных звонках
-procedure TQueueStatistics.UpdateMissedCalls(_queue:enumQueueCurrent; _stat:enumStatistiscDay; _beforeClear:enumStatus);
+procedure TQueueStatistics.UpdateMissedCalls(_queue:enumQueue; _stat:enumStatistiscDay; _beforeClear:enumStatus);
 var
   list_calls: TArray<TCalls>;
   count_calls: Integer;
@@ -1097,7 +1097,7 @@ var
 begin
   // заносим данные в память
   for i:=0 to m_count-1 do begin
-   UpdateQueue(enumQueueCurrent(i));
+   UpdateQueue(enumQueue(i));
   end;
 
   // обновление данных за текущий день
@@ -1113,7 +1113,7 @@ var
  i:Integer;
 begin
   for i:=0 to m_count-1 do begin
-   ShowQueue(enumQueueCurrent(i));
+   ShowQueue(enumQueue(i));
   end;
 
   // показываем данные за текущий день

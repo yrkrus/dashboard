@@ -24,11 +24,20 @@ uses
   procedure SetStatusProgressBar(InProgress:Integer);  overload;             // установка статуса прогресс бара
   procedure SetStatusProgressBar(InProgress:Double);   overload;             // установка статуса прогресс бара
   function GetAboutGenerateReport:Boolean;                                   // отмена генерации отчета
-  function CountOnHoldPhone(_sip:string; _date:TDate; _table:enumReportTableCountCallsOperatorOnHold):Integer;  // кол-во секунд в статусе onHold
+  function CountOnHoldPhoneAll(_sip:string;
+                               _date:TDate;
+                               _table:enumReportTableCountCallsOperatorOnHold):Integer;  // кол-во секунд в статусе onHold за день
+
+  function CountOnHoldPhoneOne(_sip:string;
+                               _phone:string;
+                               _date:TDate;
+                               _table:enumReportTableCountCallsOperatorOnHold):Integer;  // кол-во секунд в статусе onHold за номер
+
   procedure CursourHover(var _label:TLabel; _state:enumCursorHover);        // изменение стиля label при наведении\убирании мышки
   procedure LoadingListOperatorsForm(var _listUsers:TCheckListBox;
                                           InShowDisableUsers:Boolean = False);   // прогрузка текущих пользователей на форму
   procedure CreateImageReport(_countRepot:Word);                                   // создание иконки рядом с отчетами
+  procedure FindSipCallOperators(var _listUsers:TStringList; _dateStart, _dateStop:Tdate);  //поиск sip номеров которые разговаривали в период заданного времени
 
 implementation
 
@@ -249,8 +258,8 @@ begin
 end;
 
 
-// кол-во секунд в статусе onHold
-function CountOnHoldPhone(_sip:string; _date:TDate; _table:enumReportTableCountCallsOperatorOnHold):Integer;
+// кол-во секунд в статусе onHold за день
+function CountOnHoldPhoneAll(_sip:string; _date:TDate; _table:enumReportTableCountCallsOperatorOnHold):Integer;
 var
  i:Integer;
  ado:TADOQuery;
@@ -319,6 +328,80 @@ begin
   Result:=secondsAll;
 end;
 
+// кол-во секунд в статусе onHold за номер
+function CountOnHoldPhoneOne(_sip:string;
+                             _phone:string;
+                             _date:TDate;
+                             _table:enumReportTableCountCallsOperatorOnHold):Integer;
+var
+ i:Integer;
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ countData:Integer;
+ seconds:Integer;
+ secondsAll:Integer;
+begin
+  Result:=0;
+  secondsAll:=0;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+
+      SQL.Clear;
+      SQL.Add('select count(id) from '+EnumReportTableCountCallsOperatorOnHoldToString(_table)+' where sip IN ('+_sip+')'+
+              ' and date_time_start >='+#39+GetDateToDateBD(DateToStr(_date))+' 00:00:00'+#39+
+              ' and date_time_start <='+#39+GetDateToDateBD(DateToStr(_date))+' 23:59:59'+#39+
+              ' and date_time_stop is not NULL and phone = '+#39+_phone+#39);
+
+      Active:=True;
+      countData:=Fields[0].Value;
+
+      if countData=0 then begin
+        FreeAndNil(ado);
+        if Assigned(serverConnect) then begin
+          serverConnect.Close;
+          FreeAndNil(serverConnect);
+        end;
+
+       Exit;
+      end;
+
+      SQL.Clear;
+      SQL.Add('select date_time_start,date_time_stop from '+EnumReportTableCountCallsOperatorOnHoldToString(_table)+' where sip IN ('+_sip+')' +
+              ' and date_time_start >='+#39+GetDateToDateBD(DateToStr(_date))+' 00:00:00'+#39+
+              ' and date_time_start <='+#39+GetDateToDateBD(DateToStr(_date))+' 23:59:59'+#39+
+              ' and date_time_stop is not NULL and phone = '+#39+_phone+#39);
+
+      Active:=True;
+      for i:=0 to countData-1 do begin
+        seconds:= SecondsBetween(StrToDateTime(Fields[0].Value), StrToDateTime(Fields[1].Value));
+
+        //общее время
+        secondsAll := secondsAll + seconds;
+
+        ado.Next;
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+
+  Result:=secondsAll;
+end;
+
+
 // изменение стиля label при наведении\убирании мышки
 procedure CursourHover(var _label:TLabel; _state:enumCursorHover);
 begin
@@ -333,6 +416,82 @@ begin
    end;
   end;
 end;
+
+
+//поиск sip номеров которые разговаривали в период заданного времени
+procedure FindSipCallOperators(var _listUsers:TStringList; _dateStart, _dateStop:Tdate);
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ countSip,i:Integer;
+ only_operators_roleID:TStringList;
+ id_operators:string;
+ request:TStringBuilder;
+begin
+  Screen.Cursor:=crHourGlass;
+  _listUsers.Clear;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+     with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+
+      begin
+        request:=TStringBuilder.Create;
+        with request do begin
+         Append('select count(distinct sip)');
+         Append(' from '+EnumReportTableCountCallsOperatorToString(eTableHistoryQueue));
+         Append(' where date_time between '+#39+GetDateToDateBD(DateToStr(_dateStart))+' 00:00:00'+#39+' and '+#39+GetDateToDateBD(DateToStr(_dateStop))+' 23:59:59'+#39);
+         Append(' and sip <> ''-1'' ');
+        end;
+
+        SQL.Add(request.ToString);
+      end;
+
+      Active:=True;
+      countSip:=Fields[0].Value;
+    end;
+
+    with ado do begin
+      SQL.Clear;
+      begin
+        request:=TStringBuilder.Create;
+        with request do begin
+         Append('select distinct sip');
+         Append(' from '+EnumReportTableCountCallsOperatorToString(eTableHistoryQueue));
+         Append(' where date_time between '+#39+GetDateToDateBD(DateToStr(_dateStart))+' 00:00:00'+#39+' and '+#39+GetDateToDateBD(DateToStr(_dateStop))+' 23:59:59'+#39);
+         Append(' and sip <> ''-1'' ');
+        end;
+
+        SQL.Add(request.ToString);
+      end;
+
+      Active:=True;
+
+       for i:=0 to countSip-1 do begin
+         _listUsers.Add(VarToStr(Fields[0].Value));
+         ado.Next;
+       end;
+    end;
+
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+
+    Screen.Cursor:=crDefault;
+  end;
+end;
+
 
 // прогрузка текущих пользователей на форму
 procedure LoadingListOperatorsForm(var _listUsers:TCheckListBox; InShowDisableUsers:Boolean = False);

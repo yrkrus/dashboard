@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls, Vcl.ExtCtrls,
-  Data.DB, Data.Win.ADODB, IdException;
+  Data.DB, Data.Win.ADODB, IdException, TSMSCallTalkInfoUnit;
 
 type
   TFormManualPodbor = class(TForm)
@@ -26,6 +26,8 @@ type
     procedure editFindMessageKeyPress(Sender: TObject; var Key: Char);
   private
     { Private declarations }
+  m_listTalkCalls:TSMSCallTalkInfo;  // основной список с данными по отвеченным звонкам
+
   procedure LoadData(_idUser:Integer);
   procedure ClearListView(var p_ListView:TListView);
   procedure ShowCalls(var p_ListView:TListView;  isReducedTime: Boolean; _idUser:Integer);                // прогрузка номеров тлф

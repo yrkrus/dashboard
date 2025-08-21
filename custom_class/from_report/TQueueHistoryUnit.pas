@@ -21,7 +21,6 @@ uses
       private
       m_people          :TAutoPodborPeople;
 
-
       procedure Clear;
 
       public
@@ -33,9 +32,15 @@ uses
       sip               :Integer;            // sip оператора
       talk_time         :string;             // время разговора
       operatorFIO       :string;             // фио оператора
+      trunk             :string;             // транк с которого поступил звонок
+      phone_operator    :string;             // оператор
+      region            :string;             // регион
+      onHold            :Integer;            // OnHold(сек)
 
       constructor Create(_createPeople:Boolean = False);                   overload;
       procedure SetPhonePeople(_phone:string);
+      function GetFIOPeople:string; // отображдение фио звонящего
+
 
       end;
  // class TQueueHistory END
@@ -61,6 +66,11 @@ begin
   sip:=0;
   talk_time:='';
   operatorFIO:='';
+  trunk:='';
+  phone_operator:='';
+  region:='';
+  onHold:=0;
+
   if Assigned(m_people) then m_people.Clear;
 end;
 
@@ -68,6 +78,11 @@ end;
 procedure TQueueHistory.SetPhonePeople(_phone:string);
 begin
   m_people.SetPhone(_phone);
+end;
+
+function TQueueHistory.GetFIOPeople:string; // отображдение фио звонящего
+begin
+  Result:=m_people.GetFIO;
 end;
 
 end.

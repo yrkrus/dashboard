@@ -12,8 +12,8 @@ interface
 
 
 procedure KillProcess;                                                               // принудительное завершение работы
-function GetStatistics_queue(InQueueNumber:enumQueueCurrent;InQueueType:enumQueueType):string;    // отображение инфо по очередеям
-function GetStatistics_day(inStatDay:enumStatistiscDay; _queue:enumQueueCurrent =queue_null):string;                      // отображение инфо за день
+function GetStatistics_queue(InQueueNumber:enumQueue;InQueueType:enumQueueType):string;    // отображение инфо по очередеям
+function GetStatistics_day(inStatDay:enumStatistiscDay; _queue:enumQueue =queue_null):string;                      // отображение инфо за день
 procedure clearAllLists;                                                             // очистка всех list's
 procedure clearList_IVR(InFontSize:Word);                                            // отображение листа с текущими звонками
 procedure clearList_QUEUE(InFontSize:Word);                                          // очистка listbox_QUEUE
@@ -39,7 +39,7 @@ procedure DeleteOperator(InUserID:Integer);                                     
 function getUserPwd(InUserID:Integer):Integer;                                       // полчуение userPwd из userID
 function getUserLogin(InUserID:Integer):string;                                      // полчуение userLogin из userID
 function GetUserRoleSTR(InUserID:Integer):string;                                    // отображение роли пользвоателя
-function correctTimeQueue(InQueue:enumQueueCurrent;InTime:string):string;            // правильноt отображение времени в очереди
+function correctTimeQueue(InQueue:enumQueue;InTime:string):string;            // правильноt отображение времени в очереди
 function GetUserRePassword(InUserID:Integer):Boolean;                                // необходимо ли поменять пароль при входе
 function UpdateUserPassword(InUserID,InUserNewPassword:Integer;
                             var _errorDescription:string):boolean;                   // обновление пароля пользователя
@@ -67,7 +67,7 @@ function remoteCommand_Responce(InStroka:string; var _errorDescriptions:string):
 function getUserSIP(InIDUser:integer):string;                                        // отображение SIP пользвоателя
 //function isExistRemoteCommand(command:enumLogging;_userID:Integer):Boolean;         // проверка есть ли уже такая удаленная команда на сервера
 function getStatus(InStatus:enumStatusOperators):string;                             // полчуение имени status оператора
-function getCurrentQueueOperator(InSipNumber:string):enumQueueCurrent;               // в какой очереди сейчас находится оператор
+function getCurrentQueueOperator(InSipNumber:string):enumQueue;               // в какой очереди сейчас находится оператор
 procedure UpdateOperatorStatus(_status:enumStatusOperators;_userID:Integer);         // очитска текущего статуса оператора
 procedure checkCurrentStatusOperator(InOperatorStatus:enumStatusOperators);              // проверка и отображение кнопок статусов оператора
 procedure showStatusOperator(InShow:Boolean = True);                                 // отобрадение панели статусы операторов
@@ -110,7 +110,7 @@ procedure HappyNewYear;                                                         
 procedure Mart8;                                                                     // пасхалка с 8 марта
 function GetExistAccessToLocalChat(InUserId:Integer):Boolean;                        // есть ли доступ к локальному чату
 function OpenMissedCalls(var _errorDescriptions:string;
-                        _queue:enumQueueCurrent = queue_5000_5050;
+                        _queue:enumQueue = queue_5000_5050;
                         _missed:enumMissed = eMissed_no_return):Boolean;                     // доступ к пропущенным звонкам
 procedure OpenLocalChat;                                                             // открытые exe локального чата
 procedure OpenReports;                                                               // открытые exe отчетов
@@ -144,12 +144,12 @@ function GetProgrammStarted:TDateTime;   overload;                              
 function GetProgrammStarted(_userID:Integer):TDateTime;  overload;                   // время запуска программы(любой пользователь)
 function GetProgrammStartedFirstLogon(_userID:Integer):TDateTime;                    // время запуска программы из истории входов
 function GetProgrammExit(_userID:Integer):TDateTime;                                 // время закрытия программы из итории входов
-function GetPhoneTrunkQueue(_phone:string;_timecall:string):string;                  // нахождение на какой транк звонил номер который ушел в очередь
 function CreateRemoteCommandCallback(_action:enumRemoteCommandAction; _id:Integer;
                                       var _errorDescription:string): Boolean;        // действие по удаленной команде для активной сессии или для пропущенного звонка
 function ExecuteCommandKillActiveSession(_userID:Integer;
                                          var _errorDescription:string):Boolean;      // выполенние команды закрытые активной сессии
 function SendCommandStatusDelay(_userID:Integer):enumStatus;                          // нужно ли делать задержку при смене статуса оператора
+function IsAllowChangeStatusOperators(_userID:Integer; var _errorDescription:string):Boolean; // можно ли сменить оператору статус (вдруг стоит отложенный статус)
 procedure SetLinkColor(var _label:TLabel);                                          // установка цвета на label если на него можно нажать
 
 
@@ -601,7 +601,7 @@ end;
 
 
 // отображение инфо по очередеям
-function GetStatistics_queue(InQueueNumber:enumQueueCurrent;InQueueType:enumQueueType):string;
+function GetStatistics_queue(InQueueNumber:enumQueue;InQueueType:enumQueueType):string;
 var
  select_response:string;
  s:TStringList;
@@ -637,7 +637,7 @@ end;
 
 
 // отображение инфо за день
-function GetStatistics_day(inStatDay:enumStatistiscDay; _queue:enumQueueCurrent = queue_null):string;
+function GetStatistics_day(inStatDay:enumStatistiscDay; _queue:enumQueue = queue_null):string;
 var
 resultat:string;
 select_response:string;
@@ -964,7 +964,7 @@ begin
 end;
 
 // правильное отображение времени в очереди
-function correctTimeQueue(InQueue:enumQueueCurrent;InTime:string):string;
+function correctTimeQueue(InQueue:enumQueue;InTime:string):string;
 var
  correctTime,delta_time:Integer;
 begin
@@ -3178,7 +3178,7 @@ end;
 
 
 // в какой очереди сейчас находится оператор
-function getCurrentQueueOperator(InSipNumber:string):enumQueueCurrent;
+function getCurrentQueueOperator(InSipNumber:string):enumQueue;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -4482,7 +4482,7 @@ end;
 
 
 // доступ к пропущенным звонкам
-function OpenMissedCalls(var _errorDescriptions:string; _queue:enumQueueCurrent = queue_5000_5050; _missed:enumMissed = eMissed_no_return):Boolean;
+function OpenMissedCalls(var _errorDescriptions:string; _queue:enumQueue = queue_5000_5050; _missed:enumMissed = eMissed_no_return):Boolean;
 begin
   Result:=False;
 
@@ -5134,42 +5134,6 @@ begin
   end;
 end;
 
-// нахождение на какой транк звонил номер который ушел в очередь
-function GetPhoneTrunkQueue(_phone:string;_timecall:string):string;
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
-begin
-  Result:='null';
-
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
-  end;
-
-  try
-    with ado do begin
-      ado.Connection:=serverConnect;
-      SQL.Clear;
-      SQL.Add('select trunk from ivr where phone = '+#39+_phone+#39+' and date_time < '+#39+GetDateTimeToDateBD(_timecall)+#39+' and to_queue = 1 limit 1');
-
-      Active:=True;
-      if Fields[0].Value<>null then begin
-       Result:=VarToStr(Fields[0].Value);
-      end
-      else Result:='LISA';
-    end;
-  finally
-   FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
-  end;
-end;
-
 
 // действие по удаленной команде для активной сессии или для пропущенного звонка
 function CreateRemoteCommandCallback(_action:enumRemoteCommandAction; _id:Integer; var _errorDescription:string): Boolean;
@@ -5237,6 +5201,25 @@ begin
   sip:=getUserSIP(_userID);
 
   Result:=SharedActiveSipOperators.IsTalkOperator(sip);
+end;
+
+// можно ли сменить оператору статус (вдруг стоит отложенный статус)
+function IsAllowChangeStatusOperators(_userID:Integer; var _errorDescription:string):Boolean;
+var
+ sip:Integer;
+ id:Integer;
+begin
+  Result:=True;
+
+  // проверим разговариавет ли оператор
+  sip:=StrToInt(getUserSIP(_userID));
+
+  id:=SharedActiveSipOperators.GetListOperators_ID(sip);
+  if SharedActiveSipOperators.GetListOperators_StatusDelay(id) <> eUnknown  then
+  begin
+    _errorDescription:='Смена статуса невозможна, не выполнена предыдущая команда';
+     Result:=False;
+  end;
 end;
 
 // установка цвета на label если на него можно нажать

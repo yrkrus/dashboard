@@ -58,7 +58,7 @@ object FormHome: TFormHome
           Cursor = crHandPoint
           Hint = #1057#1087#1080#1089#1086#1082' '#1085#1086#1084#1077#1088#1086#1074' '#1076#1083#1103' '#1086#1090#1087#1088#1072#1074#1082#1080' '#1086#1076#1080#1085#1072#1082#1086#1074#1086#1081' SMS'
           Alignment = taRightJustify
-          Caption = #1089#1087#1080#1089#1082#1086#1084
+          Caption = '&'#1089#1087#1080#1089#1082#1086#1084
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clBlue
           Font.Height = -13
@@ -76,7 +76,7 @@ object FormHome: TFormHome
           Height = 16
           Cursor = crHandPoint
           Hint = #1054#1090#1087#1088#1072#1074#1082#1072' '#1085#1072' '#1086#1076#1080#1085' '#1085#1086#1084#1077#1088' '#1086#1076#1085#1086#1081' SMS'
-          Caption = #1086#1076#1080#1085' '#1085#1086#1084#1077#1088' '
+          Caption = '&'#1086#1076#1080#1085' '#1085#1086#1084#1077#1088' '
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clBlue
           Font.Height = -13
@@ -94,7 +94,7 @@ object FormHome: TFormHome
           Height = 16
           Cursor = crHandPoint
           Hint = #1054#1090#1082#1088#1099#1090#1100' '#1075#1077#1085#1077#1088#1072#1090#1086#1088' '#1089#1086#1086#1073#1097#1077#1085#1080#1103
-          Caption = #1086#1090#1082#1088#1099#1090#1100' '#1075#1077#1085#1077#1088#1072#1090#1086#1088
+          Caption = '&'#1086#1090#1082#1088#1099#1090#1100' '#1075#1077#1085#1077#1088#1072#1090#1086#1088
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clBlue
           Font.Height = -13
@@ -135,7 +135,7 @@ object FormHome: TFormHome
           Height = 13
           Cursor = crHandPoint
           Hint = #1053#1072#1081#1090#1080' '#1085#1086#1084#1077#1088' '#1080#1079' '#1073#1072#1079#1099' '#1089' '#1088#1072#1079#1075#1086#1074#1086#1088#1072#1084#1080
-          Caption = #1087#1086#1076#1073#1086#1088' '#1085#1086#1084#1077#1088#1072
+          Caption = '&'#1087#1086#1076#1073#1086#1088' '#1085#1086#1084#1077#1088#1072
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clBlue
           Font.Height = -11
@@ -332,10 +332,10 @@ object FormHome: TFormHome
           object st_ShowInfoAddAddressClinic: TStaticText
             Left = 294
             Top = 7
-            Width = 141
+            Width = 148
             Height = 17
             Cursor = crHandPoint
-            Caption = '  '#1042#1089#1090#1072#1074#1080#1090#1100' '#1072#1076#1088#1077#1089' '#1082#1083#1080#1085#1080#1082#1080'  '
+            Caption = '  &'#1042#1089#1090#1072#1074#1080#1090#1100' '#1072#1076#1088#1077#1089' '#1082#1083#1080#1085#1080#1082#1080'  '
             Color = clWindow
             DoubleBuffered = False
             Font.Charset = DEFAULT_CHARSET
@@ -959,8 +959,8 @@ object FormHome: TFormHome
     end
   end
   object OpenDialog: TOpenDialog
-    Left = 733
-    Top = 407
+    Left = 573
+    Top = 167
   end
   object popmenu_AddressClinic: TPopupMenu
     Left = 744
@@ -972,7 +972,7 @@ object FormHome: TFormHome
     Left = 816
     Top = 432
     Bitmap = {
-      494C010102000C005C0018001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010102000C00600018001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000600000001800000001002000000000000024
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

@@ -13,7 +13,7 @@ interface
 uses
   System.SysUtils, System.Classes, System.SyncObjs, ActiveX, ComObj, ComCtrls,
   TAbstractReportUnit, Vcl.CheckLst, TQueueHistoryUnit, TCountRingsOperatorsUnit,
-  Data.Win.ADODB, Data.DB, TAutoPodborPeopleUnit;
+  Data.Win.ADODB, Data.DB, TAutoPodborPeopleUnit, System.DateUtils;
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -31,6 +31,7 @@ uses
       m_countOperators          :Integer;
       m_people                  :TAutoPodborPeople;
       m_detailed                :Boolean; // подробный отчет
+
 
       function GetOperatorsSIP(const p_list:TCheckListBox):TStringList;  // получение SIP операторов которые нужно в отчет впиндюрить
       procedure GenerateExcelDetailed;  // формирование данных в excel(подробный)
@@ -55,7 +56,7 @@ uses
       procedure CreateReportExcel(const p_list:TCheckListBox); // создаем отчет
 
       property CountOperators:Integer read m_countOperators;
-
+      property Count:Integer read countQueue;
 
       end;
    // class TReportCountOperators END
@@ -63,7 +64,7 @@ uses
 implementation
 
 uses
-  GlobalVariables, TCustomTypeUnit, GlobalVariablesLinkDLL;
+  GlobalVariables, TCustomTypeUnit, GlobalVariablesLinkDLL, FunctionUnit;
 
 
 
@@ -166,7 +167,6 @@ begin
      tableOnHold:=eTableHistoryOnHold;
     end;
 
-
      m_listCountCallOperators:=TCountRingsOperators.Create(sipList, GetDateStartAsString, GetDateStopAsString, table, tableOnHold, listOperators);
 
      // создаем отчет
@@ -210,8 +210,12 @@ var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  table:string;
+ tableTrunk:enumReportTableIVR;
+ tableOnHold:enumReportTableCountCallsOperatorOnHold;
  countData:Integer;
- procentLoad:Integer;
+ procentLoadInt:Integer;
+ procentLoadD:Double;
+ procentLoadSTR:string;
  isFindFIO:Boolean;
  isAbout:Boolean;
  waitingTime:string;
@@ -228,8 +232,16 @@ begin
 
   try
     // из какой таблицы брать данные
-    if m_onlyCurrentDay then table:=EnumReportTableCountCallsOperatorToString(eTableQueue)
-    else table:=EnumReportTableCountCallsOperatorToString(eTableHistoryQueue);
+    if m_onlyCurrentDay then begin
+      table:=EnumReportTableCountCallsOperatorToString(eTableQueue);
+      tableTrunk:=eTableIVR;
+      tableOnHold:=eTableOnHold;
+    end
+    else begin
+      table:=EnumReportTableCountCallsOperatorToString(eTableHistoryQueue);
+      tableTrunk:=eTableHistoryIVR;
+      tableOnHold:=eTableHistoryOnHold;
+    end;
 
     with ado do begin
       ado.Connection:=serverConnect;
@@ -260,9 +272,9 @@ begin
         for i:=0 to countData-1 do begin
            // процесс может быть длительный по этому делаем прогресс бар
            if m_findFIO then begin
-             procentLoad:=Trunc(i*100/countData);
-             SetProgressStatusText('Настройка отчета ['+IntToStr(procentLoad)+'%] ...');
-             SetProgressBar(procentLoad);
+             procentLoadInt:=Trunc(i*100/countData);
+             SetProgressStatusText('Настройка отчета ['+IntToStr(procentLoadInt)+'%] ...');
+             SetProgressBar(procentLoadInt);
            end;
 
            m_queue[i]:=TQueueHistory.Create(isFindFIO);
@@ -280,6 +292,7 @@ begin
         if not m_onlyCurrentDay then SQL.Add(' and date_time >='+#39+GetDateToDateBD(GetDateStartAsString)+' 00:00:00'+#39+' and date_time<='+#39+GetDateToDateBD(GetDateStopAsString)+' 23:59:59'+#39+' order by date_time ASC');
 
         Active:=True;
+
         for i:=0 to countData-1 do begin
            if isESC then begin
              FreeAndNil(ado);
@@ -291,10 +304,12 @@ begin
               Exit;
            end;
 
-           procentLoad:=Trunc(i*100/countData);
+           procentLoadD:=i*100/countData;
+           procentLoadSTR:=FormatFloat('0.0',procentLoadD);
+           procentLoadSTR:=StringReplace(procentLoadSTR,',','.',[rfReplaceAll]);
 
-           SetProgressStatusText('Загрузка данных с сервера ['+IntToStr(procentLoad)+'%] ...');
-           SetProgressBar(procentLoad);
+           SetProgressStatusText('Загрузка данных с сервера ['+procentLoadSTR+'%] ...');
+           SetProgressBar(procentLoadD);
 
 
            m_queue[i].id:=StrToInt(Fields[0].Value);
@@ -309,6 +324,16 @@ begin
            m_queue[i].sip:=StrToInt(Fields[5].Value);
            m_queue[i].talk_time:=Fields[6].Value;
            m_queue[i].operatorFIO:=FindFIO(m_queue[i].sip,m_queue[i].date_time);
+
+           m_queue[i].trunk:=GetPhoneTrunkQueue(tableTrunk,m_queue[i].phone,Fields[4].Value);
+           m_queue[i].phone_operator:=GetPhoneOperatorQueue(tableTrunk,m_queue[i].phone,Fields[4].Value);
+           m_queue[i].region:=GetPhoneRegionQueue(tableTrunk,m_queue[i].phone,Fields[4].Value);
+
+           // подсчет кол-ва времени в onhold за номер
+           m_queue[i].onHold:=CountOnHoldPhoneOne(Fields[5].Value,
+                                                  Fields[2].Value,
+                                                  DateOf(m_queue[i].date_time),
+                                                  tableOnHold);
 
            if m_findFIO then begin
              phone:=m_queue[i].phone;
@@ -356,13 +381,11 @@ var
  i:Integer;
  procentLoad:Double;
  procentLoadSTR:string;
-// time_queue5000,time_queue5050:Integer;
 begin
   SetProgressStatusText('Создание отчета ...');
   SetProgressBar(0);
 
-
-   // названия колонок
+  // названия колонок
   m_sheet.cells[1,1]:='ID';
   m_sheet.cells[1,2]:='Дата\Время';
   m_sheet.cells[1,3]:='Очередь';
@@ -397,50 +420,36 @@ begin
     m_sheet.columns[13].columnwidth:=55;
   end;
 
-  // общий формат
-//  m_excel.range['B2:B'+inttostr(countQueue+1)].select;
-//  m_excel.selection.NumberFormat:='@';
-//
-//  m_excel.range['E2:E'+inttostr(countQueue+1)].select;
-//  m_excel.selection.NumberFormat:='@';
-//
-//  m_excel.range['H2:H'+inttostr(countQueue+1)].select;
-//  m_excel.selection.NumberFormat:='@';
-
-
   ColIndex:=2;
-  //time_queue5000:=GetIVRTimeQueue(queue_5000);
-  //time_queue5050:=GetIVRTimeQueue(queue_5050);
 
-  for i:=0 to countQueue-1 do begin
+  for i:=0 to Count-1 do begin
     if isESC then  Exit;
 
    // прогресс бар
-   procentLoad:=i*100/countQueue;
+   procentLoad:=i*100/Count;
    procentLoadSTR:=FormatFloat('0.0',procentLoad);
    procentLoadSTR:=StringReplace(procentLoadSTR,',','.',[rfReplaceAll]);
 
    SetProgressStatusText('Создание отчета ['+procentLoadSTR+'%] ...');
    SetProgressBar(procentLoad);
 
-    m_sheet.cells[ColIndex,1]:=IntToStr(m_queue[i].id);               // ID
-    m_sheet.cells[ColIndex,2]:=DateTimeToStr(m_queue[i].date_time);   // Дата\Время
-    m_sheet.cells[ColIndex,3]:=string(TQueueToString(m_queue[i].number_queue));     // Очередь
+   m_sheet.cells[ColIndex,1]:=IntToStr(m_queue[i].id);                           // ID
+   m_sheet.cells[ColIndex,2]:=DateTimeToStr(m_queue[i].date_time);               // Дата\Время
+   m_sheet.cells[ColIndex,3]:=string(TQueueToString(m_queue[i].number_queue));   // Очередь
+   m_sheet.cells[ColIndex,4]:=m_queue[i].waiting_time;                           // Ожидание в очереди
+   m_sheet.cells[ColIndex,5]:=m_queue[i].phone;                                  // Телефон
+   m_sheet.cells[ColIndex,6]:=m_queue[i].trunk;                                  // Линия
+   m_sheet.cells[ColIndex,7]:=m_queue[i].phone_operator;                         // Оператор
+   m_sheet.cells[ColIndex,8]:=m_queue[i].region;                                 // Регион
+   m_sheet.cells[ColIndex,9]:=IntToStr(m_queue[i].sip);                          // SIP
+   m_sheet.cells[ColIndex,10]:=m_queue[i].operatorFIO;                           // Оператор
+   m_sheet.cells[ColIndex,11]:=m_queue[i].talk_time;                             // Время разговора
+   m_sheet.cells[ColIndex,12]:=IntToStr(m_queue[i].onHold);                      // OnHold (сек)
 
-    {curr_time:=0;
-    case m_queue[i].number_queue of     // время одидания
-     queue_5000:curr_time:=GetTimeAnsweredToSeconds(m_queue[i].waiting_time) - GetTimeAnsweredToSeconds(m_queue[i].talk_time) - time_queue5000;
-     queue_5050:curr_time:=GetTimeAnsweredToSeconds(m_queue[i].waiting_time) - GetTimeAnsweredToSeconds(m_queue[i].talk_time) - time_queue5050;
+
+    if m_findFIO then begin
+      m_sheet.cells[ColIndex,13]:=m_queue[i].GetFIOPeople;
     end;
-    if curr_time<=0 then curr_time:=0;
-    m_sheet.cells[ColIndex,4]:=string(GetTimeAnsweredSecondsToString(curr_time)); }
-
-
-    m_sheet.cells[ColIndex,4]:=m_queue[i].phone;                      // Телефон
-    m_sheet.cells[ColIndex,5]:=IntToStr(m_queue[i].sip);              // SIP
-    m_sheet.cells[ColIndex,6]:=m_queue[i].operatorFIO;                    // Оператор
-    m_sheet.cells[ColIndex,7]:=m_queue[i].talk_time;                  // Время разговора
-
 
     Inc(ColIndex);
 
@@ -454,13 +463,20 @@ begin
      SetProgressStatusText('Наводим красоту ...');
 
     // заголовок
-    m_excel.range['A1:G1'].AutoFilter;   // фильтр для заголовка
+    if m_findFIO then begin
+       m_excel.range['A1:M1'].AutoFilter;   // фильтр для заголовка
+    end
+    else m_excel.range['A1:L1'].AutoFilter;   // фильтр для заголовка
 
     // Замораживаем заголовок
     m_sheet.Range['A2'].Select;
     m_excel.ActiveWindow.FreezePanes:=true;
 
-    m_excel.range['A1:G1'].select;
+    if m_findFIO then begin
+     m_excel.range['A1:M1'].select;
+    end
+    else m_excel.range['A1:L1'].select;
+
     //m_excel.selection.FreezePanes:=true;
     m_excel.selection.font.bold:=True;
     m_excel.selection.font.size:=12;
@@ -472,9 +488,12 @@ begin
     m_excel.selection.horizontalalignment:=3;
 
 
-
     // выделение диапозона
-    m_excel.range['A2:G'+inttostr(countQueue+1)].select;
+    if m_findFIO then begin
+     m_excel.range['A2:M'+inttostr(ColIndex-1)].select;
+    end
+    else m_excel.range['A2:L'+inttostr(ColIndex-1)].select;
+
     // перенос по словам
     m_excel.selection.wraptext:=true;
     // выравниевание по центру по горизонтали
@@ -488,11 +507,9 @@ begin
     // font name
     m_excel.selection.font.name:='Times New Roman';
 
-
     // заглушочка чтобы вернуться в самое начало
     m_excel.range['A1'].select;
   end;
-
 
   isExistDataExcel:=True;
 end;

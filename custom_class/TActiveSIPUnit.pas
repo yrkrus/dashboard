@@ -46,7 +46,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       trunk                                  : string;        // транк с которого пришел звонок
       phone                                  : string;        // номер телефона
       talk_time                              : string;        // время разговора
-      queue                                  : enumQueueCurrent;    // какая очередь
+      queue                                  : enumQueue;    // какая очередь
       status                                 : enumStatusOperators;       // текущий статус оператора
       status_delay                           : enumStatusOperators; // отложенный статус (когда оператор в разговоре)
       access_dashboard                       : Boolean;       // есть ли доступ к дашборду
@@ -144,7 +144,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       function GetListOperators_Status(id:Integer):enumStatusOperators; // listOperators.status
       function GetListOperators_StatusDelay(id:Integer):enumStatusOperators; // listOperators.status_delay
       function GetListOperators_AccessDashboad(id:Integer):Boolean;     // listOperators.access_dashboard
-      function GetListOperators_Queue(id:Integer):enumQueueCurrent;     // listOperators.queue
+      function GetListOperators_Queue(id:Integer):enumQueue;     // listOperators.queue
       function GetListOperators_TalkTime(id:Integer; isReducedTime:Boolean):string;            // listOperators.talk_time
       function GetListOperators_Trunk(id:Integer):string;               // listOperators.trunk
       function GetListOperators_Phone(id:Integer):string;               // listOperators.phone
@@ -1045,8 +1045,8 @@ end;
   i,countQueue:Integer;
   ado:TADOQuery;
   serverConnect:TADOConnection;
-  tempQueue:enumQueueCurrent;
-  oldQueue:enumQueueCurrent;
+  tempQueue:enumQueue;
+  oldQueue:enumQueue;
  begin
    if getCountSipOperators=0 then Exit;
 
@@ -1694,7 +1694,7 @@ begin
 end;
 
 
-function TActiveSIP.GetListOperators_Queue(id:Integer):enumQueueCurrent;
+function TActiveSIP.GetListOperators_Queue(id:Integer):enumQueue;
 begin
   if m_mutex.WaitFor(INFINITE) = wrSignaled  then begin
     try
