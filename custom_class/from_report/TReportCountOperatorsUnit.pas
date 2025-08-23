@@ -13,7 +13,7 @@ interface
 uses
   System.SysUtils, System.Classes, System.SyncObjs, ActiveX, ComObj, ComCtrls,
   TAbstractReportUnit, Vcl.CheckLst, TQueueHistoryUnit, TCountRingsOperatorsUnit,
-  Data.Win.ADODB, Data.DB, TAutoPodborPeopleUnit, System.DateUtils;
+  Data.Win.ADODB, Data.DB, TAutoPodborPeopleUnit, System.DateUtils, System.Variants;
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -31,6 +31,7 @@ uses
       m_countOperators          :Integer;
       m_people                  :TAutoPodborPeople;
       m_detailed                :Boolean; // подробный отчет
+      m_statEveryDay            :Boolean; // статистика за каждый день по звонкам
 
 
       function GetOperatorsSIP(const p_list:TCheckListBox):TStringList;  // получение SIP операторов которые нужно в отчет впиндюрить
@@ -48,7 +49,8 @@ uses
                          InDateStart,InDateStop:TDateTimePicker;  // даты отчета
                          InOnlyCurrentDay:Boolean;                // только текщий день
                          isDetailed:Boolean;                      // подробный отчет
-                         isFindFIO:Boolean                        // поиск ФИО
+                         isFindFIO:Boolean;                       // поиск ФИО
+                         isStatisticsEveryDay:Boolean            // статистика по звонкам за каждый день
                          );            overload;
 
       destructor Destroy;            override;
@@ -72,7 +74,8 @@ constructor TReportCountOperators.Create(InNameReports:string;
                                          InDateStart,InDateStop:TDateTimePicker;
                                          InOnlyCurrentDay:Boolean;
                                          isDetailed:Boolean;
-                                         isFindFIO:Boolean);
+                                         isFindFIO:Boolean;
+                                         isStatisticsEveryDay:Boolean);
 begin
   // инициализацуия родительского класса
   inherited Create(InDateStart.Date,InDateStop.Date);
@@ -80,6 +83,7 @@ begin
   m_nameReport:=InNameReports;
   m_onlyCurrentDay:=InOnlyCurrentDay;
   m_detailed:=isDetailed;
+  m_statEveryDay:=isStatisticsEveryDay;
 
   countQueue:=0;
   m_countOperators:=0;
@@ -167,7 +171,13 @@ begin
      tableOnHold:=eTableHistoryOnHold;
     end;
 
-     m_listCountCallOperators:=TCountRingsOperators.Create(sipList, GetDateStartAsString, GetDateStopAsString, table, tableOnHold, listOperators);
+     m_listCountCallOperators:=TCountRingsOperators.Create(sipList,
+                                                           GetDateStartAsString,
+                                                           GetDateStopAsString,
+                                                           table,
+                                                           tableOnHold,
+                                                           listOperators,
+                                                           m_statEveryDay);
 
      // создаем отчет
      CreateReportBrief;
@@ -308,10 +318,6 @@ begin
            procentLoadSTR:=FormatFloat('0.0',procentLoadD);
            procentLoadSTR:=StringReplace(procentLoadSTR,',','.',[rfReplaceAll]);
 
-           SetProgressStatusText('Загрузка данных с сервера ['+procentLoadSTR+'%] ...');
-           SetProgressBar(procentLoadD);
-
-
            m_queue[i].id:=StrToInt(Fields[0].Value);
            m_queue[i].number_queue:=StringToTQueue(Fields[1].Value);
            m_queue[i].phone:=Fields[2].Value;
@@ -330,16 +336,19 @@ begin
            m_queue[i].region:=GetPhoneRegionQueue(tableTrunk,m_queue[i].phone,Fields[4].Value);
 
            // подсчет кол-ва времени в onhold за номер
-           m_queue[i].onHold:=CountOnHoldPhoneOne(Fields[5].Value,
-                                                  Fields[2].Value,
-                                                  DateOf(m_queue[i].date_time),
-                                                  tableOnHold);
+           m_queue[i].onHold:=CountOnHoldPhone(Fields[5].Value,
+                                               Fields[2].Value,
+                                               DateOf(m_queue[i].date_time),
+                                               tableOnHold);
 
            if m_findFIO then begin
              phone:=m_queue[i].phone;
              phone:=StringReplace(phone,'+7','8',[rfReplaceAll]);
              m_queue[i].SetPhonePeople(phone);
            end;
+
+           SetProgressStatusText('Загрузка данных с сервера ('+ VarToStr(Fields[5].Value)+' | '+DateToStr(DateOf(m_queue[i].date_time))+') ['+procentLoadSTR+'%] ...');
+           SetProgressBar(procentLoadD);
 
            ado.Next;
 
@@ -531,6 +540,7 @@ begin
   countCallsAll:=0;
   countHold:=0;
 
+
    // названия колонок
   m_sheet.cells[1,1]:='SIP';
   m_sheet.cells[1,2]:='Оператор';
@@ -541,7 +551,10 @@ begin
   // ширина колонок
   m_sheet.columns[1].columnwidth:=9;
   m_sheet.columns[2].columnwidth:=25.29;
-  m_sheet.columns[3].columnwidth:=20.86;
+
+  if m_statEveryDay then m_sheet.columns[3].columnwidth:=20.86
+  else  m_sheet.columns[3].columnwidth:=26.86;
+
   m_sheet.columns[4].columnwidth:=12;
   m_sheet.columns[5].columnwidth:=14;
 
@@ -569,7 +582,12 @@ begin
 
       m_sheet.cells[ColIndex,1]:=sip;                           // SIP
       m_sheet.cells[ColIndex,2]:=operatorFIO;      // Оператор  // TODO сделать проверку на уволенного сотрудника
-      m_sheet.cells[ColIndex,3]:=m_listCountCallOperators.Items[i].ItemData[j].m_date_time; // Дата
+
+      // Дата
+      if m_statEveryDay then m_sheet.cells[ColIndex,3]:=m_listCountCallOperators.Items[i].ItemData[j].m_date_time
+      else m_sheet.cells[ColIndex,3]:=m_listCountCallOperators.Items[i].ItemDateInterval;
+
+
       m_sheet.cells[ColIndex,4]:=IntToStr(m_listCountCallOperators.Items[i].ItemData[j].m_callsCount);         // Звонков
       m_sheet.cells[ColIndex,5]:=IntToStr(m_listCountCallOperators.Items[i].ItemData[j].m_ohHold);         // OnHold(сек)
 

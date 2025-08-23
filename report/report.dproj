@@ -128,11 +128,11 @@
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <Icon_MainIcon>ico\icons8-report-64.ico</Icon_MainIcon>
-        <VerInfo_Build>7</VerInfo_Build>
-        <VerInfo_Keys>CompanyName=Petrov Yuri;FileDescription=Отчеты коллцентра;FileVersion=1.1.0.7;InternalName=;LegalCopyright=Petrov Yuri;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Отчеты коллцентра;ProductVersion=0.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Build>10</VerInfo_Build>
+        <VerInfo_Keys>CompanyName=Petrov Yuri;FileDescription=Отчеты коллцентра;FileVersion=1.2.0.10;InternalName=;LegalCopyright=Petrov Yuri;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Отчеты коллцентра;ProductVersion=0.0.0.0;Comments=</VerInfo_Keys>
         <UWP_DelphiLogo44>C:\Users\home0\Desktop\DASHBOARD\develop\report\ico\icons8-report-64.png</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>C:\Users\home0\Desktop\DASHBOARD\develop\report\ico\icons8-report-64.png</UWP_DelphiLogo150>
-        <VerInfo_MinorVer>1</VerInfo_MinorVer>
+        <VerInfo_MinorVer>2</VerInfo_MinorVer>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">

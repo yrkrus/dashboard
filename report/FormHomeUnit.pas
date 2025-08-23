@@ -26,7 +26,6 @@ type
     Label8: TLabel;
     Label6: TLabel;
     Label3: TLabel;
-    Image1: TImage;
     procedure ProcessCommandLineParams(DEBUG:Boolean = False);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);

@@ -41,6 +41,7 @@ uses
       m_data        : TArray<TStructInfo>;
 
       function GetData(_index:Integer):TStructInfo;
+      function GetDateInterval:string;
 
       function Size:Integer; // размер массива
 
@@ -55,6 +56,7 @@ uses
       function IsExistData:Boolean;
       property Count:Integer read m_count;
       property ItemData[_index:integer]: TStructInfo read GetData; default;
+      property ItemDateInterval:string read GetDateInterval;
 
 
       end;
@@ -71,6 +73,7 @@ uses
       m_tableOnHold : enumReportTableCountCallsOperatorOnHold;  // в какой таблице находим данные onHold
       m_sipListStr  : string;                               // список sip номеров в формате 'number','number'
       m_onlyCurrentDay : Boolean;                           // смотрим только текущий день или период дней
+      m_statisticsEveryDay:Boolean;                         // поиск данных за каждый день(true) или общий за период одной цифрой (false)
 
 
       function GetSipAll:TStringList;   // достанем список sip по которым нужно найти данные
@@ -85,7 +88,9 @@ uses
                          _dateStart:string; _dateStop:string;
                          _table: enumReportTableCountCallsOperator;
                          _tableOhHold: enumReportTableCountCallsOperatorOnHold;
-                         _sipListString:string);
+                         _sipListString:string;
+                         _statEveryDay:Boolean
+                         );
       destructor Destroy;            override;
 
 
@@ -163,6 +168,11 @@ begin
   Result:=m_data[_index];
 end;
 
+function TStructCount.GetDateInterval:string;
+begin
+  Result:=m_dateStart + ' - '+m_dateStop;
+end;
+
 procedure TStructCount.Add(_data:TStructInfo);
 var
  index:Integer;
@@ -185,7 +195,8 @@ constructor TCountRingsOperators.Create(_sipList:TStringList;
                                         _dateStart:string; _dateStop:string;
                                         _table: enumReportTableCountCallsOperator;
                                         _tableOhHold: enumReportTableCountCallsOperatorOnHold;
-                                        _sipListString:string);
+                                        _sipListString:string;
+                                        _statEveryDay:Boolean);
  var
   i:Integer;
  begin
@@ -200,6 +211,9 @@ constructor TCountRingsOperators.Create(_sipList:TStringList;
    // смотрим только текйщий день или период дней
    if _dateStart = _dateStop then m_onlyCurrentDay:=True
    else m_onlyCurrentDay:=False;
+
+   // за каждый день данные или за весь период одной цифрой
+   m_statisticsEveryDay:=_statEveryDay;
 
    m_count:=_sipList.Count;
    m_table:=_table;
@@ -229,12 +243,14 @@ var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  countData:Integer;
- procentLoad:Integer;
+ procentLoad:Double;
+ procentLoadSTR:string;
  sipList:TStringList; // список с sip которые будем искать
  currentDay:TDate;
  newData:TStructInfo;
  onHoldCount:Integer;
  aboutNow:Boolean;
+ request:TStringBuilder;
 begin
   Result:=False;
   aboutNow:=False;
@@ -260,65 +276,121 @@ begin
   try
     with ado do begin
       ado.Connection:=serverConnect;
+      request:=TStringBuilder.Create;
+
       // пробегаемся по нужным sip
       for i:=0 to sipList.Count-1 do begin
-        SQL.Clear;
-        SQL.Add('select count(id) from '+EnumReportTableCountCallsOperatorToString(m_table)+' where sip IN ('+sipList[i]+') and answered = ''1''');
-        if not m_onlyCurrentDay then SQL.Add(' and date_time >='+#39+GetDateToDateBD(GetDateStart(StrToInt(sipList[i])))+' 00:00:00'+#39+' and date_time<='+#39+GetDateToDateBD(GetDateStop(StrToInt(sipList[i])))+' 23:59:59'+#39+' order by date_time ASC');
 
-        Active:=True;
-        countData:=Fields[0].Value;
-        if countData=0 then begin
-          Continue;
-        end;
+        if m_statisticsEveryDay then begin // нужны данные за каждый день
+          SQL.Clear;
+          SQL.Add('select count(id) from '+EnumReportTableCountCallsOperatorToString(m_table)+' where sip IN ('+sipList[i]+') and answered = ''1''');
+          if not m_onlyCurrentDay then SQL.Add(' and date_time >='+#39+GetDateToDateBD(GetDateStart(StrToInt(sipList[i])))+' 00:00:00'+#39+' and date_time<='+#39+GetDateToDateBD(GetDateStop(StrToInt(sipList[i])))+' 23:59:59'+#39+' order by date_time ASC');
 
-        // находим кол-во в разрезе периода
-        currentDay:=StrToDate(GetDateStart(StrToInt(sipList[i])));
-        while currentDay <= StrToDate(GetDateStop(StrToInt(sipList[i]))) do  begin
+          Active:=True;
+          countData:=Fields[0].Value;
+          if countData=0 then begin
+            Continue;
+          end;
 
-            procentLoad:=Trunc(i*100/sipList.Count-1);
-            if procentLoad < 0 then procentLoad:=0;
+          // находим кол-во в разрезе периода
+          currentDay:=StrToDate(GetDateStart(StrToInt(sipList[i])));
+          while currentDay <= StrToDate(GetDateStop(StrToInt(sipList[i]))) do  begin
 
-            SetProgressStatusText('Загрузка данных с сервера ['+IntToStr(procentLoad)+'%] ...');
-            SetProgressBar(procentLoad);
+              procentLoad:=i*100/sipList.Count;
+              if procentLoad < 0 then procentLoad:=0;
+              procentLoadSTR:=FormatFloat('0.0',procentLoad);
+              procentLoadSTR:=StringReplace(procentLoadSTR,',','.',[rfReplaceAll]);
 
-            SQL.Clear;
-            SQL.Add('select count(id) from '+EnumReportTableCountCallsOperatorToString(m_table)+' where sip IN ('+sipList[i]+') and answered = ''1'''+
-                    ' and date_time >='+#39+GetDateToDateBD(DateToStr(currentDay))+' 00:00:00'+#39+
-                    ' and date_time <='+#39+GetDateToDateBD(DateToStr(currentDay))+' 23:59:59'+#39+
-                    ' order by date_time ASC');
+              SetProgressStatusText('Загрузка данных с сервера ('+sipList[i]+' | '+DateToStr(currentDay)+') ['+procentLoadSTR+'%] ...');
+              SetProgressBar(procentLoad);
 
-            Active:=True;
-            countData:=Fields[0].Value;
-            if countData = 0 then begin
-               currentDay := IncDay(currentDay,1);
-               // проверка вдруг отменили операцию
+              SQL.Clear;
+              SQL.Add('select count(id) from '+EnumReportTableCountCallsOperatorToString(m_table)+' where sip IN ('+sipList[i]+') and answered = ''1'''+
+                      ' and date_time >='+#39+GetDateToDateBD(DateToStr(currentDay))+' 00:00:00'+#39+
+                      ' and date_time <='+#39+GetDateToDateBD(DateToStr(currentDay))+' 23:59:59'+#39+
+                      ' order by date_time ASC');
+
+              Active:=True;
+              countData:=Fields[0].Value;
+              if countData = 0 then begin
+                 currentDay := IncDay(currentDay,1);
+                 // проверка вдруг отменили операцию
+                aboutNow:=GetAbout;
+                if aboutNow then break;
+
+                Continue;
+              end;
+
+              // подсчет кол-ва времени в onhold
+              onHoldCount:=CountOnHoldDay(sipList[i],currentDay,m_tableOnHold);
+
+
+              newData:=TStructInfo.Create(DateToStr(currentDay), countData, onHoldCount);
+
+              // занесем данные по звонкам в конкретный день
+              SetCountCalls(StrToInt(sipList[i]),newData);
+
+              currentDay := IncDay(currentDay,1);
+
+              // проверка вдруг отменили операцию
               aboutNow:=GetAbout;
               if aboutNow then break;
+          end;
 
-              Continue;
+        end
+        else begin // нужны данные общим числом за промежуток дат
+
+          // проверка вдруг отменили операцию
+          aboutNow:=GetAbout;
+          if aboutNow then break;
+
+
+          procentLoad:=i*100/sipList.Count;
+          if procentLoad < 0 then procentLoad:=0;
+
+          procentLoadSTR:=FormatFloat('0.0',procentLoad);
+          procentLoadSTR:=StringReplace(procentLoadSTR,',','.',[rfReplaceAll]);
+
+          SetProgressStatusText('Загрузка данных с сервера ('+sipList[i]+') ['+procentLoadSTR+'%] ...');
+          SetProgressBar(procentLoad);
+
+
+          with request do begin
+            Clear;
+            Append('select count(id)');
+            Append(' from '+EnumReportTableCountCallsOperatorToString(m_table));
+            Append(' where sip IN ('+sipList[i]+') and answered = ''1''' );
+            if not m_onlyCurrentDay then begin
+             Append(' and date_time >='+#39+GetDateToDateBD(GetDateStart(StrToInt(sipList[i])))+' 00:00:00'+#39+' and date_time<='+#39+GetDateToDateBD(GetDateStop(StrToInt(sipList[i])))+' 23:59:59'+#39+' order by date_time ASC');
             end;
+          end;
 
-            // подсчет кол-ва времени в onhold
-            onHoldCount:=CountOnHoldPhoneAll(sipList[i],currentDay,m_tableOnHold);
+          SQL.Clear;
+          SQL.Add(request.ToString);
+
+          Active:=True;
+          countData:=Fields[0].Value;
+          if countData=0 then begin
+            Continue;
+          end;
 
 
-            newData:=TStructInfo.Create(DateToStr(currentDay), countData, onHoldCount);
+          // подсчет кол-ва времени в onhold
+          onHoldCount:=CountOnHoldDateInterval(m_tableOnHold,
+                                               StrToDate(GetDateStart(StrToInt(sipList[i]))),
+                                               StrToDate(GetDateStop(StrToInt(sipList[i]))),
+                                               sipList[i]);
 
-            // занесем данные по звонкам в конкретный день
-            SetCountCalls(StrToInt(sipList[i]),newData);
 
-            currentDay := IncDay(currentDay,1);
+          newData:=TStructInfo.Create(DateToStr(0), countData, onHoldCount);
 
-            // проверка вдруг отменили операцию
-            aboutNow:=GetAbout;
-            if aboutNow then break;
+          // занесем данные по звонкам в конкретный день
+          SetCountCalls(StrToInt(sipList[i]),newData);
 
         end;
 
-        if aboutNow then Break;
+         if aboutNow then Break;
       end;
-
     end;
   finally
     FreeAndNil(ado);

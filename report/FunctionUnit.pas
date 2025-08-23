@@ -24,14 +24,17 @@ uses
   procedure SetStatusProgressBar(InProgress:Integer);  overload;             // установка статуса прогресс бара
   procedure SetStatusProgressBar(InProgress:Double);   overload;             // установка статуса прогресс бара
   function GetAboutGenerateReport:Boolean;                                   // отмена генерации отчета
-  function CountOnHoldPhoneAll(_sip:string;
-                               _date:TDate;
-                               _table:enumReportTableCountCallsOperatorOnHold):Integer;  // кол-во секунд в статусе onHold за день
-
-  function CountOnHoldPhoneOne(_sip:string;
-                               _phone:string;
-                               _date:TDate;
-                               _table:enumReportTableCountCallsOperatorOnHold):Integer;  // кол-во секунд в статусе onHold за номер
+  function CountOnHoldDateInterval(_table:enumReportTableCountCallsOperatorOnHold;
+                                   _dateStart:TDate;
+                                   _dateStop:TDate;
+                                   _sip:string):Integer; // кол-во секунд в статусе onHold за интервал дат
+  function CountOnHoldDay(_sip:string;
+                       _date:TDate;
+                       _table:enumReportTableCountCallsOperatorOnHold):Integer;  // кол-во секунд в статусе onHold за день
+  function CountOnHoldPhone(_sip:string;
+                       _phone:string;
+                       _date:TDate;
+                       _table:enumReportTableCountCallsOperatorOnHold):Integer;   // кол-во секунд в статусе onHold за номер
 
   procedure CursourHover(var _label:TLabel; _state:enumCursorHover);        // изменение стиля label при наведении\убирании мышки
   procedure LoadingListOperatorsForm(var _listUsers:TCheckListBox;
@@ -258,8 +261,82 @@ begin
 end;
 
 
+// кол-во секунд в статусе onHold за интервал дат
+function CountOnHoldDateInterval(_table:enumReportTableCountCallsOperatorOnHold;
+                                 _dateStart:TDate;
+                                 _dateStop:TDate;
+                                 _sip:string):Integer;
+var
+ i:Integer;
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ countData:Integer;
+ seconds:Integer;
+ secondsAll:Integer;
+begin
+ Result:=0;
+  secondsAll:=0;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+
+      SQL.Clear;
+      SQL.Add('select count(id) from '+EnumReportTableCountCallsOperatorOnHoldToString(_table)+' where sip IN ('+_sip+')'+
+              ' and date_time_start >='+#39+GetDateToDateBD(DateToStr(_dateStart))+' 00:00:00'+#39+
+              ' and date_time_start <='+#39+GetDateToDateBD(DateToStr(_dateStop))+' 23:59:59'+#39+
+              ' and date_time_stop is not NULL');
+
+      Active:=True;
+      countData:=Fields[0].Value;
+
+      if countData=0 then begin
+        FreeAndNil(ado);
+        if Assigned(serverConnect) then begin
+          serverConnect.Close;
+          FreeAndNil(serverConnect);
+        end;
+
+       Exit;
+      end;
+
+      SQL.Clear;
+      SQL.Add('select date_time_start,date_time_stop from '+EnumReportTableCountCallsOperatorOnHoldToString(_table)+' where sip IN ('+_sip+')' +
+              ' and date_time_start >='+#39+GetDateToDateBD(DateToStr(_dateStart))+' 00:00:00'+#39+
+              ' and date_time_start <='+#39+GetDateToDateBD(DateToStr(_dateStop))+' 23:59:59'+#39+
+              ' and date_time_stop is not NULL');
+
+      Active:=True;
+      for i:=0 to countData-1 do begin
+        seconds:= SecondsBetween(StrToDateTime(Fields[0].Value), StrToDateTime(Fields[1].Value));
+
+        //общее время
+        secondsAll := secondsAll + seconds;
+
+        ado.Next;
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+
+  Result:=secondsAll;
+end;
+
+
 // кол-во секунд в статусе onHold за день
-function CountOnHoldPhoneAll(_sip:string; _date:TDate; _table:enumReportTableCountCallsOperatorOnHold):Integer;
+function CountOnHoldDay(_sip:string; _date:TDate; _table:enumReportTableCountCallsOperatorOnHold):Integer;
 var
  i:Integer;
  ado:TADOQuery;
@@ -329,10 +406,10 @@ begin
 end;
 
 // кол-во секунд в статусе onHold за номер
-function CountOnHoldPhoneOne(_sip:string;
-                             _phone:string;
-                             _date:TDate;
-                             _table:enumReportTableCountCallsOperatorOnHold):Integer;
+function CountOnHoldPhone(_sip:string;
+                     _phone:string;
+                     _date:TDate;
+                     _table:enumReportTableCountCallsOperatorOnHold):Integer;
 var
  i:Integer;
  ado:TADOQuery;

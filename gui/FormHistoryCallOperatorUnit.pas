@@ -662,7 +662,7 @@ begin
   if not Assigned(Item) then Exit;
 
   try
-    if Item.SubItems.Count = 5 then // Проверяем, что есть достаточно SubItems
+    if Item.SubItems.Count = 6 then // Проверяем, что есть достаточно SubItems
     begin
         test:=Item.SubItems.Strings[4];
 

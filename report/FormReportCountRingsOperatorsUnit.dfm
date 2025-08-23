@@ -5,7 +5,7 @@ object FormReportCountRingsOperators: TFormReportCountRingsOperators
   BorderStyle = bsSingle
   Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1072' '#1086#1090#1095#1077#1090#1072
   ClientHeight = 436
-  ClientWidth = 306
+  ClientWidth = 931
   Color = clWindow
   DefaultMonitor = dmDesktop
   Font.Charset = DEFAULT_CHARSET
@@ -80,7 +80,7 @@ object FormReportCountRingsOperators: TFormReportCountRingsOperators
     Width = 292
     Height = 245
     BevelOuter = bvNone
-    TabOrder = 3
+    TabOrder = 4
     Visible = False
     object GroupBox2: TGroupBox
       Left = 0
@@ -133,8 +133,8 @@ object FormReportCountRingsOperators: TFormReportCountRingsOperators
     end
   end
   object chkboxFindFIO: TCheckBox
-    Left = 10
-    Top = 87
+    Left = 501
+    Top = 85
     Width = 287
     Height = 17
     Hint = 
@@ -149,7 +149,7 @@ object FormReportCountRingsOperators: TFormReportCountRingsOperators
     ParentFont = False
     ParentShowHint = False
     ShowHint = True
-    TabOrder = 1
+    TabOrder = 2
   end
   object chkboxShowOperators: TCheckBox
     Left = 10
@@ -163,7 +163,7 @@ object FormReportCountRingsOperators: TFormReportCountRingsOperators
     Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
-    TabOrder = 2
+    TabOrder = 3
     OnClick = chkboxShowOperatorsClick
   end
   object btnGenerate: TBitBtn
@@ -247,8 +247,25 @@ object FormReportCountRingsOperators: TFormReportCountRingsOperators
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 4
+    TabOrder = 5
     WordWrap = True
     OnClick = btnGenerateClick
+  end
+  object chkboxStatisticsEveryDay: TCheckBox
+    Left = 330
+    Top = 85
+    Width = 165
+    Height = 17
+    Hint = #1048#1085#1092#1086#1088#1084#1072#1094#1080#1103' '#1087#1086' '#1082#1072#1078#1076#1086#1084#1091' '#1076#1085#1102
+    Caption = #1056#1072#1079#1073#1080#1090#1100' '#1079#1074#1086#1085#1082#1080' '#1087#1086' '#1076#1085#1103#1084
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 1
   end
 end

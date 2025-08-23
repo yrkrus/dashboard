@@ -728,11 +728,13 @@ end;
   serverConnect:TADOConnection;
   operatorsGoHome:TStringList;
   operatorsGoHomeNow:string;
-
+  request:TStringBuilder;
+  t:string;
  begin
    ado:=TADOQuery.Create(nil);
    serverConnect:=createServerConnect;
    count_sip:=0;
+   request:=TStringBuilder.Create;
 
   if not Assigned(serverConnect) then begin
      FreeAndNil(ado);
@@ -755,15 +757,42 @@ end;
                 ado.Connection:=serverConnect;
                 SQL.Clear;
 
+                with request do begin
+                  Clear;
+                  Append('select count(distinct sip) as total_unique_sip');
+                  Append(' from (');
+                  Append('select sip');
+                  Append(' from queue');
+                  Append(' where date_time > '+#39+GetNowDateTime+#39);
+                  Append(' and sip <> ''-1''');
+                  Append(' union');
+                  Append(' select sip');
+                  Append(' from operators_queue');
+                  Append(') as t');
+                end;
 
-                SQL.Add('select count(distinct(sip)) from queue where date_time > '+#39+GetNowDateTime+#39+' and sip <> ''-1'' order by sip asc');
+                SQL.Add(request.ToString);
                 Active:=True;
                 if Fields[0].Value<>null then count_sip:=Fields[0].Value;
 
                  if count_sip>=1 then begin
 
                     SQL.Clear;
-                    SQL.Add('select distinct(sip) from queue where date_time > '+#39+GetNowDateTime+#39+' and sip <> ''-1'' order by sip asc');
+                    with request do begin
+                      Clear;
+                      Append('select distinct sip as total_unique_sip');
+                      Append(' from (');
+                      Append('select sip');
+                      Append(' from queue');
+                      Append(' where date_time > '+#39+GetNowDateTime+#39);
+                      Append(' and sip <> ''-1''');
+                      Append(' union');
+                      Append(' select sip');
+                      Append(' from operators_queue');
+                      Append(') as t');
+                    end;
+
+                    SQL.Add(request.ToString);
                     Active:=True;
 
                     for i:=0 to count_sip-1 do begin
@@ -825,7 +854,22 @@ end;
            with ado do begin
               ado.Connection:=serverConnect;
               SQL.Clear;
-              SQL.Add('select count(distinct(sip)) from queue where date_time > '+#39+GetNowDateTime+#39+' and sip not IN ('+operatorsGoHomeNow+') and sip <> ''-1'' order by sip asc');
+
+              with request do begin
+                Clear;
+                Append('select count(distinct sip) as total_unique_sip');
+                Append(' from (');
+                Append('select sip');
+                Append(' from queue');
+                Append(' where date_time > '+#39+GetNowDateTime+#39);
+                Append(' and sip not IN ('+operatorsGoHomeNow+') and sip <> ''-1''');
+                Append(' union');
+                Append(' select sip');
+                Append(' from operators_queue');
+                Append(') as t');
+              end;
+
+              SQL.Add(request.ToString);
 
               Active:=True;
               if Fields[0].Value<>null then count_sip:=Fields[0].Value;
@@ -833,7 +877,22 @@ end;
                if count_sip<>0 then begin
 
                   SQL.Clear;
-                  SQL.Add('select distinct(sip) from queue where date_time > '+#39+GetNowDateTime+#39+' and sip not IN ('+operatorsGoHomeNow+') and sip <> ''-1'' order by sip asc');
+                  with request do begin
+                    Clear;
+                    Append('select distinct sip as total_unique_sip');
+                    Append(' from (');
+                    Append('select sip');
+                    Append(' from queue');
+                    Append(' where date_time > '+#39+GetNowDateTime+#39);
+                    Append(' and sip not IN ('+operatorsGoHomeNow+') and sip <> ''-1''');
+                    Append(' union');
+                    Append(' select sip');
+                    Append(' from operators_queue');
+                    Append(') as t');
+                  end;
+
+                  SQL.Add(request.ToString);
+
                   Active:=True;
 
                   for i:=0 to count_sip-1 do begin
@@ -1441,6 +1500,7 @@ procedure TActiveSIP.updateTalkTimeAll;
   operatorsGoHome:TStringList;
   operatorsGoHomeNow:string;
   i:Integer;
+  request:TStringBuilder;
  begin
 
    // провер€ем нужно ли не показывать ушедших домой
@@ -1465,13 +1525,30 @@ procedure TActiveSIP.updateTalkTimeAll;
      Exit;
    end;
 
+   request:=TStringBuilder.Create;
+
    try
      with ado do begin
         ado.Connection:=serverConnect;
         SQL.Clear;
 
         if notViewGoHome = False then begin
-         SQL.Add('select count(distinct(sip)) from queue where date_time > '+#39+GetNowDateTime+#39+' and sip <> ''-1'' order by sip asc');
+
+          with request do begin
+            Clear;
+            Append('select count(distinct sip) as total_unique_sip');
+            Append(' from (');
+            Append('select sip');
+            Append(' from queue');
+            Append(' where date_time > '+#39+GetNowDateTime+#39);
+            Append(' and sip <> ''-1''');
+            Append(' union');
+            Append(' select sip');
+            Append(' from operators_queue');
+            Append(') as t');
+          end;
+
+         Sql.Add(request.ToString);
 
          Active:=True;
          if Fields[0].Value<>null then count_sip:=Fields[0].Value;
@@ -1500,7 +1577,21 @@ procedure TActiveSIP.updateTalkTimeAll;
               else operatorsGoHomeNow:=operatorsGoHomeNow+','+#39+getUserSIP(StrToInt(operatorsGoHome[i]))+#39;
             end;
 
-            SQL.Add('select count(distinct(sip)) from queue where date_time > '+#39+GetNowDateTime+#39+' and sip not IN ('+operatorsGoHomeNow+') and sip <> ''-1'' order by sip asc');
+            with request do begin
+              Clear;
+              Append('select count(distinct sip) as total_unique_sip');
+              Append(' from (');
+              Append('select sip');
+              Append(' from queue');
+              Append(' where date_time > '+#39+GetNowDateTime+#39);
+              Append(' and sip not IN ('+operatorsGoHomeNow+') and sip <> ''-1''');
+              Append(' union');
+              Append(' select sip');
+              Append(' from operators_queue');
+              Append(') as t');
+            end;
+
+            SQL.Add(request.ToString);
             if operatorsGoHome<>nil then FreeAndNil(operatorsGoHome);
 
             Active:=True;
@@ -1588,9 +1679,7 @@ begin
 end;
 
 
-
-
- function TActiveSIP.isExistOperator(InSip:string):Boolean;
+function TActiveSIP.isExistOperator(InSip:string):Boolean;
  var
   i:Integer;
  begin

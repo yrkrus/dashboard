@@ -25,7 +25,7 @@ uses
 
       public
       id                :Integer;            // id по Ѕƒ
-      number_queue      :enumQueueCurrent;   // номер очереди
+      number_queue      :enumQueue;   // номер очереди
       phone             :string;             // номер тедефона с которым разговор был
       waiting_time      :string;             // ожидание в очереди перед ответом
       date_time         :TDateTime;          // дата\врем€

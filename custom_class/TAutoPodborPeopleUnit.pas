@@ -401,7 +401,6 @@ end;
 // поиск в БД человека
 procedure TAutoPodborPeople.Find;
 var
- isConnectedSQL:Boolean;
  messclass,mess:string;
  response:string;
 
@@ -410,10 +409,7 @@ var
  midName    :string;     // отчетство
  gender     :Integer;    // пол
  birth      :TDate;      // дата рождения
-
 begin
-  isConnectedSQL:=False;
-
   with firebirdConnect do begin
     if Connected then Close;
 

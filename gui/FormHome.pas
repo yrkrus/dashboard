@@ -7,7 +7,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Grids, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.Menus,Data.Win.ADODB, Data.DB, Vcl.Imaging.jpeg,System.SyncObjs,
   TActiveSIPUnit,TUserUnit, Vcl.Imaging.pngimage, ShellAPI, TLogFileUnit,
-  System.Zip, Vcl.WinXCtrls, Vcl.Samples.Gauges, TCustomTypeUnit;
+  System.Zip, Vcl.WinXCtrls, Vcl.Samples.Gauges, TCustomTypeUnit, Vcl.Buttons;
 
 
 type
@@ -68,7 +68,6 @@ type
     ListViewSIP: TListView;
     img_statistics_IVR: TImage;
     lblCount_ACTIVESIP: TLabel;
-    ST_SL: TStaticText;
     STlist_ACTIVESIP_NO_Rings: TStaticText;
     popMenu_ActionOperators: TPopupMenu;
     menu_Users: TMenuItem;
@@ -81,21 +80,6 @@ type
     Label22: TLabel;
     lblCurrentStatus: TLabel;
     Label10: TLabel;
-    btnStatus_available: TButton;
-    btnStatus_exodus: TButton;
-    btnStatus_break: TButton;
-    btnStatus_dinner: TButton;
-    btnStatus_postvyzov: TButton;
-    btnStatus_studies: TButton;
-    btnStatus_IT: TButton;
-    btnStatus_transfer: TButton;
-    btnStatus_home: TButton;
-    btnStatus_add_queue5000: TButton;
-    btnStatus_add_queue5050: TButton;
-    btnStatus_add_queue5000_5050: TButton;
-    btnStatus_del_queue_all: TButton;
-    btnStatus_reserve: TButton;
-    btnStatus_callback: TButton;
     ST_StatusPanel: TStaticText;
     img_goHome_YES: TImage;
     img_goHome_NO: TImage;
@@ -129,7 +113,6 @@ type
     STForecastCount: TStaticText;
     menu_SMS: TMenuItem;
     ST_HelpStatusInfo: TStaticText;
-    img_ShowOperatorStatus: TImage;
     st_Forecast_Tomorrow: TStaticText;
     st_Forecast_AfterTomorrow: TStaticText;
     Img8Mart: TImage;
@@ -152,7 +135,22 @@ type
     popMenu_ActionOperators_AddQueue5050: TMenuItem;
     popMenu_ActionOperators_AddQueue5000_5050: TMenuItem;
     popMenu_ActionOperators_AddQueue5000: TMenuItem;
-    StaticText1: TStaticText;
+    btnStatus_available: TBitBtn;
+    btnStatus_exodus: TBitBtn;
+    btnStatus_break: TBitBtn;
+    btnStatus_dinner: TBitBtn;
+    btnStatus_postvyzov: TBitBtn;
+    btnStatus_studies: TBitBtn;
+    btnStatus_IT: TBitBtn;
+    btnStatus_transfer: TBitBtn;
+    ST_SL: TStaticText;
+    btnStatus_reserve: TBitBtn;
+    btnStatus_callback: TBitBtn;
+    btnStatus_home: TBitBtn;
+    btnStatus_add_queue5000: TBitBtn;
+    btnStatus_add_queue5050: TBitBtn;
+    btnStatus_add_queue5000_5050: TBitBtn;
+    btnStatus_del_queue_all: TBitBtn;
     procedure START_THREAD_ALLlClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -210,7 +208,6 @@ type
     procedure ST_HelpStatusInfoMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure ST_HelpStatusInfoClick(Sender: TObject);
-    procedure img_ShowOperatorStatusClick(Sender: TObject);
     procedure ListViewSIPCustomDrawItem(Sender: TCustomListView;
       Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
     procedure popMenu_ActionOperators_HistoryCallOperatorClick(Sender: TObject);
@@ -678,13 +675,13 @@ end;
 
 procedure THomeForm.ST_HelpStatusInfoMouseLeave(Sender: TObject);
 begin
-  ST_HelpStatusInfo.Font.Style:=[fsBold];
+  ST_HelpStatusInfo.Font.Style:=[];
 end;
 
 procedure THomeForm.ST_HelpStatusInfoMouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
 begin
-  ST_HelpStatusInfo.Font.Style:=[fsUnderline,fsBold];
+  ST_HelpStatusInfo.Font.Style:=[fsUnderline];
 end;
 
 procedure THomeForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -916,10 +913,6 @@ begin
  end;
 end;
 
-procedure THomeForm.img_ShowOperatorStatusClick(Sender: TObject);
-begin
-  ShowOperatorsStatus;
-end;
 
 procedure THomeForm.menu_UsersClick(Sender: TObject);
 begin

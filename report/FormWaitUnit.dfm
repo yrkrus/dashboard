@@ -4,8 +4,8 @@ object FormWait: TFormWait
   BorderIcons = [biSystemMenu]
   BorderStyle = bsNone
   Caption = #1057#1090#1072#1090#1091#1089': null'
-  ClientHeight = 58
-  ClientWidth = 512
+  ClientHeight = 71
+  ClientWidth = 609
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -22,15 +22,15 @@ object FormWait: TFormWait
   object panel: TPanel
     Left = 0
     Top = 0
-    Width = 511
-    Height = 57
+    Width = 609
+    Height = 70
     BevelInner = bvLowered
     TabOrder = 0
     object ProgressBar: TGauge
       Left = 10
-      Top = 22
-      Width = 495
-      Height = 29
+      Top = 35
+      Width = 588
+      Height = 24
       Align = alCustom
       BorderStyle = bsNone
       ForeColor = clGradientActiveCaption
@@ -39,7 +39,7 @@ object FormWait: TFormWait
     end
     object Image2: TImage
       Left = 12
-      Top = 4
+      Top = 11
       Width = 16
       Height = 16
       Cursor = crHandPoint
@@ -79,32 +79,28 @@ object FormWait: TFormWait
     end
     object ProgressStatusText: TStaticText
       Left = 30
-      Top = 5
-      Width = 51
+      Top = 11
+      Width = 58
       Height = 17
       Caption = #1057#1090#1072#1090#1091#1089': '
       Color = clWindow
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
+      DoubleBuffered = True
       ParentColor = False
-      ParentFont = False
+      ParentDoubleBuffered = False
       TabOrder = 0
     end
     object STEsc: TStaticText
-      Left = 425
-      Top = 5
-      Width = 80
-      Height = 17
+      Left = 512
+      Top = 11
+      Width = 92
+      Height = 20
       Cursor = crHandPoint
       Hint = #1054#1090#1084#1077#1085#1080#1090#1100' '#1089#1086#1079#1076#1072#1085#1080#1077' '#1086#1090#1095#1077#1090#1072
       Caption = #1086#1090#1084#1077#1085#1072' (ESC)'
       Color = clWindow
       Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
+      Font.Color = clRed
+      Font.Height = -13
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentColor = False
@@ -112,6 +108,7 @@ object FormWait: TFormWait
       ParentShowHint = False
       ShowHint = True
       TabOrder = 1
+      Transparent = False
       OnClick = STEscClick
     end
   end

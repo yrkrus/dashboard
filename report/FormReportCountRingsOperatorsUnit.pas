@@ -23,6 +23,7 @@ type
     chkboxUvolennie: TCheckBox;
     chkboxOnlyCurrentDay: TCheckBox;
     chkboxFindFIO: TCheckBox;
+    chkboxStatisticsEveryDay: TCheckBox;
     procedure FormShow(Sender: TObject);
     procedure chkboxShowOperatorsClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -185,14 +186,33 @@ end;
 
 
 procedure TFormReportCountRingsOperators.FormDefault;
+const
+ cLEFT:Word = 10;
 begin
   PanelOperators.Visible:=False;
   btnGenerate.Top:=HideOperatorsButtonTop;
   Width:=HideOperatorsWidth;
   Height:=HideOperatorsHeight;
+  chkboxFindFIO.Checked:=False;
+  chkboxStatisticsEveryDay.Checked:=False;
 
-  if m_detailed then chkboxFindFIO.Enabled:=True
-  else chkboxFindFIO.Enabled:=False;
+  // детальный отчет
+  if m_detailed then begin
+   // Идентификация звонка по номеру телефона
+   chkboxFindFIO.Visible:=True;
+   chkboxFindFIO.Left:=cLEFT;
+
+   // Разбить звонки по дням
+   chkboxStatisticsEveryDay.Visible:=False;
+  end
+  else begin
+   // Разбить звонки по дням
+   chkboxStatisticsEveryDay.Visible:=True;
+   chkboxStatisticsEveryDay.Left:=cLEFT;
+
+   // Идентификация звонка по номеру телефона
+   chkboxFindFIO.Visible:=False;
+  end;
 
   chkboxShowAll.Checked:=False;
 
@@ -208,10 +228,12 @@ var
  error:string;
  onlyCurrentDay:Boolean;
  findFIO:Boolean;
+ statEveryDay:Boolean;
  listSip:TStringList;
 begin
   onlyCurrentDay:=False;
   findFIO:=False;
+  statEveryDay:=False;
 
   if DEBUG then begin
     while (GetTask('EXCEL.EXE')) do KillTask('EXCEL.EXE');
@@ -229,8 +251,19 @@ begin
   // поиск ФИО
   if chkboxFindFIO.Checked then findFIO:=True;
 
+   // разбить стаститку по звонкам на каждый день
+  if chkboxStatisticsEveryDay.Checked then statEveryDay:=True;
+
   // создаем отчет
-  report:=TReportCountOperators.Create('Отчет по количеству звонков операторами',dateStart,dateStop,onlyCurrentDay,m_detailed,findFIO);
+  report:=TReportCountOperators.Create('Отчет по количеству звонков операторами',
+                                       dateStart,
+                                       dateStop,
+                                       onlyCurrentDay,
+                                       m_detailed,
+                                       findFIO,
+                                       statEveryDay);
+
+
   report.ShowProgress; //показываем прогресс бар
   report.SetProgressStatusText('Загрузка данных с сервера ...');
 

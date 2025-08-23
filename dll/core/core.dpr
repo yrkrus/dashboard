@@ -588,7 +588,7 @@ end;
 
 
 // время которое необходимо отнимать от текущего звонка в очереди
-function GetIVRTimeQueue(InQueue:enumQueueCurrent):Integer; stdcall;export;
+function GetIVRTimeQueue(InQueue:enumQueue):Integer; stdcall;export;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -632,14 +632,14 @@ end;
 
 
 // конвертер из string в TQueue
-function StringToTQueue(InQueueSTR:string):enumQueueCurrent; stdcall;export;
+function StringToTQueue(InQueueSTR:string):enumQueue; stdcall;export;
 begin
   if InQueueSTR = '5000' then Result:=queue_5000;
   if InQueueSTR = '5050' then Result:=queue_5050;
 end;
 
 // конвертер из TQueue в string
-function TQueueToString(InQueueSTR:enumQueueCurrent):PChar; stdcall;export;
+function TQueueToString(InQueueSTR:enumQueue):PChar; stdcall;export;
 begin
   case InQueueSTR of
     queue_5000: Result:=PChar('5000');

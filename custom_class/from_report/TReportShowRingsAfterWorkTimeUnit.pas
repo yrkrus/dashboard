@@ -227,7 +227,8 @@ var
  table:string;
  i:Integer;
  listDate:string;
- procentLoad:Integer;
+ procentLoad:Double;
+ procentLoadSTR:string;
  call:TIVRHistory;
  phone:string;
  request:TStringBuilder;
@@ -274,9 +275,11 @@ begin
 
     for i:=0 to _count-1 do begin
      call.Clear;
-     procentLoad:=Trunc(i*100/_count);
+     procentLoad:=i*100/_count;
+     procentLoadSTR:=FormatFloat('0.0',procentLoad);
+     procentLoadSTR:=StringReplace(procentLoadSTR,',','.',[rfReplaceAll]);
 
-     SetProgressStatusText('Загрузка данных с сервера ['+IntToStr(procentLoad)+'%] ...');
+     SetProgressStatusText('Загрузка данных с сервера ['+procentLoadSTR+'%] ...');
      SetProgressBar(procentLoad);
 
      call.id:=StrToInt(VarToStr(Fields[0].Value));

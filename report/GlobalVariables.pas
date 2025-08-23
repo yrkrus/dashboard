@@ -36,7 +36,7 @@ var
   INTERNAL_ERROR          :Boolean =  False;
 
   // кол-во отчетов(нужно для формирования иконки рядом с названием отчета)
-  MAX_COUNT_REPORT        :Word = 13;
+  MAX_COUNT_REPORT        :Word = 3;
 
 implementation
 
