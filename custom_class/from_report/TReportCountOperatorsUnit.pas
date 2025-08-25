@@ -553,7 +553,12 @@ begin
   m_sheet.columns[2].columnwidth:=25.29;
 
   if m_statEveryDay then m_sheet.columns[3].columnwidth:=20.86
-  else  m_sheet.columns[3].columnwidth:=26.86;
+  else begin
+     if m_listCountCallOperators.OnlyCurrentDay then m_sheet.columns[3].columnwidth:=20.86
+     else m_sheet.columns[3].columnwidth:=26.86;
+  end;
+
+
 
   m_sheet.columns[4].columnwidth:=12;
   m_sheet.columns[5].columnwidth:=14;
@@ -585,7 +590,10 @@ begin
 
       // Дата
       if m_statEveryDay then m_sheet.cells[ColIndex,3]:=m_listCountCallOperators.Items[i].ItemData[j].m_date_time
-      else m_sheet.cells[ColIndex,3]:=m_listCountCallOperators.Items[i].ItemDateInterval;
+      else begin
+         if m_listCountCallOperators.OnlyCurrentDay then m_sheet.cells[ColIndex,3]:=m_listCountCallOperators.Items[i].ItemDateStart
+         else m_sheet.cells[ColIndex,3]:=m_listCountCallOperators.Items[i].ItemDateInterval;
+      end;
 
 
       m_sheet.cells[ColIndex,4]:=IntToStr(m_listCountCallOperators.Items[i].ItemData[j].m_callsCount);         // Звонков

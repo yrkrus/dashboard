@@ -57,6 +57,7 @@ uses
       property Count:Integer read m_count;
       property ItemData[_index:integer]: TStructInfo read GetData; default;
       property ItemDateInterval:string read GetDateInterval;
+      property ItemDateStart:string read m_dateStart;
 
 
       end;
@@ -101,6 +102,7 @@ uses
       function IsExistData:Boolean;   // есть ли какие то данные
       property Items[Index: Integer]: TStructCount read GetData; default;
       property Count:Integer read m_count;
+      property OnlyCurrentDay:Boolean read m_onlyCurrentDay;
 
 
       end;
@@ -360,9 +362,7 @@ begin
             Append('select count(id)');
             Append(' from '+EnumReportTableCountCallsOperatorToString(m_table));
             Append(' where sip IN ('+sipList[i]+') and answered = ''1''' );
-            if not m_onlyCurrentDay then begin
-             Append(' and date_time >='+#39+GetDateToDateBD(GetDateStart(StrToInt(sipList[i])))+' 00:00:00'+#39+' and date_time<='+#39+GetDateToDateBD(GetDateStop(StrToInt(sipList[i])))+' 23:59:59'+#39+' order by date_time ASC');
-            end;
+            Append(' and date_time >='+#39+GetDateToDateBD(GetDateStart(StrToInt(sipList[i])))+' 00:00:00'+#39+' and date_time<='+#39+GetDateToDateBD(GetDateStop(StrToInt(sipList[i])))+' 23:59:59'+#39+' order by date_time ASC');
           end;
 
           SQL.Clear;

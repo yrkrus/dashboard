@@ -53,6 +53,17 @@ type
     lblOpenGenerateMessage: TLabel;
     lblinfoEditMessage: TLabel;
     lblManualPodbor: TLabel;
+    sheet_StatusSMS: TTabSheet;
+    edtFindSMS: TEdit;
+    st_PhoneInfo2: TStaticText;
+    Label5: TLabel;
+    GroupBox2: TGroupBox;
+    lblS: TLabel;
+    lblPo: TLabel;
+    dateStart: TDateTimePicker;
+    dateStop: TDateTimePicker;
+    chkboxOnlyCurrentDay: TCheckBox;
+    lblManualPodborFindStatus: TLabel;
     procedure ProcessCommandLineParams(DEBUG:Boolean = False);
     procedure FormCreate(Sender: TObject);
     procedure btnLoadFileClick(Sender: TObject);
@@ -96,6 +107,13 @@ type
     procedure lblinfoEditMessageMouseMove(Sender: TObject; Shift: TShiftState;
       X, Y: Integer);
     procedure lblManualPodborClick(Sender: TObject);
+    procedure edtFindSMSKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure edtFindSMSClick(Sender: TObject);
+    procedure edtFindSMSKeyPress(Sender: TObject; var Key: Char);
+    procedure chkboxOnlyCurrentDayClick(Sender: TObject);
+    procedure lblManualPodborFindStatusClick(Sender: TObject);
+    procedure edtFindSMSChange(Sender: TObject);
 
 
   private
@@ -139,7 +157,7 @@ implementation
 uses
   FunctionUnit, GlobalVariables, GlobalVariablesLinkDLL, TSendSMSUint,
   FormMyTemplateUnit, FormNotSendingSMSErrorUnit, FormListSendingSMSUnit,
-  TXmlUnit, TSpellingUnit, FormSendingSMSUnit, FormDictionaryUnit, FormGenerateSMSUnit, DMUnit, FormManualPodborUnit;
+  TXmlUnit, TSpellingUnit, FormSendingSMSUnit, FormDictionaryUnit, FormGenerateSMSUnit, DMUnit, FormManualPodborUnit, FormManualPodborStatusUnit;
 
  {$R *.dfm}
 
@@ -385,6 +403,9 @@ begin
      1:begin                  // рассылка
       currentOptions:=options_Sending;
      end;
+     2:begin                  // поиск рассылки
+       currentOptions:=options_Find;
+     end;
     end;
 
     if not CheckParamsBeforeSending(currentOptions,isEditMessage, error) then begin
@@ -434,6 +455,9 @@ begin
        MessageBox(Handle,PChar('Статус доставки доступен в отчетах'+#13#13+error),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
       end;
     end;
+    options_Find:begin
+
+    end;
    end;
 
    // очищаем данные формы
@@ -446,7 +470,34 @@ begin
 end;
 
 
+procedure TFormHome.chkboxOnlyCurrentDayClick(Sender: TObject);
+var
+ _errorDescription:string;
+begin
+  if chkboxOnlyCurrentDay.Checked then begin
+    lblS.Enabled:=False;
+    dateStart.Enabled:=False;
+    lblPo.Enabled:=False;
+    dateStop.Enabled:=False;
 
+    dateStart.Date:=Now;
+    dateStop.Date:=Now;
+
+  end
+  else begin
+    lblS.Enabled:=True;
+
+    dateStart.Enabled:=True;
+    lblPo.Enabled:=True;
+    dateStop.Enabled:=True;
+
+    // устанавливаем даты
+      if not SetFindDate(dateStart,dateStop,_errorDescription) then begin
+        MessageBox(Handle,PChar(_errorDescription),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+        Exit;
+      end;
+  end;
+end;
 
 procedure TFormHome.chkboxShowLogClick(Sender: TObject);
 begin
@@ -455,6 +506,47 @@ begin
 end;
 
 
+procedure TFormHome.edtFindSMSChange(Sender: TObject);
+begin
+  if Length(edtFindSMS.Text) > 0 then lblManualPodborFindStatus.Visible:=False
+  else lblManualPodborFindStatus.Visible:=True;
+end;
+
+procedure TFormHome.edtFindSMSClick(Sender: TObject);
+begin
+   if st_PhoneInfo2.Visible then st_PhoneInfo2.Visible:=False;
+end;
+
+procedure TFormHome.edtFindSMSKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if (Shift = [ssCtrl]) then
+  begin
+    case Key of
+       86: // Ctrl + V
+        begin
+          // Вставляем текст из буфера обмена
+          edtFindSMS.Text := ParsePhoneNumber(Clipboard.AsText);
+          Key := 0; // Отменяем дальнейшую обработку клавиши
+        end;
+      88: // Ctrl + X
+        begin
+          // Копируем выделенный текст в буфер обмена и удаляем его из Edit
+          Clipboard.AsText := edtFindSMS.Text; // Если нужно, чтобы текст был скопирован
+          edtFindSMS.ClearSelection; // Удаляем выделение
+          Key := 0; // Отменяем дальнейшую обработку клавиши
+        end;
+    end;
+  end;
+end;
+
+procedure TFormHome.edtFindSMSKeyPress(Sender: TObject; var Key: Char);
+begin
+  if not (Key in ['0'..'9', #8]) then  // #8 - Backspace, #13 - Enter
+  begin
+    Key := #0; // Отменяем ввод, если символ не является цифрой
+  end;
+end;
 
 procedure TFormHome.edtManualSMSChange(Sender: TObject);
 begin
@@ -737,6 +829,7 @@ begin
   lblOpenGenerateMessage.Font.Color:=clHighlight;
   lblinfoEditMessage.Font.Color:=clHighlight;
   lblManualPodbor.Font.Color:=clHighlight;
+  lblManualPodborFindStatus.Font.Color:=clHighlight;
 
 
    // создатим copyright
@@ -776,6 +869,11 @@ procedure TFormHome.lblinfoEditMessageMouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
 begin
   lblinfoEditMessage.Font.Style:=[fsUnderline];
+end;
+
+procedure TFormHome.lblManualPodborFindStatusClick(Sender: TObject);
+begin
+ FormManualPodborStatus.ShowModal;
 end;
 
 procedure TFormHome.lblManualPodborClick(Sender: TObject);
@@ -826,6 +924,9 @@ begin
    end;
    1:begin                  // рассылка
     OptionsStyle(options_Sending);
+   end;
+   2:begin                 // поиск статуса сообщения
+    OptionsStyle(options_Find);
    end;
   end;
 end;

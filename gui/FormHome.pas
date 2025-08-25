@@ -781,7 +781,11 @@ begin
   if Assigned(SharedCurrentUserLogon) then begin
     if SharedCurrentUserLogon.GetIsOperator then begin
       // подгонем размер статусов оператора
-      ResizeCentrePanelStatusOperators(Width - DEFAULT_SIZE_PANEL_ACTIVESIP);
+      XML:=TXML.Create;
+      if not XML.IsExistStatusOperatorPosition then begin
+        ResizeCentrePanelStatusOperators(Width - DEFAULT_SIZE_PANEL_ACTIVESIP);
+      end;
+      XML.Free;
     end;
   end;
 
@@ -932,12 +936,19 @@ end;
 
 procedure THomeForm.PanelStatusINMouseMove(Sender: TObject; Shift: TShiftState;
   X, Y: Integer);
+var
+ XML:TXML;
 begin
   if FDragging then
   begin
     // Перемещаем панель, учитывая смещение мыши
     PanelStatus.Left := PanelStatus.Left + (Mouse.CursorPos.X - PanelStatus.Left - FMouseOffset.X);
     PanelStatus.Top := PanelStatus.Top + (Mouse.CursorPos.Y - PanelStatus.Top - FMouseOffset.Y);
+
+    XML:=TXML.Create;
+    XML.SetStatusOperatorPosition(PanelStatus.Left,PanelStatus.Top);
+    XML.Free;
+
     Screen.Cursor:=crHandPoint;
   end;
 end;

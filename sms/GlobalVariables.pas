@@ -22,7 +22,8 @@ uses
 
   type   // тип отправки
    enumSendingOptions = (options_Manual,    // ручная отправка
-                         options_Sending);  // рассылка
+                         options_Sending,   // рассылка
+                         options_Find);     // поиск статуса
 
   type  // тип показывать\скрывать лог
   enumFormShowingLog = (log_show,           // лог показывать

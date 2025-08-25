@@ -95,6 +95,9 @@ end;
 procedure TFormSendingSMS.Show;
 var
  i:Integer;
+ sendingStatus:TColor;
+ sendingError:Boolean;
+ messageSMS:string;
 begin
   // очищаем данные, вдруг еще раз будет прогрузка
   re_LogSending.Clear;
@@ -112,9 +115,20 @@ begin
    m_sendingSMS:=TShowMessageSMS.Create;
 
    for i:=0 to m_sendingSMS.Count-1 do begin
-      CreateLogAddColoredLine(re_LogSending,
-                              m_sendingSMS.GetUserInfoSending(i),clGreen,
-                              m_sendingSMS.GetMessageSMS(i),clBlack);
+     if m_sendingSMS.Sending[i] then begin
+       sendingStatus:=clGreen;
+       sendingError:=False;
+     end
+     else begin
+      sendingStatus:=clRed;
+      sendingError:=True;
+     end;
+
+     messageSMS:=m_sendingSMS.GetUserInfoSending(i,sendingError);
+
+     CreateLogAddColoredLine(re_LogSending,
+                             messageSMS,sendingStatus,
+                             m_sendingSMS.GetMessageSMS(i),clBlack);
    end;
   end;
 

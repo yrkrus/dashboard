@@ -11,13 +11,7 @@ unit TXmlUnit;
 interface
 
 uses
-  System.SysUtils,
-  System.Classes,
-  System.SyncObjs,
-  XMLDoc,
-  XMLIntf,
-  TCustomTypeUnit,
-  GlobalVariables;
+  System.SysUtils, System.Classes, System.SyncObjs, XMLDoc, XMLIntf, TCustomTypeUnit, GlobalVariables;
 
 
  type
@@ -63,6 +57,12 @@ uses
 
     function GetActiveSessionConfirm:string;                // получение текущего значения подтверждать действие при закрытии активной сессии
     procedure SetActiveSessionConfirm(_state:string);       // установка текущего значения подтверждать действие при закрытии активной сессии
+
+    function GetStatusOperatorPosition(var _left:Integer;
+                                       var _top: Integer):Boolean; // получение текущего значения положения окна статусы оператора
+    function IsExistStatusOperatorPosition:Boolean;               // есть ли данные по позиции панели
+    procedure SetStatusOperatorPosition(_left,_top:Integer);       // установка текущего значения положения окна статусы оператора
+
 
 
   private
@@ -814,6 +814,100 @@ begin
     m_XMLDoc := nil;
   end;
 end;
+
+// получение текущего значения положения окна статусы оператора
+function TXML.GetStatusOperatorPosition(var _left:Integer; var _top: Integer):Boolean;
+begin
+  Result:=false;  // defaul value state
+
+  if not isExistSettingsFile then
+  begin
+    m_XMLDoc := nil; // Освобождаем ресурсы
+    Exit;
+  end;
+
+  // Загружаем XML-документ
+  m_XMLDoc:= LoadXMLDocument(m_fileSettings);
+  try
+    m_RootNode:= m_XMLDoc.DocumentElement;
+
+    // Проверяем наличие узла <PanelStatusOperatorPosition>
+    m_ChildNode := m_RootNode.ChildNodes.FindNode('PanelStatusOperatorPosition');
+    if Assigned(m_ChildNode) then
+    begin
+      // Проверяем наличие узла <X>
+      m_ChildNode := m_ChildNode.ChildNodes.FindNode('X');
+      if Assigned(m_ChildNode) then
+      begin
+        _left:= StrToInt(m_ChildNode.Text); // Возвращаем текст узла
+      end;
+    end;
+
+    // Проверяем наличие узла <PanelStatusOperatorPosition>
+    m_ChildNode := m_RootNode.ChildNodes.FindNode('PanelStatusOperatorPosition');
+    if Assigned(m_ChildNode) then
+    begin
+      m_ChildNode := m_ChildNode.ChildNodes.FindNode('Y');
+      if Assigned(m_ChildNode) then
+      begin
+        _top:= StrToInt(m_ChildNode.Text); // Возвращаем текст узла
+      end;
+    end;
+
+    Result:=(_left > 0) and (_top > 0);
+
+  finally
+    m_XMLDoc := nil; // Освобождаем ресурсы
+  end;
+
+end;
+
+// есть ли данные по позиции панели
+function TXML.IsExistStatusOperatorPosition:Boolean;
+var
+ X,Y:Integer;
+begin
+  X:=0;
+  Y:=0;
+  Result:=GetStatusOperatorPosition(X,Y);
+end;
+
+// установка текущего значения положения окна статусы оператора
+procedure TXML.SetStatusOperatorPosition(_left,_top:Integer);
+begin
+  // Проверяем наличие узла
+  checkExistNodeFields('PanelStatusOperatorPosition', 'X', '0');
+  checkExistNodeFields('PanelStatusOperatorPosition', 'Y', '0');
+
+  m_XMLDoc := LoadXMLDocument(m_fileSettings);
+  try
+    m_RootNode := m_XMLDoc.DocumentElement;
+    m_ChildNode := m_RootNode.ChildNodes.FindNode('PanelStatusOperatorPosition').ChildNodes.FindNode('X');
+
+    if Assigned(m_ChildNode) then
+    begin
+      m_ChildNode.Text := IntToStr(_left);
+      m_XMLDoc.SaveToFile(m_fileSettings);
+    end;
+  finally
+    m_XMLDoc := nil;
+  end;
+
+  m_XMLDoc := LoadXMLDocument(m_fileSettings);
+  try
+    m_RootNode := m_XMLDoc.DocumentElement;
+    m_ChildNode := m_RootNode.ChildNodes.FindNode('PanelStatusOperatorPosition').ChildNodes.FindNode('Y');
+
+    if Assigned(m_ChildNode) then
+    begin
+      m_ChildNode.Text := IntToStr(_top);
+      m_XMLDoc.SaveToFile(m_fileSettings);
+    end;
+  finally
+    m_XMLDoc := nil;
+  end;
+end;
+
 
 
 end.

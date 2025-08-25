@@ -371,6 +371,10 @@ interface
    enumReportTableCountCallsOperatorOnHold = (eTableOnHold,
                                               eTableHistoryOnHold);
 
+   type // тип из какой таблицы доставать данные дл€ SMS
+   enumReportTableSMSStatus = (eTableSMS,
+                               eTableHistorySMS);
+
    type // тип статуса sip транка
    enumTrunkStatus = (eTrunkUnknown = -1,
                       eTrunkRegisterd = 0,
@@ -439,7 +443,7 @@ interface
  function EnumReportTableCountCallsOperatorOnHoldToString(_table:enumReportTableCountCallsOperatorOnHold):string; //EnumReportTableCountCallsOperatorOnHold -> String
  function StringToEnumTrunkStatus(_status:string):enumTrunkStatus;                    // EnumTrunkStatus - > String
  function EnumReportTableIVRToString(_table:enumReportTableIVR):string;               // EnumReportTableIVRToString -> String
-
+ function EnumReportTableSMSToString(_table:enumReportTableSMSStatus):string;         // EnumReportTableSMSStatus -> String
 
  // =================== ѕ–ќ≈ќЅ–ј«ќ¬јЌ»я ===================
  implementation
@@ -1295,6 +1299,15 @@ begin
   case _table of
    eTableIVR:         Result:='ivr';
    eTableHistoryIVR:  Result:='history_ivr';
+  end;
+end;
+
+// EnumReportTableSMSStatus -> String
+function EnumReportTableSMSToString(_table:enumReportTableSMSStatus):string;
+begin
+  case _table of
+   eTableSMS:         Result:='sms_sending';
+   eTableHistorySMS:  Result:='history_sms_sending';
   end;
 end;
 

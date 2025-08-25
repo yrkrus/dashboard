@@ -48,7 +48,8 @@ uses
   function GetPhoneTrunkQueue(_table:enumReportTableIVR; _phone:string;_timecall:string):PChar; stdcall;  external 'core.dll';   // нахождение на какой транк звонил номер который ушел в очередь
   function GetPhoneOperatorQueue(_table:enumReportTableIVR; _phone:string;_timecall:string):PChar; stdcall;  external 'core.dll'; // нахождение у какого оператора зарегистрирован телефон
   function GetPhoneRegionQueue(_table:enumReportTableIVR; _phone:string;_timecall:string):PChar; stdcall;  external 'core.dll'; // нахождение у в каком регионе зарегистрирован телефон
-
+  function GetSMSStatusID(_idSMS:Integer; _table:enumReportTableSMSStatus):Integer; stdcall;  external 'core.dll';      // нахождение статуса SMS сообщения
+  function GetSMSStatus(_code:Integer):PChar;                           stdcall;  external 'core.dll';      // нахождение статуса сообщения
 
   // --- connect_to_server.dll ---  (по сути этот тут не нужно, но пусть будет)
  function GetServerAddress:string;      stdcall;   external 'connect_to_server.dll'; // адрес сервера

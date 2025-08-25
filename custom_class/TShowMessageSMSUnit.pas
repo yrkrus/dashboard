@@ -12,10 +12,7 @@ unit TShowMessageSMSUnit;
 interface
 
 uses
-  System.Classes,
-  System.SysUtils,
-  Data.Win.ADODB, Data.DB,
-  System.Variants;
+  System.Classes, System.SysUtils, Data.Win.ADODB, Data.DB, System.Variants, TCustomTypeUnit;
 
 
 
@@ -26,6 +23,7 @@ uses
       m_phone       :string;
       m_date        :string;
       m_sms         :string;
+      m_code        :Integer;
       m_status      :string;
 
       constructor Create;    overload;
@@ -44,7 +42,7 @@ uses
       m_sms           :TStructSMS;
 
       constructor Create;                   overload;
-
+      function GetStatusSMS(_code:Integer):string;  // текущий статус сообщения
       end;
  // class TStructUserSending END
 
@@ -62,15 +60,17 @@ uses
       procedure Init;
       procedure CreateListSending;      // создание листа с данными по отправленным смс
 
-      public
+      function IsSendingSMS(_id:Integer):Boolean; // отправлено ли было сообщение
 
+      public
       constructor Create;                       overload;
       constructor Create(_date:TDateTime);      overload;
 
-      function GetUserInfoSending(_id:Integer):string; // инфо о том кто и во сколько отправил и на какой номер смс
+      function GetUserInfoSending(_id:Integer; isError:Boolean):string; // инфо о том кто и во сколько отправил и на какой номер смс
       function GetMessageSMS(_id:Integer):string;      // само сообщение
 
       property Count:Integer read m_count;
+      property Sending[_id:Integer]:Boolean read IsSendingSMS; default;
 
       end;
  // class TShowMessageSMS END
@@ -91,6 +91,7 @@ constructor TStructSMS.Create;
    m_date   :='';
    m_sms    :='';
    m_status :='';
+   m_code   :=0;
  end;
 
 
@@ -108,6 +109,12 @@ constructor TStructSMS.Create;
    m_FIO           :='';
    m_sms:=TStructSMS.Create;
  end;
+
+// текущий статус сообщения
+function TStructUserSending.GetStatusSMS(_code:Integer):string;
+begin
+  Result:=GetSMSStatus(_code);
+end;
 
 
 //  TStructUserSending END
@@ -151,7 +158,7 @@ constructor TShowMessageSMS.Create;
    i:Integer;
  begin
   ado:=TADOQuery.Create(nil);
-   serverConnect:=createServerConnect;
+  serverConnect:=createServerConnect;
   if not Assigned(serverConnect) then begin
      FreeAndNil(ado);
      Exit;
@@ -177,8 +184,9 @@ constructor TShowMessageSMS.Create;
         m_list[i].m_sms.m_date:=VarToStr(Fields[1].Value);
         m_list[i].m_sms.m_sms:=VarToStr(Fields[3].Value);
 
-        if Fields[4].Value <> null then m_list[i].m_sms.m_status:=VarToStr(Fields[4].Value)
-        else m_list[i].m_sms.m_status:='неизвестен';
+        if Fields[4].Value <> null then m_list[i].m_sms.m_code:=StrToInt(VarToStr(Fields[4].Value));
+
+        m_list[i].m_sms.m_status:=GetSMSStatus(m_list[i].m_sms.m_code);
 
         ado.Next;
       end;
@@ -192,11 +200,19 @@ constructor TShowMessageSMS.Create;
   end;
  end;
 
+// отправлено ли было сообщение
+function TShowMessageSMS.IsSendingSMS(_id:Integer):Boolean;
+begin
+  Result:=False;
+  if m_list[_id].m_sms.m_code = 3 then Result:=True;
+end;
+
 
 // инфо о том кто и во сколько отправил и на какой номер смс
-function TShowMessageSMS.GetUserInfoSending(_id:Integer):string;
+function TShowMessageSMS.GetUserInfoSending(_id:Integer; isError:Boolean):string;
 begin
-  Result:=m_list[_id].m_FIO+' ('+m_list[_id].m_sms.m_date+')';
+  if isError then  Result:=m_list[_id].m_sms.m_status +' ('+m_list[_id].m_sms.m_phone+') | '+ m_list[_id].m_FIO+' ('+m_list[_id].m_sms.m_date+')'
+  else Result:=m_list[_id].m_sms.m_status +' | '+ m_list[_id].m_FIO+' ('+m_list[_id].m_sms.m_date+')';
 end;
 
 // само сообщение

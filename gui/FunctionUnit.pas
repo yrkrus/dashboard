@@ -70,7 +70,7 @@ function getStatus(InStatus:enumStatusOperators):string;                        
 function getCurrentQueueOperator(InSipNumber:string):enumQueue;               // в какой очереди сейчас находится оператор
 procedure UpdateOperatorStatus(_status:enumStatusOperators;_userID:Integer);         // очитска текущего статуса оператора
 procedure checkCurrentStatusOperator(InOperatorStatus:enumStatusOperators);              // проверка и отображение кнопок статусов оператора
-procedure showStatusOperator(InShow:Boolean = True);                                 // отобрадение панели статусы операторов
+procedure ShowStatusOperator(InShow:Boolean = True);                                 // отобрадение панели статусы операторов
 function getLastStatusTime(InUserid:Integer; InOperatorStatus:enumStatusOperators):string;    // подсчет времени в текущем статусе оператора
 function isOperatorGoHome(inUserID:Integer):Boolean;                                 // проверка оператор ушел домой или нет
 function isOperatorGoHomeWithForceClosed(inUserID:Integer):Boolean;                  // проверка оператор ушел домой или нет (через завершение активной сессии)
@@ -2870,17 +2870,29 @@ begin
 end;
 
 // отобрадение панели статусы операторов
-procedure showStatusOperator(InShow:Boolean = True);
+procedure ShowStatusOperator(InShow:Boolean = True);
+var
+ XML:TXML;
+ panelLeft,panelTop:Integer;
 begin
    with HomeForm do begin
       if InShow then begin
        ST_StatusPanel.Visible:=True;
-      // img_ShowOperatorStatus.Visible:=True;
+
+       // устанавливаем поцизию панели
+       begin
+         XML:=TXML.Create;
+         if XML.GetStatusOperatorPosition(panelLeft,panelTop) then begin
+           PanelStatus.Left:=panelLeft;
+           PanelStatus.Top:=panelTop;
+         end;
+         XML.Free;
+       end;
+
        PanelStatus.Visible:=True;
       end
       else begin
        ST_StatusPanel.Visible:=False;
-      // img_ShowOperatorStatus.Visible:=False;
        PanelStatus.Visible:=False;
       end;
    end;
@@ -2953,36 +2965,36 @@ begin
      case p_TUser.GetRole of
        role_administrator:begin                  // администратор
         // панель статусы операторов
-        showStatusOperator(False);
+        ShowStatusOperator(False);
        end;
        role_lead_operator:begin                  // ведущий оператор
         // панель статусы операторов
-        showStatusOperator;
+        ShowStatusOperator;
        end;
        role_senior_operator:begin                // старший оператор
         // панель статусы операторов
-        showStatusOperator;
+        ShowStatusOperator;
 
         // контекстное меню (выключено)
         ListViewSIP.PopupMenu:=nil;
        end;
        role_operator:begin                       // оператор
         // панель статусы операторов
-        showStatusOperator;
+        ShowStatusOperator;
 
         // контекстное меню (выключено)
         ListViewSIP.PopupMenu:=nil;
        end;
        role_operator_no_dash:begin               // оператор (без дашборда)
         // панель статусы операторов
-        showStatusOperator;
+        ShowStatusOperator;
 
         // контекстное меню (выключено)
         ListViewSIP.PopupMenu:=nil;
        end;
        role_supervisor_cov:begin                 // Руководитель ЦОВ
         // панель статусы операторов
-        showStatusOperator(False);
+        ShowStatusOperator(False);
        end;
      end;
 

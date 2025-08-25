@@ -972,6 +972,80 @@ begin
 end;
 
 
+// нахождение статуса SMS сообщения
+function GetSMSStatusID(_idSMS:Integer; _table:enumReportTableSMSStatus):Integer; stdcall; export;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ table:string;
+begin
+  Result:=8; // по БД это unknown
+  table:=EnumReportTableSMSToString(_table);
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select status from '+table+' where id = '+#39+IntToStr(_idSMS)+#39);
+
+      Active:=True;
+      if Fields[0].Value<>null then begin
+       Result:=StrToInt(VarToStr(Fields[0].Value));
+      end;
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+
+// нахождение статуса сообщения
+function GetSMSStatus(_code:Integer):PChar; stdcall; export;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ table:string;
+begin
+  Result:=PChar('Статус сообщения неизвестен');
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select code_value from sms_code where id = '+#39+IntToStr(_code)+#39);
+
+      Active:=True;
+      if Fields[0].Value<>null then begin
+       Result:=PChar(VarToStr(Fields[0].Value));
+      end;
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
 exports
   GetDefaultDataBase,
   createServerConnect,
@@ -1010,7 +1084,9 @@ exports
   GetAliveCoreDashboard,
   GetPhoneTrunkQueue,
   GetPhoneOperatorQueue,
-  GetPhoneRegionQueue;
+  GetPhoneRegionQueue,
+  GetSMSStatusID,
+  GetSMSStatus;
 
 begin
 end.

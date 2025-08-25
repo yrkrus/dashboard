@@ -74,6 +74,9 @@ function IsExistSignInMessage(const _message:string):Boolean;                   
 function ParsePhoneNumber(const PhoneNumber: string):string;                                  // пасинг номера тлф при вствке в поле номер телефона
 function GetUserSIP(_idUser:integer):string;                                                 // отображение SIP пользвоателя
 procedure SetRandomFontColor(var p_label: TLabel);                                            // изменение цвета надписи
+function SetFindDate(var _startDate:TDateTimePicker;
+                     var _stopDate:TDateTimePicker;
+                     var _errorDescriptions:string):Boolean;                                 // установка дата начала и конца времени отбора
 
 
 implementation
@@ -556,6 +559,8 @@ end;
 
 // выбор типа отправляемого смс
 procedure OptionsStyle(InOptionsType:enumSendingOptions);
+var
+ errorDescription:string;
 begin
   with FormHome do begin
    case InOptionsType of
@@ -612,6 +617,21 @@ begin
        // очистка памяти по отправке смс
        SharedPacientsList.Clear;
        SharedPacientsListNotSending.Clear;
+      end;
+      options_Find:begin
+       btnSendSMS.Caption:=' &Проверить статус сообщения';
+
+       edtFindSMS.Text:='';
+       st_PhoneInfo2.Visible:=True;
+
+       chkboxOnlyCurrentDay.Checked:=False;
+       chkboxOnlyCurrentDay.Caption:='текущий день ('+DateToStr(now)+')';
+
+        // устанавливаем даты
+        if not SetFindDate(dateStart,dateStop,errorDescription) then begin
+          MessageBox(Handle,PChar(errorDescription),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+          Exit;
+        end;
       end;
    end;
   end;
@@ -1963,6 +1983,42 @@ begin
 
   // Устанавливаем случайный цвет шрифта для метки
   p_label.Font.Color := RandomColor;
+end;
+
+
+// установка дата начала и конца времени отбора
+function SetFindDate(var _startDate:TDateTimePicker;
+                     var _stopDate:TDateTimePicker;
+                     var _errorDescriptions:string):Boolean;
+var
+  CurrentDate: TDateTime;
+  FirstDayOfPreviousMonth: TDateTime;
+  LastDayOfPreviousMonth: TDateTime;
+begin
+ Result:=False;
+ _errorDescriptions:='';
+
+   try
+      // Получаем текущую дату
+      CurrentDate := Now;
+
+      // Получаем первое число предыдущего месяца
+      if MonthOf(CurrentDate) = 1 then FirstDayOfPreviousMonth := EncodeDate(YearOf(CurrentDate) - 1, 12, 1) // Декабрь прошлого года
+      else FirstDayOfPreviousMonth := EncodeDate(YearOf(CurrentDate), MonthOf(CurrentDate) - 1, 1);
+
+       // Получаем последний день предыдущего месяца
+      if MonthOf(CurrentDate) = 1 then LastDayOfPreviousMonth := EncodeDate(YearOf(CurrentDate) - 1, 12, 31) // Последний день декабря прошлого года
+      else LastDayOfPreviousMonth := EncodeDate(YearOf(CurrentDate), MonthOf(CurrentDate), 1) - 1;
+
+      _startDate.DateTime:=FirstDayOfPreviousMonth;
+      _stopDate.DateTime:=LastDayOfPreviousMonth;
+
+      Result:=True;
+   except
+      on E: Exception do begin
+        _errorDescriptions:=e.ClassName+#13+E.Message;
+      end;
+   end;
 end;
 
 

@@ -35,7 +35,8 @@ uses
   GlobalVariablesLinkDLL in '..\gui\GlobalVariablesLinkDLL.pas',
   FormPodborUnit in 'FormPodborUnit.pas' {FormPodbor},
   FormManualPodborUnit in 'FormManualPodborUnit.pas' {FormManualPodbor},
-  TSMSCallTalkInfoUnit in '..\custom_class\TSMSCallTalkInfoUnit.pas';
+  TSMSCallTalkInfoUnit in '..\custom_class\TSMSCallTalkInfoUnit.pas',
+  FormManualPodborStatusUnit in 'FormManualPodborStatusUnit.pas' {FormManualPodborStatus};
 
 {$R *.res}
 
@@ -61,5 +62,6 @@ begin
   Application.CreateForm(TFormEditDictionary, FormEditDictionary);
   Application.CreateForm(TFormPodbor, FormPodbor);
   Application.CreateForm(TFormManualPodbor, FormManualPodbor);
+  Application.CreateForm(TFormManualPodborStatus, FormManualPodborStatus);
   Application.Run;
 end.
