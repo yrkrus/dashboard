@@ -973,13 +973,13 @@ end;
 
 
 // нахождение статуса SMS сообщения
-function GetSMSStatusID(_idSMS:Integer; _table:enumReportTableSMSStatus):Integer; stdcall; export;
+function GetCodeStatusSms(_idSMS:Integer; _table:enumReportTableSMSStatus):enumStatusCodeSms; stdcall; export;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  table:string;
 begin
-  Result:=8; // по БД это unknown
+  Result:=eStatusCodeSmsUnknown; // по БД это unknown
   table:=EnumReportTableSMSToString(_table);
 
   ado:=TADOQuery.Create(nil);
@@ -997,7 +997,7 @@ begin
 
       Active:=True;
       if Fields[0].Value<>null then begin
-       Result:=StrToInt(VarToStr(Fields[0].Value));
+       Result:=StringToEnumStatusCodeSms((VarToStr(Fields[0].Value)));
       end;
     end;
   finally
@@ -1011,13 +1011,13 @@ end;
 
 
 // нахождение статуса сообщения
-function GetSMSStatus(_code:Integer):PChar; stdcall; export;
+function GetStatusSms(_code:enumStatusCodeSms):PChar; stdcall; export;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  table:string;
 begin
-  Result:=PChar('Статус сообщения неизвестен');
+  Result:=PChar(EnumStatusCodeSmsToString(eStatusCodeSmsUnknown));
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
@@ -1030,7 +1030,7 @@ begin
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
-      SQL.Add('select code_value from sms_code where id = '+#39+IntToStr(_code)+#39);
+      SQL.Add('select code_value from sms_code where id = '+#39+EnumStatusCodeSmsToString(_code)+#39);
 
       Active:=True;
       if Fields[0].Value<>null then begin
@@ -1045,6 +1045,64 @@ begin
     end;
   end;
 end;
+
+
+// кол-во отправленных SMS сообщений на номере
+function GetCountSmsSendingMessageInPhone(_phone:string):Integer;  stdcall; export;
+var
+  ado: TADOQuery;
+  serverConnect: TADOConnection;
+  countSMS:Integer;
+  request:TStringBuilder;
+begin
+  Result:=0;
+
+  ado := TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then
+  begin
+    FreeAndNil(ado);
+    Exit;
+  end;
+
+  request:=TStringBuilder.Create;
+
+  try
+    with ado do
+    begin
+      Connection := serverConnect;
+      SQL.Clear;
+
+       with request do begin
+        Clear;
+        Append('select ');
+        Append('(select count(*) ');
+        Append('from '+EnumReportTableSMSToString(eTableHistorySMS));
+        Append(' where phone = '+#39+_phone+#39);
+        Append(')');
+        Append(' +');
+        Append(' (select count(*) ');
+        Append('from '+EnumReportTableSMSToString(eTableSMS));
+        Append(' where phone = '+#39+_phone+#39);
+        Append(')');
+        Append(' AS total_count');
+       end;
+
+      SQL.Add(request.ToString);
+      Active:= True;
+
+      Result:=StrToInt(VarToStr(Fields[0].Value));
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then
+    begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
 
 exports
   GetDefaultDataBase,
@@ -1085,8 +1143,9 @@ exports
   GetPhoneTrunkQueue,
   GetPhoneOperatorQueue,
   GetPhoneRegionQueue,
-  GetSMSStatusID,
-  GetSMSStatus;
+  GetCodeStatusSms,
+  GetStatusSms,
+  GetCountSmsSendingMessageInPhone;
 
 begin
 end.

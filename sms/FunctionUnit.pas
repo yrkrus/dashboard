@@ -78,7 +78,6 @@ function SetFindDate(var _startDate:TDateTimePicker;
                      var _stopDate:TDateTimePicker;
                      var _errorDescriptions:string):Boolean;                                 // установка дата начала и конца времени отбора
 
-
 implementation
 
 uses
@@ -413,6 +412,20 @@ begin
              Exit;
            end;
         end;
+        options_Find:begin // поиск статуса сообщения
+         // телефон
+         if SharedStatusSendingSMS.Count = 0 then begin
+            _errorDescription:='Пустой номер телефона';
+            Exit;
+         end;
+
+         // очищаем от управляющих сиволов (вдруг тупо скопировали номер тлф)
+         ClearManagerSymbolsPhoneMessage(SharedStatusSendingSMS);
+
+         if not isCorrectNumberPhone(SharedStatusSendingSMS[0],_errorDescription) then begin
+           Exit;
+         end;
+        end;
       end;
    end;
 
@@ -463,6 +476,11 @@ begin
 
       // подправим сообщение чтобы оно было в одну строчку
       SMSMessage:=CreateSMSMessage(FormHome.re_ManualSMS);
+      if SMSMessage.Length = 0 then begin
+        _errorDescription:='Пустое сообщение';
+        Exit;
+      end;
+
 
       sendindManualReportError:=TStringList.Create;
       isExistError:=False;
@@ -565,7 +583,7 @@ begin
   with FormHome do begin
    case InOptionsType of
       options_Manual: begin
-       btnSendSMS.Caption:=' &Отправить SMS';
+       btnAction.Caption:=' &Отправить SMS';
 
        edtManualSMS.Text:='';                 // номер телефона
        //st_PhoneInfo.Visible:=True;            // инфо что телдефон должен начинаться с 8
@@ -594,7 +612,7 @@ begin
        SetReasonSMSType(reason_Empty);
       end;
       options_Sending: begin
-       btnSendSMS.Caption:=' &Запустить SMS рассылку';
+       btnAction.Caption:=' &Запустить SMS рассылку';
 
        lblNameExcelFile.Caption:=EXCEL_FILE_NOT_LOADED;   // excel файл
        lblNameExcelFile.Hint:='';
@@ -619,19 +637,10 @@ begin
        SharedPacientsListNotSending.Clear;
       end;
       options_Find:begin
-       btnSendSMS.Caption:=' &Проверить статус сообщения';
+       btnAction.Caption:=' &Проверить статус сообщения';
 
        edtFindSMS.Text:='';
        st_PhoneInfo2.Visible:=True;
-
-       chkboxOnlyCurrentDay.Checked:=False;
-       chkboxOnlyCurrentDay.Caption:='текущий день ('+DateToStr(now)+')';
-
-        // устанавливаем даты
-        if not SetFindDate(dateStart,dateStop,errorDescription) then begin
-          MessageBox(Handle,PChar(errorDescription),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-          Exit;
-        end;
       end;
    end;
   end;
@@ -2020,6 +2029,5 @@ begin
       end;
    end;
 end;
-
 
 end.

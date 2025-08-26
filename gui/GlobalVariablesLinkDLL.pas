@@ -48,8 +48,9 @@ uses
   function GetPhoneTrunkQueue(_table:enumReportTableIVR; _phone:string;_timecall:string):PChar; stdcall;  external 'core.dll';   // нахождение на какой транк звонил номер который ушел в очередь
   function GetPhoneOperatorQueue(_table:enumReportTableIVR; _phone:string;_timecall:string):PChar; stdcall;  external 'core.dll'; // нахождение у какого оператора зарегистрирован телефон
   function GetPhoneRegionQueue(_table:enumReportTableIVR; _phone:string;_timecall:string):PChar; stdcall;  external 'core.dll'; // нахождение у в каком регионе зарегистрирован телефон
-  function GetSMSStatusID(_idSMS:Integer; _table:enumReportTableSMSStatus):Integer; stdcall;  external 'core.dll';      // нахождение статуса SMS сообщения
-  function GetSMSStatus(_code:Integer):PChar;                           stdcall;  external 'core.dll';      // нахождение статуса сообщения
+  function GetCodeStatusSms(_idSMS:Integer; _table:enumReportTableSMSStatus):enumStatusCodeSms; stdcall;  external 'core.dll';      // нахождение статуса SMS сообщения
+  function GetStatusSms(_code:enumStatusCodeSms):Pchar;                 stdcall;  external 'core.dll';      // нахождение статуса сообщения
+  function GetCountSmsSendingMessageInPhone(_phone:string):Integer;     stdcall;  external 'core.dll';      // кол-во отправленных SMS сообщений на номере
 
   // --- connect_to_server.dll ---  (по сути этот тут не нужно, но пусть будет)
  function GetServerAddress:string;      stdcall;   external 'connect_to_server.dll'; // адрес сервера
@@ -62,7 +63,6 @@ uses
  function GetFTPServerPassword:string;  stdcall;   external 'connect_to_server.dll'; // пароль
  function GetTCPServerAddress:string;   stdcall;   external 'connect_to_server.dll'; // адрес tcp server core_dashboard
  function GetTCPServerPort:Word;        stdcall;   external 'connect_to_server.dll'; // port tcp server core_dashboard
-
 
 
 implementation

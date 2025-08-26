@@ -212,7 +212,6 @@
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="..\custom_class\TAutoPodborPeopleUnit.pas"/>
-        <DCCReference Include="..\gui\GlobalVariablesLinkDLL.pas"/>
         <DCCReference Include="FormPodborUnit.pas">
             <Form>FormPodbor</Form>
             <FormType>dfm</FormType>
@@ -226,6 +225,12 @@
             <Form>FormManualPodborStatus</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="FormStatusSendingSMSUnit.pas">
+            <Form>FormStatusSendingSMS</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\custom_class\TAutoPodborSendingSmsUnit.pas"/>
+        <DCCReference Include="..\gui\GlobalVariablesLinkDLL.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

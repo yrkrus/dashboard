@@ -384,6 +384,41 @@ interface
    enumCursorHover = (eMouseLeave,
                       eMouseMove);
 
+
+   type  // типы статусов SMS сообщения
+   enumStatusCodeSms = (  eStatusCodeSmsQueued = 1,        // Сообщение находится в очереди отправки и еще не было передано оператору
+                          eStatusCodeSmsAccepted,          // Сообщение уже передано оператору
+                          eStatusCodeSmsDelivered,         // Сообщение успешно доставлено абоненту
+                          eStatusCodeSmsRejected,          // Сообщение отклонено оператором
+                          eStatusCodeSmsUndeliverable,     // Сообщение невозможно доставить из-за недоступности абонента
+                          eStatusCodeSmsError,             // Ошибка отправки. Сообщение не было отправлено абоненту
+                          eStatusCodeSmsExpired,           // Истекло время ожидания финального статуса
+                          eStatusCodeSmsUnknown,           // Статус сообщения неизвестен
+                          eStatusCodeSmsAborted,           // Сообщение отменено пользователем
+                          eStatusCodeSms20107 = 20107,	    // Неверный логин или пароль
+                          eStatusCodeSms20117 = 20117,	    // Некорреткный номер телефона
+                          eStatusCodeSms20148 = 20148,	    // Невозможно предоставить услуги для продукта
+                          eStatusCodeSms20154 = 20154,	    // Ошибка транспорта
+                          eStatusCodeSms20158 = 20158,	    // Отправка невозможна, так как номер занесён в чёрный список
+                          eStatusCodeSms20167 = 20167,	    // Запрещено посылать сообщение с тем же текстом тому же адресату в течение нескольких минут
+                          eStatusCodeSms20170 = 20170,	    // Слишком длинное сообщение
+                          eStatusCodeSms20171 = 20171,	    // Сообщение не прошло проверку цензуры
+                          eStatusCodeSms20200 = 20200,	    // Неправильный запрос
+                          eStatusCodeSms20202 = 20202,	    // Не найден почтовый ящик для входящих сообщений
+                          eStatusCodeSms20203 = 20203,	    // Нет номера телефона или идентификатора группы в запросе
+                          eStatusCodeSms20204 = 20204,	    // Не найдены телефоны для группы
+                          eStatusCodeSms20207 = 20207,	    // Неправильный формат даты
+                          eStatusCodeSms20208 = 20208,	    // Дата начала позже даты конца
+                          eStatusCodeSms20209 = 20209,	    // Параметры запроса пустые
+                          eStatusCodeSms20211 = 20211,	    // Превышено количество сообщений для пользователя
+                          eStatusCodeSms20212 = 20212,	    // Превышен интервал в выбранных датах
+                          eStatusCodeSms20213 = 20213,	    // Невалидные номера в списке
+                          eStatusCodeSms20218 = 20218,	    // Запрещено отправлять на несколько адресов
+                          eStatusCodeSms20230 = 20230,	    // Отправитель не одобрен на стороне оператора
+                          eStatusCodeSms20280 = 20280,	    // Достигнут суточный лимит на отправку SMS с платформы A2P
+                          eStatusCodeSms20281 = 20281	     // Достигнут месячный лимит на отправку SMS с платформы A2P
+                    );
+
   // =================== ПРОЕОБРАЗОВАНИЯ ===================
 
   // Boolean -> string
@@ -444,6 +479,8 @@ interface
  function StringToEnumTrunkStatus(_status:string):enumTrunkStatus;                    // EnumTrunkStatus - > String
  function EnumReportTableIVRToString(_table:enumReportTableIVR):string;               // EnumReportTableIVRToString -> String
  function EnumReportTableSMSToString(_table:enumReportTableSMSStatus):string;         // EnumReportTableSMSStatus -> String
+ function StringToEnumStatusCodeSms(_value:string):enumStatusCodeSms;                 // String -> EnumStatusCodeSms
+ function EnumStatusCodeSmsToString(_code:enumStatusCodeSms):string;                  // EnumStatusCodeSms -> String
 
  // =================== ПРОЕОБРАЗОВАНИЯ ===================
  implementation
@@ -1311,5 +1348,64 @@ begin
   end;
 end;
 
+
+// EnumStatusCodeSms -> String
+function EnumStatusCodeSmsToString(_code:enumStatusCodeSms):string;
+begin
+  case _code of
+    eStatusCodeSmsQueued:     Result:= '1';        // Сообщение находится в очереди отправки и еще не было передано оператору
+    eStatusCodeSmsAccepted:   Result:= '2';        // Сообщение уже передано оператору
+    eStatusCodeSmsDelivered:  Result:= '3';        // Сообщение успешно доставлено абоненту
+    eStatusCodeSmsRejected:   Result:= '4';       // Сообщение отклонено оператором
+    eStatusCodeSmsUndeliverable:Result:= '5';     // Сообщение невозможно доставить из-за недоступности абонента
+    eStatusCodeSmsError:        Result:= '6';     // Ошибка отправки. Сообщение не было отправлено абоненту
+    eStatusCodeSmsExpired:      Result:= '7';     // Истекло время ожидания финального статуса
+    eStatusCodeSmsUnknown:      Result:= '8';     // Статус сообщения неизвестен
+    eStatusCodeSmsAborted:      Result:= '9';     // Сообщение отменено пользователем
+    eStatusCodeSms20107: Result:= '20107';	    // Неверный логин или пароль
+    eStatusCodeSms20117: Result:= '20117';	    // Некорреткный номер телефона
+    eStatusCodeSms20148: Result:= '20148';	    // Невозможно предоставить услуги для продукта
+    eStatusCodeSms20154: Result:= '20154';	    // Ошибка транспорта
+    eStatusCodeSms20158: Result:= '20158';	    // Отправка невозможна, так как номер занесён в чёрный список
+    eStatusCodeSms20167: Result:= '20167';	    // Запрещено посылать сообщение с тем же текстом тому же адресату в течение нескольких минут
+    eStatusCodeSms20170: Result:= '20170';	    // Слишком длинное сообщение
+    eStatusCodeSms20171: Result:= '20171';	    // Сообщение не прошло проверку цензуры
+    eStatusCodeSms20200: Result:= '20200';	    // Неправильный запрос
+    eStatusCodeSms20202: Result:= '20202';	    // Не найден почтовый ящик для входящих сообщений
+    eStatusCodeSms20203: Result:= '20203';	    // Нет номера телефона или идентификатора группы в запросе
+    eStatusCodeSms20204: Result:= '20204';	    // Не найдены телефоны для группы
+    eStatusCodeSms20207: Result:= '20207';	    // Неправильный формат даты
+    eStatusCodeSms20208: Result:= '20208';	    // Дата начала позже даты конца
+    eStatusCodeSms20209: Result:= '20209';	    // Параметры запроса пустые
+    eStatusCodeSms20211: Result:= '20211';	    // Превышено количество сообщений для пользователя
+    eStatusCodeSms20212: Result:= '20212';	    // Превышен интервал в выбранных датах
+    eStatusCodeSms20213: Result:= '20213';	    // Невалидные номера в списке
+    eStatusCodeSms20218: Result:= '20218';	    // Запрещено отправлять на несколько адресов
+    eStatusCodeSms20230: Result:= '20230';	    // Отправитель не одобрен на стороне оператора
+    eStatusCodeSms20280: Result:= '20280';	    // Достигнут суточный лимит на отправку SMS с платформы A2P
+    eStatusCodeSms20281: Result:= '20281';	     // Достигнут месячный лимит на отправку SMS с платформы A2P
+  else
+    Result:= '8';
+  end;
+end;
+
+
+//  String -> EnumStatusCodeSms
+function StringToEnumStatusCodeSms(_value:string):enumStatusCodeSms;
+var
+ i:Integer;
+ code:enumStatusCodeSms;
+begin
+  Result:=eStatusCodeSmsUnknown;
+
+  for i:=Ord(Low(enumStatusCodeSms)) to Ord(High(enumStatusCodeSms)) do
+  begin
+    code:=enumStatusCodeSms(i);
+    if EnumStatusCodeSmsToString(code) = _value then begin
+     Result:=code;
+     Break;
+    end;
+  end;
+end;
 
 end.

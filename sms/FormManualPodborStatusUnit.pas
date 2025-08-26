@@ -18,10 +18,12 @@ type
     lblPo: TLabel;
     dateStart: TDateTimePicker;
     dateStop: TDateTimePicker;
-    chkboxOnlyCurrentDay: TCheckBox;
     btnStatus_available: TBitBtn;
-    procedure chkboxOnlyCurrentDayClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure btnStatus_availableClick(Sender: TObject);
+    procedure list_HistoryDblClick(Sender: TObject);
+    procedure list_HistoryCustomDrawItem(Sender: TCustomListView;
+      Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
   private
     { Private declarations }
 
@@ -31,10 +33,14 @@ type
    procedure LoadData(_startDate:TDate;
                      _stopDate:TDate;
                      _table:enumReportTableSMSStatus); // прогрузка данных
-  procedure ShowSMS(var p_ListView:TListView;
+   procedure ShowSMS(var p_ListView:TListView;
                     _startDate:TDate;
                     _stopDate:TDate;
                     _table:enumReportTableSMSStatus);       // прогрузка отправленных смс
+   procedure AddListItem(const _id, _dateTime, _phone, _code, _userId: string;
+                         var p_ListView: TListView);
+
+   function Check(var _errorDescription:string):Boolean;  // проверка
 
   public
     { Public declarations }
@@ -46,7 +52,7 @@ var
 implementation
 
 uses
-  FunctionUnit, GlobalVariablesLinkDLL;
+  FunctionUnit, GlobalVariablesLinkDLL, FormHomeUnit, GlobalVariables;
 
 {$R *.dfm}
 
@@ -61,12 +67,42 @@ begin
 end;
 
 
+
+procedure TFormManualPodborStatus.AddListItem(const _id, _dateTime, _phone, _code, _userId: string;
+                                              var p_ListView: TListView);
+var
+  ListItem: TListItem;
+  time_talk: Integer;
+begin
+  ListItem := p_ListView.Items.Add;
+  ListItem.Caption := _id;      // id
+  ListItem.SubItems.Add(_dateTime); // дата время
+  ListItem.SubItems.Add(_phone);    // номер телефона
+  ListItem.SubItems.Add(_code);     // код статуса
+  ListItem.SubItems.Add(GetUserNameFIO(StrToInt(_userId))); // кто отправил
+end;
+
+// проверка
+function TFormManualPodborStatus.Check(var _errorDescription:string):Boolean;
+begin
+  Result:=False;
+  // проверка чтобы дата начала была не больше даты окночания
+  if dateStart.Date > dateStop.Date then begin
+    _errorDescription:='Что то как то дебет с кредитом не сходится! '+#13#13+'Дата начала больше даты окончания';
+    Exit;
+  end;
+
+  Result:=True;
+end;
+
+
 procedure TFormManualPodborStatus.ClearListView(var p_ListView:TListView);
 const
- cWidth_default    :Word = 660;
- cWidth_date       :Word = 25;
- cWidth_phone      :Word = 20;
- cWidth_user       :Word = 58;
+ cWidth_default    :Word = 540;
+ cWidth_date       :Word = 28;
+ cWidth_phone      :Word = 22;
+ cWidth_code       :Word = 17;
+ cWidth_user       :Word = 30;
 begin
  with p_ListView do begin
 
@@ -96,6 +132,13 @@ begin
 
     with Columns.Add do
     begin
+      Caption:=' Код статуса ';
+      Width:=Round((cWidth_default*cWidth_code)/100);
+      Alignment:=taCenter;
+    end;
+
+    with Columns.Add do
+    begin
       Caption:=' Кто отправил ';
       Width:=Round((cWidth_default*cWidth_user)/100);
       Alignment:=taCenter;
@@ -108,11 +151,6 @@ procedure TFormManualPodborStatus.FormDefault;
 var
  errorDescription:string;
 begin
-  st_NoSMS.Visible:=True;
-
-  chkboxOnlyCurrentDay.Checked:=False;
-  chkboxOnlyCurrentDay.Caption:='текущий день ('+DateToStr(now)+')';
-
   // устанавливаем даты
   if not SetFindDate(dateStart,dateStop,errorDescription) then begin
     MessageBox(Handle,PChar(errorDescription),PChar('Ошибка'),MB_OK+MB_ICONERROR);
@@ -145,66 +183,77 @@ procedure TFormManualPodborStatus.ShowSMS(var p_ListView:TListView;
 var
   ado: TADOQuery;
   serverConnect: TADOConnection;
-  id, dateTime, sip, phone, numberQueue, talkTime:string;
-  countCalls:Integer;
+  countSMS:Integer;
   i:Integer;
-  response:string;
+  id,dateTime,phone,codeStatus,userID:string;
+  table:string;
+  response:TStringBuilder;
 begin
   ado := TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
-
   if not Assigned(serverConnect) then
   begin
     FreeAndNil(ado);
     Exit;
   end;
 
+  table:=EnumReportTableSMSToString(_table);
+  response:=TStringBuilder.Create;
+
   try
     with ado do
     begin
       Connection := serverConnect;
       SQL.Clear;
+      with response do begin
+        Append('select count(id) from '+table);
+        Append(' where date_time >='+#39+GetDateToDateBD(DateToStr(_startDate))+' 00:00:00'+#39);
+        Append(' and date_time <='+#39+GetDateToDateBD(DateToStr(_stopDate))+' 23:59:59'+#39);
+        Append(' and user_id <> ''-1''');
+      end;
 
-      if _idUser = -1 then response:='select count(id) from queue where hash is not NULL'
-      else response:='select count(id) from queue where sip = '+#39+GetUserSIP(_idUser)+#39+ 'and hash is not NULL';
-
-       SQL.Add(response);
+      SQL.Add(response.ToString);
       Active := True;
-      countCalls := Fields[0].Value;
 
-      if countCalls = 0 then
+      countSMS := Fields[0].Value;
+
+      if countSMS = 0 then
       begin
         // надпись что нет данных
-        st_NoCalls.Visible := True;
+        st_NoSMS.Visible:=True;
 
         Exit;
       end;
 
       // скрываем надпись что нет данных
-      st_NoCalls.Visible := False;
+      st_NoSMS.Visible:=False;
 
       SQL.Clear;
-      if _idUser = -1 then response:='select id, date_time, sip, phone, number_queue, talk_time from queue where hash is not NULL order by date_time DESC'
-      else response:='select id, date_time, sip, phone, number_queue, talk_time from queue where sip = '+#39+GetUserSIP(_idUser)+#39+' and hash is not NULL order by date_time DESC';
+      with response do begin
+        Clear;
+        Append('select id,date_time,phone,status,user_id from '+table);
+        Append(' where date_time >='+#39+GetDateToDateBD(DateToStr(_startDate))+' 00:00:00'+#39);
+        Append(' and date_time <='+#39+GetDateToDateBD(DateToStr(_stopDate))+' 23:59:59'+#39);
+        Append(' and user_id <> ''-1''');
+        Append(' order by date_time DESC');
+      end;
 
-      SQL.Add(response);
-      Active := True;
+      SQL.Add(response.ToString);
+      Active:=True;
 
-      for i := 0 to countCalls - 1 do
+      for i:= 0 to countSMS - 1 do
       begin
 
-        id          :=VarToStr(Fields[0].Value);
-        dateTime    :=VarToStr(Fields[1].Value);
-        sip         :=VarToStr(Fields[2].Value);
-        phone       :=VarToStr(Fields[3].Value);
-        numberQueue :=VarToStr(Fields[4].Value);
-        talkTime    :=VarToStr(Fields[5].Value);
-
+        id:=VarToStr(Fields[0].Value);
+        dateTime:=VarToStr(Fields[1].Value);
+        phone:=VarToStr(Fields[2].Value);
+        codeStatus:=VarToStr(Fields[3].Value);
+        userID:=VarToStr(Fields[4].Value);
 
         // Элемент не найден, добавляем новый
-        AddListItem(id, dateTime,sip, phone, numberQueue, talkTime,
-                    isReducedTime,
+        AddListItem(id, dateTime, phone, codeStatus, userID,
                     p_ListView);
+
         ado.Next;
       end;
 
@@ -220,40 +269,81 @@ begin
 end;
 
 
-procedure TFormManualPodborStatus.chkboxOnlyCurrentDayClick(Sender: TObject);
+procedure TFormManualPodborStatus.btnStatus_availableClick(Sender: TObject);
 var
- _errorDescription:string;
+ errorDescription:string;
 begin
-  if chkboxOnlyCurrentDay.Checked then begin
-    lblS.Enabled:=False;
-    dateStart.Enabled:=False;
-    lblPo.Enabled:=False;
-    dateStop.Enabled:=False;
-
-    dateStart.Date:=Now;
-    dateStop.Date:=Now;
-
-  end
-  else begin
-    lblS.Enabled:=True;
-
-    dateStart.Enabled:=True;
-    lblPo.Enabled:=True;
-    dateStop.Enabled:=True;
-
-   // устанавливаем даты
-    if not SetFindDate(dateStart,dateStop,_errorDescription) then begin
-      MessageBox(Handle,PChar(_errorDescription),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-      Exit;
-    end;
+  if not Check(errorDescription)  then begin
+    MessageBox(Handle,PChar(errorDescription),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+   Exit;
   end;
+
+  showWait(show_open);
+  LoadData(dateStart.Date, dateStop.Date, eTableHistorySMS);
+  showWait(show_close);
 end;
+
 
 procedure TFormManualPodborStatus.FormShow(Sender: TObject);
 begin
   showWait(show_open);
   ShowLoading;
   showWait(show_close);
+end;
+
+procedure TFormManualPodborStatus.list_HistoryCustomDrawItem(
+  Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
+  var DefaultDraw: Boolean);
+var
+ status:string;
+begin
+  if not Assigned(Item) then Exit;
+
+  try
+    if Item.SubItems.Count = 4 then // Проверяем, что есть достаточно SubItems
+    begin
+      status:=Item.SubItems.Strings[2];
+
+      if status = '3' then begin
+       Sender.Canvas.Font.Color := EnumColorStatusToTColor(color_Good);
+       Exit;
+      end
+      else begin
+       Sender.Canvas.Font.Color := EnumColorStatusToTColor(color_Bad);
+       Exit;
+      end;
+    end;
+
+   Sender.Canvas.Font.Color := EnumColorStatusToTColor(color_Default);
+  except
+    on E:Exception do
+    begin
+     SharedMainLog.Save('TFormManualPodborStatus '+e.ClassName+': '+e.Message, True);
+    end;
+  end;
+end;
+
+procedure TFormManualPodborStatus.list_HistoryDblClick(Sender: TObject);
+var
+  SelectedItem: TListItem;
+  phone:string;
+begin
+  // Получаем выбранный элемент
+  SelectedItem := list_History.Selected;
+
+  // Проверяем, выбран ли элемент
+  if Assigned(SelectedItem) then
+  begin
+     phone:=SelectedItem.SubItems[1];
+     phone:=StringReplace(phone,'+7','8',[rfReplaceAll]);
+
+     FormHome.SetPhoneNumberFindStatusSMS(phone);
+     Close;
+  end
+  else
+  begin
+    MessageBox(Handle,PChar('Не выбран номер телефона'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+  end;
 end;
 
 end.

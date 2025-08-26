@@ -775,8 +775,12 @@ begin
    showWait(show_close);
    Screen.Cursor:=crDefault;
 
-   FormPodbor.SetListPacients(people);
-   FormPodbor.ShowModal;
+   with FormPodbor do begin
+     SetTypePodbor(eTypePodporPeople);
+     SetListPacients(people);
+     ShowModal;
+   end;
+
   end;
 end;
 

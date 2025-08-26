@@ -23,7 +23,7 @@ uses
       m_phone       :string;
       m_date        :string;
       m_sms         :string;
-      m_code        :Integer;
+      m_code        :enumStatusCodeSms;
       m_status      :string;
 
       constructor Create;    overload;
@@ -42,7 +42,7 @@ uses
       m_sms           :TStructSMS;
 
       constructor Create;                   overload;
-      function GetStatusSMS(_code:Integer):string;  // текущий статус сообщения
+      function GetStatusSMS(_code:enumStatusCodeSms):string;  // текущий статус сообщения
       end;
  // class TStructUserSending END
 
@@ -91,7 +91,7 @@ constructor TStructSMS.Create;
    m_date   :='';
    m_sms    :='';
    m_status :='';
-   m_code   :=0;
+   m_code   :=eStatusCodeSmsUnknown;
  end;
 
 
@@ -111,9 +111,9 @@ constructor TStructSMS.Create;
  end;
 
 // текущий статус сообщения
-function TStructUserSending.GetStatusSMS(_code:Integer):string;
+function TStructUserSending.GetStatusSMS(_code:enumStatusCodeSms):string;
 begin
-  Result:=GetSMSStatus(_code);
+  Result:=GetStatusSms(_code);
 end;
 
 
@@ -184,9 +184,9 @@ constructor TShowMessageSMS.Create;
         m_list[i].m_sms.m_date:=VarToStr(Fields[1].Value);
         m_list[i].m_sms.m_sms:=VarToStr(Fields[3].Value);
 
-        if Fields[4].Value <> null then m_list[i].m_sms.m_code:=StrToInt(VarToStr(Fields[4].Value));
+        if Fields[4].Value <> null then m_list[i].m_sms.m_code:=StringToEnumStatusCodeSms((VarToStr(Fields[4].Value)));
 
-        m_list[i].m_sms.m_status:=GetSMSStatus(m_list[i].m_sms.m_code);
+        m_list[i].m_sms.m_status:=GetStatusSms(m_list[i].m_sms.m_code);
 
         ado.Next;
       end;
@@ -204,7 +204,7 @@ constructor TShowMessageSMS.Create;
 function TShowMessageSMS.IsSendingSMS(_id:Integer):Boolean;
 begin
   Result:=False;
-  if m_list[_id].m_sms.m_code = 3 then Result:=True;
+  if m_list[_id].m_sms.m_code = eStatusCodeSmsDelivered then Result:=True;
 end;
 
 

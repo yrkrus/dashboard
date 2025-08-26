@@ -77,6 +77,9 @@ var
   // список с номерами тлф для ручной одиночной отправки
   SharedSendindPhoneManualSMS   : TStringList;
 
+  // список с номерами тлф для проверки статуса сообщения
+  SharedStatusSendingSMS   : TStringList;
+
   // Сохранение в глобальный шаблон
   ISGLOBAL_MESSAGE:Boolean = True;
 
@@ -100,6 +103,7 @@ initialization  // Инициализация
 
  SharedMainLog                :=TLoggingFile.Create('sms');   // лог работы формы
  SharedSendindPhoneManualSMS  :=TStringList.Create;
+ SharedStatusSendingSMS       :=TStringList.Create;
 
  finalization
 

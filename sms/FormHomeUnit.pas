@@ -16,7 +16,7 @@ type
     sheet_SendingSMS: TTabSheet;
     Button1: TButton;
     StatusBar: TStatusBar;
-    btnSendSMS: TBitBtn;
+    btnAction: TBitBtn;
     group_ManualSMS: TGroupBox;
     Label1: TLabel;
     edtManualSMS: TEdit;
@@ -57,17 +57,12 @@ type
     edtFindSMS: TEdit;
     st_PhoneInfo2: TStaticText;
     Label5: TLabel;
-    GroupBox2: TGroupBox;
-    lblS: TLabel;
-    lblPo: TLabel;
-    dateStart: TDateTimePicker;
-    dateStop: TDateTimePicker;
-    chkboxOnlyCurrentDay: TCheckBox;
     lblManualPodborFindStatus: TLabel;
+    ImgNewYear: TImage;
     procedure ProcessCommandLineParams(DEBUG:Boolean = False);
     procedure FormCreate(Sender: TObject);
     procedure btnLoadFileClick(Sender: TObject);
-    procedure btnSendSMSClick(Sender: TObject);
+    procedure btnActionClick(Sender: TObject);
     procedure btnLoadFile2Click(Sender: TObject);
     procedure page_TypesSMSChange(Sender: TObject);
     procedure btnSaveFirebirdSettingsClick(Sender: TObject);
@@ -111,7 +106,6 @@ type
       Shift: TShiftState);
     procedure edtFindSMSClick(Sender: TObject);
     procedure edtFindSMSKeyPress(Sender: TObject; var Key: Char);
-    procedure chkboxOnlyCurrentDayClick(Sender: TObject);
     procedure lblManualPodborFindStatusClick(Sender: TObject);
     procedure edtFindSMSChange(Sender: TObject);
 
@@ -135,6 +129,7 @@ type
   procedure SetEditMessage(_status:enumParamStatus; _textStatus:string = '');
   procedure SetReasonSMSType(_reason:enumReasonSmsMessage);
   procedure SetPhoneNumberPodbor(_phone:string);
+  procedure SetPhoneNumberFindStatusSMS(_phone:string);
 
   end;
 
@@ -157,7 +152,7 @@ implementation
 uses
   FunctionUnit, GlobalVariables, GlobalVariablesLinkDLL, TSendSMSUint,
   FormMyTemplateUnit, FormNotSendingSMSErrorUnit, FormListSendingSMSUnit,
-  TXmlUnit, TSpellingUnit, FormSendingSMSUnit, FormDictionaryUnit, FormGenerateSMSUnit, DMUnit, FormManualPodborUnit, FormManualPodborStatusUnit;
+  TXmlUnit, TSpellingUnit, FormSendingSMSUnit, FormDictionaryUnit, FormGenerateSMSUnit, DMUnit, FormManualPodborUnit, FormManualPodborStatusUnit, FormStatusSendingSMSUnit, FormPodborUnit, TAutoPodborSendingSmsUnit;
 
  {$R *.dfm}
 
@@ -190,6 +185,15 @@ begin
   edtManualSMS.Text:=_phone;
 
   st_PhoneInfo.Visible:=False;
+end;
+
+
+procedure TFormHome.SetPhoneNumberFindStatusSMS(_phone:string);
+begin
+  edtFindSMS.Clear;
+  edtFindSMS.Text:=_phone;
+
+  st_PhoneInfo2.Visible:=False;
 end;
 
 // установка флага что есть орфографическая ошибка
@@ -374,13 +378,14 @@ begin
   FormMyTemplate.ShowModal;
 end;
 
-procedure TFormHome.btnSendSMSClick(Sender: TObject);
+procedure TFormHome.btnActionClick(Sender: TObject);
 var
  currentOptions:enumSendingOptions;
  error:string;
  SendindMessage:string;
  i:Integer;
  resultat:Word;
+ sendingSMS:TAutoPodborSendingSms;
 begin
   // проверки
   Screen.Cursor:=crHourGlass;
@@ -405,6 +410,10 @@ begin
      end;
      2:begin                  // поиск рассылки
        currentOptions:=options_Find;
+
+       // добавим номер телефона
+      SharedStatusSendingSMS.Clear;
+      if Length(edtFindSMS.Text) <> 0 then SharedStatusSendingSMS.Add(edtFindSMS.Text);
      end;
     end;
 
@@ -416,7 +425,7 @@ begin
   end;
 
 
-   // отправляем сообщение
+   // отправляем сообщение || показываем инфо по статусу отправки смс
    case currentOptions of
     options_Manual: begin
       if not SendingMessage(currentOptions, reasonSMS, error) then begin
@@ -456,7 +465,31 @@ begin
       end;
     end;
     options_Find:begin
+      // замеяем номер с 8 на +7
+      SharedStatusSendingSMS[0]:='+7' + Copy(SharedStatusSendingSMS[0], 2, MaxInt);
 
+      // проверим вдруг несоклько номеров смс было отрпавлено
+      if GetCountSmsSendingMessageInPhone(SharedStatusSendingSMS[0]) > 1 then begin
+        sendingSMS:=TAutoPodborSendingSms.Create(SharedStatusSendingSMS[0]);
+
+        // отобразим форму подбора
+        with FormPodbor do begin
+         SetTypePodbor(eTypePodporSMS);
+         SetListSendingSMS(sendingSMS);
+         ShowModal;
+        end;
+
+        if not FormStatusSendingSMS.IsExistPhoneFind then begin
+          Screen.Cursor:=crDefault;
+
+          MessageBox(Handle,PChar('Не выбрана дата'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+          Exit;
+        end;
+      end;
+
+      with FormStatusSendingSMS do begin
+        ShowModal;
+      end;
     end;
    end;
 
@@ -469,35 +502,6 @@ begin
    Screen.Cursor:=crDefault;
 end;
 
-
-procedure TFormHome.chkboxOnlyCurrentDayClick(Sender: TObject);
-var
- _errorDescription:string;
-begin
-  if chkboxOnlyCurrentDay.Checked then begin
-    lblS.Enabled:=False;
-    dateStart.Enabled:=False;
-    lblPo.Enabled:=False;
-    dateStop.Enabled:=False;
-
-    dateStart.Date:=Now;
-    dateStop.Date:=Now;
-
-  end
-  else begin
-    lblS.Enabled:=True;
-
-    dateStart.Enabled:=True;
-    lblPo.Enabled:=True;
-    dateStop.Enabled:=True;
-
-    // устанавливаем даты
-      if not SetFindDate(dateStart,dateStop,_errorDescription) then begin
-        MessageBox(Handle,PChar(_errorDescription),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-        Exit;
-      end;
-  end;
-end;
 
 procedure TFormHome.chkboxShowLogClick(Sender: TObject);
 begin
@@ -542,6 +546,11 @@ end;
 
 procedure TFormHome.edtFindSMSKeyPress(Sender: TObject; var Key: Char);
 begin
+  if Key = #13 then
+  begin
+    btnAction.Click;
+  end;
+
   if not (Key in ['0'..'9', #8]) then  // #8 - Backspace, #13 - Enter
   begin
     Key := #0; // Отменяем ввод, если символ не является цифрой

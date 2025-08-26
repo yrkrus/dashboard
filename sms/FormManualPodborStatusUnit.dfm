@@ -4,8 +4,8 @@ object FormManualPodborStatus: TFormManualPodborStatus
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = #1055#1086#1076#1073#1086#1088' '#1085#1086#1084#1077#1088#1072' '#1090#1077#1083#1077#1092#1086#1085#1072
-  ClientHeight = 721
-  ClientWidth = 713
+  ClientHeight = 711
+  ClientWidth = 557
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,10 +18,10 @@ object FormManualPodborStatus: TFormManualPodborStatus
   PixelsPerInch = 96
   TextHeight = 16
   object Label2: TLabel
-    Left = 399
-    Top = 18
-    Width = 305
-    Height = 62
+    Left = 189
+    Top = 4
+    Width = 362
+    Height = 19
     Alignment = taCenter
     AutoSize = False
     Caption = #1076#1083#1103' '#1074#1099#1073#1086#1088#1072' '#1085#1091#1078#1085#1086#1075#1086' '#1085#1086#1084#1077#1088#1072' '#1085#1091#1078#1085#1086' '#1076#1074#1072' '#1088#1072#1079' '#1082#1083#1080#1082#1085#1091#1090#1100' '#1083#1077#1074#1086#1081' '#1082#1083'.'#1084#1099#1096#1080' '
@@ -36,8 +36,8 @@ object FormManualPodborStatus: TFormManualPodborStatus
   end
   object panel_History: TPanel
     Left = 6
-    Top = 92
-    Width = 700
+    Top = 83
+    Width = 545
     Height = 619
     BevelInner = bvLowered
     ShowCaption = False
@@ -45,7 +45,7 @@ object FormManualPodborStatus: TFormManualPodborStatus
     object list_History: TListView
       Left = 2
       Top = 2
-      Width = 696
+      Width = 541
       Height = 615
       Align = alClient
       BorderStyle = bsNone
@@ -63,12 +63,14 @@ object FormManualPodborStatus: TFormManualPodborStatus
       ParentFont = False
       TabOrder = 0
       ViewStyle = vsReport
-      ExplicitWidth = 660
+      OnCustomDrawItem = list_HistoryCustomDrawItem
+      OnDblClick = list_HistoryDblClick
+      ExplicitWidth = 535
     end
     object st_NoSMS: TStaticText
       Left = 6
       Top = 319
-      Width = 686
+      Width = 527
       Height = 20
       Alignment = taCenter
       AutoSize = False
@@ -85,9 +87,9 @@ object FormManualPodborStatus: TFormManualPodborStatus
   end
   object GroupBox2: TGroupBox
     Left = 8
-    Top = 7
-    Width = 385
-    Height = 81
+    Top = 21
+    Width = 543
+    Height = 56
     Caption = ' '#1055#1077#1088#1080#1086#1076' '
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -97,21 +99,21 @@ object FormManualPodborStatus: TFormManualPodborStatus
     ParentFont = False
     TabOrder = 0
     object lblS: TLabel
-      Left = 13
+      Left = 85
       Top = 23
       Width = 6
       Height = 16
       Caption = 'c'
     end
     object lblPo: TLabel
-      Left = 149
+      Left = 221
       Top = 23
       Width = 14
       Height = 16
       Caption = #1087#1086
     end
     object dateStart: TDateTimePicker
-      Left = 30
+      Left = 102
       Top = 21
       Width = 105
       Height = 24
@@ -120,7 +122,7 @@ object FormManualPodborStatus: TFormManualPodborStatus
       TabOrder = 1
     end
     object dateStop: TDateTimePicker
-      Left = 177
+      Left = 249
       Top = 21
       Width = 105
       Height = 24
@@ -128,17 +130,8 @@ object FormManualPodborStatus: TFormManualPodborStatus
       Time = 45655.862194363430000000
       TabOrder = 2
     end
-    object chkboxOnlyCurrentDay: TCheckBox
-      Left = 13
-      Top = 49
-      Width = 269
-      Height = 17
-      Caption = #1090#1077#1082#1091#1097#1080#1081' '#1076#1077#1085#1100
-      TabOrder = 3
-      OnClick = chkboxOnlyCurrentDayClick
-    end
     object btnStatus_available: TBitBtn
-      Left = 298
+      Left = 370
       Top = 19
       Width = 75
       Height = 26
@@ -196,6 +189,7 @@ object FormManualPodborStatus: TFormManualPodborStatus
       ShowHint = True
       TabOrder = 0
       WordWrap = True
+      OnClick = btnStatus_availableClick
     end
   end
 end

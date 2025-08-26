@@ -38,10 +38,10 @@ object FormHome: TFormHome
   object lblReportShowRingsOperators: TLabel
     Left = 34
     Top = 30
-    Width = 203
+    Width = 294
     Height = 16
     Cursor = crHandPoint
-    Caption = #1054#1090#1095#1077#1090' '#1087#1086' '#1079#1074#1086#1085#1082#1072#1084' '#1086#1087#1077#1088#1072#1090#1086#1088#1086#1074
+    Caption = #1054#1090#1095#1077#1090' '#1087#1086' '#1079#1074#1086#1085#1082#1072#1084' '#1086#1087#1077#1088#1072#1090#1086#1088#1086#1074' ('#1087#1086#1076#1088#1086#1073#1085#1099#1081')'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clHighlight
     Font.Height = -13
@@ -5463,7 +5463,5 @@ object FormHome: TFormHome
         Text = 'copyright'
         Width = 50
       end>
-    ExplicitTop = 325
-    ExplicitWidth = 441
   end
 end

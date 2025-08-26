@@ -17,7 +17,7 @@ object FormPodbor: TFormPodbor
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
-  object Label1: TLabel
+  object lblHeader: TLabel
     Left = 4
     Top = 7
     Width = 418
@@ -32,7 +32,7 @@ object FormPodbor: TFormPodbor
     Font.Style = []
     ParentFont = False
   end
-  object Label2: TLabel
+  object lblFooter: TLabel
     Left = 4
     Top = 168
     Width = 418
@@ -49,7 +49,7 @@ object FormPodbor: TFormPodbor
     Font.Style = []
     ParentFont = False
   end
-  object list_pacients: TListBox
+  object list_podpor: TListBox
     Left = 4
     Top = 34
     Width = 418
@@ -61,6 +61,6 @@ object FormPodbor: TFormPodbor
     Font.Style = []
     ParentFont = False
     TabOrder = 0
-    OnDblClick = list_pacientsDblClick
+    OnDblClick = list_podporDblClick
   end
 end

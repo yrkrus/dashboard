@@ -32,11 +32,13 @@ uses
   DMUnit in 'DMUnit.pas' {DM: TDataModule},
   FormEditDictionaryUnit in 'FormEditDictionaryUnit.pas' {FormEditDictionary},
   TAutoPodborPeopleUnit in '..\custom_class\TAutoPodborPeopleUnit.pas',
-  GlobalVariablesLinkDLL in '..\gui\GlobalVariablesLinkDLL.pas',
   FormPodborUnit in 'FormPodborUnit.pas' {FormPodbor},
   FormManualPodborUnit in 'FormManualPodborUnit.pas' {FormManualPodbor},
   TSMSCallTalkInfoUnit in '..\custom_class\TSMSCallTalkInfoUnit.pas',
-  FormManualPodborStatusUnit in 'FormManualPodborStatusUnit.pas' {FormManualPodborStatus};
+  FormManualPodborStatusUnit in 'FormManualPodborStatusUnit.pas' {FormManualPodborStatus},
+  FormStatusSendingSMSUnit in 'FormStatusSendingSMSUnit.pas' {FormStatusSendingSMS},
+  TAutoPodborSendingSmsUnit in '..\custom_class\TAutoPodborSendingSmsUnit.pas',
+  GlobalVariablesLinkDLL in '..\gui\GlobalVariablesLinkDLL.pas';
 
 {$R *.res}
 
@@ -63,5 +65,6 @@ begin
   Application.CreateForm(TFormPodbor, FormPodbor);
   Application.CreateForm(TFormManualPodbor, FormManualPodbor);
   Application.CreateForm(TFormManualPodborStatus, FormManualPodborStatus);
+  Application.CreateForm(TFormStatusSendingSMS, FormStatusSendingSMS);
   Application.Run;
 end.
