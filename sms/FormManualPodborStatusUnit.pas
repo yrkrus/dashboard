@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ComCtrls,
-  Vcl.ExtCtrls, TCustomTypeUnit, Data.DB, Data.Win.ADODB;
+  Vcl.ExtCtrls, TCustomTypeUnit, Data.DB, Data.Win.ADODB, Vcl.Menus;
 
 type
   TFormManualPodborStatus = class(TForm)
@@ -19,13 +19,19 @@ type
     dateStart: TDateTimePicker;
     dateStop: TDateTimePicker;
     btnStatus_available: TBitBtn;
+    popmenu_FindStatus: TPopupMenu;
+    popmenu_ActionShowStatus: TMenuItem;
     procedure FormShow(Sender: TObject);
     procedure btnStatus_availableClick(Sender: TObject);
     procedure list_HistoryDblClick(Sender: TObject);
     procedure list_HistoryCustomDrawItem(Sender: TCustomListView;
       Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
+    procedure popmenu_ActionShowStatusClick(Sender: TObject);
+    procedure list_HistoryMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
   private
     { Private declarations }
+   SelectedItemPopMenu: TListItem; // Переменная для хранения выбранного элемента(для popmenu_ActionShowStatus)
 
    procedure ShowLoading;
    procedure FormDefault;
@@ -52,7 +58,7 @@ var
 implementation
 
 uses
-  FunctionUnit, GlobalVariablesLinkDLL, FormHomeUnit, GlobalVariables;
+  FunctionUnit, GlobalVariablesLinkDLL, FormHomeUnit, GlobalVariables, FormStatusSendingSMSUnit;
 
 {$R *.dfm}
 
@@ -175,6 +181,32 @@ begin
 end;
 
 
+procedure TFormManualPodborStatus.popmenu_ActionShowStatusClick(
+  Sender: TObject);
+var
+  phone:string;
+begin
+  // Проверяем, был ли выбран элемент
+  if Assigned(SelectedItemPopMenu) then
+  begin
+     phone:=SelectedItemPopMenu.SubItems[1];
+
+     SharedStatusSendingSMS.Clear;
+     SharedStatusSendingSMS.Add(phone);
+
+      with FormStatusSendingSMS do begin
+        SetSmsInfo(SharedStatusSendingSMS[0]);
+        ShowModal;
+      end;
+  end
+  else
+  begin
+   MessageBox(Handle,PChar('Не выбран номер телефона'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+  end;
+end;
+
+
+
 // прогрузка отправленных смс
 procedure TFormManualPodborStatus.ShowSMS(var p_ListView:TListView;
                                           _startDate:TDate;
@@ -209,7 +241,7 @@ begin
         Append('select count(id) from '+table);
         Append(' where date_time >='+#39+GetDateToDateBD(DateToStr(_startDate))+' 00:00:00'+#39);
         Append(' and date_time <='+#39+GetDateToDateBD(DateToStr(_stopDate))+' 23:59:59'+#39);
-        Append(' and user_id <> ''-1''');
+        Append(' and user_id not IN (''-1'',''0'') ');
       end;
 
       SQL.Add(response.ToString);
@@ -234,7 +266,7 @@ begin
         Append('select id,date_time,phone,status,user_id from '+table);
         Append(' where date_time >='+#39+GetDateToDateBD(DateToStr(_startDate))+' 00:00:00'+#39);
         Append(' and date_time <='+#39+GetDateToDateBD(DateToStr(_stopDate))+' 23:59:59'+#39);
-        Append(' and user_id <> ''-1''');
+        Append(' and user_id not IN (''-1'',''0'')');
         Append(' order by date_time DESC');
       end;
 
@@ -346,4 +378,14 @@ begin
   end;
 end;
 
+procedure TFormManualPodborStatus.list_HistoryMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  // Проверяем, был ли клик правой кнопкой мыши
+  if Button = mbRight then
+  begin
+    // Получаем элемент, на который кликнули
+    SelectedItemPopMenu := list_History.GetItemAt(X, Y);
+  end;
+end;
 end.

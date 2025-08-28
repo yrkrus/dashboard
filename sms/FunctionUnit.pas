@@ -10,7 +10,8 @@ FormHomeUnit,
  IdSSL,IdIOHandlerStack, IdSSLOpenSSL, System.DateUtils,System.IniFiles,
  Winapi.WinSock,  Vcl.ComCtrls, GlobalVariables, Vcl.Grids, Data.Win.ADODB,
  Data.DB, IdException, TPacientsListUnit, Vcl.Menus, System.SyncObjs,
- TCustomTypeUnit, Word_TLB, ActiveX, FormGenerateSMSUnit, Winapi.RichEdit;
+ TCustomTypeUnit, Word_TLB, ActiveX, FormGenerateSMSUnit, Winapi.RichEdit,
+ Vcl.Imaging.Jpeg, System.IOUtils, Vcl.ExtCtrls;
 
 
 function GetSMS(inPacientPhone:string):string; overload;                                      // отправка смс v2
@@ -77,6 +78,8 @@ procedure SetRandomFontColor(var p_label: TLabel);                              
 function SetFindDate(var _startDate:TDateTimePicker;
                      var _stopDate:TDateTimePicker;
                      var _errorDescriptions:string):Boolean;                                 // установка дата начала и конца времени отбора
+function SaveResultSendingSMS(var _panel:TPanel; _path:string;
+                              var _errorDescription:string):Boolean;                             // сохранение результата отправки на диске в jpg
 
 implementation
 
@@ -2011,16 +2014,8 @@ begin
       // Получаем текущую дату
       CurrentDate := Now;
 
-      // Получаем первое число предыдущего месяца
-      if MonthOf(CurrentDate) = 1 then FirstDayOfPreviousMonth := EncodeDate(YearOf(CurrentDate) - 1, 12, 1) // Декабрь прошлого года
-      else FirstDayOfPreviousMonth := EncodeDate(YearOf(CurrentDate), MonthOf(CurrentDate) - 1, 1);
-
-       // Получаем последний день предыдущего месяца
-      if MonthOf(CurrentDate) = 1 then LastDayOfPreviousMonth := EncodeDate(YearOf(CurrentDate) - 1, 12, 31) // Последний день декабря прошлого года
-      else LastDayOfPreviousMonth := EncodeDate(YearOf(CurrentDate), MonthOf(CurrentDate), 1) - 1;
-
-      _startDate.DateTime:=FirstDayOfPreviousMonth;
-      _stopDate.DateTime:=LastDayOfPreviousMonth;
+     _startDate.DateTime := StartOfTheMonth(CurrentDate);
+     _stopDate.DateTime  := EndOfTheMonth(CurrentDate);
 
       Result:=True;
    except
@@ -2029,5 +2024,63 @@ begin
       end;
    end;
 end;
+
+
+// сохранение результата отправки на диске в jpg
+function SaveResultSendingSMS(var _panel:TPanel; _path:string; var _errorDescription:string):Boolean;
+var
+  PanelRect: TRect;
+  ScreenshotBmp: TBitmap;
+  JpegImg: TJPEGImage;
+  WindowDC: HDC;
+begin
+  Result := False;
+  _errorDescription := '';
+
+  // Проверяем путь
+  if Length(_path) = 0 then
+  begin
+    _errorDescription := 'Не указан путь куда сохранить файл';
+    Exit;
+  end;
+
+  // Получаем клиентские размеры панели
+  GetClientRect(_panel.Handle, PanelRect);
+
+  ScreenshotBmp := TBitmap.Create;
+  try
+    ScreenshotBmp.PixelFormat := pf24bit;
+    ScreenshotBmp.Width := PanelRect.Right - PanelRect.Left;
+    ScreenshotBmp.Height := PanelRect.Bottom - PanelRect.Top;
+
+    // Рисуем содержимое панели в Bitmap
+    WindowDC := GetDC(_panel.Handle);
+    try
+      BitBlt(ScreenshotBmp.Canvas.Handle,
+             0, 0, ScreenshotBmp.Width, ScreenshotBmp.Height,
+             WindowDC,
+             0, 0,
+             SRCCOPY);
+    finally
+      ReleaseDC(_panel.Handle, WindowDC);
+    end;
+
+    // Конвертируем в JPEG и сохраняем файл
+    JpegImg := TJPEGImage.Create;
+    try
+      JpegImg.CompressionQuality := EnsureRange(100, 1, 100); // Качество сжатия JPEG
+      JpegImg.Assign(ScreenshotBmp);
+      JpegImg.SaveToFile(_path);
+      Result := True;
+    except
+      on E: Exception do
+        _errorDescription := 'Ошибка при сохранении JPEG: ' + E.Message;
+    end;
+  finally
+    ScreenshotBmp.Free;
+    JpegImg.Free;
+  end;
+end;
+
 
 end.

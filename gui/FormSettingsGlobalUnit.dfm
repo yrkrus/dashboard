@@ -3,7 +3,7 @@ object FormSettingsGlobal: TFormSettingsGlobal
   Top = 0
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
-  Caption = #1043#1083#1086#1073#1072#1083#1100#1085#1099#1077' '#1085#1072#1089#1090#1088#1086#1082#1080
+  Caption = #1043#1083#1086#1073#1072#1083#1100#1085#1099#1077' '#1085#1072#1089#1090#1088#1086#1081#1082#1080
   ClientHeight = 908
   ClientWidth = 1402
   Color = clWindow
@@ -98,7 +98,7 @@ object FormSettingsGlobal: TFormSettingsGlobal
         Left = 337
         Top = 27
         Width = 23
-        Height = 18
+        Height = 20
         Caption = #1089#1077#1082
         Enabled = False
         TabOrder = 0
@@ -107,7 +107,7 @@ object FormSettingsGlobal: TFormSettingsGlobal
         Left = 337
         Top = 57
         Width = 23
-        Height = 18
+        Height = 20
         Caption = #1089#1077#1082
         Enabled = False
         TabOrder = 1
@@ -767,8 +767,8 @@ object FormSettingsGlobal: TFormSettingsGlobal
     object STSMS_viewPwd: TStaticText
       Left = 363
       Top = 84
-      Width = 57
-      Height = 15
+      Width = 59
+      Height = 17
       Cursor = crHandPoint
       Caption = #1087#1086#1082#1072#1079#1072#1090#1100
       Color = clWindow

@@ -30,10 +30,6 @@ object FormHome: TFormHome
     OnChange = page_TypesSMSChange
     object sheet_ManualSMS: TTabSheet
       Caption = #1056#1091#1095#1085#1072#1103' '#1086#1090#1087#1088#1072#1074#1082#1072
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object group_ManualSMS: TGroupBox
         Left = 0
         Top = 3
@@ -552,10 +548,6 @@ object FormHome: TFormHome
     object sheet_SendingSMS: TTabSheet
       Caption = #1052#1072#1089#1089#1086#1074#1072#1103' '#1088#1072#1089#1089#1099#1083#1082#1072
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object lblCountSendingSMS: TLabel
         Left = 332
         Top = 132
@@ -836,7 +828,7 @@ object FormHome: TFormHome
         OnClick = lblManualPodborFindStatusClick
       end
       object ImgNewYear: TImage
-        Left = 178
+        Left = 181
         Top = 22
         Width = 100
         Height = 100

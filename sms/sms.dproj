@@ -130,10 +130,10 @@
         <UWP_DelphiLogo44>C:\Users\home0\Desktop\DASHBOARD\develop\sms\ico\sms_send_Icon.png</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>C:\Users\home0\Desktop\DASHBOARD\develop\sms\ico\sms_send_Icon.png</UWP_DelphiLogo150>
         <VerInfo_MajorVer>4</VerInfo_MajorVer>
-        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=4.2.0.28;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=0.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=4.3.0.30;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=0.0.0.0;Comments=</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
-        <VerInfo_Build>28</VerInfo_Build>
-        <VerInfo_MinorVer>2</VerInfo_MinorVer>
+        <VerInfo_Build>30</VerInfo_Build>
+        <VerInfo_MinorVer>3</VerInfo_MinorVer>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -231,6 +231,7 @@
         </DCCReference>
         <DCCReference Include="..\custom_class\TAutoPodborSendingSmsUnit.pas"/>
         <DCCReference Include="..\gui\GlobalVariablesLinkDLL.pas"/>
+        <DCCReference Include="..\gui\GlobalImageDestination.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

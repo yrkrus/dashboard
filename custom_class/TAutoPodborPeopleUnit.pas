@@ -365,7 +365,6 @@ end;
 // формирование SQL запроса
 function TAutoPodborPeople.GetResponse:string;
 var
- i:Integer;
  stroka:string;
 begin
   stroka:='select LASTNAME,FIRSTNAME,MIDNAME,POL,BDATE from CLIENTS where PHONE3 IN ('

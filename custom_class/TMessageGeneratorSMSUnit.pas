@@ -14,7 +14,8 @@ interface
 
 uses
   System.Classes, System.SysUtils, FormGenerateSMSUnit, TWorkingTimeClinicUnit,
-  Vcl.ComCtrls, Data.Win.ADODB, Data.DB, IdException, TCustomTypeUnit, System.Variants;
+  Vcl.ComCtrls, Data.Win.ADODB, Data.DB, IdException, TCustomTypeUnit, System.Variants,
+  System.DateUtils;
 
 
  // class TMessageGeneratorSMS
@@ -45,6 +46,7 @@ uses
       function CheckParamsOtchestvo(var _errorDescription:string):Boolean;      // проверка параметров(отчетсво)
       function CheckParamsPol(var _errorDescription:string):Boolean;            // проверка параметров(пол)
       function CheckParamsAddressClinic(var _errorDescription:string):Boolean;  // проверка параметров(адрес клиники)
+      function CheckParamsDateOfPriem(var _errorDescription:string):Boolean;    // проверка параметров(дата и врем€ приема)
       function CheckParamsServiceCount(const p_service:TStringList; var _errorDescription:string):Boolean;   // проверка параметров(кол-во услуг)
       function CheckParamsMoney(var _errorDescription:string):Boolean;          // проверка параметров(сумма)
       function CheckParamsReason(var _errorDescription:string):Boolean;         // проверка параметров(причина)
@@ -333,6 +335,36 @@ begin
   Result:=True;
 end;
 
+// проверка параметров(дата и врем€ приема)
+function TMessageGeneratorSMS.CheckParamsDateOfPriem(var _errorDescription:string):Boolean;
+const
+ cINTERVAL:Word = 1800; // 30 мин
+var
+ currentTime:int64;
+ messageTime:Int64;
+ messageDateTime:TDateTime;
+begin
+  Result:=False;
+  _errorDescription:='';
+
+  currentTime:=DateTimeToUnix(now);
+
+  messageDateTime:=DateOf(m_form.dateShow.DateTime) + TimeOf(m_form.timeShow.DateTime);
+  messageTime:=DateTimeToUnix(messageDateTime);
+
+  if messageTime < currentTime then begin
+   _errorDescription:='¬рем€ в смс сообщении будет из прошлого! ”становите правильное врем€';
+   Exit;
+  end;
+
+   if currentTime+cINTERVAL > messageTime then begin
+   _errorDescription:='—мс отправл€ем за 30 мин до начала приема? „то то мало веро€тно. ”становите правильное врем€';
+   Exit;
+  end;
+
+  Result:=True;
+end;
+
 // проверка параметров(кол-во услуг)
 function TMessageGeneratorSMS.CheckParamsServiceCount(const p_service:TStringList; var _errorDescription:string):Boolean;
 begin
@@ -418,17 +450,24 @@ begin
    reason_NapominanieOPrieme:begin                  // Ќапоминание о приеме
     // адрес клиники
     if not CheckParamsAddressClinic(_errorDescription) then Exit;
+    // врем€
+    if not CheckParamsDateOfPriem(_errorDescription) then Exit;
    end;
    reason_NapominanieOPrieme_do15:begin             // Ќапоминание о приеме (до 15 лет)
     // адрес клиники
     if not CheckParamsAddressClinic(_errorDescription) then Exit;
+    // врем€
+    if not CheckParamsDateOfPriem(_errorDescription) then Exit;
    end;
    reason_NapominanieOPrieme_OMS:begin              // Ќапоминание о приеме (ќћ—)
     // адрес клиники
     if not CheckParamsAddressClinic(_errorDescription) then Exit;
+    // врем€
+    if not CheckParamsDateOfPriem(_errorDescription) then Exit;
    end;
    reason_IstekaetSrokGotovnostiBIOMateriala:begin  // »стекает срок годности биоматериала
-     // ничего не провер€етс€ уже все проверили
+    // врем€
+    if not CheckParamsDateOfPriem(_errorDescription) then Exit;
    end;
    reason_AnalizNaPereustanovke:begin               // јнализ на переустановке
     // ничего не провер€етс€ уже все проверили

@@ -11,10 +11,7 @@ unit GlobalVariables;
 interface
 
 uses
-  SysUtils,
-  Windows,
-  TCustomTypeUnit;
-
+  SysUtils, Windows, TCustomTypeUnit;
 
 
 var

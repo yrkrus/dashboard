@@ -386,6 +386,7 @@ var
  i:Integer;
  resultat:Word;
  sendingSMS:TAutoPodborSendingSms;
+ countSendindSms:Integer;
 begin
   // проверки
   Screen.Cursor:=crHourGlass;
@@ -468,27 +469,40 @@ begin
       // замеяем номер с 8 на +7
       SharedStatusSendingSMS[0]:='+7' + Copy(SharedStatusSendingSMS[0], 2, MaxInt);
 
-      // проверим вдруг несоклько номеров смс было отрпавлено
-      if GetCountSmsSendingMessageInPhone(SharedStatusSendingSMS[0]) > 1 then begin
-        sendingSMS:=TAutoPodborSendingSms.Create(SharedStatusSendingSMS[0]);
+      countSendindSms:=GetCountSmsSendingMessageInPhone(SharedStatusSendingSMS[0]);
+      Screen.Cursor:=crDefault;
 
-        // отобразим форму подбора
-        with FormPodbor do begin
-         SetTypePodbor(eTypePodporSMS);
-         SetListSendingSMS(sendingSMS);
-         ShowModal;
-        end;
-
-        if not FormStatusSendingSMS.IsExistPhoneFind then begin
+      case countSendindSms of
+        0:begin  // вообще ни разу не отправляли сообщение
           Screen.Cursor:=crDefault;
-
-          MessageBox(Handle,PChar('Не выбрана дата'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+          MessageBox(Handle,PChar('На номер '+SharedStatusSendingSMS[0]+' никогда не отправлялось сообщений'),PChar('Информация'),MB_OK+MB_ICONINFORMATION);
           Exit;
         end;
-      end;
+        1:begin
+          with FormStatusSendingSMS do begin
+            FormStatusSendingSMS.SetSmsInfo(SharedStatusSendingSMS[0]);
+            ShowModal;
+          end;
+        end;
+        else begin // отправлено было больше 2х сообщений за все время
+          sendingSMS:=TAutoPodborSendingSms.Create(SharedStatusSendingSMS[0]);
 
-      with FormStatusSendingSMS do begin
-        ShowModal;
+            // отобразим форму подбора
+          with FormPodbor do begin
+           SetTypePodbor(eTypePodporSMS);
+           SetListSendingSMS(sendingSMS);
+           ShowModal;
+          end;
+
+          if not FormStatusSendingSMS.IsExistSmsInfo then begin
+            MessageBox(Handle,PChar('Не выбрана дата'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+            Exit;
+          end;
+
+          with FormStatusSendingSMS do begin
+            ShowModal;
+          end;
+        end;
       end;
     end;
    end;
@@ -823,6 +837,11 @@ begin
     Caption:='    ===== DEBUG | (base:'+GetDefaultDataBase+') =====    '+Caption;
   end
   else begin
+    // по умолчанимю включим все
+    page_TypesSMS.Pages[0].TabVisible:=True;
+    page_TypesSMS.Pages[1].TabVisible:=True;
+    page_TypesSMS.Pages[2].TabVisible:=True;
+
     // скрываем отправку рассылки для обычных операторов
     if not USER_ACCESS_SENDING_LIST then begin
        page_TypesSMS.Pages[1].TabVisible:=False;

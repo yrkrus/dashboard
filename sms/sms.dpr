@@ -38,7 +38,8 @@ uses
   FormManualPodborStatusUnit in 'FormManualPodborStatusUnit.pas' {FormManualPodborStatus},
   FormStatusSendingSMSUnit in 'FormStatusSendingSMSUnit.pas' {FormStatusSendingSMS},
   TAutoPodborSendingSmsUnit in '..\custom_class\TAutoPodborSendingSmsUnit.pas',
-  GlobalVariablesLinkDLL in '..\gui\GlobalVariablesLinkDLL.pas';
+  GlobalVariablesLinkDLL in '..\gui\GlobalVariablesLinkDLL.pas',
+  GlobalImageDestination in '..\gui\GlobalImageDestination.pas';
 
 {$R *.res}
 

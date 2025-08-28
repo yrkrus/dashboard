@@ -53,9 +53,9 @@ interface
 
  type   // тип запрошенных данных из очереди ! TODO ВАЖНО в TQueueStatistics  береться только queue_5000 и queue_5050
  enumQueue =  (queue_5000,            // 5000 очередь
-                      queue_5050,            // 5050 очередь
-                      queue_5000_5050,       // 5000 и 5050 очередь
-                      queue_null             // нет очереди
+               queue_5050,            // 5050 очередь
+               queue_5000_5050,       // 5000 и 5050 очередь
+               queue_null             // нет очереди
                       );
 
 
@@ -926,6 +926,8 @@ function EnumQueueCurrentToInteger(_queue:enumQueue):Integer;
 var
  i:Integer;
 begin
+  Result:=3;  // queue_null
+
   for i:=0 to Ord(High(enumQueue)) do begin
     if enumQueue(i) = _queue then begin
       Result:=i;

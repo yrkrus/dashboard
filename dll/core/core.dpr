@@ -98,12 +98,14 @@ end;
 
 
 function GetCopyright:PChar;stdcall;export;
+const
+ cSTART_YEAR:string = '2024';
 var
   CurrentYear: string;
 begin
   CurrentYear:=FormatDateTime('yyyy', Now);
-  if CurrentYear='2024' then Result:=PChar('developer by Petrov Yuri © '+CurrentYear+'       ')
-  else Result:=PChar('developer by Petrov Yuri © 2024-'+CurrentYear+'       ');
+  if cSTART_YEAR='2024' then Result:=PChar('developer by Petrov Yuri © '+CurrentYear+'       ')
+  else Result:=PChar('developer by Petrov Yuri © '+cSTART_YEAR+'-'+CurrentYear+'       ');
 end;
 
 

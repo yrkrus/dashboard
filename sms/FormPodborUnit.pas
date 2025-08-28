@@ -97,7 +97,7 @@ begin
      FormGenerateSMS.SetAutoPodborValue(listPacients.FirstName(id), listPacients.MidName(id), listPacients.Gender(id));
     end;
     eTypePodporSMS: begin
-     //FormStatusSendingSMS.SetPhone();
+     FormStatusSendingSMS.SetSmsInfo(listSendingSMS,id);
     end;
   end;
 
@@ -122,7 +122,7 @@ procedure TFormPodbor.LoadDataSmsSending;
   var
  i:Integer;
 begin
-  lblHeader.Caption:='Найденные даты отправленных SMS';
+  lblHeader.Caption:='Найдено несколько дат';
   lblFooter.Caption:='для выбора нужно два раз кликнуть левой кл.мыши ';
 
   list_podpor.Clear;
