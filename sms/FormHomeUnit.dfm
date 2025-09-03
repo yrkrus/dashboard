@@ -24,7 +24,7 @@ object FormHome: TFormHome
     Top = 8
     Width = 490
     Height = 350
-    ActivePage = sheet_StatusSMS
+    ActivePage = sheet_ManualSMS
     Images = ImageList1
     TabOrder = 0
     OnChange = page_TypesSMSChange

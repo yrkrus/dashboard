@@ -265,7 +265,7 @@ begin
 
 
   report.ShowProgress; //показываем прогресс бар
-  report.SetProgressStatusText('Загрузка данных с сервера ...');
+  report.SetProgressStatusText('Загрузка данных с сервера');
 
   // на случай если не выбрали парметр "выбрать операторов"
   if not chkboxShowOperators.Checked then begin

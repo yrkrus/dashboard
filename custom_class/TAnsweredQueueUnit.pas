@@ -13,7 +13,10 @@ unit TAnsweredQueueUnit;
 interface
 
 uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
-      Graphics, TCustomTypeUnit, Vcl.Forms, StdCtrls, TLogFileUnit;
+      Graphics, TCustomTypeUnit, Vcl.Forms, StdCtrls, TLogFileUnit, TQueueStatisticsUnit;
+
+   type enumStatusSL = (eSlUp,
+                        eSlDown);
 
 
    // class TStructAnswered_list
@@ -40,7 +43,7 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
       public
       count                                 : Integer;      // кол-во отвеченных
       list_id                               : TStringList;  // список с ID просмотренными
-      list_answered_time                    : TStringList;  // список с отвеченными звонками       
+      list_answered_time                    : TStringList;  // список с отвеченными звонками
 
       constructor Create;                     overload;
       destructor Destroy;                     override;
@@ -59,34 +62,43 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
       TAnsweredQueue = class
 
       private
-      m_maxAnsweredTime                   : Integer;     // (время) максимальное время ожидания в очереди
-      m_maxAnsweredID                     : Integer;     // (id по БД) ID этого звонка
-      SL                                  : Double;      // текущее значение SL = 0.0   ↑↓
+      m_maxAnsweredTime              : Integer;     // (время) максимальное время ожидания в очереди
+      m_maxAnsweredID                : Integer;     // (id по БД) ID этого звонка
+
+      m_queueStatistics              :TQueueStatistics;
+
+      // SL
+      m_staticText_sl :TStaticText;
+      m_SL            :Double;                          // текущее значение SL = 0.0   ↑↓
+      m_SL_type       :enumStatusSL;
 
       function isExistAnsweredId(id:Integer): Boolean;                  // есть ли такой id в памяти
       procedure addAnswered(id,answered_time:Integer);                  // добавление в память
       procedure FindMaxAnsweredTime;                  // нахождене максимального времени ожидания в очереди
-      procedure ShowSL(InNewSL:Double);               // отображение нового SL
       function GetProcent(InNewProcent:Double; isShowDelimiter:Boolean = true):string; overload;     // отображение процента в заивисимости от того какой результат по процентам
 
 
       public
-      list                                  : array of TStructAnswered; // список
+      m_list                                : TArray<TStructAnswered>;  // список
       updateAnsweredNow                     : Boolean;                  // нужно ли обновить весь свписок
 
+      constructor Create;                     overload;
+      destructor  Destroy;                    overload;
+
+      procedure SetLinkSL(var _sl:TStaticText); // линковка SL(только при инициализации)
 
       function getCountAllAnswered          : Integer;                  // всего отвечено
       function isExistNewAnswered           : Boolean;                  // есть ли новые отвеченные по БД
       function getCountMaxAnswered          : Integer;                  // максимальное время ожидания
 
-      constructor Create;                     overload;
-      destructor  Destroy;                    overload;
 
-      procedure updateAnswered;                                         // обновление отвеченных
-      procedure showAnswered;                                           // показываем кол-во
+
+      procedure UpdateAnswered;                                         // обновление отвеченных
+      procedure ShowAnswered;                                           // показываем кол-во
       procedure Clear;                                                  // очитска от всех текущих данных
 
-
+      procedure UpdateSL;                       // обновдение SL
+      procedure ShowSL;                         // обновдение SL
 
 
       end;
@@ -149,14 +161,17 @@ end;
 
    // создаем list
    begin
-     SetLength(list,cGLOBAL_ListAnswered);
-     for i:=0 to cGLOBAL_ListAnswered-1 do list[i]:=TStructAnswered.Create;
+     SetLength(m_list,cGLOBAL_ListAnswered);
+     for i:=0 to cGLOBAL_ListAnswered-1 do m_list[i]:=TStructAnswered.Create;
    end;
 
-   Self.updateAnsweredNow:=False;
-   Self.SL:=100; // default
-   Self.m_maxAnsweredTime:=0;
-   Self.m_maxAnsweredID:=0;
+   updateAnsweredNow:=False;
+   m_maxAnsweredTime:=0;
+   m_maxAnsweredID:=0;
+   m_queueStatistics:=TQueueStatistics.Create();
+
+   m_SL:=100;
+   m_SL_type:=eSlUp;
  end;
 
 
@@ -165,10 +180,10 @@ var
   i: Integer;
 begin
   // Освобождение каждого элемента массива
-  for i:=Low(list) to High(list) do list[i].Free; // Освобождаем каждый объект TStructAnswered
+  for i:=Low(m_list) to High(m_list) do m_list[i].Free; // Освобождаем каждый объект TStructAnswered
 
   // Очистка массива
-  SetLength(list, 0); // Убираем ссылки на объекты
+  SetLength(m_list, 0); // Убираем ссылки на объекты
 
   inherited Destroy; // Вызов деструктора родительского класса
 end;
@@ -180,18 +195,26 @@ end;
  var
   i:Integer;
  begin
-    for i:=0 to cGLOBAL_ListAnswered-1 do list[i].clear;
+    for i:=0 to cGLOBAL_ListAnswered-1 do m_list[i].clear;
     Self.updateAnsweredNow:=False;
 
     Self.m_maxAnsweredTime:=0;
     Self.m_maxAnsweredID:=0;
-    Self.SL:=100;
+
+    Self.m_SL:=100;
+    Self.m_SL_type:=eSlUp;
+
+    if Assigned(m_staticText_sl) then begin
+      with m_staticText_sl do begin
+        Caption:='SL: '+GetProcent(m_SL,False)+'%';
+        Font.Color:=colorGood;
+        InitiateAction;
+        Repaint;
+      end;
+    end;
+
 
     with HomeForm do begin
-       ST_SL.Caption:='SL: '+GetProcent(SL,False)+'%';
-       ST_SL.Font.Color:=colorGood;
-       ST_SL.InitiateAction;
-       ST_SL.Repaint;
 
        // текстовое отображение
        lblStatistics_Answered30.Caption:='0';
@@ -218,15 +241,15 @@ end;
  begin
    max_wait:=0;
    for i:=0 to cGLOBAL_ListAnswered-1  do begin
-     for j:=0 to list[i].count-1 do begin
-       if max_wait< StrToInt(list[i].list_answered_time[j]) then max_wait:=StrToInt(list[i].list_answered_time[j]);
+     for j:=0 to m_list[i].count-1 do begin
+       if max_wait< StrToInt(m_list[i].list_answered_time[j]) then max_wait:=StrToInt(m_list[i].list_answered_time[j]);
      end;
    end;
 
    Result:=max_wait;
  end;
 
- procedure TAnsweredQueue.showAnswered;
+ procedure TAnsweredQueue.ShowAnswered;
  const
  colorGraph:TColor    = clTeal;
  MINIMAL_LINE_GRAPH_SHOWING:Word = 3; // минимальная линия на графике которая видна
@@ -238,56 +261,50 @@ end;
  begin
    for i:=0 to cGLOBAL_ListAnswered-1 do begin
     with HomeForm do begin
-      procent:=list[i].count * 100 / getCountAllAnswered;
+      procent:=m_list[i].count * 100 / getCountAllAnswered;
       SLVALUE:=100;
      case i of
        0: begin
-         lblStatistics_Answered30.Caption:=IntToStr(list[i].count) + ' ('+GetProcent(procent)+'%)';
-         
+         lblStatistics_Answered30.Caption:=IntToStr(m_list[i].count) + ' ('+GetProcent(procent)+'%)';
 
          // график
          begin
-           lblStatistics_Answered30_Graph.Caption:=IntToStr(list[i].count)+#13+ ' ('+GetProcent(procent)+'%)';
+           lblStatistics_Answered30_Graph.Caption:=IntToStr(m_list[i].count)+#13+ ' ('+GetProcent(procent)+'%)';
            StatisticsQueue_Answered30_Graph.ForeColor:=colorGraph;
 
            if Round(procent)< MINIMAL_LINE_GRAPH_SHOWING then procent:=MINIMAL_LINE_GRAPH_SHOWING;
            StatisticsQueue_Answered30_Graph.Progress:=Round(procent);
          end;
-
-         // отображаем  новый SL
-
-
-         ShowSL(procent);  // old value = list[i].count / getCountAllAnswered * 100
        end;
        1: begin
-         lblStatistics_Answered60.Caption:=IntToStr(list[i].count)  + ' ('+GetProcent(procent)+'%)';
+         lblStatistics_Answered60.Caption:=IntToStr(m_list[i].count)  + ' ('+GetProcent(procent)+'%)';
 
          // график
          begin
-           lblStatistics_Answered60_Graph.Caption:=IntToStr(list[i].count)+#13+ ' ('+GetProcent(procent)+'%)';
+           lblStatistics_Answered60_Graph.Caption:=IntToStr(m_list[i].count)+#13+ ' ('+GetProcent(procent)+'%)';
            StatisticsQueue_Answered60_Graph.ForeColor:=colorGraph;
            if Round(procent)< MINIMAL_LINE_GRAPH_SHOWING  then procent:=MINIMAL_LINE_GRAPH_SHOWING;
            StatisticsQueue_Answered60_Graph.Progress:=Round(procent);
-         end; 
-         
+         end;
+
        end;
        2: begin
-         lblStatistics_Answered120.Caption:=IntToStr(list[i].count) + ' ('+GetProcent(procent)+'%)';
+         lblStatistics_Answered120.Caption:=IntToStr(m_list[i].count) + ' ('+GetProcent(procent)+'%)';
 
           // график
          begin
-           lblStatistics_Answered120_Graph.Caption:=IntToStr(list[i].count)+#13+ ' ('+GetProcent(procent)+'%)';
+           lblStatistics_Answered120_Graph.Caption:=IntToStr(m_list[i].count)+#13+ ' ('+GetProcent(procent)+'%)';
            StatisticsQueue_Answered120_Graph.ForeColor:=colorGraph;
            if Round(procent)< MINIMAL_LINE_GRAPH_SHOWING  then procent:=MINIMAL_LINE_GRAPH_SHOWING;
            StatisticsQueue_Answered120_Graph.Progress:=Round(procent);
-         end;         
+         end;
        end;
        3: begin
-        lblStatistics_Answered121.Caption:=IntToStr(list[i].count) + ' ('+GetProcent(procent)+'%)';
+        lblStatistics_Answered121.Caption:=IntToStr(m_list[i].count) + ' ('+GetProcent(procent)+'%)';
 
           // график
          begin
-           lblStatistics_Answered121_Graph.Caption:=IntToStr(list[i].count)+#13+ ' ('+GetProcent(procent)+'%)';
+           lblStatistics_Answered121_Graph.Caption:=IntToStr(m_list[i].count)+#13+ ' ('+GetProcent(procent)+'%)';
            StatisticsQueue_Answered121_Graph.ForeColor:=colorGraph;
            if Round(procent)< MINIMAL_LINE_GRAPH_SHOWING  then procent:=MINIMAL_LINE_GRAPH_SHOWING;
            StatisticsQueue_Answered121_Graph.Progress:=Round(procent);
@@ -301,37 +318,36 @@ end;
                                                    'самый упорный ждал в очереди: '+GetTimeAnsweredSecondsToString(m_maxAnsweredTime);
 
            end;
-         end; 
-         
+         end;
+
        end;
      end;
     end;
    end;
-  // Application.ProcessMessages;
  end;
 
  procedure TAnsweredQueue.addAnswered(id,answered_time:Integer);
  begin
    case answered_time of
     0..30:begin
-      list[0].list_id.Add(IntToStr(id));
-      list[0].list_answered_time.Add(IntToStr(answered_time));
-      list[0].updateCount; // обновим кол-во звонков
+      m_list[0].list_id.Add(IntToStr(id));
+      m_list[0].list_answered_time.Add(IntToStr(answered_time));
+      m_list[0].updateCount; // обновим кол-во звонков
     end;
     31..60:begin
-      list[1].list_id.Add(IntToStr(id));
-      list[1].list_answered_time.Add(IntToStr(answered_time));
-      list[1].updateCount; // обновим кол-во звонков
+      m_list[1].list_id.Add(IntToStr(id));
+      m_list[1].list_answered_time.Add(IntToStr(answered_time));
+      m_list[1].updateCount; // обновим кол-во звонков
     end;
     61..120:begin
-      list[2].list_id.Add(IntToStr(id));
-      list[2].list_answered_time.Add(IntToStr(answered_time));
-      list[2].updateCount; // обновим кол-во звонков
+      m_list[2].list_id.Add(IntToStr(id));
+      m_list[2].list_answered_time.Add(IntToStr(answered_time));
+      m_list[2].updateCount; // обновим кол-во звонков
     end;
     else begin
-     list[3].list_id.Add(IntToStr(id));
-     list[3].list_answered_time.Add(IntToStr(answered_time));
-     list[3].updateCount; // обновим кол-во звонков
+     m_list[3].list_id.Add(IntToStr(id));
+     m_list[3].list_answered_time.Add(IntToStr(answered_time));
+     m_list[3].updateCount; // обновим кол-во звонков
     end;
    end;
  end;
@@ -341,63 +357,17 @@ end;
  var
   i:Integer;
  begin
-   if list[3].count = 0 then Exit;
+   if m_list[3].count = 0 then Exit;
 
-   for i:=0 to list[3].count-1 do begin
-     if StrToInt(list[3].list_answered_time[i]) > m_maxAnsweredTime then
+   for i:=0 to m_list[3].count-1 do begin
+     if StrToInt(m_list[3].list_answered_time[i]) > m_maxAnsweredTime then
      begin
-      m_maxAnsweredTime:= StrToInt(list[3].list_answered_time[i]);
-      m_maxAnsweredID:= StrToInt(list[3].list_id[i]);
+      m_maxAnsweredTime:= StrToInt(m_list[3].list_answered_time[i]);
+      m_maxAnsweredID:= StrToInt(m_list[3].list_id[i]);
      end;
    end;
  end;
 
-
-// отображение нового SL
-procedure TAnsweredQueue.ShowSL(InNewSL:Double);
-const
- colorGood:TColor     = $0031851F;
- colorNotBad:Tcolor   = $0000D5D5;
- colorBad:TColor      = $0000C8C8;
- colorVeryBad:TColor  = $0000009B;
- slUP:string          = '↑';
- slDOWN:string        = '↓';
-
-var
- currentStatusSL:string;
-begin
-
-  if InNewSL<>SL then begin
-    if InNewSL>SL then currentStatusSL:=slUP
-    else currentStatusSL:=slDOWN;
-  end;
-
-  SL:=InNewSL;
-
-  // считаем SL
-   with HomeForm do begin
-     ST_SL.Caption:='SL: ' + currentStatusSL + GetProcent(SL,False)+'%';
-     ST_SL.InitiateAction;
-     ST_SL.Repaint;
-
-     case Round(SL) of
-       0..30: begin
-          ST_SL.Font.Color:=colorVeryBad;
-       end;
-       31..59: begin
-          ST_SL.Font.Color:=colorBad;
-       end;
-       60..79:begin
-          ST_SL.Font.Color:=colorNotBad;
-       end;
-       80..100:begin
-          ST_SL.Font.Color:=colorGood;
-       end;
-     end;
-
-     ST_SL.Hint:='Текущий SL = '+GetProcent(SL);
-   end;
-end;
 
 // отображение процента в заивисимости от того какой результат по процентам
 function TAnsweredQueue.GetProcent(InNewProcent:Double; isShowDelimiter:Boolean = true):string;
@@ -423,16 +393,23 @@ end;
  var
   i:Integer;
   allCount:Integer;
- begin
-    allCount:=0;
+begin
+  allCount:=0;
 
-    for i:=0 to cGLOBAL_ListAnswered-1 do begin
-      if allCount=0 then allCount:=list[i].count
-      else allCount:=allCount+list[i].count;
-    end;
+  for i:=0 to cGLOBAL_ListAnswered-1 do begin
+    if allCount=0 then allCount:=m_list[i].count
+    else allCount:=allCount+m_list[i].count;
+  end;
 
-    Result:=allCount;
- end;
+  Result:=allCount;
+end;
+
+
+// линковка SL(только при инициализации)
+procedure TAnsweredQueue.SetLinkSL(var _sl:TStaticText);
+begin
+ m_staticText_sl:=_sl;
+end;
 
 
 function TAnsweredQueue.isExistNewAnswered;
@@ -460,8 +437,8 @@ begin
   isExist:=False;
 
   for i:=0 to cGLOBAL_ListAnswered-1 do begin
-    for j:=0 to list[i].list_id.Count-1 do begin
-      if id = StrToInt(list[i].list_id[j])  then begin
+    for j:=0 to m_list[i].list_id.Count-1 do begin
+      if id = StrToInt(m_list[i].list_id[j])  then begin
         isExist:=True;
         Break;
       end;
@@ -476,7 +453,7 @@ end;
 
 
 // обновление отвеченных звонков
-procedure TAnsweredQueue.updateAnswered;
+procedure TAnsweredQueue.UpdateAnswered;
 var
  i,j:Integer;
  ado:TADOQuery;
@@ -558,6 +535,69 @@ begin
 
   // delete array listAnsweredBD
   for i:=0 to countAnswered-1 do FreeAndNil(listAnsweredBD[i]);
+end;
+
+
+// обновдение SL
+procedure TAnsweredQueue.UpdateSL;
+var
+ countCalls:Integer;
+ oldSL:Double;
+begin
+ m_queueStatistics.Update;
+
+ if m_queueStatistics.CountAllCalls = 0 then Exit;
+ oldSL:=m_SL;
+ m_SL:=m_list[0].count / (m_queueStatistics.CountAllCalls + m_queueStatistics.CountAllCallsMissed)  * 100;
+
+ if m_SL > oldSL then m_SL_type:=eSlUp
+ else m_SL_type:=eSlDown;
+end;
+
+ // обновдение SL
+procedure TAnsweredQueue.ShowSL;
+const
+ colorGood:TColor     = $0031851F;
+ colorNotBad:Tcolor   = $0000D5D5;
+ colorBad:TColor      = $0000C8C8;
+ colorVeryBad:TColor  = $0000009B;
+ slUP:string          = '↑';
+ slDOWN:string        = '↓';
+
+var
+ currentStatusSL:string;
+begin
+
+  case m_SL_type of
+   eSlUp:   currentStatusSL:=slUP;
+   eSlDown: currentStatusSL:=slDOWN;
+  end;
+
+  // считаем SL
+  with m_staticText_sl do begin
+     Caption:='SL: ' + currentStatusSL + GetProcent(m_SL,True)+'%';
+     InitiateAction;
+     Repaint;
+
+   case Round(m_SL) of
+     0..30: begin
+        Font.Color:=colorVeryBad;
+     end;
+     31..59: begin
+        Font.Color:=colorBad;
+     end;
+     60..79:begin
+        Font.Color:=colorNotBad;
+     end;
+     80..100:begin
+        Font.Color:=colorGood;
+     end;
+
+    // Hint:='Текущий SL = '+GetProcent(m_SL,False);
+   end;
+
+  end;
+
 end;
 
 end.

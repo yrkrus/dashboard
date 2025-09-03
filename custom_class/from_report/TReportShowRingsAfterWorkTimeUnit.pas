@@ -279,7 +279,7 @@ begin
      procentLoadSTR:=FormatFloat('0.0',procentLoad);
      procentLoadSTR:=StringReplace(procentLoadSTR,',','.',[rfReplaceAll]);
 
-     SetProgressStatusText('Загрузка данных с сервера ['+procentLoadSTR+'%] ...');
+     SetProgressStatusText('Загрузка данных с сервера ['+procentLoadSTR+'%]');
      SetProgressBar(procentLoad);
 
      call.id:=StrToInt(VarToStr(Fields[0].Value));
@@ -387,7 +387,7 @@ var
  curr_time:Integer;
 begin
 
-  SetProgressStatusText('Создание отчета ...');
+  SetProgressStatusText('Создание отчета');
   SetProgressBar(0);
 
    // названия колонок
@@ -425,7 +425,7 @@ begin
    procentLoadSTR:=FormatFloat('0.0',procentLoad);
    procentLoadSTR:=StringReplace(procentLoadSTR,',','.',[rfReplaceAll]);
 
-   SetProgressStatusText('Создание отчета ['+procentLoadSTR+'%] ...');
+   SetProgressStatusText('Создание отчета ['+procentLoadSTR+'%]');
    SetProgressBar(procentLoad);
 
     m_sheet.cells[ColIndex,1]:=IntToStr(m_history[i].id);   // ID
@@ -448,7 +448,7 @@ begin
 
   // наведем красоту
   begin
-     SetProgressStatusText('Наводим красоту ...');
+     SetProgressStatusText('Наводим красоту');
 
     // заголовок
     if m_findFIO then begin

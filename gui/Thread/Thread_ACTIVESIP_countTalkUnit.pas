@@ -3,7 +3,8 @@ unit Thread_ACTIVESIP_countTalkUnit;
 interface
 
 uses
-    System.Classes, System.DateUtils, SysUtils, ActiveX, TActiveSIPUnit, TLogFileUnit;
+    System.Classes, System.DateUtils, SysUtils, ActiveX, TActiveSIPUnit, TLogFileUnit,
+    System.SyncObjs;
 
 type
   Thread_ACTIVESIP_countTalk = class(TThread)
@@ -14,8 +15,13 @@ type
     procedure show(var p_ActiveSipOperators:TActiveSIP);
     procedure CriticalError;
   private
+   m_initThread: TEvent;  // событие что поток успешно стартовал
    Log:TLoggingFile;
     { Private declarations }
+  public
+  constructor Create;
+  destructor Destroy; override;
+  function WaitForInit(_timeout:Cardinal): Boolean;
   end;
 
 implementation
@@ -23,6 +29,27 @@ implementation
 uses
   FunctionUnit, FormHome, GlobalVariables, TCustomTypeUnit, TDebugStructUnit;
 
+
+constructor Thread_ACTIVESIP_countTalk.Create;
+begin
+  inherited Create(True);               // Suspended=true
+  FreeOnTerminate := False;
+  m_initThread:=TEvent.Create(nil, False, False, '');
+end;
+
+
+destructor Thread_ACTIVESIP_countTalk.Destroy;
+begin
+  m_initThread.Free;
+  inherited;
+end;
+
+
+function Thread_ACTIVESIP_countTalk.WaitForInit(_timeout:Cardinal): Boolean;
+begin
+  if Terminated then Exit(False);
+  Result:=(m_initThread.WaitFor(_timeout) = wrSignaled);
+end;
 
 procedure Thread_ACTIVESIP_countTalk.CriticalError;
 begin
@@ -49,7 +76,7 @@ procedure Thread_ACTIVESIP_countTalk.Execute;
 begin
   inherited;
   CoInitialize(Nil);
-  Sleep(1000);
+  //Sleep(1000);
 
   Log:=TLoggingFile.Create(NAME_THREAD);
 
@@ -66,6 +93,8 @@ begin
     end;
   end;
 
+  // событие что запустились
+  m_initThread.SetEvent;
 
   while not Terminated do
   begin

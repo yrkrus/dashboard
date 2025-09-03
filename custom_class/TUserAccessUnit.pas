@@ -37,6 +37,7 @@ uses
    menu_active_session                        : Boolean;
    menu_service                               : Boolean;
    menu_missed_calls                          : Boolean;
+   menu_clear_status_operator                 : Boolean;
 
   constructor Create(InGroupRole:enumRole);      overload;
   property Role:enumRole read m_role;
@@ -60,6 +61,7 @@ implementation
    menu_active_session                      :=  False;
    menu_service                             :=  False;
    menu_missed_calls                        :=  False;
+   menu_clear_status_operator               :=  False;
 
    m_role                                   :=  InGroupRole;
 
@@ -71,7 +73,7 @@ implementation
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
- //test:string;
+ request:TStringBuilder;
 begin
 //
  ado:=TADOQuery.Create(nil);
@@ -85,11 +87,17 @@ begin
   with ado do begin
     ado.Connection:=serverConnect;
 
+    request:=TStringBuilder.Create;
+    with request do begin
+      Clear;
+      Append('select menu_users,menu_serversik, menu_siptrunk,');
+      Append('menu_settings_global, menu_active_session, menu_service,');
+      Append('menu_missed_calls, menu_clear_status_operator ');
+      Append('from access_panel where role = '+#39+IntToStr(GetRoleID(EnumRoleToString(p_InRole)))+#39);
+    end;
+
     SQL.Clear;
-    SQL.Add('select menu_users,menu_serversik, menu_siptrunk,');
-    SQL.Add('menu_settings_global, menu_active_session, menu_service,');
-    SQL.Add('menu_missed_calls ');
-    SQL.Add('from access_panel where role = '+#39+IntToStr(GetRoleID(EnumRoleToString(p_InRole)))+#39);
+    SQL.Add(request.ToString);
 
     Active:=True;
 
@@ -100,6 +108,7 @@ begin
     if StrToInt(VarToStr(Fields[4].Value))=1 then menu_active_session:=True;
     if StrToInt(VarToStr(Fields[5].Value))=1 then menu_service:=True;
     if StrToInt(VarToStr(Fields[6].Value))=1 then menu_missed_calls:=True;
+    if StrToInt(VarToStr(Fields[7].Value))=1 then menu_clear_status_operator:=True;
 
   end;
  finally

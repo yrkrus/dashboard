@@ -102,6 +102,8 @@ end;
 
 procedure TFormError.FormShow(Sender: TObject);
 begin
+   Screen.Cursor:=crDefault;
+
    CONNECT_BD_ERROR:=True;
    lblErrorInfo.Caption:=m_messageError;
 

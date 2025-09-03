@@ -3,7 +3,8 @@ unit Thread_AnsweredQueueUnit;
 interface
 
 uses
-  System.Classes,SysUtils, ActiveX,TCustomTypeUnit, TAnsweredQueueUnit, TLogFileUnit;
+  System.Classes,SysUtils, ActiveX,TCustomTypeUnit, TAnsweredQueueUnit, TLogFileUnit,
+  System.SyncObjs;
 
 type
   Thread_AnsweredQueue = class(TThread)
@@ -11,11 +12,18 @@ type
     { Private declarations }
    messclass,mess: string;
    Log:TLoggingFile;
+   m_initThread: TEvent;  // событие что поток успешно стартовал
 
   protected
     procedure Execute; override;
     procedure show(var p_AnsweredQueue: TAnsweredQueue);
     procedure CriticalError;
+
+ public
+  constructor Create;
+  destructor Destroy; override;
+  function WaitForInit(_timeout:Cardinal): Boolean;
+
   end;
 
 implementation
@@ -24,6 +32,28 @@ uses
   FormHome, FunctionUnit, GlobalVariables, TDebugStructUnit;
 
 { Thread_AnsweredQueue }
+
+
+constructor Thread_AnsweredQueue.Create;
+begin
+  inherited Create(True);               // Suspended=true
+  FreeOnTerminate := False;
+  m_initThread:=TEvent.Create(nil, False, False, '');
+end;
+
+
+destructor Thread_AnsweredQueue.Destroy;
+begin
+  m_initThread.Free;
+  inherited;
+end;
+
+
+function Thread_AnsweredQueue.WaitForInit(_timeout:Cardinal): Boolean;
+begin
+  if Terminated then Exit(False);
+  Result:=(m_initThread.WaitFor(_timeout) = wrSignaled);
+end;
 
 procedure Thread_AnsweredQueue.CriticalError;
 begin
@@ -43,8 +73,13 @@ begin
           end;
 
           if isExistNewAnswered then begin
-             updateAnswered;
+             // обновление отвеченных
+             UpdateAnswered;
              showAnswered;
+
+             // обновление SL
+             UpdateSL;
+             ShowSL;
           end;
       end
       else begin
@@ -86,7 +121,10 @@ begin
 
   // создание класса с данными по статистике принятых звонков из очереди
   AnsweredQueue:=TAnsweredQueue.Create;
+  AnsweredQueue.SetLinkSL(HomeForm.ST_SL);
 
+  // событие что запустились
+  m_initThread.SetEvent;
 
   while not Terminated do
   begin

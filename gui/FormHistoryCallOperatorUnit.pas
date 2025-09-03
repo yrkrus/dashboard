@@ -509,7 +509,11 @@ begin
          end;
         end;
 
-        trunk:=GetPhoneTrunkQueue(eTableIVR,phone,dateTime);
+         try
+            trunk:=GetPhoneTrunkQueue(eTableIVR,phone,dateTime);
+         except
+            trunk:='null';
+         end;
 
         if _filterTime = time_all then
         begin

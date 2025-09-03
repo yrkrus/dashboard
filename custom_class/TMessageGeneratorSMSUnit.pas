@@ -51,6 +51,7 @@ uses
       function CheckParamsMoney(var _errorDescription:string):Boolean;          // проверка параметров(сумма)
       function CheckParamsReason(var _errorDescription:string):Boolean;         // проверка параметров(причина)
 
+      function IsExistMessage:Boolean; // сгенерировали ли сообщение
 
       public
       constructor Create(var p_Form:TFormGenerateSMS);                   overload;
@@ -70,6 +71,7 @@ uses
       function GetExampleMessage(_messageType:enumReasonSmsMessage):string; // пример сообщения (берется из бд history_sms_sending)
       procedure ClearMessage;     // очистка сообщения
 
+      property IsGeneretedMessage:Boolean read IsExistMessage;
       property GeneretedMessage:string read m_generetedMessage;
 
 
@@ -413,6 +415,13 @@ begin
   end;
 
   Result:=True;
+end;
+
+// сгенерировали ли сообщение
+function TMessageGeneratorSMS.IsExistMessage:Boolean;
+begin
+  Result:=False;
+  if Length(m_generetedMessage) <> 0 then Result:=True;
 end;
 
 

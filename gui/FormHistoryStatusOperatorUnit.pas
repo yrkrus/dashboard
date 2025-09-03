@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls, THistoryStatusOperatorsUnit,
-  TThreadDispatcherUnit;
+  TThreadDispatcherUnit, Vcl.Buttons;
 
 type
   TFormHistoryStatusOperator = class(TForm)
@@ -35,10 +35,15 @@ type
     panel_History: TPanel;
     list_History: TListView;
     st_NoStatus: TStaticText;
+    chkbox_anyDay: TCheckBox;
+    dateStart: TDateTimePicker;
+    btn_Find: TBitBtn;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure list_HistoryCustomDrawItem(Sender: TCustomListView;
       Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
+    procedure chkbox_anyDayClick(Sender: TObject);
+    procedure btn_FindClick(Sender: TObject);
   private
     { Private declarations }
    m_id:Integer;  // id пользователя
@@ -48,11 +53,14 @@ type
 
    operatorStatus:THistoryStatusOperators;
 
+   isClose:Boolean; // закрываем окно
+
     procedure ClearListView;
     procedure ClearData(isClearUserID:Boolean = True);
     procedure AddCountData;
     procedure LoadData;
     procedure Show;
+    function CheckFindStatusAnyDay(var _errorDescription:string):Boolean;
   public
     { Public declarations }
 
@@ -84,11 +92,45 @@ begin
 end;
 
 
+procedure TFormHistoryStatusOperator.btn_FindClick(Sender: TObject);
+var
+ error:string;
+begin
+ // проверка чтобы статусы были не сегодняшнего дня
+  if not CheckFindStatusAnyDay(error) then begin
+    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    Exit;
+  end;
+
+ Show;
+end;
+
+procedure TFormHistoryStatusOperator.chkbox_anyDayClick(Sender: TObject);
+begin
+  if chkbox_anyDay.Checked then begin
+    dateStart.Visible:=True;
+    btn_Find.Visible:=True;
+
+    dateStart.Date:=Now-1;
+  end
+  else begin
+    dateStart.Visible:=False;
+    btn_Find.Visible:=False;
+
+    if not isClose then begin
+      btn_Find.Click;
+    end;
+  end;
+end;
+
 procedure TFormHistoryStatusOperator.ClearData(isClearUserID:Boolean = True);
 begin
   if isClearUserID then begin
     m_id:=0;
     m_sip:=0;
+
+    // статусы произвольного дня
+   chkbox_anyDay.Checked:=False;
   end;
 
   lbl_available.Caption:='---';
@@ -185,9 +227,24 @@ var
 begin
   // подгрузим данные
   if not Assigned(operatorStatus) then begin
-    operatorStatus:=THistoryStatusOperators.Create(m_id,m_sip);
+    if not chkbox_anyDay.Checked then operatorStatus:=THistoryStatusOperators.Create(eTableOperatorStatus, Now, Now, m_id,m_sip)
+    else begin
+     operatorStatus:=THistoryStatusOperators.Create(eTableHistoryOperatorStatus, dateStart.Date, dateStart.Date, m_id,m_sip);
+     Caption:=Caption+' за '+DateToStr(dateStart.Date);
+    end;
   end
   else begin
+   // ставим даты вдруг нужно другой период отобразить
+   if not chkbox_anyDay.Checked then
+   begin
+     operatorStatus.SetDate(Now,Now);
+     operatorStatus.SetTable(eTableOperatorStatus);
+   end
+   else begin
+     operatorStatus.SetDate(dateStart.Date, dateStart.Date);
+     operatorStatus.SetTable(eTableHistoryOperatorStatus);
+   end;
+
    operatorStatus.Update;
   end;
 
@@ -226,13 +283,33 @@ begin
   end;
 end;
 
+function TFormHistoryStatusOperator.CheckFindStatusAnyDay(var _errorDescription:string):Boolean;
+begin
+  Result:=False;
+  _errorDescription:='';
+
+  if dateStart.Date > Now then begin
+    _errorDescription:='Что то как то дебет с кредитом не сходится! '+#13#13+'Дата из будущего';
+     Exit;
+  end;
+
+  // проверим есть ли в проимежутке дат текущий день
+  if (dateStart.Date = Trunc(Now)) then begin
+   _errorDescription:='Указан текущий день, для отображения данных по текущему дню нужно снать галку "статусы произвольного дня"';
+   Exit;
+  end;
+
+  Result:=True;
+end;
+
+
 procedure TFormHistoryStatusOperator.Show;
 begin
   Screen.Cursor:=crHourGlass;
 
    // создаем диспетчера
    if not Assigned(m_dispatcher) then begin
-    m_dispatcher:=TThreadDispatcher.Create('FormHistoryStatusOperator',10, LoadData);
+    m_dispatcher:=TThreadDispatcher.Create('FormHistoryStatusOperator',10, False, LoadData);
    end;
 
   Caption := 'История статусов: ' + GetUserNameOperators(IntToStr(m_sip));
@@ -252,6 +329,8 @@ end;
 procedure TFormHistoryStatusOperator.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
+  isClose:=True;
+
   ClearData;
 
   // остановливаем планировщик
@@ -260,6 +339,7 @@ end;
 
 procedure TFormHistoryStatusOperator.FormShow(Sender: TObject);
 begin
+  isClose:=False;
   Show;
 end;
 

@@ -51,6 +51,7 @@ var
   REPORT_EXE        :string = 'report.exe';       // отчеты
   SMS_EXE           :string = 'sms.exe';          // sms
   SERVICE_EXE       :string = 'service.exe';      // редактор услуг
+  OUTGOING_EXE      :string = 'outgoing.exe';     // звонилка
   ///////////////////// MODULE /////////////////////
 
   USER_ID_PARAM     :string = '--USER_ID';

@@ -11,10 +11,7 @@ unit TLogFileUnit;
 interface
 
 uses
-  System.SysUtils,
-  System.Classes,
-  System.SyncObjs,
-  IdException;
+  System.SysUtils, System.Classes, System.SyncObjs, IdException;
 
 
    /////////////////////////////////////////////////////////////////////////////////////////

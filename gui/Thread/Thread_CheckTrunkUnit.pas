@@ -3,7 +3,8 @@ unit Thread_CheckTrunkUnit;
 interface
 
 uses
-  System.Classes,SysUtils, ActiveX, TCheckSipTrunkUnit, TCustomTypeUnit, TLogFileUnit;
+  System.Classes,SysUtils, ActiveX, TCheckSipTrunkUnit, TCustomTypeUnit, TLogFileUnit,
+  System.SyncObjs;
 
 type
   Thread_CheckTrunks = class(TThread)
@@ -14,8 +15,13 @@ type
     procedure show(var p_listTrunks: TCheckSipTrunk);
     procedure CriticalError;
  private
+  m_initThread: TEvent;  // событие что поток успешно стартовал
   Log:TLoggingFile;
 
+ public
+    constructor Create;
+    destructor Destroy; override;
+    function WaitForInit(_timeout:Cardinal): Boolean;
   end;
 
 implementation
@@ -23,6 +29,28 @@ implementation
 uses
   FunctionUnit, FormHome, GlobalVariables, TDebugStructUnit, FormServerIKCheckUnit, FormTrunkSipUnit;
 
+
+
+constructor Thread_CheckTrunks.Create;
+begin
+  inherited Create(True);               // Suspended=true
+  FreeOnTerminate := False;
+  m_initThread:=TEvent.Create(nil, False, False, '');
+end;
+
+
+destructor Thread_CheckTrunks.Destroy;
+begin
+  m_initThread.Free;
+  inherited;
+end;
+
+
+function Thread_CheckTrunks.WaitForInit(_timeout:Cardinal): Boolean;
+begin
+  if Terminated then Exit(False);
+  Result:=(m_initThread.WaitFor(_timeout) = wrSignaled);
+end;
 
 procedure Thread_CheckTrunks.CriticalError;
 begin
@@ -77,6 +105,8 @@ begin
     end;
   end;
 
+  // событие что запустились
+  m_initThread.SetEvent;
 
   while not Terminated do
   begin

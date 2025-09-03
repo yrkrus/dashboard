@@ -3,15 +3,8 @@ unit Thread_QUEUEUnit;
 interface
 
 uses
-    System.Classes,
-    SysUtils,
-    ActiveX,
-    TQueueUnit,
-    Vcl.StdCtrls,
-    Vcl.Controls,
-    Vcl.ComCtrls,
-    TLogFileUnit,
-    GlobalVariablesLinkDLL;
+    System.Classes, SysUtils, ActiveX, TQueueUnit, Vcl.StdCtrls, Vcl.Controls,
+    Vcl.ComCtrls, TLogFileUnit, GlobalVariablesLinkDLL, System.SyncObjs;
 
 type
   Thread_QUEUE = class(TThread)
@@ -24,21 +17,45 @@ type
     procedure CriticalError;
 
   private
+  m_initThread: TEvent;  // событие что поток успешно стартовал
   Log:TLoggingFile;
+
+  public
+  constructor Create;
+  destructor Destroy; override;
+  function WaitForInit(_timeout:Cardinal): Boolean;
 
   end;
 
 implementation
 
 uses
-  FunctionUnit,
-  FormHome,
-  GlobalVariables,
-  TCustomTypeUnit, TDebugStructUnit;
+  FunctionUnit, FormHome, GlobalVariables, TCustomTypeUnit, TDebugStructUnit;
 
 
 { Thread_QUEUE }
 
+
+constructor Thread_QUEUE.Create;
+begin
+  inherited Create(True);               // Suspended=true
+  FreeOnTerminate := False;
+  m_initThread:=TEvent.Create(nil, False, False, '');
+end;
+
+
+destructor Thread_QUEUE.Destroy;
+begin
+  m_initThread.Free;
+  inherited;
+end;
+
+
+function Thread_QUEUE.WaitForInit(_timeout:Cardinal): Boolean;
+begin
+  if Terminated then Exit(False);
+  Result:=(m_initThread.WaitFor(_timeout) = wrSignaled);
+end;
 
 procedure Thread_QUEUE.showQueue(var p_listQueue: TQueue);
 var
@@ -51,7 +68,7 @@ var
 begin
   with HomeForm do begin
 
-    countQueue:=p_listQueue.GetCount;
+    countQueue:=p_listQueue.Count;
 
      if countQueue=0 then begin
        lblCount_QUEUE.Caption:='Очередь';
@@ -64,15 +81,6 @@ begin
 
 
     try
-      //ListViewQueue.Visible := False; // TODO тестовое, можент и не поможет
-
-     // ListViewQueue.Items.BeginUpdate;
-     // ListViewQueue.Columns[0].Width:= 0; // Установка ширины в 0 в редких вариантах почему то он без этого параметра оборажается
-
-      // Очищаем ListView перед добавлением новых элементов
-     // ListViewQueue.Clear;
-
-
       // Проходим по всем элементам списка
       for i:=0 to countQueue-1 do
       begin
@@ -105,6 +113,9 @@ begin
           if correct_time<>'null' then ListItem.SubItems.Add(correct_time); // Время ожидания
 
           ListItem.SubItems.Add(p_listQueue.listActiveQueue[i].queue); // очередь
+
+          if p_listQueue.listActiveQueue[i].trunk = 'LISA' then ListItem.SubItems.Add('lisa')
+          else ListItem.SubItems.Add('ivr'); // транк
         end
         else
         begin
@@ -116,8 +127,7 @@ begin
        // Удаляем элементы, которые отсутствуют в новых данных
       for i:= ListViewQueue.Items.Count - 1 downto 0 do
       begin
-         if not p_listQueue.isExist(StrToInt(ListViewQueue.Items[i].Caption)) then
-          ListViewQueue.Items.Delete(i);
+         if not p_listQueue.isExist(StrToInt(ListViewQueue.Items[i].Caption)) then ListViewQueue.Items.Delete(i);
       end;
 
 
@@ -181,6 +191,8 @@ begin
     end;
   end;
 
+  // событие что запустились
+  m_initThread.SetEvent;
 
   while not Terminated do
   begin

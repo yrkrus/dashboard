@@ -3,13 +3,8 @@ unit Thread_InternalProcessUnit;
 interface
 
 uses
-    System.Classes,
-    System.DateUtils,
-    SysUtils,
-    ActiveX,
-    TLogFileUnit,
-    TInternalProcessUnit,
-    FormHome;
+    System.Classes, System.DateUtils, SysUtils, ActiveX, TLogFileUnit,
+    TInternalProcessUnit, System.SyncObjs;
 
 type
   Thread_InternalProcess = class(TThread)
@@ -20,12 +15,16 @@ type
     procedure show(var p_InternalProcess: TInternalProcess);
     procedure CriticalError;
   private
+    m_initThread: TEvent;  // событие что поток успешно стартовал
+
     Log:TLoggingFile;
     m_userLogonID:Integer;  // id залогиненного пользователя
 
     { Private declarations }
   public
   constructor Create(InUserID: Integer); reintroduce; // добавляем конструктор
+  destructor Destroy; override;
+  function WaitForInit(_timeout:Cardinal): Boolean;
 
  // procedure AddLogonUserID(InUserID:Integer);
 
@@ -39,8 +38,25 @@ uses
 
 constructor Thread_InternalProcess.Create(InUserID: Integer);
 begin
-  inherited Create(True); // Создаем поток в приостановленном состоянии
+  inherited Create(True);  // Suspended=true
   m_userLogonID := InUserID; // инициализируем m_userLogonID
+
+  FreeOnTerminate:= False;
+  m_initThread:=TEvent.Create(nil, False, False, '');
+end;
+
+
+destructor Thread_InternalProcess.Destroy;
+begin
+  m_initThread.Free;
+  inherited;
+end;
+
+
+function Thread_InternalProcess.WaitForInit(_timeout:Cardinal): Boolean;
+begin
+  if Terminated then Exit(False);
+  Result:=(m_initThread.WaitFor(_timeout) = wrSignaled);
 end;
 
 
@@ -60,7 +76,7 @@ begin
     p_InternalProcess.CheckForceActiveSessionClosed;              // нужно ли немедленно закрыть сессию
     p_InternalProcess.UpdateTimeActiveSession(PROGRAMM_UPTIME);   // обновление времени ондайна в БД
     p_InternalProcess.CheckStatusUpdateService;                   // проверка запущена ли служба обновления
-    p_InternalProcess.XMLUpdateLastOnline;                        // обновление времемни в settings.xml
+   // p_InternalProcess.XMLUpdateLastOnline;                        // обновление времемни в settings.xml
     p_InternalProcess.UpdateMemory;                               // обновление загрузки по памяти
   end;
 
@@ -79,7 +95,7 @@ procedure Thread_InternalProcess.Execute;
 begin
   inherited;
   CoInitialize(Nil);
-  Sleep(1000);
+ // Sleep(1000);
 
   Log:=TLoggingFile.Create(NAME_THREAD);
 
@@ -96,38 +112,34 @@ begin
     end;
   end;
 
-
   InternalProcess:=TInternalProcess.Create(m_userLogonID,PROGRAM_STARTED);
   // время запуска программы
   InternalProcess.UpdateProgramStarted;
 
+  // событие что запустились
+  m_initThread.SetEvent;
 
   while not Terminated do
   begin
+   try
+      StartTime:=GetTickCount;
 
-    if UpdateInternalProcess then  begin
-     try
-        StartTime:=GetTickCount;
+      show(InternalProcess);
 
-        show(InternalProcess);
+      EndTime:= GetTickCount;
+      Duration:= EndTime - StartTime;
 
-        EndTime:= GetTickCount;
-        Duration:= EndTime - StartTime;
+      Inc(PROGRAMM_UPTIME);
 
-        Inc(PROGRAMM_UPTIME);
-
-        SharedCountResponseThread.SetCurrentResponse(NAME_THREAD,Duration);
-     except
-        on E:Exception do
-        begin
-         //INTERNAL_ERROR:=true;
-         messclass:=e.ClassName;
-         mess:=e.Message;
-         Synchronize(CriticalError);
-        // INTERNAL_ERROR:=False;
-        end;
+      SharedCountResponseThread.SetCurrentResponse(NAME_THREAD,Duration);
+   except
+      on E:Exception do
+      begin
+       messclass:=e.ClassName;
+       mess:=e.Message;
+       Synchronize(CriticalError);
       end;
-    end;
+   end;
 
      if Duration<SLEEP_TIME then Sleep(SLEEP_TIME-Duration);
   end;

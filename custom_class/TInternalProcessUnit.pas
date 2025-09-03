@@ -20,9 +20,9 @@ uses
   type
       TInternalProcess = class
       private
-      m_userLogonID       :Integer;                       // текущий залогиненый пользователь
-      m_startedProgrammDate: TDateTime;                   // время запуска программы
-      isSendingProgrammStarted:Boolean;                   // был ли отправлено инфо о времени запуска программы
+      m_userLogonID             :Integer;                 // текущий залогиненый пользователь
+      m_startedProgrammDate     :TDateTime;               // время запуска программы
+      isSendingProgrammStarted  :Boolean;                 // был ли отправлено инфо о времени запуска программы
 
       function GetCurrentDateTimeWithTime:string;         // текущая дата + время
       function isExistFileUpdate:Boolean;                 // загружен ли файл с обновлением
@@ -90,6 +90,8 @@ function TInternalProcess.isExistFileUpdate:Boolean;
 var
   XML:TXML;
 begin
+  if not HomeForm.IsInit then Exit;
+
   Result:=False;
   if not DirectoryExists(FOLDERUPDATE) then Exit;
   try
@@ -107,6 +109,8 @@ var
  cb: Integer;
  tmp:string;
 begin
+  if not HomeForm.IsInit then Exit;
+
   Result:='0';
 
   cb := SizeOf(_PROCESS_MEMORY_COUNTERS);
@@ -141,6 +145,8 @@ var
  ado:TADOQuery;
  serverConnect:TADOConnection;
 begin
+  if not HomeForm.IsInit then Exit;
+
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
   if not Assigned(serverConnect) then begin
@@ -184,6 +190,8 @@ var
  ado:TADOQuery;
  serverConnect:TADOConnection;
 begin
+  if not HomeForm.IsInit then Exit;
+
   if isSendingProgrammStarted then Exit;
 
   ado:=TADOQuery.Create(nil);
@@ -275,18 +283,24 @@ end;
 // нужно ли немедленно закрыть сессию и закрыть дашборд
 procedure TInternalProcess.CheckForceActiveSessionClosed;
 begin
+  if not HomeForm.IsInit then Exit;
+
   if GetForceActiveSessionClosed(m_userLogonID) then KillProcess;
 end;
 
 // обновление текущего времени в окне дашборда
 procedure TInternalProcess.UpdateTimeDashboard;
 begin
+  if not HomeForm.IsInit then Exit;
+
   with HomeForm.StatusBar do Panels[0].Text:=DateTimeToStr(now);
 end;
 
 // проверка работает ли служба обновления или нет
 procedure TInternalProcess.CheckStatusUpdateService;
 begin
+  if not HomeForm.IsInit then Exit;
+
   with HomeForm.StatusBar do begin
     if GetStatusUpdateService then Panels[1].Text:='Служба обновления: работает'
     else Panels[1].Text:='Служба обновления: не запущена';
@@ -298,11 +312,13 @@ procedure TInternalProcess.XMLUpdateLastOnline;
 var
   XML:TXML;
 begin
-  // текущая версия дашборда
-  XML:=TXML.Create(PChar(SETTINGS_XML));
-  XML.UpdateLastOnline;
+  if not HomeForm.IsInit then Exit;
 
   try
+    // текущая версия дашборда
+    XML:=TXML.Create(PChar(SETTINGS_XML));
+    XML.UpdateLastOnline;
+
    if (XML.isUpdate) and (isExistFileUpdate) then begin
      HomeForm.lblNewVersionDashboard.Visible:=True;
 

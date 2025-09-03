@@ -3,7 +3,8 @@ unit Thread_IVRUnit;
 interface
 
 uses
-  System.Classes,SysUtils, ActiveX, TIVRUnit, Vcl.StdCtrls, Vcl.Controls, Vcl.ComCtrls, TLogFileUnit;
+  System.Classes,SysUtils, ActiveX, TIVRUnit, Vcl.StdCtrls, Vcl.Controls, Vcl.ComCtrls, TLogFileUnit,
+  System.SyncObjs;
 
 type
   Thread_IVR = class(TThread)
@@ -16,7 +17,13 @@ type
     procedure showIVR(var p_SharedIVR: TIVR);
     procedure CriticalError;
  private
+   m_initThread: TEvent;  // событие что поток успешно стартовал
   Log:TLoggingFile;
+
+ public
+  constructor Create;
+  destructor Destroy; override;
+  function WaitForInit(_timeout:Cardinal): Boolean;
 
   end;
 
@@ -27,6 +34,29 @@ uses
   FormHome, FunctionUnit, GlobalVariables, TCustomTypeUnit, TDebugStructUnit;
 
 { Thread_IVR }
+
+
+constructor Thread_IVR.Create;
+begin
+  inherited Create(True);               // Suspended=true
+  FreeOnTerminate := False;
+  m_initThread:=TEvent.Create(nil, False, False, '');
+end;
+
+
+destructor Thread_IVR.Destroy;
+begin
+  m_initThread.Free;
+  inherited;
+end;
+
+
+function Thread_IVR.WaitForInit(_timeout:Cardinal): Boolean;
+begin
+  if Terminated then Exit(False);
+  Result:=(m_initThread.WaitFor(_timeout) = wrSignaled);
+end;
+
 
 procedure Thread_IVR.CriticalError;
 begin
@@ -57,16 +87,6 @@ begin
      end;
 
     try
-     // ListViewIVR.Visible := False; // TODO тестовое, можент и не поможет
-
-     // ListViewIVR.Items.BeginUpdate;
-     // ListViewIVR.Columns[0].Width:= 0; // ”становка ширины в 0 в редких вариантах почему то он без этого параметра оборажаетс€
-
-      // ќчищаем ListView перед добавлением новых элементов
-     // ListViewIVR.Clear;
-
-      // ѕроходим по всем элементам списка
-
 
       for i:=Low(p_SharedIVR.listActiveIVR) to High(p_SharedIVR.listActiveIVR) do begin
         begin
@@ -74,8 +94,6 @@ begin
 
           // не показываем номера те которые сбросились
           if p_SharedIVR.listActiveIVR[i].m_countNoChange >= TIVR.cGLOBAL_DropPhone then Continue;
-
-
 
           idToFind := p_SharedIVR.listActiveIVR[i].m_id; // ѕолучаем id
           existingItem := nil;
@@ -153,7 +171,7 @@ const
 begin
    inherited;
    CoInitialize(Nil);
-   Sleep(500);
+  // Sleep(500);
    Log:=TLoggingFile.Create(NAME_THREAD);
 
   // вывод debug info
@@ -168,6 +186,9 @@ begin
      Synchronize(CriticalError);
     end;
   end;
+
+  // событие что запустились
+  m_initThread.SetEvent;
 
   while not Terminated do
   begin

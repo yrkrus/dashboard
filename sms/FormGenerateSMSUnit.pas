@@ -617,7 +617,7 @@ end;
 procedure TFormGenerateSMS.btnGenerateMessageClick(Sender: TObject);
 begin
   CreateMessage;
-  if SharedGenerateMessage.GeneretedMessage = '' then Exit;
+  if not SharedGenerateMessage.IsGeneretedMessage then Exit;
 
   Screen.Cursor:=crHourGlass;
   AddMessageFromTemplate(SharedGenerateMessage.GeneretedMessage);
@@ -633,7 +633,7 @@ end;
 procedure TFormGenerateSMS.btnGenerateMessageShowClick(Sender: TObject);
 begin
   CreateMessage;
-  if SharedGenerateMessage.GeneretedMessage = '' then Exit;
+  if not SharedGenerateMessage.IsGeneretedMessage then Exit;
 
   MessageBox(Handle,PChar(SharedGenerateMessage.GeneretedMessage),PChar('Инфо'),MB_OK+MB_ICONINFORMATION);
 end;
@@ -705,6 +705,12 @@ begin
   phonePodbor:='';
   phonePodborError:='';
   isAutoPodbor:=False;
+
+  // проверим что создали сообщение
+  if not SharedGenerateMessage.IsGeneretedMessage then begin
+   OptionsStyle(options_Manual);
+   Exit;
+  end;
 
   FormHome.ShowManualMessage;
 end;

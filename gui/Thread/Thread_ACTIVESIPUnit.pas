@@ -3,9 +3,8 @@
 interface
 
 uses
-  System.Classes, System.DateUtils,
-  SysUtils, ActiveX, TActiveSIPUnit,
-  Vcl.ComCtrls, TLogFileUnit, GlobalVariablesLinkDLL;
+  System.Classes, System.DateUtils, SysUtils, ActiveX, TActiveSIPUnit, Vcl.ComCtrls,
+  TLogFileUnit, GlobalVariablesLinkDLL, System.SyncObjs;
 
 type
   Thread_ACTIVESIP = class(TThread)
@@ -18,6 +17,8 @@ type
     procedure UpdateActiveSipOperators(var p_ActiveSipOperators:TActiveSIP);
 
   private
+   m_initThread: TEvent;  // событие что поток успешно стартовал
+
    Log:TLoggingFile;
    isCheckThreadSipOperators:Boolean; // флаг для первоначальной проверки всех активнх операторов, нужен только при старте дашборда
 
@@ -31,6 +32,12 @@ type
                                        i: Integer;
                                        ListItem: TListItem);
 
+  public
+  constructor Create;
+  destructor Destroy; override;
+  function WaitForInit(_timeout:Cardinal): Boolean;
+
+
   end;
 
 
@@ -40,12 +47,33 @@ uses
   FunctionUnit, FormHome, GlobalVariables, FormOperatorStatusUnit, TCustomTypeUnit, TXmlUnit, TDebugStructUnit;
 
 
+constructor Thread_ACTIVESIP.Create;
+begin
+  inherited Create(True);               // Suspended=true
+  FreeOnTerminate := False;
+  m_initThread:=TEvent.Create(nil, False, False, '');
+end;
 
- procedure Thread_ACTIVESIP.CriticalError;
- begin
-   // записываем в лог
-   Log.Save(messclass+':'+mess,IS_ERROR);
- end;
+
+destructor Thread_ACTIVESIP.Destroy;
+begin
+  m_initThread.Free;
+  inherited;
+end;
+
+
+function Thread_ACTIVESIP.WaitForInit(_timeout:Cardinal): Boolean;
+begin
+  if Terminated then Exit(False);
+  Result:=(m_initThread.WaitFor(_timeout) = wrSignaled);
+end;
+
+
+procedure Thread_ACTIVESIP.CriticalError;
+begin
+  // записываем в лог
+  Log.Save(messclass+':'+mess,IS_ERROR);
+end;
 
 
 { Thread_ACTIVESIP }
@@ -266,8 +294,6 @@ procedure Thread_ACTIVESIP.UpdateListSubMenuItems(var p_ActiveSipOperators: TAct
 
 begin
   try
-//   HomeForm.ListViewSIP.Items.BeginUpdate;
-
     // submenu
     begin
       // ===== ИМЯ ОПЕРАТОРА =====
@@ -532,18 +558,26 @@ end;
 
 procedure Thread_ACTIVESIP.Execute;
 const
- SLEEP_TIME:Word = 1000;
- NAME_THREAD:string = 'Thread_ActiveSip';
+ NAME_THREAD:string       = 'Thread_ActiveSip';
+ cDEF_SLEEP_TIME:Word     = 1000;
+ cSTATIC_CKIP_CHECK:Word  = 10; // 10 раз не проверяем скорость
 var
   StartTime, EndTime  :Cardinal;
-  Duration            :Cardinal;
 
-  debugInfo: TDebugStruct;
+  Duration            :Cardinal;
+  debugInfo           :TDebugStruct;
+
+  defSLEEP_TIME       :Word; // default sleep time
+  avgTIME             :Integer; // среднее значение потока
+  skipCheck           :Word;
 begin
   inherited;
   CoInitialize(Nil);
   Duration:=0;
-  Sleep(100);
+
+  defSLEEP_TIME:=cDEF_SLEEP_TIME;
+  avgTIME:=0;
+  skipCheck:=0;
 
   Log:=TLoggingFile.Create(NAME_THREAD);
 
@@ -566,6 +600,9 @@ begin
   // default при первом запуске
   isCheckThreadSipOperators:=True;
 
+  // событие что запустились
+   m_initThread.SetEvent;
+
   while not Terminated do
   begin
 
@@ -573,7 +610,6 @@ begin
 
      try
         StartTime:=GetTickCount;
-
         UpdateActiveSipOperators(SharedActiveSipOperators);
 
         //отображаем что у нас по операторам на главной форме
@@ -582,14 +618,15 @@ begin
         // отображаем кол-во скрытых операторов если установлен параметр "не показывать ушедших домой"
         SharedActiveSipOperators.showHideOperatorsForm;
 
-
-        EndTime:= GetTickCount;
-        Duration:= EndTime - StartTime;
+        EndTime:=GetTickCount;
+        Duration:=EndTime-StartTime;
 
         SharedCountResponseThread.SetCurrentResponse(NAME_THREAD,Duration);
 
         // проверили орераторов
         if isCheckThreadSipOperators then isCheckThreadSipOperators:=False;
+
+        if skipCheck <= cSTATIC_CKIP_CHECK then Inc(skipCheck);
 
      except
         on E:Exception do
@@ -602,8 +639,22 @@ begin
       end;
     end;
 
-    if Duration<SLEEP_TIME then Sleep(SLEEP_TIME-Duration);
+    // сверим среднее значение (Добавлена автоматическая оптимизация запросов к серверу в зависимости от нагрузки на оперативную память клиентского ПК)
+    if skipCheck>=cSTATIC_CKIP_CHECK then begin
+      avgTIME:=SharedCountResponseThread.GetAverageTime(NAME_THREAD);
 
+      if avgTIME > defSLEEP_TIME then begin
+         defSLEEP_TIME:=avgTIME;
+
+         if defSLEEP_TIME > cDEF_SLEEP_TIME then Sleep(defSLEEP_TIME-cDEF_SLEEP_TIME)
+         else sleep(defSLEEP_TIME);
+      end
+      else
+      begin
+       defSLEEP_TIME:=cDEF_SLEEP_TIME;
+       if Duration<defSLEEP_TIME then Sleep(defSLEEP_TIME-Duration);
+      end;
+    end;
   end;
 end;
 

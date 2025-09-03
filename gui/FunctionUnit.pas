@@ -18,7 +18,7 @@ procedure clearAllLists;                                                        
 procedure clearList_IVR(InFontSize:Word);                                            // отображение листа с текущими звонками
 procedure clearList_QUEUE(InFontSize:Word);                                          // очистка listbox_QUEUE
 procedure clearList_SIP(InWidth:Integer;InFontSize:Word);                            // очистка listbox_SIP
-procedure createThreadDashboard;                                                     // создание потоков
+function CreateThreadDashboard(var _errorDescription:string):Boolean;                // создание потоков
 function GetVersion(GUID:string; programm:enumProrgamm):string;                      // отображение текущей версии
 procedure showVersionAbout(programm:enumProrgamm);                                   // отображение истории вресий
 function GetVersionAbout(programm:enumProrgamm; inGUID:string):string;               // отображение истории вресий дашбоарда (только текущая версия)
@@ -116,6 +116,7 @@ procedure OpenLocalChat;                                                        
 procedure OpenReports;                                                               // открытые exe отчетов
 procedure OpenService;                                                               // открытые exe услуг
 procedure OpenSMS;                                                                   // открытые exe SMS рассылки
+procedure OpenOutgoing;                                                              // открытые exe Звонилки
 function GetExistActiveSession(InUserID:Integer; var ActiveSession:string):Boolean;  // есть ли активная сессия уже
 function GetStatusUpdateService:Boolean;                                             // проверка запущена ли служба обновления
 function getStatusOperator(InUserId:Integer):enumStatusOperators;                    // текущий стаус оператора из таблицы operators
@@ -148,9 +149,11 @@ function CreateRemoteCommandCallback(_action:enumRemoteCommandAction; _id:Intege
                                       var _errorDescription:string): Boolean;        // действие по удаленной команде для активной сессии или для пропущенного звонка
 function ExecuteCommandKillActiveSession(_userID:Integer;
                                          var _errorDescription:string):Boolean;      // выполенние команды закрытые активной сессии
-function SendCommandStatusDelay(_userID:Integer):enumStatus;                          // нужно ли делать задержку при смене статуса оператора
+function SendCommandStatusDelay(_userID:Integer):enumStatus;                         // нужно ли делать задержку при смене статуса оператора
 function IsAllowChangeStatusOperators(_userID:Integer; var _errorDescription:string):Boolean; // можно ли сменить оператору статус (вдруг стоит отложенный статус)
 procedure SetLinkColor(var _label:TLabel);                                          // установка цвета на label если на него можно нажать
+procedure ResetPanelStatusOperator;                                                 // сброс панели статусы оператора на дефолтные значения
+procedure ForceExitOperatorAllQueue(_userID:Integer);                               // принудительный выход из всех очередей оператора
 
 
 
@@ -163,7 +166,7 @@ uses
   FormUsersUnit, TTranslirtUnit, Thread_ACTIVESIP_updatetalkUnit, Thread_ACTIVESIP_updatePhoneTalkUnit,
   Thread_ACTIVESIP_countTalkUnit, Thread_ACTIVESIP_QueueUnit, FormActiveSessionUnit, TIVRUnit,
   FormOperatorStatusUnit, TXmlUnit, TOnlineChat, Thread_ChatUnit, Thread_ForecastUnit,
-  Thread_InternalProcessUnit, TActiveSessionUnit, FormTrunkSipUnit, Thread_CheckTrunkUnit;
+  Thread_InternalProcessUnit, TActiveSessionUnit, FormTrunkSipUnit, Thread_CheckTrunkUnit, TStatusUnit;
 
  // логирование действий
 procedure LoggingRemote(InLoggingID:enumLogging; _userID:Integer);
@@ -268,53 +271,30 @@ begin
 end;
 
 
-//
-//// получение ID TRole
-//function GetRoleID(InRole:string):Integer;
-//var
-// ado:TADOQuery;
-// serverConnect:TADOConnection;
-// error:string;
-//begin
-//  ado:=TADOQuery.Create(nil);
-//  serverConnect:=createServerConnectWithError(error);
-//
-//  if not Assigned(serverConnect) then begin
-//     ShowFormErrorMessage(error,SharedMainLog,'GetRoleID');
-//     FreeAndNil(ado);
-//     Exit;
-//  end;
-//
-//
-//  try
-//    with ado do begin
-//      ado.Connection:=serverConnect;
-//      SQL.Clear;
-//      SQL.Add('select id from role where name_role = '+#39+InRole+#39);
-//
-//      Active:=True;
-//      Result:=StrToInt(VarToStr(Fields[0].Value));
-//    end;
-//  finally
-//    FreeAndNil(ado);
-//    if Assigned(serverConnect) then begin
-//     serverConnect.Close;
-//     FreeAndNil(serverConnect);
-//    end;
-//  end;
-//end;
-
 // создание потоков
-procedure createThreadDashboard;
+function CreateThreadDashboard(var _errorDescription:string):Boolean;
+const
+ cWaitForThread:Word = 10000; // время ожидания ответа от потока
 begin
+  Result:=False;
+  _errorDescription:='';
+
   with HomeForm do begin
      // Статисика
     if STATISTICS_thread=nil then
     begin
      FreeAndNil(STATISTICS_thread);
-     STATISTICS_thread:=Thread_Statistics.Create(True);
-     STATISTICS_thread.Priority:=tpNormal;
-     UpdateStatistiscSTOP:=True;
+     try
+       STATISTICS_thread:=Thread_Statistics.Create;
+       STATISTICS_thread.Priority:=tpNormal;
+       UpdateStatistiscSTOP:=True;
+      except
+        on E:Exception do
+        begin
+         _errorDescription:='Ошибка создания потока STATISTICS'+#13+e.ClassName+' : '+e.Message;
+         Exit;
+        end;
+     end;
     end
     else UpdateStatistiscSTOP:=True;
 
@@ -322,9 +302,17 @@ begin
     if IVR_thread=nil then
     begin
      FreeAndNil(IVR_thread);
-     IVR_thread:=Thread_IVR.Create(True);
-     IVR_thread.Priority:=tpNormal;
-     UpdateIVRSTOP:=True;
+     try
+      IVR_thread:=Thread_IVR.Create;
+      IVR_thread.Priority:=tpNormal;
+      UpdateIVRSTOP:=True;
+      except
+        on E:Exception do
+        begin
+         _errorDescription:='Ошибка создания потока IVR'+#13+e.ClassName+' : '+e.Message;
+         Exit;
+        end;
+     end;
     end
     else UpdateIVRSTOP:=True;
 
@@ -332,9 +320,19 @@ begin
     if QUEUE_thread=nil then
     begin
      FreeAndNil(QUEUE_thread);
-     QUEUE_thread:=Thread_QUEUE.Create(True);
-     QUEUE_thread.Priority:=tpNormal;
-     UpdateQUEUESTOP:=True;
+
+     try
+       QUEUE_thread:=Thread_QUEUE.Create;
+       QUEUE_thread.Priority:=tpNormal;
+       UpdateQUEUESTOP:=True;
+     except
+        on E:Exception do
+        begin
+         _errorDescription:='Ошибка создания потока QUEUE'+#13+e.ClassName+' : '+e.Message;
+         Exit;
+        end;
+     end;
+
     end
     else UpdateQUEUESTOP:=True;
 
@@ -344,9 +342,19 @@ begin
       if ACTIVESIP_thread=nil then
       begin
        FreeAndNil(ACTIVESIP_thread);
-       ACTIVESIP_thread:=Thread_ACTIVESIP.Create(True);
-       ACTIVESIP_thread.Priority:=tpNormal;
-       UpdateACTIVESIPSTOP:=True;
+
+       try
+         ACTIVESIP_thread:=Thread_ACTIVESIP.Create;
+         ACTIVESIP_thread.Priority:=tpNormal;
+         UpdateACTIVESIPSTOP:=True;
+       except
+          on E:Exception do
+          begin
+           _errorDescription:='Ошибка создания потока ACTIVESIP'+#13+e.ClassName+' : '+e.Message;
+           Exit;
+          end;
+       end;
+
       end
       else UpdateACTIVESIPSTOP:=True;
       ///////////////////////////////////////////
@@ -354,9 +362,19 @@ begin
       if ACTIVESIP_Queue_thread=nil then
       begin
        FreeAndNil(ACTIVESIP_Queue_thread);
-       ACTIVESIP_Queue_thread:=Thread_ACTIVESIP_Queue.Create(True);
-       ACTIVESIP_Queue_thread.Priority:=tpNormal;
-       UpdateACTIVESIPQueue:=True;
+
+       try
+         ACTIVESIP_Queue_thread:=Thread_ACTIVESIP_Queue.Create;
+         ACTIVESIP_Queue_thread.Priority:=tpNormal;
+         UpdateACTIVESIPQueue:=True;
+       except
+          on E:Exception do
+          begin
+           _errorDescription:='Ошибка создания потока ACTIVESIP_Queue'+#13+e.ClassName+' : '+e.Message;
+           Exit;
+          end;
+       end;
+
       end
       else UpdateACTIVESIPQueue:=True;
       ///////////////////////////////////////////
@@ -364,9 +382,19 @@ begin
       if ACTIVESIP_updateTalk_thread=nil then
       begin
        FreeAndNil(ACTIVESIP_updateTalk_thread);
-       ACTIVESIP_updateTalk_thread:=Thread_ACTIVESIP_updateTalk.Create(True);
-       ACTIVESIP_updateTalk_thread.Priority:=tpNormal;
-       UpdateACTIVESIPtalkTime:=True;
+
+       try
+         ACTIVESIP_updateTalk_thread:=Thread_ACTIVESIP_updateTalk.Create;
+         ACTIVESIP_updateTalk_thread.Priority:=tpNormal;
+         UpdateACTIVESIPtalkTime:=True;
+       except
+          on E:Exception do
+          begin
+           _errorDescription:='Ошибка создания потока ACTIVESIP_updateTalk'+#13+e.ClassName+' : '+e.Message;
+           Exit;
+          end;
+       end;
+
       end
       else UpdateACTIVESIPtalkTime:=True;
       ///////////////////////////////////////////
@@ -374,9 +402,17 @@ begin
       if ACTIVESIP_updateTalkPhone_thread=nil then
       begin
        FreeAndNil(ACTIVESIP_updateTalkPhone_thread);
-       ACTIVESIP_updateTalkPhone_thread:=Thread_ACTIVESIP_updatePhoneTalk.Create(True);
-       ACTIVESIP_updateTalkPhone_thread.Priority:=tpNormal;
-       UpdateACTIVESIPtalkTimePhone:=True;
+       try
+         ACTIVESIP_updateTalkPhone_thread:=Thread_ACTIVESIP_updatePhoneTalk.Create;
+         ACTIVESIP_updateTalkPhone_thread.Priority:=tpNormal;
+         UpdateACTIVESIPtalkTimePhone:=True;
+       except
+          on E:Exception do
+          begin
+           _errorDescription:='Ошибка создания потока ACTIVESIP_updateTalkPhone'+#13+e.ClassName+' : '+e.Message;
+           Exit;
+          end;
+       end;
       end
       else UpdateACTIVESIPtalkTimePhone:=True;
        ///////////////////////////////////////////
@@ -384,12 +420,19 @@ begin
       if ACTIVESIP_countTalk_thread=nil then
       begin
        FreeAndNil(ACTIVESIP_countTalk_thread);
-       ACTIVESIP_countTalk_thread:=Thread_ACTIVESIP_countTalk.Create(True);
-       ACTIVESIP_countTalk_thread.Priority:=tpNormal;
-       UpdateACTIVESIPcountTalk:=True;
+       try
+         ACTIVESIP_countTalk_thread:=Thread_ACTIVESIP_countTalk.Create;
+         ACTIVESIP_countTalk_thread.Priority:=tpNormal;
+         UpdateACTIVESIPcountTalk:=True;
+       except
+          on E:Exception do
+          begin
+           _errorDescription:='Ошибка создания потока ACTIVESIP_countTalk'+#13+e.ClassName+' : '+e.Message;
+           Exit;
+          end;
+       end;
       end
       else UpdateACTIVESIPcountTalk:=True;
-
     end;
 
 
@@ -397,9 +440,17 @@ begin
     if CHECKSERVERS_thread=nil then
     begin
      FreeAndNil(CHECKSERVERS_thread);
-     CHECKSERVERS_thread:=Thread_CHECKSERVERS.Create(True);
-     CHECKSERVERS_thread.Priority:=tpNormal;
-     UpdateCHECKSERVERSSTOP:=True;
+     try
+       CHECKSERVERS_thread:=Thread_CHECKSERVERS.Create(True);
+       CHECKSERVERS_thread.Priority:=tpNormal;
+       UpdateCHECKSERVERSSTOP:=True;
+       except
+      on E:Exception do
+      begin
+       _errorDescription:='Ошибка создания потока CHECKSERVERS'+#13+e.ClassName+' : '+e.Message;
+       Exit;
+      end;
+     end;
     end
     else UpdateCHECKSERVERSSTOP:=True;
 
@@ -407,9 +458,18 @@ begin
     if CHECKSIPTRUNKS_thread=nil then
     begin
      FreeAndNil(CHECKSIPTRUNKS_thread);
-     CHECKSIPTRUNKS_thread:=Thread_CheckTrunks.Create(True);
-     CHECKSIPTRUNKS_thread.Priority:=tpNormal;
-     UpdateCheckSipTrunksStop:=True;
+     try
+       CHECKSIPTRUNKS_thread:=Thread_CheckTrunks.Create;
+       CHECKSIPTRUNKS_thread.Priority:=tpNormal;
+       UpdateCheckSipTrunksStop:=True;
+       except
+      on E:Exception do
+      begin
+       _errorDescription:='Ошибка создания потока CHECKSIPTRUNKS'+#13+e.ClassName+' : '+e.Message;
+       Exit;
+      end;
+     end;
+
     end
     else UpdateCheckSipTrunksStop:=True;
 
@@ -418,9 +478,17 @@ begin
     if ANSWEREDQUEUE_thread=nil then
     begin
      FreeAndNil(ANSWEREDQUEUE_thread);
-     ANSWEREDQUEUE_thread:=Thread_AnsweredQueue.Create(True);
-     ANSWEREDQUEUE_thread.Priority:=tpNormal;
-     UpdateAnsweredStop:=True;
+     try
+       ANSWEREDQUEUE_thread:=Thread_AnsweredQueue.Create;
+       ANSWEREDQUEUE_thread.Priority:=tpNormal;
+       UpdateAnsweredStop:=True;
+       except
+      on E:Exception do
+      begin
+       _errorDescription:='Ошибка создания потока ANSWEREDQUEUE'+#13+e.ClassName+' : '+e.Message;
+       Exit;
+      end;
+     end;
     end
     else UpdateAnsweredStop:=True;
 
@@ -428,9 +496,17 @@ begin
     if ONLINECHAT_thread=nil then
     begin
      FreeAndNil(ONLINECHAT_thread);
-     ONLINECHAT_thread:=Thread_Chat.Create(True);
-     ONLINECHAT_thread.Priority:=tpNormal;
-     UpdateOnlineChatStop:=True;
+     try
+      ONLINECHAT_thread:=Thread_Chat.Create(True);
+      ONLINECHAT_thread.Priority:=tpNormal;
+      UpdateOnlineChatStop:=True;
+     except
+      on E:Exception do
+      begin
+       _errorDescription:='Ошибка создания потока ONLINECHAT'+#13+e.ClassName+' : '+e.Message;
+       Exit;
+      end;
+     end;
     end
     else UpdateOnlineChatStop:=True;
 
@@ -439,9 +515,17 @@ begin
     if FORECAST_thread=nil then
     begin
      FreeAndNil(FORECAST_thread);
-     FORECAST_thread:=Thread_Forecast.Create(True);
-     FORECAST_thread.Priority:=tpNormal;
-     UpdateForecast:=True;
+     try
+      FORECAST_thread:=Thread_Forecast.Create(True);
+      FORECAST_thread.Priority:=tpNormal;
+      UpdateForecast:=True;
+     except
+      on E:Exception do
+      begin
+       _errorDescription:='Ошибка создания потока FORECAST'+#13+e.ClassName+' : '+e.Message;
+       Exit;
+      end;
+     end;
     end
     else UpdateForecast:=True;
 
@@ -450,41 +534,121 @@ begin
     if INTERNALPROCESS_thread=nil then
     begin
      FreeAndNil(INTERNALPROCESS_thread);
-     INTERNALPROCESS_thread:=Thread_InternalProcess.Create(SharedCurrentUserLogon.GetID);
-     INTERNALPROCESS_thread.Priority:=tpNormal;
-     UpdateInternalProcess:=True;
-    end
-    else UpdateInternalProcess:=True;
+     try
+       INTERNALPROCESS_thread:=Thread_InternalProcess.Create(SharedCurrentUserLogon.GetID);
+       INTERNALPROCESS_thread.Priority:=tpNormal;
+     except
+      on E:Exception do
+      begin
+       _errorDescription:='Ошибка создания потока INTERNALPROCESS'+#13+e.ClassName+' : '+e.Message;
+       Exit;
+      end;
+     end;
+    end;
+    //
+    // ****************** запуск потоков ******************
+    //
+    begin
+      INTERNALPROCESS_thread.Start;
+      if not INTERNALPROCESS_thread.WaitForInit(cWaitForThread) then begin
+        _errorDescription:='Ошибка запуска потока INTERNALPROCESS';
+       Exit;
+      end;
 
-    // запуск потоков
-    STATISTICS_thread.Start;
-    Sleep(10);
-    IVR_thread.Start;
-    Sleep(10);
-    QUEUE_thread.Start;
-    Sleep(10);
-    ACTIVESIP_thread.Start;
-    Sleep(10);
-    ACTIVESIP_Queue_thread.Start;
-    Sleep(10);
-    ACTIVESIP_countTalk_thread.Start;
-    Sleep(10);
-    ACTIVESIP_updateTalk_thread.Start;
-    Sleep(10);
-    ACTIVESIP_updateTalkPhone_thread.Start;
-    Sleep(10);
-    CHECKSERVERS_thread.Start;
-    Sleep(10);
-    CHECKSIPTRUNKS_thread.Start;
-    Sleep(10);
-    ANSWEREDQUEUE_thread.Start;
-    Sleep(10);
-    if SharedCurrentUserLogon.GetIsAccessLocalChat then ONLINECHAT_thread.Start;
-    Sleep(10);
-    FORECAST_thread.Start;
-    Sleep(10);
-    INTERNALPROCESS_thread.Start;
+      Sleep(10);
+
+      STATISTICS_thread.Start;
+      if not STATISTICS_thread.WaitForInit(cWaitForThread) then begin
+        _errorDescription:='Ошибка запуска потока STATISTICS';
+       Exit;
+      end;
+
+      Sleep(10);
+
+      IVR_thread.Start;
+      if not IVR_thread.WaitForInit(cWaitForThread) then begin
+        _errorDescription:='Ошибка запуска потока IVR';
+       Exit;
+      end;
+
+      Sleep(10);
+
+      QUEUE_thread.Start;
+      if not QUEUE_thread.WaitForInit(cWaitForThread) then begin
+        _errorDescription:='Ошибка запуска потока QUEUE';
+       Exit;
+      end;
+
+      Sleep(10);
+
+      ACTIVESIP_thread.Start;
+      if not ACTIVESIP_thread.WaitForInit(cWaitForThread) then begin
+        _errorDescription:='Ошибка запуска потока ACTIVESIP';
+       Exit;
+      end;
+
+      Sleep(10);
+
+      ACTIVESIP_Queue_thread.Start;
+      if not ACTIVESIP_Queue_thread.WaitForInit(cWaitForThread) then begin
+        _errorDescription:='Ошибка запуска потока ACTIVESIP_Queue';
+       Exit;
+      end;
+
+      Sleep(10);
+
+      ACTIVESIP_countTalk_thread.Start;
+      if not ACTIVESIP_countTalk_thread.WaitForInit(cWaitForThread) then begin
+        _errorDescription:='Ошибка запуска потока ACTIVESIP_countTalk';
+       Exit;
+      end;
+
+      Sleep(10);
+
+      ACTIVESIP_updateTalk_thread.Start;
+      if not ACTIVESIP_updateTalk_thread.WaitForInit(cWaitForThread) then begin
+        _errorDescription:='Ошибка запуска потока ACTIVESIP_updateTalk';
+       Exit;
+      end;
+
+      Sleep(10);
+
+      ACTIVESIP_updateTalkPhone_thread.Start;
+      if not ACTIVESIP_updateTalkPhone_thread.WaitForInit(cWaitForThread) then begin
+        _errorDescription:='Ошибка запуска потока ACTIVESIP_updateTalkPhone';
+       Exit;
+      end;
+
+      Sleep(10);
+
+      CHECKSIPTRUNKS_thread.Start;
+      if not CHECKSIPTRUNKS_thread.WaitForInit(cWaitForThread) then begin
+        _errorDescription:='Ошибка запуска потока CHECKSIPTRUNKS';
+       Exit;
+      end;
+
+      Sleep(10);
+
+      ANSWEREDQUEUE_thread.Start;
+      if not ANSWEREDQUEUE_thread.WaitForInit(cWaitForThread) then begin
+        _errorDescription:='Ошибка запуска потока ANSWEREDQUEUE_thread';
+       Exit;
+      end;
+
+      Sleep(10);
+
+      if SharedCurrentUserLogon.GetIsAccessLocalChat then ONLINECHAT_thread.Start; // TODO тут не делаем проверку т.к. этот поток будет переделываться
+
+      Sleep(10);
+
+      FORECAST_thread.Start;
+
+      Sleep(10);
+      CHECKSERVERS_thread.Start; // TODO тут не делаем проверку т.к. этот поток уедет в core
+    end;
   end;
+
+  Result:=True;
 end;
 
 
@@ -548,6 +712,17 @@ begin
      countKillExe:=0;
      while GetTask(PChar(SERVICE_EXE)) do begin
        KillTask(PChar(SERVICE_EXE));
+
+       // на случай если не удасться закрыть дочерний exe
+       Sleep(500);
+       Inc(countKillExe);
+       if countKillExe>10 then Break;
+     end;
+
+      // закрываем outgoing_exe если открыт
+     countKillExe:=0;
+     while GetTask(PChar(OUTGOING_EXE)) do begin
+       KillTask(PChar(OUTGOING_EXE));
 
        // на случай если не удасться закрыть дочерний exe
        Sleep(500);
@@ -918,9 +1093,10 @@ end;
 procedure clearList_QUEUE(InFontSize:Word);
  const
  cWidth_default         :Word = 335;
- cProcentWidth_phone    :Word = 40;
- cProcentWidth_waiting  :Word = 30;
- cProcentWidth_queue    :Word = 30;
+ cProcentWidth_phone    :Word = 30;
+ cProcentWidth_waiting  :Word = 25;
+ cProcentWidth_queue    :Word = 25;
+ cProcentWidth_source   :Word = 20;
 begin
  with HomeForm do begin
 
@@ -940,7 +1116,7 @@ begin
 
       with Columns.Add do
       begin
-        Caption:='Номер телефона';
+        Caption:='Телефон';
         Width:=Round((cWidth_default*cProcentWidth_phone)/100);
         Alignment:=taCenter;
       end;
@@ -948,7 +1124,7 @@ begin
       with Columns.Add do
       begin
         Caption:='Ожидание';
-        Width:=Round((cWidth_default*cProcentWidth_waiting)/100)-1;
+        Width:=Round((cWidth_default*cProcentWidth_waiting)/100);
         Alignment:=taCenter;
       end;
 
@@ -956,6 +1132,13 @@ begin
       begin
         Caption:='Очередь';
         Width:=Round((cWidth_default*cProcentWidth_queue)/100);
+        Alignment:=taCenter;
+      end;
+
+      with Columns.Add do
+      begin
+        Caption:='Источник';
+        Width:=Round((cWidth_default*cProcentWidth_source)/100);
         Alignment:=taCenter;
       end;
    end;
@@ -3103,17 +3286,18 @@ begin
   end;
 
   // запишем текущую версию дашборда
-  begin
-   if FileExists(SETTINGS_XML) then begin
-    XML:=TXML.Create(PChar(SETTINGS_XML));
-    // обновляем текущий
-    XML.UpdateCurrentVersion(PChar(GUID_VERSION));
-   end
-   else begin
-    XML:=TXML.Create(PChar(SETTINGS_XML),PChar(GUID_VERSION));
+   try
+     if FileExists(SETTINGS_XML) then begin
+      XML:=TXML.Create(PChar(SETTINGS_XML));
+      // обновляем текущий
+      XML.UpdateCurrentVersion(PChar(GUID_VERSION));
+     end
+     else begin
+      XML:=TXML.Create(PChar(SETTINGS_XML),PChar(GUID_VERSION));
+     end;
+   finally
+     XML.Free;
    end;
-   XML.Free;
-  end;
 end;
 
 // отображение\сркытие окна запроса на сервер
@@ -3609,7 +3793,14 @@ begin
    dateToBD:=StrToDateTime(curr_date);
    dateNOW:=Now;
    diff:=Round((dateNOW - dateToBD) * 24 * 60 * 60 );
-   Result:=GetTimeAnsweredSecondsToString(diff);
+
+   if diff >= 3600 then   // формат (hh::mm::ss)
+   begin
+     Result:=GetTimeAnsweredSecondsToString(diff);
+   end
+   else begin
+     Result:=Copy(GetTimeAnsweredSecondsToString(diff), 4, 5);  // формат (mm::ss)
+   end;
 end;
 
 
@@ -4593,8 +4784,22 @@ begin
 end;
 
 
+// открытые exe Звонилки
+procedure OpenOutgoing;
+begin
+  if not SharedCurrentUserLogon.GetIsAccessService then begin
+    MessageBox(HomeForm.Handle,PChar('Отсутствует доступ к звонкам'),PChar('Отсутствует доступ'),MB_OK+MB_ICONINFORMATION);
+    Exit;
+  end;
 
+  if not FileExists(OUTGOING_EXE) then begin
+    MessageBox(HomeForm.Handle,PChar('Не удается найти файл '+OUTGOING_EXE),PChar('Файл не найден'),MB_OK+MB_ICONERROR);
+    Exit;
+  end;
 
+  ShellExecute(HomeForm.Handle, 'Open', PChar(OUTGOING_EXE),PChar(USER_ID_PARAM+' '+IntToStr(SharedCurrentUserLogon.GetID)),nil,SW_SHOW);
+
+end;
 
 
 
@@ -4852,6 +5057,12 @@ begin
     Result:=eNeedReconnectNO;
     Exit;
   end;
+
+  if (AnsiPos('Ошибка создания потока', _errorMessage)<>0) or
+     (AnsiPos('Ошибка запуска потока', _errorMessage) <> 0) then begin
+    Result:=eNeedReconnectNO;
+    Exit;
+  end;
 end;
 
 
@@ -4993,9 +5204,12 @@ var
 begin
   p_ButtonClose.Enabled:=False;
 
-  XML:=TXML.Create;
-  XML.ForceUpdate('true');
-  XML.Free;
+  try
+   XML:=TXML.Create;
+   XML.ForceUpdate('true');
+  finally
+   XML.Free;
+  end;
 
   MessageBox(0,PChar('Обновление запущено оно займет около 1 мин'+#13#13+'Дашборд закроется автоматически'),PChar('Обновление запущено'),MB_OK+MB_ICONINFORMATION);
 end;
@@ -5007,15 +5221,18 @@ var
  XML:TXML;
 begin
   XML:=TXML.Create;
-  with HomeForm do begin
-    if XML.GetWindowState = 'wsMaximized' then WindowState:=wsMaximized
-    else begin
-     WindowState  :=wsNormal;
-     Height       :=900; //1011  // default
-     ClientWidth  :=1470;        // default
+  try
+    with HomeForm do begin
+      if XML.GetWindowState = 'wsMaximized' then WindowState:=wsMaximized
+      else begin
+       WindowState  :=wsNormal;
+       Height       :=900; //1011  // default
+       ClientWidth  :=1470;        // default
+      end;
     end;
+  finally
+   XML.Free;
   end;
-  XML.Free;
 end;
 
 
@@ -5238,6 +5455,51 @@ end;
 procedure SetLinkColor(var _label:TLabel);
 begin
   _label.Font.Color:=clHighlight;
+end;
+
+// сброс панели статусы оператора на дефолтные значения
+procedure ResetPanelStatusOperator;
+var
+ XML:TXML;
+ id_sip:string;
+begin
+
+  try
+   XML:=TXML.Create;
+   XML.SetStatusOperatorPosition(0,0);
+  finally
+   XML.Free;
+  end;
+
+  id_sip:=getUserSIP(SharedCurrentUserLogon.GetID);
+
+  // в очереди ли находится оператор
+  if SharedActiveSipOperators.isExistOperatorInQueue(id_sip) then begin
+    // выход из всех очередей
+   ForceExitOperatorAllQueue(SharedCurrentUserLogon.GetID);
+  end;
+end;
+
+
+// принудительный выход из всех очередей оператора
+procedure ForceExitOperatorAllQueue(_userID:Integer);
+var
+ status: TStatus;
+ error:string;
+ delay:enumStatus;
+begin
+  status:=TStatus.Create(_userID,SharedCurrentUserLogon.GetUserList, True);
+  delay:=eNO;
+
+  if not status.SendCommand(eLog_home,delay,error) then begin
+    MessageBox(HomeForm.Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
+    Exit;
+  end;
+
+  // очистка статуса
+  UpdateOperatorStatus(eUnknown,_userID);
+
+  LoggingRemote(eLog_home,_userID);
 end;
 
 

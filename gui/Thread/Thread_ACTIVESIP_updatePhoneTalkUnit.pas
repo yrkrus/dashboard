@@ -3,7 +3,8 @@ unit Thread_ACTIVESIP_updatePhoneTalkUnit;
 interface
 
 uses
-  System.Classes, System.DateUtils, SysUtils, ActiveX, TActiveSIPUnit, GlobalVariables, TLogFileUnit;
+  System.Classes, System.DateUtils, SysUtils, ActiveX, TActiveSIPUnit, GlobalVariables, TLogFileUnit,
+  System.SyncObjs;
 
 type
   Thread_ACTIVESIP_updatePhoneTalk = class(TThread)
@@ -14,8 +15,13 @@ type
     procedure show(var p_ActiveSipOperators:TActiveSIP);
     procedure CriticalError;
   private
+    m_initThread: TEvent;  // событие что поток успешно стартовал
     Log:TLoggingFile;
     { Private declarations }
+  public
+  constructor Create;
+  destructor Destroy; override;
+  function WaitForInit(_timeout:Cardinal): Boolean;
   end;
 
 implementation
@@ -23,15 +29,36 @@ implementation
 uses
   FunctionUnit, FormHome, TCustomTypeUnit, TDebugStructUnit;
 
+{ Thread_ACTIVESIP_updatePhoneTalk }
 
- procedure Thread_ACTIVESIP_updatePhoneTalk.CriticalError;
- begin
+constructor Thread_ACTIVESIP_updatePhoneTalk.Create;
+begin
+  inherited Create(True);               // Suspended=true
+  FreeOnTerminate := False;
+  m_initThread:=TEvent.Create(nil, False, False, '');
+end;
+
+
+destructor Thread_ACTIVESIP_updatePhoneTalk.Destroy;
+begin
+  m_initThread.Free;
+  inherited;
+end;
+
+
+function Thread_ACTIVESIP_updatePhoneTalk.WaitForInit(_timeout:Cardinal): Boolean;
+begin
+  if Terminated then Exit(False);
+  Result:=(m_initThread.WaitFor(_timeout) = wrSignaled);
+end;
+
+procedure Thread_ACTIVESIP_updatePhoneTalk.CriticalError;
+begin
    // записываем в лог
    Log.Save(messclass+':'+mess,IS_ERROR);
- end;
+end;
 
 
-{ Thread_ACTIVESIP }
 procedure Thread_ACTIVESIP_updatePhoneTalk.show(var p_ActiveSipOperators:TActiveSIP);
 begin
   if not CONNECT_BD_ERROR then begin
@@ -52,7 +79,7 @@ procedure Thread_ACTIVESIP_updatePhoneTalk.Execute;
 begin
   inherited;
   CoInitialize(Nil);
-  Sleep(1000);
+  //Sleep(1000);
 
   Log:=TLoggingFile.Create(NAME_THREAD);
 
@@ -69,6 +96,8 @@ begin
     end;
   end;
 
+  // событие что запустились
+  m_initThread.SetEvent;
 
   while not Terminated do
   begin
@@ -86,11 +115,9 @@ begin
      except
         on E:Exception do
         begin
-         //INTERNAL_ERROR:=true;
          messclass:=e.ClassName;
          mess:=e.Message;
-          Synchronize(CriticalError);
-         //INTERNAL_ERROR:=False;
+         Synchronize(CriticalError);
         end;
       end;
     end;

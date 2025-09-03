@@ -424,7 +424,7 @@ end;
                  // проверим изменилось ли время
                  if isChangeWaitingTime(StrToInt(VarToStr(Fields[0].Value)),VarToStr(Fields[2].Value)) then begin
                    // обновим время
-                   listActiveIVR[currentIDStructIVR].m_waiting_time_start:=VarToStr(Fields[2].Value);   //Copy(VarToStr(Fields[2].Value), 4, 5);
+                   listActiveIVR[currentIDStructIVR].m_waiting_time_start:=VarToStr(Fields[2].Value); //Copy(VarToStr(Fields[2].Value), 4, 5);
                    listActiveIVR[currentIDStructIVR].m_countNoChange:=0;
                  end
                  else begin // время не изменилось значит надо увеличить счетчик
@@ -439,7 +439,7 @@ end;
                  begin // тут первый запуск, чтобы были какие то данные которые будем проверять
                   listActiveIVR[freeIDStructIVR].m_id:=StrToInt(VarToStr(Fields[0].Value));
                   listActiveIVR[freeIDStructIVR].m_phone:=VarToStr(Fields[1].Value);
-                  listActiveIVR[freeIDStructIVR].m_waiting_time_start:=VarToStr(Fields[2].Value); //Copy(VarToStr(Fields[2].Value), 4, 5);
+                  listActiveIVR[freeIDStructIVR].m_waiting_time_start:=VarToStr(Fields[2].Value);// Copy(VarToStr(Fields[2].Value), 4, 5);
                   listActiveIVR[freeIDStructIVR].m_trunk:=VarToStr(Fields[3].Value);
                  end;
               end;

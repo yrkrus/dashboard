@@ -13,8 +13,13 @@ type
     procedure show(var p_ActiveSipOperators:TActiveSIP);
     procedure CriticalError;
   private
+    m_initThread: TEvent;  // событие что поток успешно стартовал
     Log:TLoggingFile;
     { Private declarations }
+  public
+  constructor Create;
+  destructor Destroy; override;
+  function WaitForInit(_timeout:Cardinal): Boolean;
   end;
 
 implementation
@@ -23,6 +28,28 @@ uses
   FormHome, FunctionUnit, TCustomTypeUnit, TDebugStructUnit;
 
 { Thread_ACTIVESIP_updateTalk }
+
+
+constructor Thread_ACTIVESIP_updateTalk.Create;
+begin
+  inherited Create(True);               // Suspended=true
+  FreeOnTerminate := False;
+  m_initThread:=TEvent.Create(nil, False, False, '');
+end;
+
+
+destructor Thread_ACTIVESIP_updateTalk.Destroy;
+begin
+  m_initThread.Free;
+  inherited;
+end;
+
+
+function Thread_ACTIVESIP_updateTalk.WaitForInit(_timeout:Cardinal): Boolean;
+begin
+  if Terminated then Exit(False);
+  Result:=(m_initThread.WaitFor(_timeout) = wrSignaled);
+end;
 
 procedure Thread_ACTIVESIP_updateTalk.CriticalError;
 begin
@@ -52,7 +79,7 @@ const
 begin
    inherited;
    CoInitialize(Nil);
-   Sleep(1000);
+  // Sleep(1000);
 
   Log:=TLoggingFile.Create(NAME_THREAD);
 
@@ -68,6 +95,9 @@ begin
      Synchronize(CriticalError);
     end;
   end;
+
+  // событие что запустились
+  m_initThread.SetEvent;
 
   while not Terminated do
   begin
@@ -85,12 +115,9 @@ begin
       except
         on E:Exception do
         begin
-         //INTERNAL_ERROR:=true;
          messclass:=e.ClassName;
          mess:=e.Message;
-
-          Synchronize(CriticalError);
-         //INTERNAL_ERROR:=False;
+         Synchronize(CriticalError);
         end;
       end;
     end;

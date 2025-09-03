@@ -10,24 +10,18 @@ unit TQueueUnit;
 
 interface
 
-uses  System.Classes,
-      Data.Win.ADODB,
-      Data.DB,
-      System.SysUtils,
-      Variants,
-      Graphics,
-      System.SyncObjs,
-      IdException,
-      GlobalVariablesLinkDLL;
+uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
+      Graphics, System.SyncObjs, IdException,  GlobalVariablesLinkDLL;
 
   // class TQueueStruct
  type
       TQueueStruct = class
       public
-      id                                   : Integer; // id по БД
-      phone                                : string;  // номер телефона
-      waiting_time_start                   : string;  // стартовое значение времени ожидание
-      queue                                : string;  // номер очереди
+      id                    : Integer;  // id по БД
+      phone                 : string;   // номер телефона
+      waiting_time_start    : string;   // стартовое значение времени ожидание
+      queue                 : string;   // номер очереди
+      trunk                 : string;   // транкс с которого звонок
 
       constructor Create;                  overload;
       procedure Clear;
@@ -41,23 +35,25 @@ uses  System.Classes,
  type
       TQueue = class
       const
-      cGLOBAL_ListQueue                    : Word =  100; // длинна массива
-
-      public
-      listActiveQueue                      : array of TQueueStruct;
-
-
-      constructor Create;                   overload;
-      destructor Destroy;                   override;
-
-      function GetCount                    : Integer;
-      procedure Clear;
-      procedure UpdateData;                             // обновление данных в массиве listActiveQueue + count
-      function isExist(id:Integer)         :Boolean;   // проверка существует ли такой номер в отображении
+      cGLOBAL_ListQueue                   : Word =  100; // длинна массива
 
       private
-      count                                : Integer;
-      m_mutex                              : TMutex;
+      m_count                             : Integer;
+      m_mutex                             : TMutex;
+
+
+
+      public
+      listActiveQueue                     : TArray<TQueueStruct>;
+
+      constructor Create;                  overload;
+      destructor Destroy;                  override;
+
+      procedure Clear;
+      procedure UpdateData;                             // обновление данных в массиве listActiveQueue + count
+      function isExist(id:Integer)        :Boolean;   // проверка существует ли такой номер в отображении
+
+      property Count:Integer read m_count;
 
       end;
    // class TQueue END
@@ -66,7 +62,7 @@ uses  System.Classes,
 implementation
 
 uses
-  FunctionUnit, GlobalVariables;
+  FunctionUnit, GlobalVariables, TCustomTypeUnit;
 
 
 
@@ -83,6 +79,7 @@ constructor TQueueStruct.Create;
    Self.phone:='';
    Self.waiting_time_start:='';
    Self.queue:='';
+   Self.trunk:='';
  end;
 
 constructor TQueue.Create;
@@ -91,7 +88,7 @@ constructor TQueue.Create;
  begin
     inherited;
     m_mutex:=TMutex.Create(nil, False, 'Global\TQueue');
-    count:=0;
+    m_count:=0;
 
    SetLength(listActiveQueue,cGLOBAL_ListQueue);
    for i:=0 to cGLOBAL_ListQueue-1 do listActiveQueue[i]:=TQueueStruct.Create;
@@ -111,16 +108,6 @@ begin
 end;
 
 
- function TQueue.GetCount;
- begin
-  if m_mutex.WaitFor(INFINITE)=wrSignaled then
-  try
-    Result:=Self.count;
-  finally
-    m_mutex.Release;
-  end;
- end;
-
  procedure TQueue.Clear;
  var
  i: Integer;
@@ -139,7 +126,7 @@ var
   i: Integer;
 begin
   Result:=False;
-  for i:= 0 to GetCount - 1 do
+  for i:= 0 to Count - 1 do
   begin
     if listActiveQueue[i].id = id then
     begin
@@ -190,7 +177,7 @@ end;
        // очищаем весь список
        Clear;
        if countQueue = 0 then begin
-         count:=countQueue;
+         m_count:=countQueue;
 
          FreeAndNil(ado);
          serverConnect.Close;
@@ -216,6 +203,11 @@ end;
                 listActiveQueue[i].phone:=VarToStr(Fields[1].Value);
                 listActiveQueue[i].waiting_time_start:=VarToStr(Fields[2].Value);
                 listActiveQueue[i].queue:=VarToStr(Fields[3].Value);
+                try
+                  listActiveQueue[i].trunk:=GetPhoneTrunkQueue(eTableIVR,listActiveQueue[i].phone,GetNowDateTimeDec(cTimeResponse));
+                except
+                  listActiveQueue[i].trunk:='null';
+                end;
               end;
             finally
                ado.Next;
@@ -223,7 +215,7 @@ end;
           end;
        end;
 
-       count:=countQueue;
+       m_count:=countQueue;
     end;
   finally
    FreeAndNil(ado);

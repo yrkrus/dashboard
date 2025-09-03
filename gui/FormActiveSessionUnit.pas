@@ -152,7 +152,7 @@ begin
 
  // создаем диспетчера
  if not Assigned(m_dispatcher) then begin
-  m_dispatcher:=TThreadDispatcher.Create('ActiveSession_update', 1, Show);
+  m_dispatcher:=TThreadDispatcher.Create('ActiveSession_update', 1, False, Show);
  end;
 
  // Show; тут не надо грузить, пусть грузит планировщик 1раз в секунду)  

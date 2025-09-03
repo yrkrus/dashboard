@@ -104,7 +104,7 @@ var
   CurrentYear: string;
 begin
   CurrentYear:=FormatDateTime('yyyy', Now);
-  if cSTART_YEAR='2024' then Result:=PChar('developer by Petrov Yuri © '+CurrentYear+'       ')
+  if CurrentYear = cSTART_YEAR then Result:=PChar('developer by Petrov Yuri © '+CurrentYear+'       ')
   else Result:=PChar('developer by Petrov Yuri © '+cSTART_YEAR+'-'+CurrentYear+'       ');
 end;
 

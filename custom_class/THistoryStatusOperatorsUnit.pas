@@ -64,6 +64,9 @@ uses
   type
       THistoryStatusOperators = class
       private
+      m_table                 :enumReportTableOperatorStatus;
+      m_dateStart             :TDate;   // дата за которую отображаем данные
+      m_dateStop              :TDate;   // дата за которую отображаем данные
       m_id                    :Integer;
       m_sip                   :Integer;
 
@@ -78,7 +81,10 @@ uses
 
 
       public
-      constructor Create(_id,_sip:Integer);               overload;
+      constructor Create(_table:enumReportTableOperatorStatus;
+                         _dateStart, _dateStop:TDate;
+                         _id,_sip:Integer);               overload;
+
       destructor Destroy;                                 override;
 
       procedure Update;   // обновление данных
@@ -89,7 +95,8 @@ uses
       function GetDuration(_id:Cardinal):Cardinal;
 
       function GetCountTimeLogging(_log:enumLogging):string; // общее время нахождения в статусах
-
+      procedure SetDate(_dateStart,_dateStop:TDate); // установка новых дат
+      procedure SetTable(_table:enumReportTableOperatorStatus); // установка из какой таблицы брать данные
 
 
       property Count:Cardinal read m_countHistory;
@@ -134,13 +141,20 @@ constructor THistoryStruct.Create;
 
 
 
-constructor THistoryStatusOperators.Create(_id,_sip:Integer);
+constructor THistoryStatusOperators.Create(_table:enumReportTableOperatorStatus;
+                                           _dateStart, _dateStop:TDate;
+                                           _id,_sip:Integer);
 begin
  // inherited;
   m_id:=_id;
   m_sip:=_sip;
 
   m_status:=TStatusDuration.Create;
+
+  m_dateStart:=_dateStart;
+  m_dateStop:=_dateStop;
+
+  m_table:=_table;
 
   // заполняем данными
   CreateArrayHistory;
@@ -212,6 +226,19 @@ begin
 
 end;
 
+// установка новых дат
+procedure THistoryStatusOperators.SetDate(_dateStart,_dateStop:TDate);
+begin
+  m_dateStart:=_dateStart;
+  m_dateStop:=_dateStop;
+end;
+
+// установка из какой таблицы брать данные
+procedure THistoryStatusOperators.SetTable(_table:enumReportTableOperatorStatus);
+begin
+  m_table:=_table;
+end;
+
 // создание и заполнение данными истории статусов
 procedure THistoryStatusOperators.CreateArrayHistory;
 const
@@ -222,6 +249,7 @@ var
   i:Integer;
   action:enumLogging;
   actionTime:TDateTime;
+  request:TStringBuilder;
 begin
   ado := TADOQuery.Create(nil);
   serverConnect := createServerConnect;
@@ -233,11 +261,23 @@ begin
   end;
 
   try
+
+    request:=TStringBuilder.Create;
+
     with ado do
     begin
       Connection := serverConnect;
+
+      with request do begin
+        Clear;
+        Append('select count(id) from '+EnumReportTableOperatorStatusToString(m_table));
+        Append(' where user_id = '+#39+IntToStr(m_id)+#39);
+        Append(' and date_time >='+#39+GetDateToDateBD(DateToStr(m_dateStart))+' 00:00:00'+#39);
+        Append(' and date_time <='+#39+GetDateToDateBD(DateToStr(m_dateStop))+' 23:59:59'+#39);
+      end;
+
       SQL.Clear;
-      SQL.Add('select count(id) from logging where user_id = '+#39+IntToStr(m_id)+#39);
+      SQL.Add(request.ToString);
       Active := True;
       m_countHistory := Fields[0].Value;
 
@@ -251,8 +291,17 @@ begin
         m_history[i]:=THistoryStruct.Create;
       end;
 
+      with request do begin
+        Clear;
+        Append('select action,date_time,id from '+EnumReportTableOperatorStatusToString(m_table));
+        Append(' where user_id = '+#39+IntToStr(m_id)+#39);
+        Append(' and date_time >='+#39+GetDateToDateBD(DateToStr(m_dateStart))+' 00:00:00'+#39);
+        Append(' and date_time <='+#39+GetDateToDateBD(DateToStr(m_dateStop))+' 23:59:59'+#39);
+        Append(' order by date_time ASC');
+      end;
+
       SQL.Clear;
-      SQL.Add('select action,date_time,id from logging where user_id = '+#39+IntToStr(m_id)+#39+' order by date_time ASC');
+      SQL.Add(request.ToString);
       Active := True;
 
       for i := 0 to m_countHistory - 1 do

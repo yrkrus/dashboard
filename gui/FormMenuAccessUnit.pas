@@ -83,6 +83,8 @@ type
     Label9: TLabel;
     Label10: TLabel;
     CheckBox7: TCheckBox;
+    Label11: TLabel;
+    CheckBox8: TCheckBox;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
@@ -384,14 +386,15 @@ const
   cTOPSTART=40;
   cSTEP:Word = 25;
 var
- lblNameRole                    :array of TLabel;
- chkbox_menu_settings_users     :array of TCheckBox;
- chkbox_menu_settings_serversik :array of TCheckBox;
- chkbox_menu_settings_siptrunk  :array of TCheckBox;
- chkbox_menu_settings_global    :array of TCheckBox;
- chkbox_menu_active_session     :array of TCheckBox;
- chkbox_menu_service            :array of TCheckBox;
- chkbox_menu_missed_calls       :array of TCheckBox;
+ lblNameRole                        :array of TLabel;
+ chkbox_menu_settings_users         :array of TCheckBox;
+ chkbox_menu_settings_serversik     :array of TCheckBox;
+ chkbox_menu_settings_siptrunk      :array of TCheckBox;
+ chkbox_menu_settings_global        :array of TCheckBox;
+ chkbox_menu_active_session         :array of TCheckBox;
+ chkbox_menu_service                :array of TCheckBox;
+ chkbox_menu_missed_calls           :array of TCheckBox;
+ chkbox_menu_clear_status_operator  :array of TCheckBox;
 
  i:Integer;
  nameRole:string;
@@ -405,6 +408,7 @@ begin
   SetLength(chkbox_menu_active_session,m_count);
   SetLength(chkbox_menu_service,m_count);
   SetLength(chkbox_menu_missed_calls,m_count);
+  SetLength(chkbox_menu_clear_status_operator,m_count);
 
   for i:=0 to m_count-1 do begin
     nameRole:= EnumRoleToStringName(list_access[i].Role);
@@ -576,7 +580,7 @@ begin
     end;
 
 
-     // пропущенные звонки
+    // пропущенные звонки
     begin
       chkbox_menu_missed_calls[i]:=TCheckBox.Create(FormMenuAccess.group);
       chkbox_menu_missed_calls[i].Name:='chk_missed_calls_'+nameRole;
@@ -633,6 +637,37 @@ begin
       SetFormCache(list_access[i].Role, menu_active_session, chkbox_menu_active_session[i]);
 
     end;
+
+
+    // сброс панели статусов
+    begin
+      chkbox_menu_clear_status_operator[i]:=TCheckBox.Create(FormMenuAccess.group);
+      chkbox_menu_clear_status_operator[i].Name:='chk_clear_status_operator_'+nameRole;
+      chkbox_menu_clear_status_operator[i].Tag:=1;
+      chkbox_menu_clear_status_operator[i].Caption:='';
+      chkbox_menu_clear_status_operator[i].Left:=1053;
+
+      if i=0 then chkbox_menu_clear_status_operator[i].Top:=cTOPSTART
+      else chkbox_menu_clear_status_operator[i].Top:=cTOPSTART+(cSTEP * i);
+
+      chkbox_menu_clear_status_operator[i].Font.Name:='Tahoma';
+      chkbox_menu_clear_status_operator[i].Font.Size:=12;
+      chkbox_menu_clear_status_operator[i].Width:=16;
+      chkbox_menu_clear_status_operator[i].Height:=17;
+      chkbox_menu_clear_status_operator[i].Parent:=FormMenuAccess.group;
+
+      if list_access[i].menu_clear_status_operator then chkbox_menu_clear_status_operator[i].Checked:=True;
+
+      // оператор без дашборда нет смысла ему права даже включать
+      if list_access[i].Role = role_operator_no_dash then begin
+        chkbox_menu_clear_status_operator[i].Enabled:=False;
+      end;
+
+      // сохраним текущие данные в кзш
+      SetFormCache(list_access[i].Role, menu_clear_status_operator, chkbox_menu_clear_status_operator[i]);
+
+    end;
+
   end;
 
   isCreateForm:=True;

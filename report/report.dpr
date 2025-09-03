@@ -20,7 +20,8 @@ uses
   TAutoPodborPeopleUnit in '..\custom_class\TAutoPodborPeopleUnit.pas',
   TLogFileUnit in '..\custom_class\TLogFileUnit.pas',
   GlobalImageDestination in '..\gui\GlobalImageDestination.pas',
-  GlobalVariablesLinkDLL in '..\gui\GlobalVariablesLinkDLL.pas';
+  GlobalVariablesLinkDLL in '..\gui\GlobalVariablesLinkDLL.pas',
+  TDisableOperatorUnit in '..\custom_class\from_report\TDisableOperatorUnit.pas';
 
 {$R *.res}
 

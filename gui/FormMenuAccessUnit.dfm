@@ -5,7 +5,7 @@ object FormMenuAccess: TFormMenuAccess
   BorderStyle = bsSingle
   Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1072' '#1087#1088#1072#1074' '#1075#1088#1091#1087#1087' '#1076#1083#1103' '#1076#1086#1089#1090#1091#1087#1072' '#1082' '#1084#1077#1085#1102
   ClientHeight = 208
-  ClientWidth = 1030
+  ClientWidth = 1136
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -22,7 +22,7 @@ object FormMenuAccess: TFormMenuAccess
   object group: TGroupBox
     Left = 8
     Top = 8
-    Width = 1009
+    Width = 1121
     Height = 193
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -176,6 +176,21 @@ object FormMenuAccess: TFormMenuAccess
       Font.Style = [fsBold]
       ParentFont = False
     end
+    object Label11: TLabel
+      Left = 1007
+      Top = 1
+      Width = 106
+      Height = 35
+      Alignment = taCenter
+      Caption = #1057#1073#1088#1086#1089' '#1087#1072#1085#1077#1083#1080' '#1089#1090#1072#1090#1091#1089#1086#1074
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+      WordWrap = True
+    end
     object CheckBox1: TCheckBox
       Left = 295
       Top = 34
@@ -230,6 +245,14 @@ object FormMenuAccess: TFormMenuAccess
       Width = 16
       Height = 17
       TabOrder = 5
+      Visible = False
+    end
+    object CheckBox8: TCheckBox
+      Left = 1053
+      Top = 34
+      Width = 16
+      Height = 17
+      TabOrder = 7
       Visible = False
     end
   end

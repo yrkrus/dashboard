@@ -13,13 +13,16 @@ interface
 uses
   System.SysUtils, System.Classes, System.SyncObjs, ActiveX, ComObj, ComCtrls,
   TAbstractReportUnit, Vcl.CheckLst, TQueueHistoryUnit, TCountRingsOperatorsUnit,
-  Data.Win.ADODB, Data.DB, TAutoPodborPeopleUnit, System.DateUtils, System.Variants;
+  Data.Win.ADODB, Data.DB, TAutoPodborPeopleUnit, System.DateUtils, System.Variants,
+  TDisableOperatorUnit;
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
    // class TReportCountOperators
  type
        TReportCountOperators = class(TAbstractReport)
+      const
+       cDISMISSED_STAFF:string = ' (уволенный)';
 
       private
       m_nameReport              :string;     // название отчета
@@ -32,7 +35,7 @@ uses
       m_people                  :TAutoPodborPeople;
       m_detailed                :Boolean; // подробный отчет
       m_statEveryDay            :Boolean; // статистика за каждый день по звонкам
-
+      m_disableOperatorList     :TDisableOperator;  // список с отключенными операторами
 
       function GetOperatorsSIP(const p_list:TCheckListBox):TStringList;  // получение SIP операторов которые нужно в отчет впиндюрить
       procedure GenerateExcelDetailed;  // формирование данных в excel(подробный)
@@ -90,6 +93,8 @@ begin
 
   m_findFIO:=isFindFIO;
   if m_findFIO then m_people:=TAutoPodborPeople.Create;
+
+  m_disableOperatorList:=TDisableOperator.Create;
 end;
 
 
@@ -189,28 +194,13 @@ end;
 
 // поиск фио оператора
 function TReportCountOperators.FindFIO(InSipOperator:Integer;InCurrentDate:TDate):string;
-var
- i:Integer;
- isFinded:Boolean; // найдено фио
 begin
-
-  // TODO сделать !!! проверяем это уволенный сотрудник или нет очеень долгий это тпроцесс!! надо как то оптимизировать!!!
-
-
-  isFinded:=False;
-
-  for i:=0 to countQueue-1 do begin
-    if m_queue[i].sip = InSipOperator  then begin
-      if m_queue[i].operatorFIO <> '' then begin
-        isFinded:=True;
-
-        Result:=m_queue[i].operatorFIO;
-        Exit;
-      end;
-    end;
+  if m_disableOperatorList.IsDisable(InSipOperator,InCurrentDate) then begin
+    Result:=m_disableOperatorList.GetUserNameOperator(InSipOperator,InCurrentDate);
+  end
+  else begin
+    Result:=GetUserNameOperators(IntToStr(InSipOperator))+cDISMISSED_STAFF;
   end;
-
-  if not isFinded then Result:=GetUserNameOperators(IntToStr(InSipOperator));
 end;
 
 // создание отчета (подробный)
@@ -283,7 +273,7 @@ begin
            // процесс может быть длительный по этому делаем прогресс бар
            if m_findFIO then begin
              procentLoadInt:=Trunc(i*100/countData);
-             SetProgressStatusText('Настройка отчета ['+IntToStr(procentLoadInt)+'%] ...');
+             SetProgressStatusText('Настройка отчета ['+IntToStr(procentLoadInt)+'%]');
              SetProgressBar(procentLoadInt);
            end;
 
@@ -347,7 +337,7 @@ begin
              m_queue[i].SetPhonePeople(phone);
            end;
 
-           SetProgressStatusText('Загрузка данных с сервера ('+ VarToStr(Fields[5].Value)+' | '+DateToStr(DateOf(m_queue[i].date_time))+') ['+procentLoadSTR+'%] ...');
+           SetProgressStatusText('Загрузка данных с сервера ('+ VarToStr(Fields[5].Value)+' | '+DateToStr(DateOf(m_queue[i].date_time))+') ['+procentLoadSTR+'%]');
            SetProgressBar(procentLoadD);
 
            ado.Next;
@@ -391,7 +381,7 @@ var
  procentLoad:Double;
  procentLoadSTR:string;
 begin
-  SetProgressStatusText('Создание отчета ...');
+  SetProgressStatusText('Создание отчета');
   SetProgressBar(0);
 
   // названия колонок
@@ -439,7 +429,7 @@ begin
    procentLoadSTR:=FormatFloat('0.0',procentLoad);
    procentLoadSTR:=StringReplace(procentLoadSTR,',','.',[rfReplaceAll]);
 
-   SetProgressStatusText('Создание отчета ['+procentLoadSTR+'%] ...');
+   SetProgressStatusText('Создание отчета ['+procentLoadSTR+'%]');
    SetProgressBar(procentLoad);
 
    m_sheet.cells[ColIndex,1]:=IntToStr(m_queue[i].id);                           // ID
@@ -469,7 +459,7 @@ begin
 
   // наведем красоту
   begin
-     SetProgressStatusText('Наводим красоту ...');
+     SetProgressStatusText('Наводим красоту');
 
     // заголовок
     if m_findFIO then begin
@@ -534,7 +524,7 @@ var
  operatorFIO:string;
  countCallsAll, countHold:Integer;
 begin
-  SetProgressStatusText('Создание отчета ...');
+  SetProgressStatusText('Создание отчета');
   SetProgressBar(0);
 
   countCallsAll:=0;
@@ -571,7 +561,7 @@ begin
      procentLoadSTR:=FormatFloat('0.0',procentLoad);
      procentLoadSTR:=StringReplace(procentLoadSTR,',','.',[rfReplaceAll]);
 
-     SetProgressStatusText('Создание отчета ['+procentLoadSTR+'%] ...');
+     SetProgressStatusText('Создание отчета ['+procentLoadSTR+'%]');
      SetProgressBar(procentLoad);
 
     if isESC then  Exit;
@@ -583,19 +573,36 @@ begin
     // пробегаемся по массиву
     for j:=0 to m_listCountCallOperators.Items[i].Count-1 do begin
       sip:=IntToStr(m_listCountCallOperators.Items[i].m_sip);
-      operatorFIO:=GetUserNameOperators(sip);
+      m_sheet.cells[ColIndex,1]:=sip;                    // SIP
 
-      m_sheet.cells[ColIndex,1]:=sip;                           // SIP
-      m_sheet.cells[ColIndex,2]:=operatorFIO;      // Оператор  // TODO сделать проверку на уволенного сотрудника
 
       // Дата
-      if m_statEveryDay then m_sheet.cells[ColIndex,3]:=m_listCountCallOperators.Items[i].ItemData[j].m_date_time
+      if m_statEveryDay then begin
+        m_sheet.cells[ColIndex,3]:=m_listCountCallOperators.Items[i].ItemData[j].m_date_time;
+        if m_disableOperatorList.IsDisable(StrToInt(sip), StrToDate(m_listCountCallOperators.Items[i].ItemData[j].m_date_time)) then begin
+         operatorFIO:=m_disableOperatorList.GetUserNameOperator(StrToInt(sip), StrToDate(m_listCountCallOperators.Items[i].ItemData[j].m_date_time))+cDISMISSED_STAFF;
+        end
+        else begin
+         operatorFIO:=GetUserNameOperators(sip);
+        end;
+      end
       else begin
-         if m_listCountCallOperators.OnlyCurrentDay then m_sheet.cells[ColIndex,3]:=m_listCountCallOperators.Items[i].ItemDateStart
-         else m_sheet.cells[ColIndex,3]:=m_listCountCallOperators.Items[i].ItemDateInterval;
+         if m_listCountCallOperators.OnlyCurrentDay then begin
+          m_sheet.cells[ColIndex,3]:=m_listCountCallOperators.Items[i].ItemDateStart;
+         end
+         else begin
+           m_sheet.cells[ColIndex,3]:=m_listCountCallOperators.Items[i].ItemDateInterval;
+         end;
+
+        if m_disableOperatorList.IsDisable(StrToInt(sip), StrToDate(m_listCountCallOperators.Items[i].ItemDateStart)) then begin
+         operatorFIO:=m_disableOperatorList.GetUserNameOperator(StrToInt(sip), StrToDate(m_listCountCallOperators.Items[i].ItemDateStart))+cDISMISSED_STAFF;
+        end
+        else begin
+         operatorFIO:=GetUserNameOperators(sip);
+        end;
       end;
 
-
+      m_sheet.cells[ColIndex,2]:=operatorFIO; // это не ошибка такой порядок нуден чтобы ФИО оператора найти
       m_sheet.cells[ColIndex,4]:=IntToStr(m_listCountCallOperators.Items[i].ItemData[j].m_callsCount);         // Звонков
       m_sheet.cells[ColIndex,5]:=IntToStr(m_listCountCallOperators.Items[i].ItemData[j].m_ohHold);         // OnHold(сек)
 
@@ -616,7 +623,7 @@ begin
 
   // наведем красоту
   begin
-     SetProgressStatusText('Наводим красоту ...');
+     SetProgressStatusText('Наводим красоту');
 
     // заголовок
     m_excel.range['A1:E1'].AutoFilter;   // фильтр для заголовка

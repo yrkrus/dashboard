@@ -3,7 +3,8 @@ unit Thread_StatisticsUnit;
 interface
 
 uses
-  System.Classes,SysUtils, ActiveX, TLogFileUnit,TQueueStatisticsUnit;
+  System.Classes,SysUtils, ActiveX, TLogFileUnit, System.SyncObjs,
+  TQueueStatisticsUnit;
 
 type
   Thread_Statistics = class(TThread)
@@ -15,7 +16,13 @@ type
     procedure CriticalError;
 
   private
+    m_initThread: TEvent;  // событие что поток успешно стартовал
     Log:TLoggingFile;
+
+  public
+  constructor Create;
+  destructor Destroy; override;
+  function WaitForInit(_timeout:Cardinal): Boolean;
 
   end;
 
@@ -29,6 +36,28 @@ uses
 { Thread_Statistics }
 
 
+
+constructor Thread_Statistics.Create;
+begin
+  inherited Create(True);               // Suspended=true
+  FreeOnTerminate := False;
+  m_initThread:=TEvent.Create(nil, False, False, '');
+end;
+
+
+destructor Thread_Statistics.Destroy;
+begin
+  m_initThread.Free;
+  inherited;
+end;
+
+
+function Thread_Statistics.WaitForInit(_timeout:Cardinal): Boolean;
+begin
+  if Terminated then Exit(False);
+  Result:=(m_initThread.WaitFor(_timeout) = wrSignaled);
+end;
+
 procedure  Thread_Statistics.CriticalError;
 begin
   // записываем в лог
@@ -40,7 +69,6 @@ begin
   if not CONNECT_BD_ERROR then begin
 
     // обновляем даынне
-
     p_SharedQueueStatistics.Update;
 
     // отображаем данные
@@ -59,7 +87,6 @@ procedure Thread_Statistics.Execute;
 
   debugInfo: TDebugStruct;
 begin
-
   inherited;
   CoInitialize(Nil);
 
@@ -88,6 +115,9 @@ begin
     SharedQueueStatistics.SetLinkLabelStatDay(lblStstistisc_Day_Summa, lblStstistisc_Day_Answered, lblStstistisc_Day_No_Answered, lblStstistisc_Day_Procent);
    end;
   end;
+
+  // событие что запустились
+  m_initThread.SetEvent;
 
   while not Terminated do
   begin

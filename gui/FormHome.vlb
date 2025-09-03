@@ -134,17 +134,11 @@ Coordinates=234,350,201,58
 Coordinates=1281,597,138,36
 
 []
-Coordinates=73,282,124,58
-Visible=True
-
-[Timer_Thread_Start]
 Coordinates=910,597,99,36
+Visible=True
 
 [menu]
 Coordinates=457,232,40,36
-
-[START_THREAD_ALLl]
-Coordinates=10,622,59,58
 
 [menu_missed_calls]
 Coordinates=1569,188,162,36

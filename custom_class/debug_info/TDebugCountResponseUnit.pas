@@ -72,6 +72,7 @@ uses
       m_showThread                :TThreadShow; // экземпл€р потока отвечающий за отображение инфо на форме DEBUG
 
 
+
       public
       constructor Create(var p_Log:TLoggingFile)           overload;
       destructor Destroy;                                  override;

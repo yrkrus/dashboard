@@ -161,7 +161,8 @@ interface
                      menu_settings_global,                      // Меню-Глобальные_настройки
                      menu_active_session,                       // Меню-Активные сессии
                      menu_service,                              // Меню-Услуги
-                     menu_missed_calls                          // Меню-Пропущенные звонки
+                     menu_missed_calls,                         // Меню-Пропущенные звонки
+                     menu_clear_status_operator                 // Меню-Сброс панели статусов
                      );
 
 
@@ -375,6 +376,11 @@ interface
    enumReportTableSMSStatus = (eTableSMS,
                                eTableHistorySMS);
 
+   type // тип из какой таблицы доставать данные для истории статусов оператора
+   enumReportTableOperatorStatus = (eTableOperatorStatus,
+                                    eTableHistoryOperatorStatus);
+
+
    type // тип статуса sip транка
    enumTrunkStatus = (eTrunkUnknown = -1,
                       eTrunkRegisterd = 0,
@@ -481,6 +487,7 @@ interface
  function EnumReportTableSMSToString(_table:enumReportTableSMSStatus):string;         // EnumReportTableSMSStatus -> String
  function StringToEnumStatusCodeSms(_value:string):enumStatusCodeSms;                 // String -> EnumStatusCodeSms
  function EnumStatusCodeSmsToString(_code:enumStatusCodeSms):string;                  // EnumStatusCodeSms -> String
+ function EnumReportTableOperatorStatusToString(_table:enumReportTableOperatorStatus):string; //EnumReportTableOperatorStatus -> String
 
  // =================== ПРОЕОБРАЗОВАНИЯ ===================
  implementation
@@ -676,6 +683,7 @@ begin
     menu_active_session:        Result:='menu_activeSession';
     menu_service:               Result:='menu_service';
     menu_missed_calls:          Result:='menu_missed_calls';
+    menu_clear_status_operator: Result:='menu_clear_status_operator';
   end;
 end;
 
@@ -690,6 +698,7 @@ begin
     menu_active_session:        Result:='menu_active_session';
     menu_service:               Result:='menu_service';
     menu_missed_calls:          Result:='menu_missed_calls';
+    menu_clear_status_operator: Result:='menu_clear_status_operator';
   end;
 end;
 
@@ -1407,6 +1416,16 @@ begin
      Result:=code;
      Break;
     end;
+  end;
+end;
+
+
+// EnumReportTableSMSStatus -> String
+function EnumReportTableOperatorStatusToString(_table:enumReportTableOperatorStatus):string;
+begin
+  case _table of
+   eTableOperatorStatus:         Result:='logging';
+   eTableHistoryOperatorStatus:  Result:='history_logging';
   end;
 end;
 

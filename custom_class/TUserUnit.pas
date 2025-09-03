@@ -421,6 +421,9 @@ function TUser.GetIsAccessService:Boolean;
     menu_missed_calls:begin
       if Access.menu_missed_calls then Result:=access_ENABLED;
     end;
+    menu_clear_status_operator:begin
+      if Access.menu_clear_status_operator then Result:=access_ENABLED;
+    end;
    end;
  end;
 

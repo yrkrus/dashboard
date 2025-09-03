@@ -54,7 +54,7 @@ type
   m_queueStart    :enumQueue;  // текущие очереди с которых будет открываться окно
   m_missedStart   :enumMissed;
   m_callbakRun    :BOOL;
-  m_missedCalls   :TQueueStatistics;
+
   m_showInfoRecallMissed:Boolean;  // флаг того что нужно показать инфо что перезвон только для статуса callback
   m_missedCount   :Integer;
   isOneUpdateData :Boolean;             // однократное обновление данных
@@ -184,7 +184,7 @@ var
 
  countPeople:Integer;
 begin
- counts:=m_missedCalls.GetMissedCount(_queue,_missed);
+ counts:=SharedQueueStatistics.GetMissedCount(_queue,_missed);
 
   // выставляем размерность
   SetLength(lblName,counts);
@@ -213,7 +213,7 @@ begin
    _id:=0;  // это нужно чтобюы в обратном направлении создались элементы от нового к старому
 
    for i:=counts-1 downto 0 do begin
-    nameControl:=IntToStr(m_missedCalls.GetCalls_ID(_queue,_missed,i));
+    nameControl:=IntToStr(SharedQueueStatistics.GetCalls_ID(_queue,_missed,i));
 
     // проверим был ли уже ранее такой компонент сделан
     FindedComponent := TLabel(FormPropushennie.panel.FindComponent('lbl_datetime_' + nameControl));
@@ -225,7 +225,7 @@ begin
         lblTime[_id]:=TLabel.Create(FormPropushennie.panel);
         lblTime[_id].Name:='lbl_datetime_'+nameControl;
         lblTime[_id].Tag:=1;
-        lblTime[_id].Caption:=DateTimeToStr(m_missedCalls.GetCalls_DateTime(_queue,_missed,i));
+        lblTime[_id].Caption:=DateTimeToStr(SharedQueueStatistics.GetCalls_DateTime(_queue,_missed,i));
         lblTime[_id].Left:=14;
 
         if _id=0 then lblTime[_id].Top:=cTOPSTART
@@ -245,7 +245,7 @@ begin
         lblPhone[_id]:=TLabel.Create(FormPropushennie.panel);
         lblPhone[_id].Name:='lbl_phone_'+nameControl;
         lblPhone[_id].Tag:=1;
-        lblPhone[_id].Caption:=m_missedCalls.GetCalls_Phone(_queue,_missed,i);
+        lblPhone[_id].Caption:=SharedQueueStatistics.GetCalls_Phone(_queue,_missed,i);
         lblPhone[_id].Left:=166;
 
         if _id=0 then lblPhone[_id].Top:=cTOPSTART
@@ -265,7 +265,7 @@ begin
         lblFIO[_id]:=TLabel.Create(FormPropushennie.panel);
         lblFIO[_id].Name:='lbl_fio_'+nameControl;
         lblFIO[_id].Tag:=1;
-        lblFIO[_id].Caption:=m_missedCalls.GetCalls_FIO(_queue,_missed,i,countPeople);
+        lblFIO[_id].Caption:=SharedQueueStatistics.GetCalls_FIO(_queue,_missed,i,countPeople);
         lblFIO[_id].Left:=309;
 
         if _id=0 then lblFIO[_id].Top:=cTOPSTART
@@ -298,7 +298,7 @@ begin
         lblTrunk[_id]:=TLabel.Create(FormPropushennie.panel);
         lblTrunk[_id].Name:='lbl_trunk_'+nameControl;
         lblTrunk[_id].Tag:=1;
-        lblTrunk[_id].Caption:=m_missedCalls.GetCalls_Trunk(_queue,_missed,i);
+        lblTrunk[_id].Caption:=SharedQueueStatistics.GetCalls_Trunk(_queue,_missed,i);
         lblTrunk[_id].Left:=590;
 
         if _id=0 then lblTrunk[_id].Top:=cTOPSTART
@@ -318,7 +318,7 @@ begin
         lblWaiting[_id]:=TLabel.Create(FormPropushennie.panel);
         lblWaiting[_id].Name:='lbl_waiting_'+nameControl;
         lblWaiting[_id].Tag:=1;
-        lblWaiting[_id].Caption:=m_missedCalls.GetCalls_Waiting(_queue,_missed,i);
+        lblWaiting[_id].Caption:=SharedQueueStatistics.GetCalls_Waiting(_queue,_missed,i);
         lblWaiting[_id].Left:=728;
 
         if _id=0 then lblWaiting[_id].Top:=cTOPSTART
@@ -361,7 +361,7 @@ begin
         lblPeriod[_id]:=TLabel.Create(FormPropushennie.panel);
         lblPeriod[_id].Name:='lbl_period_'+nameControl;
         lblPeriod[_id].Tag:=1;
-        lblPeriod[_id].Caption:=GetPeriodCall(m_missedCalls.GetCalls_DateTime(_queue,_missed,i), lblPeriod[_id]);
+        lblPeriod[_id].Caption:=GetPeriodCall(SharedQueueStatistics.GetCalls_DateTime(_queue,_missed,i), lblPeriod[_id]);
         lblPeriod[_id].Left:=1039;
 
         if _id=0 then lblPeriod[_id].Top:=cTOPSTART
@@ -804,18 +804,9 @@ begin
    showWait(show_open);
  end;
 
-
-  if not Assigned(m_missedCalls) then begin
-    m_missedCalls:=TQueueStatistics.Create;
-    m_missedCalls.Update;
-  end
-  else begin
-    m_missedCalls.Update;
-  end;
-
   // инициируем первое значение кол-ва
   if (m_missedCount = 0) and (not isOneUpdateData) then begin
-     m_missedCount:=m_missedCalls.GetMissedCount(m_queueStart,m_missedStart);
+     m_missedCount:=SharedQueueStatistics.GetMissedCount(m_queueStart,m_missedStart);
 
      Screen.Cursor:=crHourGlass;
      UpdateData;
@@ -853,7 +844,7 @@ procedure TFormPropushennie.FormShow(Sender: TObject);
 begin
  // создаем диспетчера
  if not Assigned(m_dispatcher) then begin
-  m_dispatcher:=TThreadDispatcher.Create('FormPropushennieShow',10,Show);
+  m_dispatcher:=TThreadDispatcher.Create('FormPropushennieShow',10,False,Show);
  end;
 
  Show;
@@ -876,16 +867,16 @@ var
  nameControl:string;
  FindedComponent:TLabel;
 begin
- counts:=m_missedCalls.GetMissedCount(m_queueStart, m_missedStart);
+ counts:=SharedQueueStatistics.GetMissedCount(m_queueStart, m_missedStart);
 
    for i:=counts-1 downto 0 do begin
-    nameControl:=IntToStr(m_missedCalls.GetCalls_ID(m_queueStart,m_missedStart,i));
+    nameControl:=IntToStr(SharedQueueStatistics.GetCalls_ID(m_queueStart,m_missedStart,i));
 
     // найдем компонент
     FindedComponent := TLabel(FormPropushennie.panel.FindComponent('lbl_period_' + nameControl));
     if not Assigned(FindedComponent) then Continue;
 
-    FindedComponent.Caption:=GetPeriodCall(m_missedCalls.GetCalls_DateTime(m_queueStart,m_missedStart,i), FindedComponent);
+    FindedComponent.Caption:=GetPeriodCall(SharedQueueStatistics.GetCalls_DateTime(m_queueStart,m_missedStart,i), FindedComponent);
    end;
 end;
 
@@ -899,7 +890,7 @@ begin
   if combox_QueueFilter.Items.Count = 0 then CreateComboxChoiseQueue;
 
   // текущее кол-во пропущенных
-  countMissed:=m_missedCalls.GetMissedCount(m_queueStart,m_missedStart);
+  countMissed:=SharedQueueStatistics.GetMissedCount(m_queueStart,m_missedStart);
   if isOneUpdateData then begin
    if countMissed = m_missedCount then
    begin

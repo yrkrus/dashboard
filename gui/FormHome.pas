@@ -7,7 +7,11 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Grids, Vcl.ExtCtrls,
   Vcl.ComCtrls, Vcl.Menus,Data.Win.ADODB, Data.DB, Vcl.Imaging.jpeg,System.SyncObjs,
   TActiveSIPUnit,TUserUnit, Vcl.Imaging.pngimage, ShellAPI, TLogFileUnit,
-  System.Zip, Vcl.WinXCtrls, Vcl.Samples.Gauges, TCustomTypeUnit, Vcl.Buttons;
+  System.Zip, Vcl.WinXCtrls, Vcl.Samples.Gauges, TCustomTypeUnit, Vcl.Buttons,
+  Thread_ACTIVESIPUnit, Thread_StatisticsUnit,Thread_IVRUnit,Thread_AnsweredQueueUnit,
+  Thread_QUEUEUnit, Thread_ACTIVESIP_QueueUnit, Thread_ACTIVESIP_updatetalkUnit,
+  Thread_ACTIVESIP_updatePhoneTalkUnit, Thread_ACTIVESIP_countTalkUnit,
+  Thread_CheckTrunkUnit, Thread_InternalProcessUnit, TThreadDispatcherUnit;
 
 
 type
@@ -26,7 +30,6 @@ type
     Label18: TLabel;
     Label21: TLabel;
     lblCount_QUEUE: TLabel;
-    START_THREAD_ALLl: TButton;
     Label20: TLabel;
     lblStstistisc_Day_Answered: TLabel;
     lblStstistisc_Day_No_Answered: TLabel;
@@ -34,7 +37,6 @@ type
     lblCount_IVR: TLabel;
     panel_IVR: TPanel;
     STlist_IVR_NO_Rings: TStaticText;
-    Timer_Thread_Start: TTimer;
     Panel_Queue: TPanel;
     STlist_QUEUE_NO_Rings: TStaticText;
     StatusBar: TStatusBar;
@@ -127,7 +129,7 @@ type
     popMenu_ActionOperators_HistoryStatusOPerators: TMenuItem;
     N19: TMenuItem;
     menu_service: TMenuItem;
-    y1: TMenuItem;
+    menu_Outgoing: TMenuItem;
     N3: TMenuItem;
     J1: TMenuItem;
     N4: TMenuItem;
@@ -151,10 +153,9 @@ type
     btnStatus_add_queue5050: TBitBtn;
     btnStatus_add_queue5000_5050: TBitBtn;
     btnStatus_del_queue_all: TBitBtn;
-    procedure START_THREAD_ALLlClick(Sender: TObject);
+    menu_clear_status_operator: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure Timer_Thread_StartTimer(Sender: TObject);
     procedure menu_missed_callsClick(Sender: TObject);
     procedure lblCheckInfocilinikaServerAliveClick(Sender: TObject);
     procedure menu_activeSessionClick(Sender: TObject);
@@ -246,9 +247,14 @@ type
     procedure lblCheckSipTrunkAliveMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure lblCheckSipTrunkAliveClick(Sender: TObject);
+    procedure menu_clear_status_operatorClick(Sender: TObject);
+    procedure menu_OutgoingClick(Sender: TObject);
 
   private
     { Private declarations }
+   m_dispatcher    :TThreadDispatcher;   // планировщик
+   m_init:Boolean;    // полностью инициализировали главную форму
+
    FDragging: Boolean;      // состояние что панель со статусами операторов перемещается
    FMouseOffset: TPoint;
    SelectedItemPopMenu: TListItem; // Переменная для хранения выбранного элемента(для popmenu_ActionOPerators)
@@ -260,6 +266,7 @@ type
    procedure SendCommand(_command:enumLogging; _delay:enumStatus);  overload;
    procedure AddQueuePopMenu(_command:enumLogging;_userSip:Integer); // добавление в очередь из popmenu
 
+   procedure DashboardCreateThread; // создание потоков
 
 
   public
@@ -268,26 +275,27 @@ type
   Log:TLoggingFile;
 
   ///////// ПОТОКИ ////////////
-  STATISTICS_thread                 :TThread;
-  IVR_thread                        :TThread;
-  QUEUE_thread                      :TThread;
-  ACTIVESIP_thread                  :TThread;
-  ACTIVESIP_Queue_thread            :TThread;
-  ACTIVESIP_updateTalk_thread       :TThread;
-  ACTIVESIP_updateTalkPhone_thread  :TThread;
-  ACTIVESIP_countTalk_thread        :TThread;
-  CHECKSERVERS_thread               :TThread;
-  CHECKSIPTRUNKS_thread             :TThread;
-  ANSWEREDQUEUE_thread              :TThread;
+  STATISTICS_thread                 :Thread_Statistics;
+  IVR_thread                        :Thread_IVR;
+  QUEUE_thread                      :Thread_QUEUE;
+  ACTIVESIP_thread                  :Thread_ACTIVESIP;
+  ACTIVESIP_Queue_thread            :Thread_ACTIVESIP_Queue;
+  ACTIVESIP_updateTalk_thread       :Thread_ACTIVESIP_updatetalk;
+  ACTIVESIP_updateTalkPhone_thread  :Thread_ACTIVESIP_updatePhoneTalk;
+  ACTIVESIP_countTalk_thread        :Thread_ACTIVESIP_countTalk;
+  CHECKSERVERS_thread               :TThread;     // TODO этот поток уедет потом в core
+  CHECKSIPTRUNKS_thread             :Thread_CheckTrunks;
+  ANSWEREDQUEUE_thread              :Thread_AnsweredQueue;
   ONLINECHAT_thread                 :TThread;
   FORECAST_thread                   :TThread;
-  INTERNALPROCESS_thread            :TThread;
+  INTERNALPROCESS_thread            :Thread_InternalProcess;
   ///////// ПОТОКИ ////////////
-  ///
+
+  property IsInit:Boolean read m_init;  // инициализирована ли главная форма
+
   end;
 
-  ///   asterisk -rx "queue add member Local/НОМЕР_ОПЕРАОРА@from-queue/n to НОМЕР_ОЧЕРЕДИ penalty 0 as НОМЕР_ОПЕРАТОРА state_interface hint:НОМЕР_ОПЕРАТОРА@ext-local"
-  ///   asterisk -rx "queue remove member Local/НОМЕР_ОПЕРАОРА@from-queue/n from НОМЕР_ОЧЕРЕДИ"
+
 
   const
   FLASHW_STOP = $00000000; // Остановить мерцание
@@ -316,7 +324,6 @@ var
   UpdateAnsweredStop:Boolean;                              // остановка обновления AnsweredQueue
   UpdateOnlineChatStop:Boolean;                            // остановка обновления OnlineChat
   UpdateForecast:Boolean;                                  // остановка обновления Forecast
-  UpdateInternalProcess:Boolean;                           // остановка обновления InternalProcess
   // **************** Thread Update ****************
 
 
@@ -329,17 +336,28 @@ var
 implementation
 
 uses
-    DMUnit, FunctionUnit, FormPropushennieUnit, FormSettingsUnit, Thread_StatisticsUnit, Thread_IVRUnit,
-    Thread_QUEUEUnit, FormAboutUnit, FormOperatorStatusUnit, FormServerIKCheckUnit, FormAuthUnit,
-    FormActiveSessionUnit, FormRePasswordUnit, Thread_AnsweredQueueUnit, ReportsUnit, Thread_ACTIVESIP_updatetalkUnit,
+    DMUnit, FunctionUnit, FormPropushennieUnit, FormSettingsUnit,
+    FormAboutUnit, FormOperatorStatusUnit, FormServerIKCheckUnit, FormAuthUnit,
+    FormActiveSessionUnit, FormRePasswordUnit, ReportsUnit,
     FormDEBUGUnit, FormErrorUnit,GlobalVariables, FormUsersUnit, FormServersIKUnit, FormSettingsGlobalUnit,
     FormTrunkUnit, TFTPUnit, TXmlUnit, FormStatisticsChartUnit, TForecastCallsUnit, FormStatusInfoUnit,
-    FormHistoryCallOperatorUnit, FormChatNewMessageUnit, TDebugStructUnit, FormHistoryStatusOperatorUnit, GlobalVariablesLinkDLL, TStatusUnit, FormTrunkSipUnit;
+    FormHistoryCallOperatorUnit, FormChatNewMessageUnit, TDebugStructUnit, FormHistoryStatusOperatorUnit,
+    GlobalVariablesLinkDLL, TStatusUnit, FormTrunkSipUnit;
 
 
 {$R *.dfm}
 
 function FlashWindowEx(var pwfi: TFlashWindowInfo): BOOL; stdcall; external user32 name 'FlashWindowEx';
+
+procedure THomeForm.DashboardCreateThread; // создание потоков
+var
+ error:string;
+begin
+ if not CreateThreadDashboard(error) then begin
+   ShowFormErrorMessage(error,SharedMainLog,'THomeForm.FormShow');
+ end;
+end;
+
 
 procedure OnDevelop;
 begin
@@ -623,13 +641,13 @@ begin
 end;
 
 procedure THomeForm.Button1Click(Sender: TObject);
-//var
+var
 //  ScreenRect: TRect;
 //  TaskbarHeight: Integer;
 //
 //  FlashInfo: TFlashWindowInfo;
 //
-//  test: TDebugStruct;
+  test: string;
 
 begin
 
@@ -660,11 +678,8 @@ begin
   // SharedCountResponseThread.Add(test);
   // SharedCountResponseThread.SetCurrentResponse('Thread_test',100);
 
-end;
+  CreateThreadDashboard(test);
 
-procedure THomeForm.START_THREAD_ALLlClick(Sender: TObject);
-begin
-  Timer_Thread_Start.Enabled:=True;
 end;
 
 
@@ -690,7 +705,7 @@ var
   ACheckBox: TCheckBox;
   DialogResult: Integer;
 begin
-  if DEBUG then KillProcess;  
+  if DEBUG then KillProcess;
 
   // проверка вдруг роль оператора и он не вышел из линии
   if getIsExitOperatorCurrentQueue(SharedCurrentUserLogon.GetRole, SharedCurrentUserLogon.GetID) then begin
@@ -897,18 +912,27 @@ begin
   // очищаем все лист боксы
   clearAllLists;
 
-   // размер главной офрмы экрана
-  WindowStateInit;
-
-  Screen.Cursor:=crDefault;
-
   // дата+время старта
   PROGRAM_STARTED:=Now;
 
-  // создаем все потоки (ВСЕГДА ДОЛЖНЫ ПОСЛЕДНИМИ ИНИЦИАЛИЗИРОВАТЬСЯ!!)
-  START_THREAD_ALLl.Click;
+  // размер главной офрмы экрана
+  WindowStateInit;
+
+  m_init:=True;  // иницилизировали главную форму
+  Screen.Cursor:=crDefault;
+
+   // создаем все потоки (ВСЕГДА ДОЛЖНЫ ПОСЛЕДНИМИ ИНИЦИАЛИЗИРОВАТЬСЯ!!)
+   begin
+     if not Assigned(m_dispatcher) then begin
+      m_dispatcher:=TThreadDispatcher.Create('CreateThreadDashboard',3,True,DashboardCreateThread);
+     end;
+     m_dispatcher.StartThread;
+   end;
+
   except
   on E: Exception do begin
+    m_init:=False; // не иницилизировали главную форму
+
     error:='Этой надписи никогда не должно было быть!'+#13+
            'Критическая ошибка!'+#13+
            'Код ошибки: '+E.ClassName+#13+E.Message;
@@ -928,39 +952,39 @@ procedure THomeForm.PanelStatusINMouseDown(Sender: TObject;
 begin
   if Button = mbLeft then
   begin
-    FDragging:= True;
-    // Сохраняем смещение мыши относительно панели
-    FMouseOffset:= Point(X, Y);
+    FDragging := True;
+    // X,Y – локальные координаты курсора внутри панели
+    FMouseOffset := Point(X, Y);
   end;
 end;
 
 procedure THomeForm.PanelStatusINMouseMove(Sender: TObject; Shift: TShiftState;
   X, Y: Integer);
 var
- XML:TXML;
+  ptParent: TPoint;
+  XML: TXML;
 begin
-  if FDragging then
-  begin
-    // Перемещаем панель, учитывая смещение мыши
-    PanelStatus.Left := PanelStatus.Left + (Mouse.CursorPos.X - PanelStatus.Left - FMouseOffset.X);
-    PanelStatus.Top := PanelStatus.Top + (Mouse.CursorPos.Y - PanelStatus.Top - FMouseOffset.Y);
+  if not FDragging then Exit;
 
-    XML:=TXML.Create;
-    XML.SetStatusOperatorPosition(PanelStatus.Left,PanelStatus.Top);
+  // конвертируем экранные координаты в координаты родителя (обычно форма)
+  ptParent := PanelStatus.Parent.ScreenToClient(Mouse.CursorPos);
+
+  // двигаем панель так, чтобы курсор FMouseOffset оставался на том же месте
+  PanelStatus.Left := ptParent.X - FMouseOffset.X;
+  PanelStatus.Top  := ptParent.Y - FMouseOffset.Y;
+
+  XML := TXML.Create;
+  try
+    XML.SetStatusOperatorPosition(PanelStatus.Left, PanelStatus.Top);
+  finally
     XML.Free;
-
-    Screen.Cursor:=crHandPoint;
   end;
 end;
 
 procedure THomeForm.PanelStatusINMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
-  if Button = mbLeft then
-  begin
-    FDragging:= False;
-    Screen.Cursor:=crDefault;
-  end;
+  FDragging:= False;
 end;
 
 procedure THomeForm.popMenu_ActionOperators_AddQueue5000Click(Sender: TObject);
@@ -1047,9 +1071,7 @@ var
  id_sip:Integer;
  user_id:Integer;
  resultat:Word;
- status: TStatus;
- error:string;
- delay:enumStatus;
+
 begin
   // Проверяем, был ли выбран элемент
   if not Assigned(SelectedItemPopMenu) then begin
@@ -1073,19 +1095,8 @@ begin
     Exit;
   end;
 
-  // выход из всех очередей из 5000 и 5050
-  status:=TStatus.Create(user_id,SharedCurrentUserLogon.GetUserList, True);
-  delay:=eNO;
-
-  if not status.SendCommand(eLog_home,delay,error) then begin
-    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
-    Exit;
-  end;
-
-  // очистка статуса
-  UpdateOperatorStatus(eUnknown,user_id);
-
-  LoggingRemote(eLog_home,user_id);
+  // выход из всех очередей
+  ForceExitOperatorAllQueue(user_id);
 end;
 
 procedure THomeForm.popMenu_ActionOperators_HistoryCallOperatorClick(
@@ -1375,7 +1386,7 @@ begin
         System.Delete(longtalk, 1, AnsiPos('(',longtalk));
         System.Delete(longtalk, AnsiPos(')',longtalk),Length(longtalk));
 
-        time_talk:=GetTimeAnsweredToSeconds(longtalk);
+        time_talk:=GetTimeAnsweredToSeconds(longtalk, True);
 
         if time_talk >= 180 then begin
          Sender.Canvas.Font.Color := EnumColorStatusToTColor(color_NotBad);
@@ -1440,6 +1451,23 @@ begin
   OpenLocalChat;
 end;
 
+procedure THomeForm.menu_clear_status_operatorClick(Sender: TObject);
+var
+ resultat:word;
+ CanClose: Boolean;
+begin
+  resultat:=MessageBox(0,PChar('Сброс панели приведет к закрытию программы, сбрасываем?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
+  if resultat=mrNo then begin
+    Exit;
+  end;
+
+  // сброс панели статусов на дефолтное значение
+  ResetPanelStatusOperator;
+
+  KillProcess;
+end;
+
+
 procedure THomeForm.menu_missed_callsClick(Sender: TObject);
 var
  error:string;
@@ -1455,6 +1483,11 @@ begin
    SetManualShow(true);
    ShowModal;
   end;
+end;
+
+procedure THomeForm.menu_OutgoingClick(Sender: TObject);
+begin
+  OpenOutgoing;
 end;
 
 procedure THomeForm.menu_ServersIKClick(Sender: TObject);
@@ -1477,13 +1510,6 @@ begin
  OpenSMS;
 end;
 
-procedure THomeForm.Timer_Thread_StartTimer(Sender: TObject);
-begin
-  // создание потоков + запуск
-  createThreadDashboard;
-
-  Timer_Thread_Start.Enabled:=False;
-end;
 
 procedure THomeForm.menu_GlobalSettingsClick(Sender: TObject);
 begin

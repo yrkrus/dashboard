@@ -4,8 +4,8 @@ object FormUsers: TFormUsers
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = #1055#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1080
-  ClientHeight = 475
-  ClientWidth = 827
+  ClientHeight = 517
+  ClientWidth = 982
   Color = clWindow
   DefaultMonitor = dmPrimary
   Font.Charset = DEFAULT_CHARSET
@@ -23,23 +23,21 @@ object FormUsers: TFormUsers
   object PageControl: TPageControl
     Left = 0
     Top = 0
-    Width = 827
+    Width = 982
     Height = 401
     ActivePage = UsersAll
     Align = alTop
     MultiLine = True
     TabOrder = 0
     OnChange = PageControlChange
+    ExplicitWidth = 827
     object UsersAll: TTabSheet
       Caption = #1042#1089#1077' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1080
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitWidth = 819
       object listSG_Users_Footer: TStringGrid
         Left = 0
         Top = 0
-        Width = 819
+        Width = 974
         Height = 24
         Align = alTop
         BorderStyle = bsNone
@@ -56,6 +54,7 @@ object FormUsers: TFormUsers
         ParentFont = False
         ScrollBars = ssNone
         TabOrder = 0
+        ExplicitWidth = 819
         ColWidths = (
           40
           235
@@ -69,7 +68,7 @@ object FormUsers: TFormUsers
       object listSG_Users: TStringGrid
         Left = 0
         Top = 24
-        Width = 819
+        Width = 974
         Height = 346
         Align = alClient
         BorderStyle = bsNone
@@ -87,6 +86,7 @@ object FormUsers: TFormUsers
         ScrollBars = ssVertical
         TabOrder = 1
         OnSelectCell = listSG_UsersSelectCell
+        ExplicitWidth = 819
         ColWidths = (
           40
           236
@@ -100,14 +100,11 @@ object FormUsers: TFormUsers
     object OnlyOPerators: TTabSheet
       Caption = #1054#1087#1077#1088#1072#1090#1086#1088#1099
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
+      ExplicitWidth = 819
       object listSG_Operators: TStringGrid
         Left = 0
         Top = 24
-        Width = 819
+        Width = 974
         Height = 346
         Align = alClient
         BorderStyle = bsNone
@@ -125,6 +122,7 @@ object FormUsers: TFormUsers
         ScrollBars = ssVertical
         TabOrder = 1
         OnSelectCell = listSG_OperatorsSelectCell
+        ExplicitWidth = 819
         ColWidths = (
           40
           271
@@ -137,7 +135,7 @@ object FormUsers: TFormUsers
       object listSG_Operators_Footer: TStringGrid
         Left = 0
         Top = 0
-        Width = 819
+        Width = 974
         Height = 24
         Align = alTop
         BorderStyle = bsNone
@@ -154,6 +152,7 @@ object FormUsers: TFormUsers
         ParentFont = False
         ScrollBars = ssNone
         TabOrder = 0
+        ExplicitWidth = 819
         ColWidths = (
           40
           271

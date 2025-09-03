@@ -26,6 +26,7 @@ uses
        messclass,mess: string;
 
       private
+      m_singleStart     :Boolean;       // разовый запуск
       m_timerPeriod     :Integer;       // время в секундах при котором что то делаем в Execute периодически (типа планировщик)
       Log               :TLoggingFile;
       FTask             :TProc;         // Делегат для выполнения задачи
@@ -40,7 +41,11 @@ uses
 
 
       public
-      constructor Create(_nameLog:string; _timeperiod:Integer; _task: TProc);                   overload;
+      constructor Create(_nameLog:string;
+                         _timeperiod:Integer;
+                         _singleStarted:Boolean;      // флаг на одинарный запуск
+                         _task: TProc);                   overload;
+
       destructor  Destroy; override;
 
       procedure StartThread; // Метод для запуска потока
@@ -55,7 +60,10 @@ uses
 implementation
 
 
-constructor TThreadDispatcher.Create(_nameLog:string; _timeperiod:Integer;  _task: TProc);
+constructor TThreadDispatcher.Create(_nameLog:string;
+                                     _timeperiod:Integer;
+                                     _singleStarted:Boolean;
+                                     _task: TProc);
  begin
    inherited Create(False);
    messclass:='';
@@ -65,6 +73,7 @@ constructor TThreadDispatcher.Create(_nameLog:string; _timeperiod:Integer;  _tas
    m_timerPeriod:=_timeperiod * 1000;
 
    m_taskName:=_nameLog;
+   m_singleStart:=_singleStarted;
 
    FTask:=_task; // Сохраняем переданную задачу
  end;
@@ -110,6 +119,10 @@ begin
          Synchronize(CriticalError);
         end;
       end;
+
+      // однократное выполнение
+      if m_singleStart then Break;
+
       Sleep(m_timerPeriod); // Пауза перед следующим выполнением
     end
     else
@@ -117,6 +130,9 @@ begin
       Sleep(1000); // Если поток не запущен, ждем немного перед проверкой состояния
     end;
   end;
+
+  // завершаемся
+  Log.Save('Task: ' + m_taskName + '<font color="red"> <b>terminated</b></font>');
 end;
 
 
@@ -128,7 +144,7 @@ begin
 
   if not m_running then
   begin
-    Log.Save('Task: ' + m_taskName + ' is started');
+    Log.Save('Task: ' + m_taskName + '<font color="green"><b>is started</b></font>');
     m_running := True; // Устанавливаем флаг в true
   end;
 end;

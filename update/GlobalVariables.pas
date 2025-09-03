@@ -13,6 +13,7 @@ const
  REPORT_EXE       :string = 'report.exe';
  SMS_EXE          :string = 'sms.exe';
  SERVICE_EXE      :string = 'service.exe';
+ OUTGOING_EXE     :string = 'outgoing.exe';
  UPDATE_EXE       :string = 'update.exe';
  INSTALL_EXE      :string = 'install.exe';
 
