@@ -490,7 +490,6 @@ procedure TFormPropushennie.lblPeopleClick(Sender: TObject);
 var
   lbl: TLabel;
   id:Integer;
-  error:string;
   people:TAutoPodborPeople;
   phonePodbor:string;
   FindedComponent:TLabel;
@@ -554,8 +553,6 @@ end;
 
 // создвание листа с выбором фильтра по очередям
 procedure TFormPropushennie.CreateComboxChoiseQueue;
-var
- i:Integer;
 begin
   combox_QueueFilter.Clear;
   combox_QueueFilter.Items.Add(EnumQueueCurrentToString(queue_5000));

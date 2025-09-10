@@ -77,7 +77,7 @@ var
 implementation
 
 uses
-  FunctionUnit, DMUnit, FormHome, FormWaitUnit, TTranslirtUnit,
+  FunctionUnit, FormHome, FormWaitUnit, TTranslirtUnit,
   GlobalVariables, GlobalVariablesLinkDLL, GlobalImageDestination;
 
 {$R *.dfm}

@@ -20,7 +20,7 @@ uses
   TFTPUnit in '..\custom_class\TFTPUnit.pas',
   TLogFileUnit in '..\custom_class\TLogFileUnit.pas',
   GlobalVariables in '..\update\GlobalVariables.pas',
-  GlobalVariablesLinkDLL in '..\gui\GlobalVariablesLinkDLL.pas';
+  GlobalVariablesLinkDLL in '..\custom_global\GlobalVariablesLinkDLL.pas';
 
 const
  cSLEEP_ERRROR:Cardinal = 9000000;  //  такое большое значение т.к. чтобы в вечный sleep ушел

@@ -8,8 +8,8 @@ uses
   TCustomTypeUnit in '..\custom_class\TCustomTypeUnit.pas',
   TLogFileUnit in '..\custom_class\TLogFileUnit.pas',
   TFTPUnit in '..\custom_class\TFTPUnit.pas',
-  GlobalVariablesLinkDLL in '..\gui\GlobalVariablesLinkDLL.pas',
-  TThreadDispatcherUnit in '..\custom_class\TThreadDispatcherUnit.pas';
+  TThreadDispatcherUnit in '..\custom_class\TThreadDispatcherUnit.pas',
+  GlobalVariablesLinkDLL in '..\custom_global\GlobalVariablesLinkDLL.pas';
 
 {$R *.RES}
 

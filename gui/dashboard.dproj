@@ -146,10 +146,10 @@
         <Icon_MainIcon>ico\diagram09.ico</Icon_MainIcon>
         <UWP_DelphiLogo44>C:\Users\home0\Desktop\DASHBOARD\develop\gui\ico\diagram09(1).png</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>C:\Users\home0\Desktop\DASHBOARD\develop\gui\ico\diagram09.png</UWP_DelphiLogo150>
-        <VerInfo_MinorVer>24</VerInfo_MinorVer>
-        <VerInfo_Keys>CompanyName=Petrov Yuri;FileDescription=Дашборд коллцентра;FileVersion=1.24.0.62;InternalName=;LegalCopyright=Petrov Yuri;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Дашборд коллцентра;ProductVersion=0.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_MinorVer>25</VerInfo_MinorVer>
+        <VerInfo_Keys>CompanyName=Petrov Yuri;FileDescription=Дашборд коллцентра;FileVersion=1.25.0.63;InternalName=;LegalCopyright=Petrov Yuri;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Дашборд коллцентра;ProductVersion=0.0.0.0;Comments=</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
-        <VerInfo_Build>62</VerInfo_Build>
+        <VerInfo_Build>63</VerInfo_Build>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -159,79 +159,7 @@
             <Form>HomeForm</Form>
         </DCCReference>
         <DCCReference Include="FunctionUnit.pas"/>
-        <DCCReference Include="FormPropushennieUnit.pas">
-            <Form>FormPropushennie</Form>
-        </DCCReference>
-        <DCCReference Include="FormSettingsUnit.pas">
-            <Form>FormSettings</Form>
-        </DCCReference>
-        <DCCReference Include="FormAboutUnit.pas">
-            <Form>FormAbout</Form>
-        </DCCReference>
-        <DCCReference Include="FormOperatorStatusUnit.pas">
-            <Form>FormOperatorStatus</Form>
-        </DCCReference>
-        <DCCReference Include="FormServerIKCheckUnit.pas">
-            <Form>FormServerIKCheck</Form>
-        </DCCReference>
-        <DCCReference Include="FormAuthUnit.pas">
-            <Form>FormAuth</Form>
-        </DCCReference>
-        <DCCReference Include="FormActiveSessionUnit.pas">
-            <Form>FormActiveSession</Form>
-        </DCCReference>
-        <DCCReference Include="FormAddNewUsersUnit.pas">
-            <Form>FormAddNewUsers</Form>
-        </DCCReference>
-        <DCCReference Include="FormRePasswordUnit.pas">
-            <Form>FormRePassword</Form>
-        </DCCReference>
-        <DCCReference Include="FormErrorUnit.pas">
-            <Form>FormError</Form>
-        </DCCReference>
-        <DCCReference Include="FormWaitUnit.pas">
-            <Form>FormWait</Form>
-        </DCCReference>
-        <DCCReference Include="ReportsUnit.pas">
-            <Form>FormReports</Form>
-        </DCCReference>
-        <DCCReference Include="FormUsersUnit.pas">
-            <Form>FormUsers</Form>
-        </DCCReference>
-        <DCCReference Include="FormServersIKUnit.pas">
-            <Form>FormServersIK</Form>
-        </DCCReference>
-        <DCCReference Include="FormServerIKEditUnit.pas">
-            <Form>FormServerIKEdit</Form>
-        </DCCReference>
-        <DCCReference Include="FormDEBUGUnit.pas">
-            <Form>FormDEBUG</Form>
-        </DCCReference>
-        <DCCReference Include="FormSettingsGlobalUnit.pas">
-            <Form>FormSettingsGlobal</Form>
-        </DCCReference>
-        <DCCReference Include="FormSettingsGlobal_addIVRUnit.pas">
-            <Form>FormSettingsGlobal_addIVR</Form>
-        </DCCReference>
-        <DCCReference Include="FormSettingsGlobal_listIVRUnit.pas">
-            <Form>FormSettingsGlobal_listIVR</Form>
-        </DCCReference>
-        <DCCReference Include="FormTrunkUnit.pas">
-            <Form>FormTrunk</Form>
-        </DCCReference>
-        <DCCReference Include="FormTrunkEditUnit.pas">
-            <Form>FormTrunkEdit</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
-        <DCCReference Include="FormGlobalSettingCheckFirebirdConnectUnit.pas">
-            <Form>FormGlobalSettingCheckFirebirdConnect</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
         <DCCReference Include="GlobalVariables.pas"/>
-        <DCCReference Include="FormStatisticsChartUnit.pas">
-            <Form>FormStatisticsChart</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
         <DCCReference Include="..\custom_class\TActiveSessionUnit.pas"/>
         <DCCReference Include="..\custom_class\TActiveSIPUnit.pas"/>
         <DCCReference Include="..\custom_class\TAnsweredQueueUnit.pas"/>
@@ -260,59 +188,134 @@
         <DCCReference Include="Thread\Thread_ForecastUnit.pas"/>
         <DCCReference Include="..\custom_class\TInternalProcessUnit.pas"/>
         <DCCReference Include="Thread\Thread_InternalProcessUnit.pas"/>
-        <DCCReference Include="FormStatusInfoUnit.pas">
-            <Form>FormStatusInfo</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
         <DCCReference Include="..\custom_class\TSendSMSUint.pas"/>
-        <DCCReference Include="FormHistoryCallOperatorUnit.pas">
-            <Form>FormHistoryCallOperator</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
         <DCCReference Include="..\custom_class\TFontSizeUnit.pas"/>
-        <DCCReference Include="FormChatNewMessageUnit.pas">
-            <Form>FormChatNewMessage</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
         <DCCReference Include="..\custom_class\debug_info\TDebugCountResponseUnit.pas"/>
         <DCCReference Include="..\custom_class\debug_info\TDebugStructUnit.pas"/>
-        <DCCReference Include="FormHistoryStatusOperatorUnit.pas">
-            <Form>FormHistoryStatusOperator</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
         <DCCReference Include="..\custom_class\THistoryStatusOperatorsUnit.pas"/>
-        <DCCReference Include="GlobalImageDestination.pas"/>
-        <DCCReference Include="FormServerIKWorkingTimeUnit.pas">
-            <Form>FormServerIKWorkingTime</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
         <DCCReference Include="..\custom_class\TWorkingTimeClinicUnit.pas"/>
-        <DCCReference Include="FormMenuAccessUnit.pas">
-            <Form>FormMenuAccess</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
         <DCCReference Include="..\custom_class\TUserAccessUnit.pas"/>
-        <DCCReference Include="GlobalVariablesLinkDLL.pas"/>
         <DCCReference Include="..\custom_class\TQueueStatisticsUnit.pas"/>
         <DCCReference Include="..\custom_class\TThreadDispatcherUnit.pas"/>
         <DCCReference Include="..\custom_class\TAutoPodborPeopleUnit.pas"/>
-        <DCCReference Include="FormPropushennieShowPeopleUnit.pas">
-            <Form>FormPropushennieShowPeople</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
         <DCCReference Include="..\custom_class\TStatusUnit.pas"/>
-        <DCCReference Include="FormTrunkSipUnit.pas">
-            <Form>FormTrunkSip</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
         <DCCReference Include="..\custom_class\TCheckSipTrunkUnit.pas"/>
         <DCCReference Include="Thread\Thread_CheckTrunkUnit.pas"/>
-        <DCCReference Include="FormWorkTimeCallCenterUnit.pas">
+        <DCCReference Include="..\custom_class\TWorkTimeCallCenterUnit.pas"/>
+        <DCCReference Include="Forms\Settings\FormGlobalSettingCheckFirebirdConnectUnit.pas">
+            <Form>FormGlobalSettingCheckFirebirdConnect</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Forms\Settings\FormSettingsGlobal_addIVRUnit.pas">
+            <Form>FormSettingsGlobal_addIVR</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Forms\Settings\FormSettingsGlobal_listIVRUnit.pas">
+            <Form>FormSettingsGlobal_listIVR</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Forms\Settings\FormSettingsUnit.pas">
+            <Form>FormSettings</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Forms\Settings\FormSettingsGlobalUnit.pas">
+            <Form>FormSettingsGlobal</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Forms\Users\FormUsersUnit.pas">
+            <Form>FormUsers</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Forms\Users\FormAddNewUsersUnit.pas">
+            <Form>FormAddNewUsers</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Forms\PopMenu\FormHistoryCallOperatorUnit.pas">
+            <Form>FormHistoryCallOperator</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Forms\PopMenu\FormHistoryStatusOperatorUnit.pas">
+            <Form>FormHistoryStatusOperator</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Forms\Settings\FormServerIKWorkingTimeUnit.pas">
+            <Form>FormServerIKWorkingTime</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Forms\Settings\FormWorkTimeCallCenterUnit.pas">
             <Form>FormWorkTimeCallCenter</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="..\custom_class\TWorkTimeCallCenterUnit.pas"/>
-        <DCCReference Include="..\custom_class\TCallInfoUnit.pas"/>
+        <DCCReference Include="Forms\ServerIK\FormServerIKEditUnit.pas">
+            <Form>FormServerIKEdit</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Forms\ServerIK\FormServersIKUnit.pas">
+            <Form>FormServersIK</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Forms\Settings\FormMenuAccessUnit.pas">
+            <Form>FormMenuAccess</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Forms\Trunk\FormTrunkUnit.pas">
+            <Form>FormTrunk</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Forms\Trunk\FormTrunkEditUnit.pas">
+            <Form>FormTrunkEdit</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Forms\MisseedCall\FormPropushennieShowPeopleUnit.pas">
+            <Form>FormPropushennieShowPeople</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Forms\MisseedCall\FormPropushennieUnit.pas">
+            <Form>FormPropushennie</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Forms\ActiveSession\FormActiveSessionUnit.pas">
+            <Form>FormActiveSession</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="FormSystem\FormAboutUnit.pas">
+            <Form>FormAbout</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="FormSystem\FormAuthUnit.pas">
+            <Form>FormAuth</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="FormSystem\FormErrorUnit.pas">
+            <Form>FormError</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="FormSystem\FormDEBUGUnit.pas">
+            <Form>FormDEBUG</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="FormSystem\FormWaitUnit.pas">
+            <Form>FormWait</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="FormSystem\FormStatusInfoUnit.pas">
+            <Form>FormStatusInfo</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Forms\FooterSubMenu\FormServerIKCheckUnit.pas">
+            <Form>FormServerIKCheck</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="Forms\FooterSubMenu\FormTrunkSipUnit.pas">
+            <Form>FormTrunkSip</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\custom_global\GlobalImageDestination.pas"/>
+        <DCCReference Include="..\custom_global\GlobalVariablesLinkDLL.pas"/>
+        <DCCReference Include="FormSystem\FormRePasswordUnit.pas">
+            <Form>FormRePassword</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

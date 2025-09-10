@@ -34,10 +34,10 @@ object FormHistoryCallOperator: TFormHistoryCallOperator
     WordWrap = True
   end
   object lblDownloadCall: TLabel
-    Left = 31
+    Left = 36
     Top = 101
-    Width = 109
-    Height = 18
+    Width = 104
+    Height = 16
     Cursor = crHandPoint
     Hint = #1057#1086#1093#1088#1072#1085#1080#1090#1100' '#1074#1099#1073#1088#1072#1085#1085#1099#1081' '#1079#1074#1086#1085#1086#1082' '#1091' '#1089#1077#1073#1103' '#1085#1072' '#1055#1050
     Alignment = taRightJustify
@@ -133,9 +133,9 @@ object FormHistoryCallOperator: TFormHistoryCallOperator
     Stretch = True
   end
   object lblPlayCall: TLabel
-    Left = 173
+    Left = 180
     Top = 101
-    Width = 139
+    Width = 132
     Height = 16
     Cursor = crHandPoint
     Hint = #1055#1088#1086#1089#1083#1091#1096#1072#1090#1100' '#1074#1099#1073#1088#1072#1085#1085#1099#1081' '#1079#1074#1086#1085#1086#1082
@@ -472,8 +472,8 @@ object FormHistoryCallOperator: TFormHistoryCallOperator
     OnChange = combox_TimeFilterChange
   end
   object popmenu_InfoCall: TPopupMenu
-    Left = 216
-    Top = 296
+    Left = 368
+    Top = 152
     object menu_FIO: TMenuItem
       Caption = #1053#1072#1081#1090#1080' '#1060#1048#1054' '#1087#1072#1094#1080#1077#1085#1090#1072' '#1087#1086' '#1085#1086#1084#1077#1088#1091
       OnClick = menu_FIOClick

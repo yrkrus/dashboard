@@ -22,11 +22,9 @@ uses
   FormGenerateSMSUnit in 'FormGenerateSMSUnit.pas' {FormGenerateSMS},
   TShowMessageSMSUnit in '..\custom_class\TShowMessageSMSUnit.pas',
   TCheckServersUnit in '..\custom_class\TCheckServersUnit.pas',
-  FormServerIKCheckUnit in '..\gui\FormServerIKCheckUnit.pas' {FormServerIKCheck},
   TMessageGeneratorSMSUnit in '..\custom_class\TMessageGeneratorSMSUnit.pas',
   FormServiceChoiseUnit in 'FormServiceChoiseUnit.pas' {FormServiceChoise},
   TServiceUnit in '..\custom_class\TServiceUnit.pas',
-  FormWaitUnit in '..\gui\FormWaitUnit.pas' {FormWait},
   FormServiceChoiseListUnit in 'FormServiceChoiseListUnit.pas' {FormServiceChoiseList},
   TWorkingTimeClinicUnit in '..\custom_class\TWorkingTimeClinicUnit.pas',
   DMUnit in 'DMUnit.pas' {DM: TDataModule},
@@ -38,8 +36,10 @@ uses
   FormManualPodborStatusUnit in 'FormManualPodborStatusUnit.pas' {FormManualPodborStatus},
   FormStatusSendingSMSUnit in 'FormStatusSendingSMSUnit.pas' {FormStatusSendingSMS},
   TAutoPodborSendingSmsUnit in '..\custom_class\TAutoPodborSendingSmsUnit.pas',
-  GlobalVariablesLinkDLL in '..\gui\GlobalVariablesLinkDLL.pas',
-  GlobalImageDestination in '..\gui\GlobalImageDestination.pas';
+  GlobalImageDestination in '..\custom_global\GlobalImageDestination.pas',
+  GlobalVariablesLinkDLL in '..\custom_global\GlobalVariablesLinkDLL.pas',
+  FormServerIKCheckUnit in '..\gui\Forms\FooterSubMenu\FormServerIKCheckUnit.pas' {FormServerIKCheck},
+  FormWaitUnit in '..\gui\FormSystem\FormWaitUnit.pas' {FormWait};
 
 {$R *.res}
 
@@ -57,9 +57,7 @@ begin
   Application.CreateForm(TFormSendingSMS, FormSendingSMS);
   Application.CreateForm(TFormDictionary, FormDictionary);
   Application.CreateForm(TFormGenerateSMS, FormGenerateSMS);
-  Application.CreateForm(TFormServerIKCheck, FormServerIKCheck);
   Application.CreateForm(TFormServiceChoise, FormServiceChoise);
-  Application.CreateForm(TFormWait, FormWait);
   Application.CreateForm(TFormServiceChoiseList, FormServiceChoiseList);
   Application.CreateForm(TDM, DM);
   Application.CreateForm(TFormEditDictionary, FormEditDictionary);
@@ -67,5 +65,7 @@ begin
   Application.CreateForm(TFormManualPodbor, FormManualPodbor);
   Application.CreateForm(TFormManualPodborStatus, FormManualPodborStatus);
   Application.CreateForm(TFormStatusSendingSMS, FormStatusSendingSMS);
+  Application.CreateForm(TFormServerIKCheck, FormServerIKCheck);
+  Application.CreateForm(TFormWait, FormWait);
   Application.Run;
 end.

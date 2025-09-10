@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls, Vcl.ExtCtrls,
-  Data.DB, Data.Win.ADODB, IdException, TSMSCallTalkInfoUnit;
+  Data.DB, Data.Win.ADODB, IdException, TSMSCallTalkInfoUnit, Vcl.Buttons;
 
 type
   TFormManualPodbor = class(TForm)
@@ -15,22 +15,27 @@ type
     chkbox_MyCalls: TCheckBox;
     Label2: TLabel;
     editFindMessage: TEdit;
-    st_FindPhone: TStaticText;
+    btn_Find: TBitBtn;
     procedure FormShow(Sender: TObject);
     procedure chkbox_MyCallsClick(Sender: TObject);
     procedure list_HistoryCustomDrawItem(Sender: TCustomListView;
       Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
     procedure list_HistoryDblClick(Sender: TObject);
-    procedure editFindMessageClick(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure editFindMessageKeyPress(Sender: TObject; var Key: Char);
+    procedure btn_FindClick(Sender: TObject);
   private
     { Private declarations }
   m_listTalkCalls:TSMSCallTalkInfo;  // основной список с данными по отвеченным звонкам
 
-  procedure LoadData(_idUser:Integer);
+  procedure LoadData(_idUser:Integer);   overload;
+  procedure LoadData(_phone:string);     overload;
   procedure ClearListView(var p_ListView:TListView);
-  procedure ShowCalls(var p_ListView:TListView;  isReducedTime: Boolean; _idUser:Integer);                // прогрузка номеров тлф
+  procedure ShowCalls(var p_ListView:TListView;
+                          isReducedTime: Boolean;
+                          _idUser:Integer);    overload;            // прогрузка номеров тлф
+  procedure ShowCalls(var p_ListView:TListView;
+                          isReducedTime: Boolean;
+                          _phone:string);       overload;         // прогрузка номера телефона
   procedure AddListItem(const id, dateTime, sip, phone, numberQueue, talkTime: string;
                         isReducedTime: Boolean;
                         var p_ListView: TListView);
@@ -163,7 +168,99 @@ begin
   end;
 end;
 
+// прогрузка номера телефона
+procedure TFormManualPodbor.ShowCalls(var p_ListView:TListView;
+                                          isReducedTime: Boolean;
+                                          _phone:string);
+var
+  ado: TADOQuery;
+  serverConnect: TADOConnection;
+  id, dateTime, sip, phone, numberQueue, talkTime:string;
+  countCalls:Integer;
+  i:Integer;
+  response:string;
+begin
+  ado:= TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
 
+  if not Assigned(serverConnect) then
+  begin
+    FreeAndNil(ado);
+    Exit;
+  end;
+
+  try
+    with ado do
+    begin
+      Connection := serverConnect;
+      SQL.Clear;
+
+      response:='select count(id) from queue where hash is not NULL AND phone LIKE CONCAT(''%'','+_phone+',''%'')';
+
+      SQL.Add(response);
+      Active := True;
+      countCalls := Fields[0].Value;
+
+      if countCalls = 0 then
+      begin
+        // надпись что нет данных
+        st_NoCalls.Visible := True;
+
+        Exit;
+      end;
+
+      // скрываем надпись что нет данных
+      st_NoCalls.Visible := False;
+
+      SQL.Clear;
+      response:='select id, date_time, sip, phone, number_queue, talk_time from queue where hash is not NULL AND phone LIKE CONCAT(''%'','+_phone+',''%'') order by date_time DESC';
+
+
+      SQL.Add(response);
+      Active := True;
+
+      for i := 0 to countCalls - 1 do
+      begin
+
+        id          :=VarToStr(Fields[0].Value);
+        dateTime    :=VarToStr(Fields[1].Value);
+        sip         :=VarToStr(Fields[2].Value);
+        phone       :=VarToStr(Fields[3].Value);
+        numberQueue :=VarToStr(Fields[4].Value);
+        talkTime    :=VarToStr(Fields[5].Value);
+
+
+        // Ёлемент не найден, добавл€ем новый
+        AddListItem(id, dateTime,sip, phone, numberQueue, talkTime,
+                    isReducedTime,
+                    p_ListView);
+        ado.Next;
+      end;
+
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then
+    begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+
+procedure TFormManualPodbor.btn_FindClick(Sender: TObject);
+begin
+  showWait(show_open);
+
+  if Length(editFindMessage.Text) > 0 then LoadData(editFindMessage.Text)
+  else begin
+    if chkbox_MyCalls.Checked then LoadData(USER_STARTED_SMS_ID)
+    else LoadData(-1);
+  end;
+
+  showWait(show_close);
+end;
 
 procedure TFormManualPodbor.chkbox_MyCallsClick(Sender: TObject);
 begin
@@ -235,14 +332,14 @@ begin
 end;
 
 
-procedure TFormManualPodbor.editFindMessageClick(Sender: TObject);
-begin
-  if st_FindPhone.Visible then st_FindPhone.Visible:=False;
-end;
-
 procedure TFormManualPodbor.editFindMessageKeyPress(Sender: TObject;
   var Key: Char);
 begin
+  if Key = #13 then
+  begin
+    btn_Find.Click;
+  end;
+
   if not (Key in ['0'..'9', #8]) then  // #8 - Backspace, #13 - Enter
   begin
     Key := #0; // ќтмен€ем ввод, если символ не €вл€етс€ цифрой
@@ -262,10 +359,17 @@ begin
   Screen.Cursor:=crDefault;
 end;
 
-procedure TFormManualPodbor.FormClose(Sender: TObject;
-  var Action: TCloseAction);
+procedure TFormManualPodbor.LoadData(_phone:string);
 begin
-  st_FindPhone.Visible:=True;
+  Screen.Cursor:=crHourGlass;
+
+  // очитска листа
+  ClearListView(list_History);
+
+   // прогружаем номера
+   ShowCalls(list_History,True,_phone);
+
+  Screen.Cursor:=crDefault;
 end;
 
 procedure TFormManualPodbor.FormShow(Sender: TObject);

@@ -57,12 +57,13 @@ var
    constructor Create;               overload;
    destructor Destroy;
 
-   procedure Clear;
+   procedure Clear;                       overload;
+   procedure Clear(_missed:enumMissed);   overload;
 
    procedure Add(_missed:enumMissed; NewMissed:TCalls; isCheckExist:Boolean = False);  // добавление нового в список
-   function IsExist(_missed:enumMissed; NewMissed:TCalls):Boolean; // проверка на существующую запись
+   procedure Delete(_missed:enumMissed; _id:Integer);
+   function IsExist(_missed:enumMissed; NewMissed:TCalls):Boolean;                     // проверка на существующую запись
 
-   // procedure Delete(_missed:enumMissed; _id:Integer);  // TODO сделать
 
 
 
@@ -168,6 +169,9 @@ var
                                   _stat:enumStatistiscDay;
                                   _beforeClear:enumStatus); //обновление подробностьей о пропущенных звонках
 
+
+      function GetStatisticsCountInQueue(_queue:enumQueue;
+                                         _queueType:enumQueueType):integer; // отображение инфо по очередеям
 
 
 
@@ -303,6 +307,38 @@ begin
   end;
 end;
 
+
+procedure TStructMissed.Clear(_missed:enumMissed);
+var
+  i: Integer;
+begin
+  case _missed of
+    eMissed:begin
+      // Освобождаем массив m_missed
+        if Length(m_missed) > 0 then begin
+          for i := 0 to High(m_missed) do begin
+            FreeAndNil(m_missed[i]); // Освобождаем каждый объект
+          end;
+          SetLength(m_missed, 0); // Устанавливаем длину массива в 0
+          m_count_missed := 0; // Сбрасываем счетчик
+        end;
+    end;
+    eMissed_no_return:begin
+      // Освобождаем массив m_missed_no_return
+      if Length(m_missed_no_return) > 0 then begin
+        for i := 0 to High(m_missed_no_return) do begin
+          FreeAndNil(m_missed_no_return[i]); // Освобождаем каждый объект
+        end;
+        SetLength(m_missed_no_return, 0); // Устанавливаем длину массива в 0
+        m_count_missed_no_return := 0; // Сбрасываем счетчик
+      end;
+    end;
+    eMissed_all:begin
+      Clear;
+    end;
+  end;
+end;
+
 // проверка на существующую запись
 function TStructMissed.IsExist(_missed:enumMissed; NewMissed:TCalls):Boolean;
 var
@@ -368,6 +404,46 @@ begin
     end;
   end;
 
+end;
+
+
+procedure TStructMissed.Delete(_missed:enumMissed; _id:Integer);
+var
+  i, len: Integer;
+begin
+  case _missed of
+    eMissed:
+      begin
+        len := Length(m_missed);
+        for i := 0 to len - 1 do begin
+         if m_missed[i].m_id = _id then
+          begin
+            // освободить объект
+            m_missed[i].Free;
+            // если не последний, сдвинуть tail массива влево
+            if i < len - 1 then  Move(m_missed[i + 1], m_missed[i], (len - i - 1) * SizeOf(Pointer));
+            // укоротить массив
+            SetLength(m_missed, len - 1);
+            Dec(m_count_missed);
+            Exit;
+          end;
+        end;
+      end;
+
+    eMissed_no_return: begin
+      len := Length(m_missed_no_return);
+      for i := 0 to len - 1 do  begin
+        if m_missed_no_return[i].m_id = _id then
+        begin
+          m_missed_no_return[i].Free;
+          if i < len - 1 then  Move(m_missed_no_return[i + 1], m_missed_no_return[i], (len - i - 1) * SizeOf(Pointer));
+          SetLength(m_missed_no_return, len - 1);
+          Dec(m_count_missed_no_return);
+          Exit;
+        end;
+      end;
+    end;
+  end;
 end;
 
 // TStructStatistics END
@@ -555,15 +631,20 @@ begin
        Exit;
       end;
 
-      m_list[i].m_statistics.m_all:=StrToInt(GetStatistics_queue(_queue,all_answered));
-      m_list[i].m_statistics.m_ansvered:=StrToInt(GetStatistics_queue(_queue,answered));
-      m_list[i].m_statistics.m_missed_all:=StrToInt(GetStatistics_queue(_queue,no_answered));
-      m_list[i].m_statistics.m_missed:=StrToInt(GetStatistics_queue(_queue,no_answered_return));
+      m_list[i].m_statistics.m_all        :=GetStatisticsCountInQueue(_queue,all_answered);
+      m_list[i].m_statistics.m_ansvered   :=GetStatisticsCountInQueue(_queue,answered);
+      m_list[i].m_statistics.m_missed_all :=GetStatisticsCountInQueue(_queue,no_answered);
+      m_list[i].m_statistics.m_missed     :=GetStatisticsCountInQueue(_queue,no_answered_return);
 
 
       // сверяемся есть ли изменения (обновляем подробные данные по пропущенным)
-      if m_list[i].isExistDiffMissedCalls(eMissed)            then UpdateMissedCalls(_queue, stat_no_answered, eNO);
-      if m_list[i].isExistDiffMissedCalls(eMissed_no_return)  then UpdateMissedCalls(_queue, stat_no_answered_return, eNO);
+      if m_list[i].isExistDiffMissedCalls(eMissed) then begin
+        UpdateMissedCalls(_queue, stat_no_answered, eNO);
+      end;
+
+      if m_list[i].isExistDiffMissedCalls(eMissed_no_return) then begin
+        UpdateMissedCalls(_queue, stat_no_answered_return, eYes);
+      end;
     end;
   end;
 end;
@@ -1125,7 +1206,7 @@ begin
     begin
       if m_list[i].m_queue = _queue then
       begin
-        m_list[i].m_statistics.m_listMissed.Clear;
+        m_list[i].m_statistics.m_listMissed.Clear(missedType);
       end;
     end;
   end;
@@ -1155,6 +1236,41 @@ begin
     SetLength(list_calls, 0);
   end;
 end;
+
+
+// отображение инфо по очередеям
+function TQueueStatistics.GetStatisticsCountInQueue(_queue:enumQueue;_queueType:enumQueueType):integer;
+var
+ select_response:string;
+begin
+  case _queueType of
+
+    answered: begin    // отвеченные
+      select_response:='select count(phone) from queue where number_queue = '+#39+TQueueToString(_queue)+#39
+                                                                             +' and answered = ''1'' and sip <>''-1'' and hash is not null and date_time > '+#39+GetNowDateTime+#39;
+    end;
+    no_answered: begin  // не отвеченные
+      select_response:='select count(phone) from queue where number_queue = '+#39+TQueueToString(_queue)+#39
+                                                                             +' and fail = ''1'' and date_time > '+#39+GetNowDateTime+#39;
+    end;
+    no_answered_return: begin  // не отвеченные + вернувшиеся
+      select_response:='select count(distinct(phone)) from queue where number_queue='+#39+TQueueToString(_queue)+#39+
+                                                                ' and fail =''1'' and date_time >'+#39+GetNowDateTime+#39+
+                                                                ' and phone not in (select phone from queue where number_queue ='+#39+TQueueToString(_queue)+#39+
+                                                                ' and answered  = ''1'' and date_time > +'#39+GetNowDateTime+#39+')';
+
+
+    end;
+    all_answered:begin  // всего отвеченных
+      select_response:='select count(phone) from queue where number_queue = '+#39+TQueueToString(_queue)+#39
+                                                                             +' and date_time > '+#39+GetNowDateTime+#39;
+    end;
+  end;
+
+
+  Result:=GetSelectResponse(select_response);
+end;
+
 
 // обновление данных
 procedure TQueueStatistics.Update;

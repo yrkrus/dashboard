@@ -17,6 +17,7 @@ uses
   function isExistExcel(var _errorDescriptions:string):Boolean;         // проверка установлен ли excel
   function TrimQuotes(const S: string): string;                         // убираем " в начале и в конце
   procedure showWait(Status:enumShow_wait);                             // отображение\сркытие окна запроса на сервер
+  procedure SetRandomFontColor(var p_label: TLabel);                    // изменение цвета надписи
 
 implementation
 
@@ -170,5 +171,17 @@ begin
   end;
 end;
 
+
+// изменение цвета надписи
+procedure SetRandomFontColor(var p_label: TLabel);
+var
+  RandomColor: TColor;
+begin
+  // Генерируем случайные значения для RGB
+  RandomColor := RGB(Random(256), Random(256), Random(256));
+
+  // Устанавливаем случайный цвет шрифта для метки
+  p_label.Font.Color := RandomColor;
+end;
 
 end.

@@ -2,7 +2,7 @@ object HomeForm: THomeForm
   Left = 0
   Top = 0
   Caption = #1044#1072#1096#1073#1086#1088#1076' '#1050#1086#1083#1083#1062#1077#1085#1090#1088#1072
-  ClientHeight = 764
+  ClientHeight = 780
   ClientWidth = 1454
   Color = clWindow
   DefaultMonitor = dmDesktop
@@ -20,7 +20,7 @@ object HomeForm: THomeForm
   OnShow = FormShow
   DesignSize = (
     1454
-    764)
+    780)
   PixelsPerInch = 96
   TextHeight = 15
   object Label5: TLabel
@@ -542,7 +542,7 @@ object HomeForm: THomeForm
   end
   object lblNewMessageLocalChat: TLabel
     Left = 1202
-    Top = 723
+    Top = 739
     Width = 243
     Height = 16
     Cursor = crHandPoint
@@ -695,7 +695,7 @@ object HomeForm: THomeForm
   end
   object Img8Mart: TImage
     Left = 1374
-    Top = 692
+    Top = 708
     Width = 79
     Height = 50
     Anchors = [akRight, akBottom]
@@ -822,7 +822,7 @@ object HomeForm: THomeForm
   end
   object ImageLogo: TImage
     Left = 1277
-    Top = 684
+    Top = 700
     Width = 157
     Height = 37
     Anchors = [akRight, akBottom]
@@ -989,7 +989,7 @@ object HomeForm: THomeForm
   end
   object ImgNewYear: TImage
     Left = 1389
-    Top = 664
+    Top = 680
     Width = 55
     Height = 55
     Anchors = [akRight, akBottom]
@@ -6445,7 +6445,7 @@ object HomeForm: THomeForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 743
+    Top = 759
     Width = 1454
     Height = 21
     Panels = <
@@ -7985,7 +7985,7 @@ object HomeForm: THomeForm
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 10
+    TabOrder = 9
   end
   object st_Forecast_Tomorrow: TStaticText
     Left = 35
@@ -8036,12 +8036,11 @@ object HomeForm: THomeForm
     Height = 25
     Caption = 'Button1'
     TabOrder = 1
-    Visible = False
     OnClick = Button1Click
   end
   object ST_SL: TStaticText
     Left = 1308
-    Top = 6
+    Top = 7
     Width = 134
     Height = 26
     Alignment = taRightJustify
@@ -8760,7 +8759,8 @@ object HomeForm: THomeForm
         000052FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
         FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
         FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-      Caption = #1053#1072#1073#1088#1072#1090#1100' '#1085#1086#1084#1077#1088
+      Caption = #1053#1072#1073#1088#1072#1090#1100' '#1085#1086#1084#1077#1088' ('#1074' '#1088#1072#1079#1088#1072#1073#1086#1090#1082#1077')'
+      Enabled = False
       OnClick = menu_OutgoingClick
     end
     object menu_Reports: TMenuItem

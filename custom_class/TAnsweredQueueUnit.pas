@@ -15,6 +15,13 @@ interface
 uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
       Graphics, TCustomTypeUnit, Vcl.Forms, StdCtrls, TLogFileUnit, TQueueStatisticsUnit;
 
+   type enumAnsweredStat = (enumAnswered30 = 0,
+                            enumAnswered60 = 1,
+                            enumAnswered90 = 2,
+                            enumAnswered121= 3);
+
+
+
    type enumStatusSL = (eSlUp,
                         eSlDown);
 
@@ -87,7 +94,7 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
 
       procedure SetLinkSL(var _sl:TStaticText); // линковка SL(только при инициализации)
 
-      function getCountAllAnswered          : Integer;                  // всего отвечено
+      function GetCountAllAnswered          : Integer;                  // всего отвечено
       function isExistNewAnswered           : Boolean;                  // есть ли новые отвеченные по БД
       function getCountMaxAnswered          : Integer;                  // максимальное время ожидания
 
@@ -105,8 +112,8 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
  // class TAnsweredQueue END
 
 
-const
-   cGLOBAL_ListAnswered: Word   = 4;    // константа для массива из TStructAnswered
+//const
+//   cGLOBAL_ListAnswered: Word   = 4;    // константа для массива из TStructAnswered
 
 implementation
 
@@ -156,13 +163,14 @@ end;
  constructor TAnsweredQueue.Create;
  var
   i:Integer;
+  index:enumAnsweredStat;
  begin
    inherited;
 
    // создаем list
    begin
-     SetLength(m_list,cGLOBAL_ListAnswered);
-     for i:=0 to cGLOBAL_ListAnswered-1 do m_list[i]:=TStructAnswered.Create;
+     SetLength(m_list, Ord(High(enumAnsweredStat))+1);
+     for index := Low(enumAnsweredStat) to High(enumAnsweredStat) do m_list[Ord(index)] := TStructAnswered.Create;
    end;
 
    updateAnsweredNow:=False;
@@ -195,7 +203,7 @@ end;
  var
   i:Integer;
  begin
-    for i:=0 to cGLOBAL_ListAnswered-1 do m_list[i].clear;
+    for i:=Ord(Low(enumAnsweredStat)) to Ord(High(enumAnsweredStat)) do m_list[i].clear;
     Self.updateAnsweredNow:=False;
 
     Self.m_maxAnsweredTime:=0;
@@ -240,7 +248,7 @@ end;
   i,j,max_wait:Integer;
  begin
    max_wait:=0;
-   for i:=0 to cGLOBAL_ListAnswered-1  do begin
+   for i:=Ord(Low(enumAnsweredStat)) to Ord(High(enumAnsweredStat)) do begin
      for j:=0 to m_list[i].count-1 do begin
        if max_wait< StrToInt(m_list[i].list_answered_time[j]) then max_wait:=StrToInt(m_list[i].list_answered_time[j]);
      end;
@@ -259,9 +267,9 @@ end;
 
   SLVALUE:Double;  // текущее значение SL
  begin
-   for i:=0 to cGLOBAL_ListAnswered-1 do begin
+   for i:=Ord(Low(enumAnsweredStat)) to Ord(High(enumAnsweredStat)) do begin
     with HomeForm do begin
-      procent:=m_list[i].count * 100 / getCountAllAnswered;
+      procent:=m_list[i].count * 100 / GetCountAllAnswered;
       SLVALUE:=100;
      case i of
        0: begin
@@ -389,14 +397,14 @@ begin
 end;
 
 
- function TAnsweredQueue.getCountAllAnswered;
+ function TAnsweredQueue.GetCountAllAnswered;
  var
   i:Integer;
   allCount:Integer;
 begin
   allCount:=0;
 
-  for i:=0 to cGLOBAL_ListAnswered-1 do begin
+  for i:=Ord(Low(enumAnsweredStat)) to Ord(High(enumAnsweredStat)) do begin
     if allCount=0 then allCount:=m_list[i].count
     else allCount:=allCount+m_list[i].count;
   end;
@@ -423,7 +431,7 @@ begin
   end;
 
   // сверяемся с текущим кол-вом
-  if getCountAllAnswered<>countAllAnswered then Result:=True
+  if GetCountAllAnswered<>countAllAnswered then Result:=True
   else Result:=False;
 end;
 
@@ -436,7 +444,7 @@ begin
   Result:=False;
   isExist:=False;
 
-  for i:=0 to cGLOBAL_ListAnswered-1 do begin
+  for i:=Ord(Low(enumAnsweredStat)) to Ord(High(enumAnsweredStat)) do begin
     for j:=0 to m_list[i].list_id.Count-1 do begin
       if id = StrToInt(m_list[i].list_id[j])  then begin
         isExist:=True;
@@ -548,7 +556,8 @@ begin
 
  if m_queueStatistics.CountAllCalls = 0 then Exit;
  oldSL:=m_SL;
- m_SL:=m_list[0].count / (m_queueStatistics.CountAllCalls + m_queueStatistics.CountAllCallsMissed)  * 100;
+ // расчет SL = (звонки за 30 сек. / все отвеченные + пропущенные) * 100
+ m_SL:=m_list[0].count / (GetCountAllAnswered + m_queueStatistics.CountAllCallsMissed)  * 100;
 
  if m_SL > oldSL then m_SL_type:=eSlUp
  else m_SL_type:=eSlDown;

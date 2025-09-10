@@ -11,11 +11,24 @@ unit TXmlUnit;
 interface
 
 uses
-  System.SysUtils, System.Classes, System.SyncObjs, XMLDoc, XMLIntf, TCustomTypeUnit, GlobalVariables;
+  System.SysUtils, System.Classes, System.SyncObjs, XMLIntf, XMLDoc,
+  Xml.XMLDom, Xml.Win.msxmldom, TCustomTypeUnit, GlobalVariables;
 
 
  type
   TXML = class
+ private
+    m_fileSettings: string;                                 // путь с файлом настроек
+    m_XMLDoc: IXMLDocument;
+    m_RootNode, m_ChildNode: IXMLNode;
+    //m_mutex: TMutex;
+
+   function  CreateMSXMLDoc: TXMLDocument;
+    function  LoadMSXML(const AFileName: string): IXMLDocument;
+   procedure CreateDefaultFileSettings(GUIDVesrion:string); // создание первоначального файла с настройками
+   procedure checkExistNodeFields(inRootNode,InChildNode,inDefaultValue:string); // проверка существует ли новое значение
+   function stringToBoolean(inValue:string):Boolean;   // конвертер string->boolean
+
   public
     constructor Create(SettingsFileName,GUIDVesrion:string); overload;
     constructor Create(SettingsFileName:string); overload;
@@ -25,60 +38,39 @@ uses
 
     procedure UpdateCurrentVersion(GUIDVesrion:string);     // обновление текущей версии
     procedure UpdateRemoteVersion(GUIDVesrion:string);      // обновление удаленной версии
-
     function GetCurrentVersion: string;                     // текущая версия
     function GetRemoteVersion: string;                      // удаленная версия
-
     procedure UpdateLastOnline;                             // обновление последней даты в сети
-
     function GetLastOnline:TDateTime;                       // время когда последний раз была запущен клиент
     function isExistSettingsFile: Boolean;                  // проверка существует ли файл с настройками
-
     procedure isUpdate(InValue:string); overload;           // установка параметра обновления
     function isUpdate:Boolean;         overload;            // текущее состояние (в обновлении или нет)
-
     function GetFolderPathFindRemember: string;             // путь откуда будем забирать файл с смс рассылкой
     procedure SetFolderPathFindRemember(const Path: string);// установка пути откуда будем забирать файл с смс рассылкой
-
     function GetFolderPathService: string;                  // путь откуда будем забирать файл с услугами
     procedure SetFolderPathService(const Path: string);     // установка пути откуда будем забирать файл с услугами
-
     function GetFontSize(_font:enumFontSize):Word;          // получение текущего размера шрифта
     procedure SetFontSize(_font:enumFontSize; _value:Integer); // установка размера шрифта
-
     function GetWindowState:string;                         // получение текущего размера окна главной формы
     procedure SetWindowState(_state:string);                // установка размера окна главной формы
-
     procedure ForceUpdate(InValue:string);                   // принудительное обновление
     function  isForceUpdate:Boolean;        overload;       // текущее состояние (в принудительном обновлении)
-
     function GetMissedCallsShow:string;                     // получение текущего значения отображать инфо о статусе callback
     procedure SetMissedCallsShow(_state:string);            // установка текущего значения отображать инфо о статусе callback
-
     function GetActiveSessionConfirm:string;                // получение текущего значения подтверждать действие при закрытии активной сессии
     procedure SetActiveSessionConfirm(_state:string);       // установка текущего значения подтверждать действие при закрытии активной сессии
-
     function GetStatusOperatorPosition(var _left:Integer;
                                        var _top: Integer):Boolean; // получение текущего значения положения окна статусы оператора
     function IsExistStatusOperatorPosition:Boolean;               // есть ли данные по позиции панели
     procedure SetStatusOperatorPosition(_left,_top:Integer);       // установка текущего значения положения окна статусы оператора
+ end;
 
 
-
-  private
-    m_fileSettings: string;                                 // путь с файлом настроек
-    m_XMLDoc: IXMLDocument;
-    m_RootNode, m_ChildNode: IXMLNode;
-    //m_mutex: TMutex;
-   procedure CreateDefaultFileSettings(GUIDVesrion:string); // создание первоначального файла с настройками
-   procedure checkExistNodeFields(inRootNode,InChildNode,inDefaultValue:string); // проверка существует ли новое значение
-
-   function stringToBoolean(inValue:string):Boolean;   // конвертер string->boolean
-
-  end;
 
 implementation
 
+// var
+//    MSXMLDOM: IDOMVendor;
 
 
 { TXMLSettings }
@@ -95,7 +87,7 @@ implementation
     CreateDefaultFileSettings(GUIDVesrion);
    end
    else begin
-    m_XMLDoc:=LoadXMLDocument(m_fileSettings);
+    m_XMLDoc:=LoadMSXML(m_fileSettings);
    end;
  end;
 
@@ -107,7 +99,7 @@ implementation
 
    // создаем файл с настрйоками
    if isExistSettingsFile then begin
-    m_XMLDoc:=LoadXMLDocument(m_fileSettings);
+    m_XMLDoc:=LoadMSXML(m_fileSettings);
    end;
  end;
 
@@ -119,7 +111,7 @@ implementation
    Self.m_fileSettings:=FOLDERPATH + SETTINGS_XML;
 
    if isExistSettingsFile then begin
-    m_XMLDoc:=LoadXMLDocument(m_fileSettings);
+    m_XMLDoc:=LoadMSXML(m_fileSettings);
    end;
  end;
 
@@ -127,9 +119,27 @@ destructor TXML.Destroy;
 begin
   // Освобождение ресурсов, если это необходимо
   m_XMLDoc:= nil;
- // m_mutex.Free;
 
   inherited Destroy;
+end;
+
+function TXML.CreateMSXMLDoc: TXMLDocument;
+begin
+  Result:= TXMLDocument.Create(nil);
+  // у TXMLDocument есть свойство DOMVendor
+  Result.DOMVendor := GetDOMVendor(DefaultDOMVendor);
+  // отключаем автоматическую загрузку
+  Result.Active:= False;
+end;
+
+{ загружает XML из файла через MSXML-движок }
+function TXML.LoadMSXML(const AFileName: string): IXMLDocument;
+var
+  Doc: TXMLDocument;
+begin
+  Doc:=CreateMSXMLDoc;
+  Doc.LoadFromFile(AFileName);
+  Result:=Doc;  // присвоение интерфейсу
 end;
 
 
@@ -145,19 +155,19 @@ begin
   // проверяем есть ли параметр
   checkExistNodeFields('Versions','isUpdate','InValue');
 
-   m_XMLDoc:= LoadXMLDocument(m_fileSettings);
-    try
-      m_RootNode := m_XMLDoc.DocumentElement;
-      m_ChildNode := m_RootNode.ChildNodes.FindNode('Versions').ChildNodes.FindNode('isUpdate');
+  m_XMLDoc:=LoadMSXML(m_fileSettings);
+  try
+    m_RootNode := m_XMLDoc.DocumentElement;
+    m_ChildNode := m_RootNode.ChildNodes.FindNode('Versions').ChildNodes.FindNode('isUpdate');
 
-      if Assigned(m_ChildNode) then
-      begin
-        m_ChildNode.Text :=InValue;
-        m_XMLDoc.SaveToFile(m_fileSettings);
-      end;
-    finally
-     m_XMLDoc := nil;
+    if Assigned(m_ChildNode) then
+    begin
+      m_ChildNode.Text :=InValue;
+      m_XMLDoc.SaveToFile(m_fileSettings);
     end;
+  finally
+   m_XMLDoc := nil;
+  end;
 end;
 
 
@@ -167,7 +177,7 @@ begin
   // проверяем есть ли параметр
   checkExistNodeFields('Versions','ForceUpdate','InValue');
 
-   m_XMLDoc:= LoadXMLDocument(m_fileSettings);
+   m_XMLDoc:=LoadMSXML(m_fileSettings);
     try
       m_RootNode := m_XMLDoc.DocumentElement;
       m_ChildNode := m_RootNode.ChildNodes.FindNode('Versions').ChildNodes.FindNode('ForceUpdate');
@@ -187,7 +197,7 @@ function TXML.isUpdate:Boolean;
 begin
   Result:=False;
 
-  m_XMLDoc:= LoadXMLDocument(m_fileSettings);
+  m_XMLDoc:=LoadMSXML(m_fileSettings);
 
   try
     m_RootNode := m_XMLDoc.DocumentElement;
@@ -208,7 +218,7 @@ function TXML.isForceUpdate:Boolean;
 begin
   Result:=False;
 
-  m_XMLDoc:= LoadXMLDocument(m_fileSettings);
+  m_XMLDoc:=LoadMSXML(m_fileSettings);
 
   try
     m_RootNode := m_XMLDoc.DocumentElement;
@@ -225,54 +235,49 @@ end;
 
 procedure TXML.CreateDefaultFileSettings(GUIDVesrion:string);
 begin
- // if m_mutex.WaitFor(INFINITE)=wrSignaled then
-//  try
-    try
-      // Создаем новый XML-документ
-      m_XMLDoc := TXMLDocument.Create(nil);
-      m_XMLDoc.Active := True; // Активируем документ
+  try
+    // Создаем новый XML-документ
+    m_XMLDoc:=CreateMSXMLDoc;
+    m_XMLDoc.Active:=True;
 
-       // Создаем корневой узел <Settings>
-      m_RootNode := m_XMLDoc.AddChild('Settings');
+     // Создаем корневой узел <Settings>
+    m_RootNode := m_XMLDoc.AddChild('Settings');
 
-      // Создаем узел <Versions> и добавляем <Current> внутрь него
-      m_ChildNode := m_RootNode.AddChild('Versions');
-      m_ChildNode.AddChild('Current').Text:= GUIDVesrion;
+    // Создаем узел <Versions> и добавляем <Current> внутрь него
+    m_ChildNode := m_RootNode.AddChild('Versions');
+    m_ChildNode.AddChild('Current').Text:= GUIDVesrion;
 
-      // Добавляем узел <Remote> внутрь <Versions>
-      m_ChildNode.AddChild('Remote').Text := 'null';
+    // Добавляем узел <Remote> внутрь <Versions>
+    m_ChildNode.AddChild('Remote').Text := 'null';
 
-      // Добавляем узел <isUpdate> внутрь <Versions>
-      m_ChildNode.AddChild('isUpdate').Text := 'false';
+    // Добавляем узел <isUpdate> внутрь <Versions>
+    m_ChildNode.AddChild('isUpdate').Text := 'false';
 
-      // Добавляем узел <isUpdate> внутрь <Versions>
-      m_ChildNode.AddChild('ForceUpdate').Text := 'false';
+    // Добавляем узел <isUpdate> внутрь <Versions>
+    m_ChildNode.AddChild('ForceUpdate').Text := 'false';
 
-      // Добавляем узел <LastOnline>
-      m_RootNode.AddChild('LastOnline'); // Добавляем LastOnline на тот же уровень, что и Versions
+    // Добавляем узел <LastOnline>
+    m_RootNode.AddChild('LastOnline'); // Добавляем LastOnline на тот же уровень, что и Versions
 
-      // Добавляем узел <SMS> и дочерний узел <FolderPathFindRemember>
-      m_ChildNode := m_RootNode.AddChild('SMS');
-      m_ChildNode.AddChild('FolderPathFindRemember').Text := 'null'; // Значение по умолчанию
+    // Добавляем узел <SMS> и дочерний узел <FolderPathFindRemember>
+    m_ChildNode := m_RootNode.AddChild('SMS');
+    m_ChildNode.AddChild('FolderPathFindRemember').Text := 'null'; // Значение по умолчанию
 
-      // Добавляем узел <Font> и дочерние узлы <ActiveSip> (отвечает за размер шрифта)
-      m_ChildNode := m_RootNode.AddChild('Font');
-      m_ChildNode.AddChild('ActiveSip').Text  := '10'; // Значение по умолчанию
-      m_ChildNode.AddChild('IVR').Text        := '10'; // Значение по умолчанию
-      m_ChildNode.AddChild('Queue').Text      := '10'; // Значение по умолчанию
+    // Добавляем узел <Font> и дочерние узлы <ActiveSip> (отвечает за размер шрифта)
+    m_ChildNode := m_RootNode.AddChild('Font');
+    m_ChildNode.AddChild('ActiveSip').Text  := '10'; // Значение по умолчанию
+    m_ChildNode.AddChild('IVR').Text        := '10'; // Значение по умолчанию
+    m_ChildNode.AddChild('Queue').Text      := '10'; // Значение по умолчанию
 
-      // Добавляем узел <WindowState> и дочерний узел <State> (отвечает за состояние окна главной формы на весь экран или нет)
-      m_ChildNode := m_RootNode.AddChild('WindowState');
-      m_ChildNode.AddChild('State').Text      := 'wsMaximized'; // Значение по умолчанию
+    // Добавляем узел <WindowState> и дочерний узел <State> (отвечает за состояние окна главной формы на весь экран или нет)
+    m_ChildNode := m_RootNode.AddChild('WindowState');
+    m_ChildNode.AddChild('State').Text      := 'wsMaximized'; // Значение по умолчанию
 
-      // Сохраняем новый XML-документ
-      m_XMLDoc.SaveToFile(m_fileSettings);
-    finally
-      m_XMLDoc:=nil;
-    end;
- // finally
- //   m_mutex.Release;
- // end;
+    // Сохраняем новый XML-документ
+    m_XMLDoc.SaveToFile(m_fileSettings);
+  finally
+    m_XMLDoc:=nil;
+  end;
 end;
 
 // проверка существует ли новое значение
@@ -280,7 +285,7 @@ procedure TXML.checkExistNodeFields(inRootNode,InChildNode,inDefaultValue:string
 var
  InChildNodeRef:IXMLNode;
 begin
-  m_XMLDoc := LoadXMLDocument(m_fileSettings);
+  m_XMLDoc:=LoadMSXML(m_fileSettings);
   try
     m_RootNode := m_XMLDoc.DocumentElement;
 
@@ -336,7 +341,7 @@ begin
 
  // if m_mutex.WaitFor(INFINITE)=wrSignaled then
  // try
-    m_XMLDoc:= LoadXMLDocument(m_fileSettings);
+    m_XMLDoc:=LoadMSXML(m_fileSettings);
     try
       m_RootNode := m_XMLDoc.DocumentElement;
       m_ChildNode := m_RootNode.ChildNodes.FindNode('Versions').ChildNodes.FindNode('Current');
@@ -362,7 +367,7 @@ begin
 
  /// if m_mutex.WaitFor(INFINITE)=wrSignaled then
  // try
-    m_XMLDoc:= LoadXMLDocument(m_fileSettings);
+    m_XMLDoc:=LoadMSXML(m_fileSettings);
     try
       m_RootNode := m_XMLDoc.DocumentElement;
       m_ChildNode := m_RootNode.ChildNodes.FindNode('Versions').ChildNodes.FindNode('Remote');
@@ -386,7 +391,7 @@ procedure TXML.UpdateLastOnline;
 begin
  // if m_mutex.WaitFor(INFINITE) = wrSignaled then
  // try
-    m_XMLDoc := LoadXMLDocument(m_fileSettings);
+    m_XMLDoc := LoadMSXML(m_fileSettings);
     try
       // Пытаемся найти узел LastOnline
       m_ChildNode := m_XMLDoc.DocumentElement.ChildNodes.FindNode('LastOnline');
@@ -422,7 +427,7 @@ begin
 
 //  if m_mutex.WaitFor(INFINITE)=wrSignaled then
 //  try
-    m_XMLDoc:= LoadXMLDocument(m_fileSettings);
+    m_XMLDoc:=LoadMSXML(m_fileSettings);
 
     try
       m_RootNode := m_XMLDoc.DocumentElement;
@@ -451,7 +456,7 @@ begin
 
  // if m_mutex.WaitFor(INFINITE)=wrSignaled then
  // try
-    m_XMLDoc:= LoadXMLDocument(m_fileSettings);
+    m_XMLDoc:=LoadMSXML(m_fileSettings);
 
     try
       m_RootNode := m_XMLDoc.DocumentElement;
@@ -474,7 +479,7 @@ function TXML.GetLastOnline:TDateTime;
 begin
  // if m_mutex.WaitFor(INFINITE)=wrSignaled then
  // try
-    m_XMLDoc:= LoadXMLDocument(m_fileSettings);
+   m_XMLDoc:=LoadMSXML(m_fileSettings);
 
     try
       m_RootNode := m_XMLDoc.DocumentElement;
@@ -504,7 +509,7 @@ begin
   end;
 
   // Загружаем XML-документ
-  m_XMLDoc:= LoadXMLDocument(m_fileSettings);
+  m_XMLDoc:=LoadMSXML(m_fileSettings);
   try
     m_RootNode:= m_XMLDoc.DocumentElement;
 
@@ -530,7 +535,7 @@ begin
   // Проверяем наличие узла
   checkExistNodeFields('SMS', 'FolderPathFindRemember', Path);
 
-  m_XMLDoc := LoadXMLDocument(m_fileSettings);
+ m_XMLDoc := LoadMSXML(m_fileSettings);
   try
     m_RootNode := m_XMLDoc.DocumentElement;
     m_ChildNode := m_RootNode.ChildNodes.FindNode('SMS').ChildNodes.FindNode('FolderPathFindRemember');
@@ -557,7 +562,7 @@ begin
   end;
 
   // Загружаем XML-документ
-  m_XMLDoc:= LoadXMLDocument(m_fileSettings);
+  m_XMLDoc:=LoadMSXML(m_fileSettings);
   try
     m_RootNode:= m_XMLDoc.DocumentElement;
 
@@ -584,7 +589,7 @@ begin
   // Проверяем наличие узла
   checkExistNodeFields('Service', 'FolderPathService', Path);
 
-  m_XMLDoc := LoadXMLDocument(m_fileSettings);
+  m_XMLDoc := LoadMSXML(m_fileSettings);
   try
     m_RootNode := m_XMLDoc.DocumentElement;
     m_ChildNode := m_RootNode.ChildNodes.FindNode('Service').ChildNodes.FindNode('FolderPathService');
@@ -611,7 +616,7 @@ begin
   end;
 
   // Загружаем XML-документ
-  m_XMLDoc:= LoadXMLDocument(m_fileSettings);
+  m_XMLDoc:=LoadMSXML(m_fileSettings);
   try
     m_RootNode:= m_XMLDoc.DocumentElement;
 
@@ -637,7 +642,7 @@ begin
   // Проверяем наличие узла
   checkExistNodeFields('Font', EnumFontSizeToString(_font), IntToStr(_value));
 
-  m_XMLDoc := LoadXMLDocument(m_fileSettings);
+  m_XMLDoc := LoadMSXML(m_fileSettings);
   try
     m_RootNode := m_XMLDoc.DocumentElement;
     m_ChildNode := m_RootNode.ChildNodes.FindNode('Font').ChildNodes.FindNode(EnumFontSizeToString(_font));
@@ -664,7 +669,7 @@ begin
   end;
 
   // Загружаем XML-документ
-  m_XMLDoc:= LoadXMLDocument(m_fileSettings);
+  m_XMLDoc:=LoadMSXML(m_fileSettings);
   try
     m_RootNode:= m_XMLDoc.DocumentElement;
 
@@ -690,7 +695,7 @@ begin
  // Проверяем наличие узла
   checkExistNodeFields('WindowState', 'State', 'wsMaximized');
 
-  m_XMLDoc := LoadXMLDocument(m_fileSettings);
+  m_XMLDoc := LoadMSXML(m_fileSettings);
   try
     m_RootNode := m_XMLDoc.DocumentElement;
     m_ChildNode := m_RootNode.ChildNodes.FindNode('WindowState').ChildNodes.FindNode('State');
@@ -718,7 +723,7 @@ begin
   end;
 
   // Загружаем XML-документ
-  m_XMLDoc:= LoadXMLDocument(m_fileSettings);
+  m_XMLDoc:=LoadMSXML(m_fileSettings);
   try
     m_RootNode:= m_XMLDoc.DocumentElement;
 
@@ -744,7 +749,7 @@ begin
  // Проверяем наличие узла
   checkExistNodeFields('InfoMissedCallsShow', 'Show', 'true');
 
-  m_XMLDoc := LoadXMLDocument(m_fileSettings);
+  m_XMLDoc := LoadMSXML(m_fileSettings);
   try
     m_RootNode := m_XMLDoc.DocumentElement;
     m_ChildNode := m_RootNode.ChildNodes.FindNode('InfoMissedCallsShow').ChildNodes.FindNode('Show');
@@ -773,7 +778,7 @@ begin
   end;
 
   // Загружаем XML-документ
-  m_XMLDoc:= LoadXMLDocument(m_fileSettings);
+  m_XMLDoc:=LoadMSXML(m_fileSettings);
   try
     m_RootNode:= m_XMLDoc.DocumentElement;
 
@@ -800,7 +805,7 @@ begin
  // Проверяем наличие узла
   checkExistNodeFields('ActiveSessionConfirm', 'Show', 'true');
 
-  m_XMLDoc := LoadXMLDocument(m_fileSettings);
+  m_XMLDoc := LoadMSXML(m_fileSettings);
   try
     m_RootNode := m_XMLDoc.DocumentElement;
     m_ChildNode := m_RootNode.ChildNodes.FindNode('ActiveSessionConfirm').ChildNodes.FindNode('Show');
@@ -827,7 +832,7 @@ begin
   end;
 
   // Загружаем XML-документ
-  m_XMLDoc:= LoadXMLDocument(m_fileSettings);
+  m_XMLDoc:=LoadMSXML(m_fileSettings);
   try
     m_RootNode:= m_XMLDoc.DocumentElement;
 
@@ -879,7 +884,7 @@ begin
   checkExistNodeFields('PanelStatusOperatorPosition', 'X', '0');
   checkExistNodeFields('PanelStatusOperatorPosition', 'Y', '0');
 
-  m_XMLDoc := LoadXMLDocument(m_fileSettings);
+  m_XMLDoc := LoadMSXML(m_fileSettings);
   try
     m_RootNode := m_XMLDoc.DocumentElement;
     m_ChildNode := m_RootNode.ChildNodes.FindNode('PanelStatusOperatorPosition').ChildNodes.FindNode('X');
@@ -893,7 +898,7 @@ begin
     m_XMLDoc := nil;
   end;
 
-  m_XMLDoc := LoadXMLDocument(m_fileSettings);
+  m_XMLDoc := LoadMSXML(m_fileSettings);
   try
     m_RootNode := m_XMLDoc.DocumentElement;
     m_ChildNode := m_RootNode.ChildNodes.FindNode('PanelStatusOperatorPosition').ChildNodes.FindNode('Y');

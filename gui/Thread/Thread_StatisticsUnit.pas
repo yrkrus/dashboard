@@ -29,7 +29,7 @@ type
 implementation
 
 uses
-  DMUnit, FormHome, FunctionUnit, TCustomTypeUnit, GlobalVariables, TDebugStructUnit;
+  FormHome, FunctionUnit, TCustomTypeUnit, GlobalVariables, TDebugStructUnit;
 
 
 
@@ -68,11 +68,21 @@ procedure Thread_Statistics.show;
 begin
   if not CONNECT_BD_ERROR then begin
 
-    // обновляем даынне
-    p_SharedQueueStatistics.Update;
+    try
+      // обновляем даынне
+      p_SharedQueueStatistics.Update;
 
-    // отображаем данные
-    p_SharedQueueStatistics.Show;
+      // отображаем данные
+      p_SharedQueueStatistics.Show;
+    except
+      on E:Exception do
+      begin
+       messclass:=e.ClassName;
+       mess:=e.Message;
+
+       Synchronize(CriticalError);
+      end;
+    end;
   end;
 end;
 

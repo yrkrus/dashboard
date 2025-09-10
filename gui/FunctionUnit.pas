@@ -6,13 +6,12 @@ interface
     Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs, Registry,
     IniFiles, TlHelp32, IdBaseComponent, IdComponent, ShellAPI, StdCtrls, ComCtrls, ExtCtrls, WinSock,
     Math, IdHashCRC, Nb30, IdMessage, StrUtils, WinSvc, System.Win.ComObj, IdSMTP, IdText, IdSSL, IdSSLOpenSSL,
-    IdAttachmentFile, DMUnit, FormHome, Data.Win.ADODB, Data.DB, IdIcmpClient, IdException, System.DateUtils,
+    IdAttachmentFile, FormHome, Data.Win.ADODB, Data.DB, IdIcmpClient, IdException, System.DateUtils,
     FIBDatabase, pFIBDatabase, TCustomTypeUnit, TUserUnit, Vcl.Menus, GlobalVariables, GlobalVariablesLinkDLL,
     TActiveSIPUnit, System.IOUtils, TLogFileUnit, Vcl.Buttons, IdGlobal;
 
 
 procedure KillProcess;                                                               // принудительное завершение работы
-function GetStatistics_queue(InQueueNumber:enumQueue;InQueueType:enumQueueType):string;    // отображение инфо по очередеям
 function GetStatistics_day(inStatDay:enumStatistiscDay; _queue:enumQueue =queue_null):string;                      // отображение инфо за день
 procedure clearAllLists;                                                             // очистка всех list's
 procedure clearList_IVR(InFontSize:Word);                                            // отображение листа с текущими звонками
@@ -165,7 +164,7 @@ uses
   FormSettingsUnit, FormAuthUnit, FormErrorUnit, FormWaitUnit, Thread_AnsweredQueueUnit,
   FormUsersUnit, TTranslirtUnit, Thread_ACTIVESIP_updatetalkUnit, Thread_ACTIVESIP_updatePhoneTalkUnit,
   Thread_ACTIVESIP_countTalkUnit, Thread_ACTIVESIP_QueueUnit, FormActiveSessionUnit, TIVRUnit,
-  FormOperatorStatusUnit, TXmlUnit, TOnlineChat, Thread_ChatUnit, Thread_ForecastUnit,
+  TXmlUnit, TOnlineChat, Thread_ChatUnit, Thread_ForecastUnit,
   Thread_InternalProcessUnit, TActiveSessionUnit, FormTrunkSipUnit, Thread_CheckTrunkUnit, TStatusUnit;
 
  // логирование действий
@@ -775,42 +774,6 @@ begin
 end;
 
 
-// отображение инфо по очередеям
-function GetStatistics_queue(InQueueNumber:enumQueue;InQueueType:enumQueueType):string;
-var
- select_response:string;
- s:TStringList;
-begin
-  case InQueueType of
-
-    answered: begin    // отвеченные
-      select_response:='select count(phone) from queue where number_queue = '+#39+TQueueToString(InQueueNumber)+#39
-                                                                             +' and answered = ''1'' and sip <>''-1'' and hash is not null and date_time > '+#39+GetNowDateTime+#39;
-    end;
-    no_answered: begin  // не отвеченные
-      select_response:='select count(phone) from queue where number_queue = '+#39+TQueueToString(InQueueNumber)+#39
-                                                                             +' and fail = ''1'' and date_time > '+#39+GetNowDateTime+#39;
-    end;
-    no_answered_return: begin  // не отвеченные + вернувшиеся
-      select_response:='select count(distinct(phone)) from queue where number_queue='+#39+TQueueToString(InQueueNumber)+#39+
-                                                                ' and fail =''1'' and date_time >'+#39+GetNowDateTime+#39+
-                                                                ' and phone not in (select phone from queue where number_queue ='+#39+TQueueToString(InQueueNumber)+#39+
-                                                                ' and answered  = ''1'' and date_time > +'#39+GetNowDateTime+#39+')';
-
-
-    end;
-    all_answered:begin  // всего отвеченных
-      select_response:='select count(phone) from queue where number_queue = '+#39+TQueueToString(InQueueNumber)+#39
-                                                                             +' and date_time > '+#39+GetNowDateTime+#39;
-    end;
-  end;
-
-
-
-  Result:=IntToStr(GetSelectResponse(select_response));
-end;
-
-
 // отображение инфо за день
 function GetStatistics_day(inStatDay:enumStatistiscDay; _queue:enumQueue = queue_null):string;
 var
@@ -832,6 +795,7 @@ begin
   end;
 
  with HomeForm do begin
+
     case inStatDay of
       stat_answered:begin
        select_response:='select count(phone) from queue where number_queue in ('+all_queue+') and answered = ''1'' and sip <>''-1'' and hash is not null and date_time > '+#39+GetNowDateTime+#39;
@@ -2137,7 +2101,7 @@ begin
              ado.Next;
            end;
 
-           FormUsers.Caption:='Пользователи: '+IntToStr(countUsers);
+           FormUsers.Caption:='Пользователи: ['+IntToStr(countUsers)+']';
 
         end;
     end;
@@ -3312,7 +3276,7 @@ begin
    show_close: begin
      // устанавливаем нормальный размер панельки
      HomeForm.PanelStatusIN.Height:=cPanelStatusHeight_default;
-     FormOperatorStatus.Height:=FormOperatorStatus.cHeightStart;
+     //FormOperatorStatus.Height:=FormOperatorStatus.cHeightStart;
 
      Screen.Cursor:=crDefault;
      FormWait.Close;
@@ -3621,121 +3585,121 @@ begin
     end;
   end;
 
-  with FormOperatorStatus do begin
-    case InOperatorStatus of
-     eAvailable:begin    // доступен
-       btnStatus_exodus.Enabled:=True;
-       btnStatus_break.Enabled:=True;
-       btnStatus_dinner.Enabled:=True;
-       btnStatus_postvyzov.Enabled:=True;
-       btnStatus_studies.Enabled:=True;
-       btnStatus_IT.Enabled:=True;
-       btnStatus_transfer.Enabled:=True;
-       btnStatus_home.Enabled:=True;
-       btnStatus_reserve.Enabled:=True;
-     end;
-     eHome:begin    // домой
-       btnStatus_exodus.Enabled:=True;
-       btnStatus_break.Enabled:=True;
-       btnStatus_dinner.Enabled:=True;
-       btnStatus_postvyzov.Enabled:=True;
-       btnStatus_studies.Enabled:=True;
-       btnStatus_IT.Enabled:=True;
-       btnStatus_transfer.Enabled:=True;
-       btnStatus_home.Enabled:=False;
-       btnStatus_reserve.Enabled:=True;
-     end;
-     eExodus:begin    // исход
-       btnStatus_exodus.Enabled:=False;
-       btnStatus_break.Enabled:=True;
-       btnStatus_dinner.Enabled:=True;
-       btnStatus_postvyzov.Enabled:=True;
-       btnStatus_studies.Enabled:=True;
-       btnStatus_IT.Enabled:=True;
-       btnStatus_transfer.Enabled:=True;
-       btnStatus_home.Enabled:=True;
-       btnStatus_reserve.Enabled:=True;
-
-     end;
-     eBreak:begin    // перерыв
-       btnStatus_exodus.Enabled:=True;
-       btnStatus_break.Enabled:=False;
-       btnStatus_dinner.Enabled:=True;
-       btnStatus_postvyzov.Enabled:=True;
-       btnStatus_studies.Enabled:=True;
-       btnStatus_IT.Enabled:=True;
-       btnStatus_transfer.Enabled:=True;
-       btnStatus_home.Enabled:=True;
-       btnStatus_reserve.Enabled:=True;
-     end;
-     eDinner:begin   // обед
-       btnStatus_exodus.Enabled:=True;
-       btnStatus_break.Enabled:=True;
-       btnStatus_dinner.Enabled:=False;
-       btnStatus_postvyzov.Enabled:=True;
-       btnStatus_studies.Enabled:=True;
-       btnStatus_IT.Enabled:=True;
-       btnStatus_transfer.Enabled:=True;
-       btnStatus_home.Enabled:=True;
-       btnStatus_reserve.Enabled:=True;
-     end;
-     ePostvyzov:begin   // поствызов
-       btnStatus_exodus.Enabled:=True;
-       btnStatus_break.Enabled:=True;
-       btnStatus_dinner.Enabled:=True;
-       btnStatus_postvyzov.Enabled:=False;
-       btnStatus_studies.Enabled:=True;
-       btnStatus_IT.Enabled:=True;
-       btnStatus_transfer.Enabled:=True;
-       btnStatus_home.Enabled:=True;
-       btnStatus_reserve.Enabled:=True;
-     end;
-     eStudies:begin   // учеба
-       btnStatus_exodus.Enabled:=True;
-       btnStatus_break.Enabled:=True;
-       btnStatus_dinner.Enabled:=True;
-       btnStatus_postvyzov.Enabled:=True;
-       btnStatus_studies.Enabled:=False;
-       btnStatus_IT.Enabled:=True;
-       btnStatus_transfer.Enabled:=True;
-       btnStatus_home.Enabled:=True;
-       btnStatus_reserve.Enabled:=True;
-     end;
-     eIT:begin   // ИТ
-       btnStatus_exodus.Enabled:=True;
-       btnStatus_break.Enabled:=True;
-       btnStatus_dinner.Enabled:=True;
-       btnStatus_postvyzov.Enabled:=True;
-       btnStatus_studies.Enabled:=True;
-       btnStatus_IT.Enabled:=False;
-       btnStatus_transfer.Enabled:=True;
-       btnStatus_home.Enabled:=True;
-       btnStatus_reserve.Enabled:=True;
-     end;
-     eTransfer:begin  // переносы
-       btnStatus_exodus.Enabled:=True;
-       btnStatus_break.Enabled:=True;
-       btnStatus_dinner.Enabled:=True;
-       btnStatus_postvyzov.Enabled:=True;
-       btnStatus_studies.Enabled:=True;
-       btnStatus_IT.Enabled:=True;
-       btnStatus_transfer.Enabled:=False;
-       btnStatus_home.Enabled:=True;
-       btnStatus_reserve.Enabled:=True;
-     end;
-     eReserve:begin  // резерв
-       btnStatus_exodus.Enabled:=True;
-       btnStatus_break.Enabled:=True;
-       btnStatus_dinner.Enabled:=True;
-       btnStatus_postvyzov.Enabled:=True;
-       btnStatus_studies.Enabled:=True;
-       btnStatus_IT.Enabled:=True;
-       btnStatus_transfer.Enabled:=True;
-       btnStatus_home.Enabled:=True;
-       btnStatus_reserve.Enabled:=False;
-     end;
-    end;
-  end;
+//  with FormOperatorStatus do begin
+//    case InOperatorStatus of
+//     eAvailable:begin    // доступен
+//       btnStatus_exodus.Enabled:=True;
+//       btnStatus_break.Enabled:=True;
+//       btnStatus_dinner.Enabled:=True;
+//       btnStatus_postvyzov.Enabled:=True;
+//       btnStatus_studies.Enabled:=True;
+//       btnStatus_IT.Enabled:=True;
+//       btnStatus_transfer.Enabled:=True;
+//       btnStatus_home.Enabled:=True;
+//       btnStatus_reserve.Enabled:=True;
+//     end;
+//     eHome:begin    // домой
+//       btnStatus_exodus.Enabled:=True;
+//       btnStatus_break.Enabled:=True;
+//       btnStatus_dinner.Enabled:=True;
+//       btnStatus_postvyzov.Enabled:=True;
+//       btnStatus_studies.Enabled:=True;
+//       btnStatus_IT.Enabled:=True;
+//       btnStatus_transfer.Enabled:=True;
+//       btnStatus_home.Enabled:=False;
+//       btnStatus_reserve.Enabled:=True;
+//     end;
+//     eExodus:begin    // исход
+//       btnStatus_exodus.Enabled:=False;
+//       btnStatus_break.Enabled:=True;
+//       btnStatus_dinner.Enabled:=True;
+//       btnStatus_postvyzov.Enabled:=True;
+//       btnStatus_studies.Enabled:=True;
+//       btnStatus_IT.Enabled:=True;
+//       btnStatus_transfer.Enabled:=True;
+//       btnStatus_home.Enabled:=True;
+//       btnStatus_reserve.Enabled:=True;
+//
+//     end;
+//     eBreak:begin    // перерыв
+//       btnStatus_exodus.Enabled:=True;
+//       btnStatus_break.Enabled:=False;
+//       btnStatus_dinner.Enabled:=True;
+//       btnStatus_postvyzov.Enabled:=True;
+//       btnStatus_studies.Enabled:=True;
+//       btnStatus_IT.Enabled:=True;
+//       btnStatus_transfer.Enabled:=True;
+//       btnStatus_home.Enabled:=True;
+//       btnStatus_reserve.Enabled:=True;
+//     end;
+//     eDinner:begin   // обед
+//       btnStatus_exodus.Enabled:=True;
+//       btnStatus_break.Enabled:=True;
+//       btnStatus_dinner.Enabled:=False;
+//       btnStatus_postvyzov.Enabled:=True;
+//       btnStatus_studies.Enabled:=True;
+//       btnStatus_IT.Enabled:=True;
+//       btnStatus_transfer.Enabled:=True;
+//       btnStatus_home.Enabled:=True;
+//       btnStatus_reserve.Enabled:=True;
+//     end;
+//     ePostvyzov:begin   // поствызов
+//       btnStatus_exodus.Enabled:=True;
+//       btnStatus_break.Enabled:=True;
+//       btnStatus_dinner.Enabled:=True;
+//       btnStatus_postvyzov.Enabled:=False;
+//       btnStatus_studies.Enabled:=True;
+//       btnStatus_IT.Enabled:=True;
+//       btnStatus_transfer.Enabled:=True;
+//       btnStatus_home.Enabled:=True;
+//       btnStatus_reserve.Enabled:=True;
+//     end;
+//     eStudies:begin   // учеба
+//       btnStatus_exodus.Enabled:=True;
+//       btnStatus_break.Enabled:=True;
+//       btnStatus_dinner.Enabled:=True;
+//       btnStatus_postvyzov.Enabled:=True;
+//       btnStatus_studies.Enabled:=False;
+//       btnStatus_IT.Enabled:=True;
+//       btnStatus_transfer.Enabled:=True;
+//       btnStatus_home.Enabled:=True;
+//       btnStatus_reserve.Enabled:=True;
+//     end;
+//     eIT:begin   // ИТ
+//       btnStatus_exodus.Enabled:=True;
+//       btnStatus_break.Enabled:=True;
+//       btnStatus_dinner.Enabled:=True;
+//       btnStatus_postvyzov.Enabled:=True;
+//       btnStatus_studies.Enabled:=True;
+//       btnStatus_IT.Enabled:=False;
+//       btnStatus_transfer.Enabled:=True;
+//       btnStatus_home.Enabled:=True;
+//       btnStatus_reserve.Enabled:=True;
+//     end;
+//     eTransfer:begin  // переносы
+//       btnStatus_exodus.Enabled:=True;
+//       btnStatus_break.Enabled:=True;
+//       btnStatus_dinner.Enabled:=True;
+//       btnStatus_postvyzov.Enabled:=True;
+//       btnStatus_studies.Enabled:=True;
+//       btnStatus_IT.Enabled:=True;
+//       btnStatus_transfer.Enabled:=False;
+//       btnStatus_home.Enabled:=True;
+//       btnStatus_reserve.Enabled:=True;
+//     end;
+//     eReserve:begin  // резерв
+//       btnStatus_exodus.Enabled:=True;
+//       btnStatus_break.Enabled:=True;
+//       btnStatus_dinner.Enabled:=True;
+//       btnStatus_postvyzov.Enabled:=True;
+//       btnStatus_studies.Enabled:=True;
+//       btnStatus_IT.Enabled:=True;
+//       btnStatus_transfer.Enabled:=True;
+//       btnStatus_home.Enabled:=True;
+//       btnStatus_reserve.Enabled:=False;
+//     end;
+//    end;
+//  end;
 end;
 
 
@@ -4538,7 +4502,7 @@ end;
 // отображение оотдельного окна со статусами оператора
 procedure ShowOperatorsStatus;
 begin
-  FormOperatorStatus.show;
+ // FormOperatorStatus.show;
 
   with HomeForm do begin
     PanelStatus.Visible:=False;
@@ -5124,7 +5088,6 @@ function GetFreeSpaсeDrive(InDrive:string):int64;
 var
  FS:pLargeInteger;
  F,T: int64;
- tmp:string;
  Space:int64;
 begin
   InDrive:=Copy(InDrive,1,1);

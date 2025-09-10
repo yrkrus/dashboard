@@ -142,8 +142,8 @@
         <DCCReference Include="GlobalVariables.pas"/>
         <DCCReference Include="..\custom_class\TCustomTypeUnit.pas"/>
         <DCCReference Include="..\custom_class\TLogFileUnit.pas"/>
-        <DCCReference Include="..\gui\GlobalVariablesLinkDLL.pas"/>
         <DCCReference Include="FunctionUnit.pas"/>
+        <DCCReference Include="..\custom_global\GlobalVariablesLinkDLL.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -172,9 +172,10 @@
                 </Excluded_Packages>
             </Delphi.Personality>
             <Deployment Version="3">
-                <DeployFile LocalName="Win64\Debug\outgoing.rsm" Configuration="Debug" Class="DebugSymbols">
+                <DeployFile LocalName="ico\phone128.png" Configuration="Debug" Class="UWP_DelphiLogo150">
                     <Platform Name="Win64">
-                        <RemoteName>outgoing.rsm</RemoteName>
+                        <RemoteDir>Assets\</RemoteDir>
+                        <RemoteName>Logo150x150.png</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
@@ -191,16 +192,15 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="Win64\Debug\outgoing.exe" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName="Win64\Debug\outgoing.rsm" Configuration="Debug" Class="DebugSymbols">
                     <Platform Name="Win64">
-                        <RemoteName>outgoing.exe</RemoteName>
+                        <RemoteName>outgoing.rsm</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="ico\phone128.png" Configuration="Debug" Class="UWP_DelphiLogo150">
+                <DeployFile LocalName="Win64\Debug\outgoing.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win64">
-                        <RemoteDir>Assets\</RemoteDir>
-                        <RemoteName>Logo150x150.png</RemoteName>
+                        <RemoteName>outgoing.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>

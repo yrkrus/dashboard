@@ -6,8 +6,8 @@ uses
   GlobalVariables in 'GlobalVariables.pas',
   TCustomTypeUnit in '..\custom_class\TCustomTypeUnit.pas',
   TLogFileUnit in '..\custom_class\TLogFileUnit.pas',
-  GlobalVariablesLinkDLL in '..\gui\GlobalVariablesLinkDLL.pas',
-  FunctionUnit in 'FunctionUnit.pas';
+  FunctionUnit in 'FunctionUnit.pas',
+  GlobalVariablesLinkDLL in '..\custom_global\GlobalVariablesLinkDLL.pas';
 
 {$R *.res}
 

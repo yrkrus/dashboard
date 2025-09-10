@@ -11,7 +11,7 @@ uses
   Thread_ACTIVESIPUnit, Thread_StatisticsUnit,Thread_IVRUnit,Thread_AnsweredQueueUnit,
   Thread_QUEUEUnit, Thread_ACTIVESIP_QueueUnit, Thread_ACTIVESIP_updatetalkUnit,
   Thread_ACTIVESIP_updatePhoneTalkUnit, Thread_ACTIVESIP_countTalkUnit,
-  Thread_CheckTrunkUnit, Thread_InternalProcessUnit, TThreadDispatcherUnit;
+  Thread_CheckTrunkUnit, Thread_InternalProcessUnit, TThreadDispatcherUnit,TXmlUnit;
 
 
 type
@@ -336,12 +336,12 @@ var
 implementation
 
 uses
-    DMUnit, FunctionUnit, FormPropushennieUnit, FormSettingsUnit,
-    FormAboutUnit, FormOperatorStatusUnit, FormServerIKCheckUnit, FormAuthUnit,
-    FormActiveSessionUnit, FormRePasswordUnit, ReportsUnit,
-    FormDEBUGUnit, FormErrorUnit,GlobalVariables, FormUsersUnit, FormServersIKUnit, FormSettingsGlobalUnit,
-    FormTrunkUnit, TFTPUnit, TXmlUnit, FormStatisticsChartUnit, TForecastCallsUnit, FormStatusInfoUnit,
-    FormHistoryCallOperatorUnit, FormChatNewMessageUnit, TDebugStructUnit, FormHistoryStatusOperatorUnit,
+    FunctionUnit, FormPropushennieUnit, FormSettingsUnit,
+    FormAboutUnit, FormServerIKCheckUnit, FormAuthUnit,
+    FormActiveSessionUnit, FormRePasswordUnit, FormDEBUGUnit, FormErrorUnit,
+    GlobalVariables, FormUsersUnit, FormServersIKUnit, FormSettingsGlobalUnit,
+    FormTrunkUnit, TFTPUnit, TForecastCallsUnit, FormStatusInfoUnit,
+    FormHistoryCallOperatorUnit, TDebugStructUnit, FormHistoryStatusOperatorUnit,
     GlobalVariablesLinkDLL, TStatusUnit, FormTrunkSipUnit;
 
 
@@ -641,15 +641,34 @@ begin
 end;
 
 procedure THomeForm.Button1Click(Sender: TObject);
-var
-//  ScreenRect: TRect;
-//  TaskbarHeight: Integer;
-//
-//  FlashInfo: TFlashWindowInfo;
-//
-  test: string;
-
+//  var
+//  ld: PLDAP;
+//  rc: TLdapInt;
+//  opt: TLdapInt;
+//  resu:Boolean;
 begin
+
+
+//
+//  resu := False;
+//  ld := ldap_init(PAnsiChar(AnsiString('dialine.local')), 389);
+//  if ld = nil then Exit;
+//
+//  // Переключаемся на LDAPv3
+//  opt := LDAP_VERSION3;
+//  ldap_set_option(ld, LDAP_OPT_PROTOCOL_VERSION, opt);
+//
+//  // Пытаемся привязаться
+//  rc := ldap_simple_bind_s(ld,
+//    PAnsiChar(AnsiString('itus@dialine.local')),
+//    PAnsiChar(AnsiString('123456789')));
+//
+//  if rc = LDAP_SUCCESS then
+//    resu := True;
+//
+//  ldap_unbind(ld);
+
+
 
 //  // Получаем размеры рабочего стола с учетом панели задач
 //  SystemParametersInfo(SPI_GETWORKAREA, 0, @ScreenRect, 0);
@@ -678,7 +697,7 @@ begin
   // SharedCountResponseThread.Add(test);
   // SharedCountResponseThread.SetCurrentResponse('Thread_test',100);
 
-  CreateThreadDashboard(test);
+ // CreateThreadDashboard(test);
 
 end;
 
@@ -817,7 +836,6 @@ end;
 
 procedure THomeForm.FormShow(Sender: TObject);
 var
- i:Integer;
  error:string;
 begin
  try
@@ -835,18 +853,16 @@ begin
    // доступно ли ядро (в дебаг не проверяем)
    if not DEBUG then begin
      if not GetAliveCoreDashboard then begin
-      error:='Критическая ошибка! Недоступен TCP сервер дашборда'+#13+
-                                   '('+GetTCPServerAddress+':'+IntToStr(GetTCPServerPort)+')'+#13#13+
-                                   'Свяжитесь с отделом ИТ';
+      error:='Критическая ошибка! Недоступен TCP сервер'+#13+
+                                  '('+GetTCPServerAddress+' : '+IntToStr(GetTCPServerPort)+')'+#13#13+
+                                  'Свяжитесь с отделом ИТ';
       ShowFormErrorMessage(error,SharedMainLog,'THomeForm.FormShow');
      end;
    end;
 
-  // отображение текущей версии  ctrl+shift+G (GUID) - от этого ID зависит актуальность еще
+  // отображение текущей версии
   if DEBUG then Caption:='    ===== DEBUG | (base:'+GetDefaultDataBase+') =====    ' + Caption+' '+GetVersion(GUID_VERSION,eGUI) + ' | '+'('+GUID_VERSION+')'
   else Caption:=Caption+' '+GetVersion(GUID_VERSION,eGUI) + ' | '+'('+GUID_VERSION+')';
-
-
 
   // проверка на ткущую версию
   CheckCurrentVersion;
@@ -1209,7 +1225,7 @@ end;
 
 procedure THomeForm.img_statistics_QUEUEClick(Sender: TObject);
 begin
-  FormStatisticsChart.Show;
+ // FormStatisticsChart.Show;
 end;
 
 procedure THomeForm.img_UpFont_ActiveSIPClick(Sender: TObject);
@@ -1454,7 +1470,6 @@ end;
 procedure THomeForm.menu_clear_status_operatorClick(Sender: TObject);
 var
  resultat:word;
- CanClose: Boolean;
 begin
   resultat:=MessageBox(0,PChar('Сброс панели приведет к закрытию программы, сбрасываем?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
   if resultat=mrNo then begin

@@ -334,7 +334,6 @@ const
 
 var
  i,j:Integer;
- lblName:string;
  CodOshibki:string;
  viewErrors:Integer;
  connectBD_Firebird:Boolean;

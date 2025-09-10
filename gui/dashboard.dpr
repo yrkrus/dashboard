@@ -4,30 +4,7 @@ uses
   Vcl.Forms,
   FormHome in 'FormHome.pas' {HomeForm},
   FunctionUnit in 'FunctionUnit.pas',
-  FormPropushennieUnit in 'FormPropushennieUnit.pas' {FormPropushennie},
-  FormSettingsUnit in 'FormSettingsUnit.pas' {FormSettings},
-  FormAboutUnit in 'FormAboutUnit.pas' {FormAbout},
-  FormOperatorStatusUnit in 'FormOperatorStatusUnit.pas' {FormOperatorStatus},
-  FormServerIKCheckUnit in 'FormServerIKCheckUnit.pas' {FormServerIKCheck},
-  FormAuthUnit in 'FormAuthUnit.pas' {FormAuth},
-  FormActiveSessionUnit in 'FormActiveSessionUnit.pas' {FormActiveSession},
-  FormAddNewUsersUnit in 'FormAddNewUsersUnit.pas' {FormAddNewUsers},
-  FormRePasswordUnit in 'FormRePasswordUnit.pas' {FormRePassword},
-  FormErrorUnit in 'FormErrorUnit.pas' {FormError},
-  FormWaitUnit in 'FormWaitUnit.pas' {FormWait},
-  ReportsUnit in 'ReportsUnit.pas' {FormReports},
-  FormUsersUnit in 'FormUsersUnit.pas' {FormUsers},
-  FormServersIKUnit in 'FormServersIKUnit.pas' {FormServersIK},
-  FormServerIKEditUnit in 'FormServerIKEditUnit.pas' {FormServerIKEdit},
-  FormDEBUGUnit in 'FormDEBUGUnit.pas' {FormDEBUG},
-  FormSettingsGlobalUnit in 'FormSettingsGlobalUnit.pas' {FormSettingsGlobal},
-  FormSettingsGlobal_addIVRUnit in 'FormSettingsGlobal_addIVRUnit.pas' {FormSettingsGlobal_addIVR},
-  FormSettingsGlobal_listIVRUnit in 'FormSettingsGlobal_listIVRUnit.pas' {FormSettingsGlobal_listIVR},
-  FormTrunkUnit in 'FormTrunkUnit.pas' {FormTrunk},
-  FormTrunkEditUnit in 'FormTrunkEditUnit.pas' {FormTrunkEdit},
-  FormGlobalSettingCheckFirebirdConnectUnit in 'FormGlobalSettingCheckFirebirdConnectUnit.pas' {FormGlobalSettingCheckFirebirdConnect},
   GlobalVariables in 'GlobalVariables.pas',
-  FormStatisticsChartUnit in 'FormStatisticsChartUnit.pas' {FormStatisticsChart},
   TActiveSessionUnit in '..\custom_class\TActiveSessionUnit.pas',
   TActiveSIPUnit in '..\custom_class\TActiveSIPUnit.pas',
   TAnsweredQueueUnit in '..\custom_class\TAnsweredQueueUnit.pas',
@@ -56,32 +33,50 @@ uses
   Thread_ForecastUnit in 'Thread\Thread_ForecastUnit.pas',
   TInternalProcessUnit in '..\custom_class\TInternalProcessUnit.pas',
   Thread_InternalProcessUnit in 'Thread\Thread_InternalProcessUnit.pas',
-  FormStatusInfoUnit in 'FormStatusInfoUnit.pas' {FormStatusInfo},
   TSendSMSUint in '..\custom_class\TSendSMSUint.pas',
-  FormHistoryCallOperatorUnit in 'FormHistoryCallOperatorUnit.pas' {FormHistoryCallOperator},
   TFontSizeUnit in '..\custom_class\TFontSizeUnit.pas',
-  FormChatNewMessageUnit in 'FormChatNewMessageUnit.pas' {FormChatNewMessage},
   TDebugCountResponseUnit in '..\custom_class\debug_info\TDebugCountResponseUnit.pas',
   TDebugStructUnit in '..\custom_class\debug_info\TDebugStructUnit.pas',
-  FormHistoryStatusOperatorUnit in 'FormHistoryStatusOperatorUnit.pas' {FormHistoryStatusOperator},
   THistoryStatusOperatorsUnit in '..\custom_class\THistoryStatusOperatorsUnit.pas',
-  GlobalImageDestination in 'GlobalImageDestination.pas',
-  FormServerIKWorkingTimeUnit in 'FormServerIKWorkingTimeUnit.pas' {FormServerIKWorkingTime},
   TWorkingTimeClinicUnit in '..\custom_class\TWorkingTimeClinicUnit.pas',
-  FormMenuAccessUnit in 'FormMenuAccessUnit.pas' {FormMenuAccess},
   TUserAccessUnit in '..\custom_class\TUserAccessUnit.pas',
-  GlobalVariablesLinkDLL in 'GlobalVariablesLinkDLL.pas',
   TQueueStatisticsUnit in '..\custom_class\TQueueStatisticsUnit.pas',
   TThreadDispatcherUnit in '..\custom_class\TThreadDispatcherUnit.pas',
   TAutoPodborPeopleUnit in '..\custom_class\TAutoPodborPeopleUnit.pas',
-  FormPropushennieShowPeopleUnit in 'FormPropushennieShowPeopleUnit.pas' {FormPropushennieShowPeople},
   TStatusUnit in '..\custom_class\TStatusUnit.pas',
-  FormTrunkSipUnit in 'FormTrunkSipUnit.pas' {FormTrunkSip},
   TCheckSipTrunkUnit in '..\custom_class\TCheckSipTrunkUnit.pas',
   Thread_CheckTrunkUnit in 'Thread\Thread_CheckTrunkUnit.pas',
-  FormWorkTimeCallCenterUnit in 'FormWorkTimeCallCenterUnit.pas' {FormWorkTimeCallCenter},
   TWorkTimeCallCenterUnit in '..\custom_class\TWorkTimeCallCenterUnit.pas',
-  TCallInfoUnit in '..\custom_class\TCallInfoUnit.pas';
+  FormGlobalSettingCheckFirebirdConnectUnit in 'Forms\Settings\FormGlobalSettingCheckFirebirdConnectUnit.pas' {FormGlobalSettingCheckFirebirdConnect},
+  FormSettingsGlobal_addIVRUnit in 'Forms\Settings\FormSettingsGlobal_addIVRUnit.pas' {FormSettingsGlobal_addIVR},
+  FormSettingsGlobal_listIVRUnit in 'Forms\Settings\FormSettingsGlobal_listIVRUnit.pas' {FormSettingsGlobal_listIVR},
+  FormSettingsUnit in 'Forms\Settings\FormSettingsUnit.pas' {FormSettings},
+  FormSettingsGlobalUnit in 'Forms\Settings\FormSettingsGlobalUnit.pas' {FormSettingsGlobal},
+  FormUsersUnit in 'Forms\Users\FormUsersUnit.pas' {FormUsers},
+  FormAddNewUsersUnit in 'Forms\Users\FormAddNewUsersUnit.pas' {FormAddNewUsers},
+  FormHistoryCallOperatorUnit in 'Forms\PopMenu\FormHistoryCallOperatorUnit.pas' {FormHistoryCallOperator},
+  FormHistoryStatusOperatorUnit in 'Forms\PopMenu\FormHistoryStatusOperatorUnit.pas' {FormHistoryStatusOperator},
+  FormServerIKWorkingTimeUnit in 'Forms\Settings\FormServerIKWorkingTimeUnit.pas' {FormServerIKWorkingTime},
+  FormWorkTimeCallCenterUnit in 'Forms\Settings\FormWorkTimeCallCenterUnit.pas' {FormWorkTimeCallCenter},
+  FormServerIKEditUnit in 'Forms\ServerIK\FormServerIKEditUnit.pas' {FormServerIKEdit},
+  FormServersIKUnit in 'Forms\ServerIK\FormServersIKUnit.pas' {FormServersIK},
+  FormMenuAccessUnit in 'Forms\Settings\FormMenuAccessUnit.pas' {FormMenuAccess},
+  FormTrunkUnit in 'Forms\Trunk\FormTrunkUnit.pas' {FormTrunk},
+  FormTrunkEditUnit in 'Forms\Trunk\FormTrunkEditUnit.pas' {FormTrunkEdit},
+  FormPropushennieShowPeopleUnit in 'Forms\MisseedCall\FormPropushennieShowPeopleUnit.pas' {FormPropushennieShowPeople},
+  FormPropushennieUnit in 'Forms\MisseedCall\FormPropushennieUnit.pas' {FormPropushennie},
+  FormActiveSessionUnit in 'Forms\ActiveSession\FormActiveSessionUnit.pas' {FormActiveSession},
+  FormAboutUnit in 'FormSystem\FormAboutUnit.pas' {FormAbout},
+  FormAuthUnit in 'FormSystem\FormAuthUnit.pas' {FormAuth},
+  FormErrorUnit in 'FormSystem\FormErrorUnit.pas' {FormError},
+  FormDEBUGUnit in 'FormSystem\FormDEBUGUnit.pas' {FormDEBUG},
+  FormWaitUnit in 'FormSystem\FormWaitUnit.pas' {FormWait},
+  FormStatusInfoUnit in 'FormSystem\FormStatusInfoUnit.pas' {FormStatusInfo},
+  FormServerIKCheckUnit in 'Forms\FooterSubMenu\FormServerIKCheckUnit.pas' {FormServerIKCheck},
+  FormTrunkSipUnit in 'Forms\FooterSubMenu\FormTrunkSipUnit.pas' {FormTrunkSip},
+  GlobalImageDestination in '..\custom_global\GlobalImageDestination.pas',
+  GlobalVariablesLinkDLL in '..\custom_global\GlobalVariablesLinkDLL.pas',
+  FormRePasswordUnit in 'FormSystem\FormRePasswordUnit.pas' {FormRePassword};
 
 {$R *.res}
 
@@ -96,37 +91,35 @@ begin
   Application.HintPause:=100;
 
   Application.CreateForm(THomeForm, HomeForm);
-  Application.CreateForm(TFormDEBUG, FormDEBUG);
-  Application.CreateForm(TFormError, FormError);
-  Application.CreateForm(TFormPropushennie, FormPropushennie);
   Application.CreateForm(TFormSettings, FormSettings);
-  Application.CreateForm(TFormAbout, FormAbout);
-  Application.CreateForm(TFormOperatorStatus, FormOperatorStatus);
-  Application.CreateForm(TFormServerIKCheck, FormServerIKCheck);
-  Application.CreateForm(TFormAuth, FormAuth);
-  Application.CreateForm(TFormActiveSession, FormActiveSession);
-  Application.CreateForm(TFormAddNewUsers, FormAddNewUsers);
-  Application.CreateForm(TFormRePassword, FormRePassword);
-  Application.CreateForm(TFormWait, FormWait);
-  Application.CreateForm(TFormReports, FormReports);
   Application.CreateForm(TFormUsers, FormUsers);
-  Application.CreateForm(TFormServersIK, FormServersIK);
-  Application.CreateForm(TFormServerIKEdit, FormServerIKEdit);
   Application.CreateForm(TFormSettingsGlobal, FormSettingsGlobal);
   Application.CreateForm(TFormSettingsGlobal_addIVR, FormSettingsGlobal_addIVR);
   Application.CreateForm(TFormSettingsGlobal_listIVR, FormSettingsGlobal_listIVR);
-  Application.CreateForm(TFormTrunk, FormTrunk);
-  Application.CreateForm(TFormTrunkEdit, FormTrunkEdit);
   Application.CreateForm(TFormGlobalSettingCheckFirebirdConnect, FormGlobalSettingCheckFirebirdConnect);
-  Application.CreateForm(TFormStatisticsChart, FormStatisticsChart);
-  Application.CreateForm(TFormStatusInfo, FormStatusInfo);
+  Application.CreateForm(TFormAddNewUsers, FormAddNewUsers);
   Application.CreateForm(TFormHistoryCallOperator, FormHistoryCallOperator);
-  Application.CreateForm(TFormChatNewMessage, FormChatNewMessage);
   Application.CreateForm(TFormHistoryStatusOperator, FormHistoryStatusOperator);
   Application.CreateForm(TFormServerIKWorkingTime, FormServerIKWorkingTime);
-  Application.CreateForm(TFormMenuAccess, FormMenuAccess);
-  Application.CreateForm(TFormPropushennieShowPeople, FormPropushennieShowPeople);
-  Application.CreateForm(TFormTrunkSip, FormTrunkSip);
   Application.CreateForm(TFormWorkTimeCallCenter, FormWorkTimeCallCenter);
+  Application.CreateForm(TFormServerIKEdit, FormServerIKEdit);
+  Application.CreateForm(TFormServersIK, FormServersIK);
+  Application.CreateForm(TFormMenuAccess, FormMenuAccess);
+  Application.CreateForm(TFormTrunk, FormTrunk);
+  Application.CreateForm(TFormTrunk, FormTrunk);
+  Application.CreateForm(TFormTrunkEdit, FormTrunkEdit);
+  Application.CreateForm(TFormPropushennieShowPeople, FormPropushennieShowPeople);
+  Application.CreateForm(TFormPropushennie, FormPropushennie);
+  Application.CreateForm(TFormActiveSession, FormActiveSession);
+  Application.CreateForm(TFormAbout, FormAbout);
+  Application.CreateForm(TFormAuth, FormAuth);
+  Application.CreateForm(TFormError, FormError);
+  Application.CreateForm(TFormDEBUG, FormDEBUG);
+  Application.CreateForm(TFormWait, FormWait);
+  Application.CreateForm(TFormStatusInfo, FormStatusInfo);
+  Application.CreateForm(TFormServerIKCheck, FormServerIKCheck);
+  Application.CreateForm(TFormTrunkSip, FormTrunkSip);
+  Application.CreateForm(TFormRePassword, FormRePassword);
   Application.Run;
+end.
 end.

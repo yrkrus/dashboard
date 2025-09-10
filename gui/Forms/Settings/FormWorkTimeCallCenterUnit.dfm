@@ -130,7 +130,7 @@ object FormWorkTimeCallCenter: TFormWorkTimeCallCenter
     OnClick = btnSaveWorkTimeClick
   end
   object SE_start: TSpinEdit
-    Left = 131
+    Left = 129
     Top = 8
     Width = 49
     Height = 26

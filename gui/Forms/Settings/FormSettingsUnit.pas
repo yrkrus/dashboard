@@ -24,7 +24,7 @@ var
 implementation
 
 uses
-  FunctionUnit, DMUnit, FormAddNewUsersUnit, FormHome, FormUsersUnit, FormServersIKUnit, FormSettingsGlobalUnit, FormTrunkUnit;
+  FunctionUnit, FormAddNewUsersUnit, FormHome, FormUsersUnit, FormServersIKUnit, FormSettingsGlobalUnit, FormTrunkUnit;
 
 {$R *.dfm}
 

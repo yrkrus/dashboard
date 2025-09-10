@@ -381,7 +381,6 @@ procedure TFormHistoryCallOperator.AddListItem(const id, dateTime, trunk, phone,
 var
   ListItem: TListItem;
   time_talk: Integer;
-  bitmap: TBitmap;
 begin
   ListItem := p_ListView.Items.Add;
   ListItem.Caption := id;               // id

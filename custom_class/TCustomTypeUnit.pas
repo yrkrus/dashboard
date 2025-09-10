@@ -327,7 +327,8 @@ interface
                         tree_queue,            // корректировка времени
                         tree_firebird,         // пароль firebird
                         tree_sms,              // настройка sms
-                        tree_access            // разграничение прав групп на меню
+                        tree_access,           // разграничение прав групп на меню
+                        tree_ldap              // LDAP
                       );
 
     type // параметры дней недели
@@ -1243,6 +1244,7 @@ begin
     tree_firebird:  Result:='Пароль firebird';
     tree_sms:       Result:='Настройка SMS';
     tree_access:    Result:='Права групп на меню';
+    tree_ldap:      Result:='Настройка LDAP';
   end;
 end;
 

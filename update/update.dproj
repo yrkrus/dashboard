@@ -172,8 +172,8 @@
         <VerInfo_Locale>1033</VerInfo_Locale>
         <Icon_MainIcon>ico\cloudrefresh_icon-icons.com_54403.ico</Icon_MainIcon>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
-        <VerInfo_Build>99</VerInfo_Build>
-        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.11.0.99;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=0.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Build>100</VerInfo_Build>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.11.0.100;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=0.0.0.0;Comments=</VerInfo_Keys>
         <VerInfo_MinorVer>11</VerInfo_MinorVer>
     </PropertyGroup>
     <ItemGroup>
@@ -189,8 +189,8 @@
         <DCCReference Include="..\custom_class\TCustomTypeUnit.pas"/>
         <DCCReference Include="..\custom_class\TLogFileUnit.pas"/>
         <DCCReference Include="..\custom_class\TFTPUnit.pas"/>
-        <DCCReference Include="..\gui\GlobalVariablesLinkDLL.pas"/>
         <DCCReference Include="..\custom_class\TThreadDispatcherUnit.pas"/>
+        <DCCReference Include="..\custom_global\GlobalVariablesLinkDLL.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

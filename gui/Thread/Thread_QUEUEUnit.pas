@@ -131,12 +131,15 @@ begin
       end;
 
 
-    finally
-     // ListViewQueue.Items.EndUpdate;
-      //ListViewQueue.Visible := True;
+    except
+      on E:Exception do
+      begin
+       messclass:=e.ClassName;
+       mess:=e.Message;
+
+       Synchronize(CriticalError);
+      end;
     end;
-
-
   end;
 end;
 

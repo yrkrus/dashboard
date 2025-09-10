@@ -44,7 +44,7 @@ type
 implementation
 
 uses
-  FunctionUnit, FormHome, GlobalVariables, FormOperatorStatusUnit, TCustomTypeUnit, TXmlUnit, TDebugStructUnit;
+  FunctionUnit, FormHome, GlobalVariables, TCustomTypeUnit, TXmlUnit, TDebugStructUnit;
 
 
 constructor Thread_ACTIVESIP.Create;
@@ -139,7 +139,7 @@ begin
              HomeForm.lblCurrentStatus.Caption:='---';
 
              // для отвязанонй формы
-             FormOperatorStatus.Caption:='Текущий статус: ---';
+            // FormOperatorStatus.Caption:='Текущий статус: ---';
             end;
          end
          else begin // доступа к дашборду нет значит это  тип "операторы (доступ без дашборда)"
@@ -219,10 +219,10 @@ begin
                                       +' ('+getLastStatusTime(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i))), p_ActiveSipOperators.GetListOperators_Status(i))
                                       +')';
 
-            // для отвязанонй формы
-            FormOperatorStatus.Caption:='Текущий статус: '+getStatus(p_ActiveSipOperators.GetListOperators_Status(i))
-                                      +' ('+getLastStatusTime(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i))), p_ActiveSipOperators.GetListOperators_Status(i))
-                                      +')';
+//            // для отвязанонй формы
+//            FormOperatorStatus.Caption:='Текущий статус: '+getStatus(p_ActiveSipOperators.GetListOperators_Status(i))
+//                                      +' ('+getLastStatusTime(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i))), p_ActiveSipOperators.GetListOperators_Status(i))
+//                                      +')';
 
             // скрываем\отображаем кнопки статусов в зависимости от текущего статуса оператора
             checkCurrentStatusOperator(p_ActiveSipOperators.GetListOperators_Status(i));
@@ -325,7 +325,7 @@ begin
                  HomeForm.lblCurrentStatus.Caption:='---';
 
                  // для отвязанонй формы
-                 FormOperatorStatus.Caption:='Текущий статус: ---';
+                // FormOperatorStatus.Caption:='Текущий статус: ---';
               end;
            end
            else begin // доступа к дашборду нет значит это  тип "операторы (доступ без дашборда)"
@@ -406,9 +406,9 @@ begin
                                         +' ('+getLastStatusTime(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i))), p_ActiveSipOperators.GetListOperators_Status(i))
                                         +')';
              // для отвязанонй формы
-             FormOperatorStatus.Caption:='Текущий статус: '+getStatus(p_ActiveSipOperators.GetListOperators_Status(i))
-                                        +' ('+getLastStatusTime(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i))), p_ActiveSipOperators.GetListOperators_Status(i))
-                                        +')';
+//             FormOperatorStatus.Caption:='Текущий статус: '+getStatus(p_ActiveSipOperators.GetListOperators_Status(i))
+//                                        +' ('+getLastStatusTime(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i))), p_ActiveSipOperators.GetListOperators_Status(i))
+//                                        +')';
 
               // скрываем\отображаем кнопки статусов в зависимости от текущего статуса оператора
               checkCurrentStatusOperator(p_ActiveSipOperators.GetListOperators_Status(i));
@@ -489,70 +489,73 @@ var
 begin
   with HomeForm do begin
 
-    countActiveSipOperators:=p_ActiveSipOperators.getCountSipOperators;
+    try
+      countActiveSipOperators:=p_ActiveSipOperators.getCountSipOperators;
 
-     if countActiveSipOperators = 0 then begin
-       STlist_ACTIVESIP_NO_Rings.Visible:=True;
-     end
-     else begin
-       STlist_ACTIVESIP_NO_Rings.Visible:=False;
-     end;
-
-     // ListViewSIP.Items.BeginUpdate;
-     // ListViewSIP.Columns[0].Width:= 0; // Установка ширины в 0 в редких вариантах почему то он без этого параметра оборажается
-
-      // Очищаем ListView перед добавлением новых элементов
-     // ListViewSIP.Clear;
+       if countActiveSipOperators = 0 then begin
+         STlist_ACTIVESIP_NO_Rings.Visible:=True;
+       end
+       else begin
+         STlist_ACTIVESIP_NO_Rings.Visible:=False;
+       end;
 
 
-      // Проходим по всем операторам
-      for i:=0 to countActiveSipOperators-1 do
-      begin
-        idToFind := p_ActiveSipOperators.GetListOperators_SipNumber(i);
-        existingItem := nil;
-
-        // Поиск существующего элемента по id
-        for ListItem in ListViewSIP.Items do
+        // Проходим по всем операторам
+        for i:=0 to countActiveSipOperators-1 do
         begin
-          if ListItem.Caption = idToFind then
+          idToFind := p_ActiveSipOperators.GetListOperators_SipNumber(i);
+          existingItem := nil;
+
+          // Поиск существующего элемента по id
+          for ListItem in ListViewSIP.Items do
           begin
-            existingItem := ListItem;
-            Break;
+            if ListItem.Caption = idToFind then
+            begin
+              existingItem := ListItem;
+              Break;
+            end;
+          end;
+
+          if existingItem = nil then
+          begin
+            // Элемент не найден, добавляем новый
+            ListItem:=CreateListSubMenuItems(p_ActiveSipOperators, i, ListViewSIP);
+          end
+          else
+          begin
+            // Обновляем существующий элемент
+            UpdateListSubMenuItems(p_ActiveSipOperators, i, existingItem);
           end;
         end;
 
-        if existingItem = nil then
-        begin
-          // Элемент не найден, добавляем новый
-          ListItem:=CreateListSubMenuItems(p_ActiveSipOperators, i, ListViewSIP);
-        end
-        else
-        begin
-          // Обновляем существующий элемент
-          UpdateListSubMenuItems(p_ActiveSipOperators, i, existingItem);
-        end;
-      end;
+        // отображаем кол-во активных\свободных операторов
+         p_ActiveSipOperators.showActiveAndFreeOperatorsForm;
 
-      // отображаем кол-во активных\свободных операторов
-       p_ActiveSipOperators.showActiveAndFreeOperatorsForm;
-
-      // Удаляем элементы, которые отсутствуют в новых данных
-      for i:= ListViewSIP.Items.Count - 1 downto 0 do
-      begin
-         if not p_ActiveSipOperators.isExistOperator(ListViewSIP.Items[i].Caption) then
-         begin
-           try
-             ListViewSIP.Items.Delete(i);
-           except
-            on E:Exception do
-            begin
-             Log.Save(e.ClassName+' : '+E.Message, IS_ERROR);
-            end;
+        // Удаляем элементы, которые отсутствуют в новых данных
+        for i:= ListViewSIP.Items.Count - 1 downto 0 do
+        begin
+           if not p_ActiveSipOperators.isExistOperator(ListViewSIP.Items[i].Caption) then
+           begin
+             try
+               ListViewSIP.Items.Delete(i);
+             except
+              on E:Exception do
+              begin
+               Log.Save(e.ClassName+' : '+E.Message, IS_ERROR);
+              end;
+             end;
            end;
-         end;
+        end;
+
+     except
+      on E:Exception do
+      begin
+       messclass:=e.ClassName;
+       mess:=e.Message;
+
+       Synchronize(CriticalError);
       end;
-
-
+    end;
   end;
 end;
 

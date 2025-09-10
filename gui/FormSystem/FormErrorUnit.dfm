@@ -601,7 +601,7 @@ object FormError: TFormError
     Stretch = True
   end
   object lblTime: TLabel
-    Left = 13
+    Left = 11
     Top = 276
     Width = 475
     Height = 18
@@ -719,11 +719,11 @@ object FormError: TFormError
     OnClick = btnForceUpdateClick
   end
   object btnClose: TBitBtn
-    Left = 8
+    Left = 7
     Top = 295
     Width = 480
     Height = 47
-    Caption = '&'#1047#1072#1082#1088#1099#1090#1100' '#1076#1072#1096#1073#1086#1088#1076
+    Caption = '&'#1047#1072#1082#1088#1099#1090#1100' '#1087#1088#1086#1075#1088#1072#1084#1084#1091
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
@@ -804,7 +804,7 @@ object FormError: TFormError
     OnClick = btnCloseClick
   end
   object Panel1: TPanel
-    Left = 8
+    Left = 7
     Top = 177
     Width = 479
     Height = 99

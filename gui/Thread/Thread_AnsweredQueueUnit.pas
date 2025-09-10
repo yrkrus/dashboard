@@ -67,24 +67,36 @@ begin
     // проверяем вдруг надо обновить всю статистку
     // такое случается если изменить настроки корреткировки ожидания в очереди
    with p_AnsweredQueue do begin
-      if StrToInt(GetStatistics_day(stat_summa))<>0 then begin
-          if updateAnsweredNow then begin
-             Clear;
-          end;
 
-          if isExistNewAnswered then begin
-             // обновление отвеченных
-             UpdateAnswered;
-             showAnswered;
+      try
+        if StrToInt(GetStatistics_day(stat_summa))<>0 then begin
+            if updateAnsweredNow then begin
+               Clear;
+            end;
 
-             // обновление SL
-             UpdateSL;
-             ShowSL;
-          end;
-      end
-      else begin
-         updateAnsweredNow:=True;
-         Clear;
+            if isExistNewAnswered then begin
+               // обновление отвеченных
+               UpdateAnswered;
+               showAnswered;
+
+               // обновление SL
+               UpdateSL;
+               ShowSL;
+            end;
+        end
+        else begin
+           updateAnsweredNow:=True;
+           Clear;
+        end;
+
+       except
+        on E:Exception do
+        begin
+         messclass:=e.ClassName;
+         mess:=e.Message;
+
+         Synchronize(CriticalError);
+        end;
       end;
    end;
   end;

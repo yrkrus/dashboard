@@ -198,7 +198,6 @@ procedure TCheckServersIK.CreateListServers(isShowSMS:Boolean);
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
- CodOshibki:string;
  countServers:Integer;
  i:Integer;
  response:string;
@@ -289,12 +288,12 @@ end;
 
 procedure TCheckServersIK.CheckServerPing;
 var
- i,j:Integer;
- countServers:Integer;
- checkIP:string;
- lblName:string;
+ i:Integer;
+// countServers:Integer;
+ //checkIP:string;
+// lblName:string;
  CodOshibki:string;
- viewErrors:Integer;
+// viewErrors:Integer;
  allCount:Integer;
 begin
 

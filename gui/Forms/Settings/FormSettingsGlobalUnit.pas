@@ -6,7 +6,8 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ExtCtrls,
   Vcl.ComCtrls,FunctionUnit, Data.Win.ADODB, Data.DB, IdException,
-  System.ImageList, Vcl.ImgList, TCustomTypeUnit, TWorkTimeCallCenterUnit;
+  System.ImageList, Vcl.ImgList, TCustomTypeUnit, TWorkTimeCallCenterUnit,
+  Vcl.Samples.Spin;
 
 
 
@@ -55,6 +56,14 @@ type
     Label10: TLabel;
     lblWorkTimeCallCenterStop: TLabel;
     btnEditWorkingTimeCallCentre: TBitBtn;
+    panel_ldap: TPanel;
+    BitBtn1: TBitBtn;
+    BitBtn3: TBitBtn;
+    GroupBox4: TGroupBox;
+    Label11: TLabel;
+    edtLdapHost: TEdit;
+    Label12: TLabel;
+    SE_LdapPort: TSpinEdit;
     procedure FormShow(Sender: TObject);
     procedure btnAddServerClick(Sender: TObject);
     procedure LoadSettings;
@@ -113,6 +122,7 @@ begin
    panel_firebird.Visible:=False;
    panel_sms.Visible:=False;
    panel_access.Visible:=False;
+   panel_ldap.Visible:=False;
 
    case _tree  of
     tree_queue: begin
@@ -126,6 +136,9 @@ begin
     end;
     tree_access:begin
       currentPanel:=panel_access;
+    end;
+    tree_ldap:begin
+      currentPanel:=panel_ldap;
     end;
    end;
 

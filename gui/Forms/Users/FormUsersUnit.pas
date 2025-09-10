@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Grids, Vcl.ComCtrls, Vcl.StdCtrls,
-  Vcl.Buttons;
+  Vcl.Buttons, Vcl.ExtCtrls;
 
 type
   TFormUsers = class(TForm)
@@ -21,6 +21,9 @@ type
     listSG_Operators_Footer: TStringGrid;
     chkboxViewDisabled: TCheckBox;
     btnEnable: TBitBtn;
+    panel_Users: TPanel;
+    list_Users: TListView;
+    st_NoUsers: TStaticText;
     procedure FormShow(Sender: TObject);
     procedure btnShowUsersClick(Sender: TObject);
     procedure PageControlChange(Sender: TObject);
@@ -37,6 +40,13 @@ type
   private
     { Private declarations }
    currentEditUserId:string;
+
+  procedure LoadData;
+  procedure ClearListView(var p_ListView:TListView);
+  procedure AddListItem(const id, dateTime, sip, phone, numberQueue, talkTime: string;
+                                isReducedTime: Boolean;
+                                var p_ListView: TListView);
+
 
   public
 
@@ -94,6 +104,127 @@ begin
    loadPanel_Operators;
 
   end;
+end;
+
+procedure TFormUsers.LoadData;
+begin
+   ClearListView(list_Users);
+end;
+
+procedure TFormUsers.ClearListView(var p_ListView:TListView);
+const
+ cWidth_default       :Word = 950;
+ cWidth_id            :Word = 3;
+ cWidth_auth          :Word = 10;
+ cWidth_fio           :Word = 10;
+ cWidth_group         :Word = 10;
+ cWidth_access_report :Word = 10;
+ cWidth_access_chat   :Word = 10;
+ cWidth_access_sms    :Word = 10;
+ cWidth_access_call   :Word = 10;
+ cWidth_last_enter    :Word = 10;
+begin
+ with p_ListView do begin
+
+    Items.Clear;
+    Columns.Clear;
+    ViewStyle:= vsReport;
+
+    with Columns.Add do
+    begin
+      Caption:='ID';
+      Width:=Round((cWidth_default*cWidth_id)/100);
+      Alignment:=taCenter;
+    end;
+
+    with Columns.Add do
+    begin
+      Caption:='Авторизация';
+      Width:=Round((cWidth_default*cWidth_auth)/100);
+      Alignment:=taCenter;
+    end;
+
+    with Columns.Add do
+    begin
+      Caption:=' Фамилия Имя ';
+      Width:=Round((cWidth_default*cWidth_fio)/100);
+      Alignment:=taCenter;
+    end;
+
+
+
+    with Columns.Add do
+    begin
+      Caption:=' Группа ';
+      Width:=Round((cWidth_default*cWidth_group)/100);
+      Alignment:=taCenter;
+    end;
+
+    with Columns.Add do
+    begin
+      Caption:=' Отчеты ';
+      Width:=Round((cWidth_default*cWidth_access_report)/100);
+      Alignment:=taCenter;
+    end;
+
+     with Columns.Add do
+    begin
+      Caption:=' Чат ';
+      Width:=Round((cWidth_default*cWidth_access_chat)/100);
+      Alignment:=taCenter;
+    end;
+
+    with Columns.Add do
+    begin
+      Caption:=' SMS ';
+      Width:=Round((cWidth_default*cWidth_access_sms)/100);
+      Alignment:=taCenter;
+    end;
+
+    with Columns.Add do
+    begin
+      Caption:=' Звонки ';
+      Width:=Round((cWidth_default*cWidth_access_call)/100);
+      Alignment:=taCenter;
+    end;
+
+    with Columns.Add do
+    begin
+      Caption:=' Вход ';
+      Width:=Round((cWidth_default*cWidth_last_enter)/100);
+      Alignment:=taCenter;
+    end;
+ end;
+end;
+
+
+procedure TFormUsers.AddListItem(const id, dateTime, sip, phone, numberQueue, talkTime: string;
+                                        isReducedTime: Boolean;
+                                        var p_ListView: TListView);
+var
+  ListItem: TListItem;
+  time_talk: Integer;
+begin
+  ListItem := p_ListView.Items.Add;
+  ListItem.Caption := id;      // id
+  ListItem.SubItems.Add(dateTime); // дата время
+  ListItem.SubItems.Add(sip);     // sip
+  ListItem.SubItems.Add(phone);   // номер телефона
+  ListItem.SubItems.Add(numberQueue); // очередь
+
+
+  // Получаем время разговора
+  if isReducedTime then
+  begin
+    ListItem.SubItems.Add(Copy(VarToStr(talkTime), 4, 5));
+    time_talk := GetTimeAnsweredToSeconds(Copy(VarToStr(talkTime), 4, 5), True);
+  end
+  else
+  begin
+    ListItem.SubItems.Add(VarToStr(talkTime));
+    time_talk := GetTimeAnsweredToSeconds(VarToStr(talkTime), False);
+  end;
+
 end;
 
 procedure TFormUsers.btnDisableClick(Sender: TObject);
@@ -239,6 +370,10 @@ begin
   // текущий выбранный пользак
   currentEditUserId:='';
 
+
+  LoadData;
+
+//
   LoadSettings;
   LoadSettingsLogic;
 

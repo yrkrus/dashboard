@@ -133,12 +133,12 @@
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="GlobalVariables.pas"/>
-        <DCCReference Include="..\gui\GlobalVariablesLinkDLL.pas"/>
         <DCCReference Include="..\custom_class\TCustomTypeUnit.pas"/>
         <DCCReference Include="FunctionUnit.pas"/>
         <DCCReference Include="..\custom_class\TXmlUnit.pas"/>
         <DCCReference Include="..\custom_class\TServiceUnit.pas"/>
-        <DCCReference Include="..\gui\FormWaitUnit.pas">
+        <DCCReference Include="..\custom_global\GlobalVariablesLinkDLL.pas"/>
+        <DCCReference Include="..\gui\FormSystem\FormWaitUnit.pas">
             <Form>FormWait</Form>
             <FormType>dfm</FormType>
         </DCCReference>
