@@ -1146,7 +1146,7 @@ end;
 
             if Fields[0].Value <> null then begin
               if countQueue = 1 then begin
-                 tempQueue:=StringToEnumQueueCurrent(VarToStr(Fields[0].Value));
+                 tempQueue:=StringToEnumQueue(VarToStr(Fields[0].Value));
               end
               else tempQueue:=queue_5000_5050;
             end;

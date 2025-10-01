@@ -448,7 +448,7 @@ procedure TFormPropushennie.combox_QueueFilterChange(Sender: TObject);
 var
  queue:enumQueue;
 begin
-  queue:=StringToEnumQueueCurrent(combox_QueueFilter.Text);
+  queue:=StringToEnumQueue(combox_QueueFilter.Text);
   m_queueStart    :=queue;
   m_missedStart   :=eMissed_no_return;
 
@@ -555,8 +555,11 @@ end;
 procedure TFormPropushennie.CreateComboxChoiseQueue;
 begin
   combox_QueueFilter.Clear;
-  combox_QueueFilter.Items.Add(EnumQueueCurrentToString(queue_5000));
-  combox_QueueFilter.Items.Add(EnumQueueCurrentToString(queue_5050));
+
+  // TODO в зависимости от того к акаим очередям есть доступ у пользака их и показывать (это на будущее)
+  combox_QueueFilter.Items.Add(EnumQueueToString(queue_5000));
+  combox_QueueFilter.Items.Add(EnumQueueToString(queue_5050));
+  combox_QueueFilter.Items.Add(EnumQueueToString(queue_5911));
 
   combox_QueueFilter.ItemIndex:=EnumQueueCurrentToInteger(m_queueStart);
 end;

@@ -109,8 +109,11 @@ begin
 
           ListItem.SubItems.Add(p_listQueue.listActiveQueue[i].phone); // номер телефона
 
-          correct_time:=correctTimeQueue(StringToTQueue(p_listQueue.listActiveQueue[i].waiting_time_start),p_listQueue.listActiveQueue[i].waiting_time_start);
-          if correct_time<>'null' then ListItem.SubItems.Add(correct_time); // Время ожидания
+          // корректировака времени чтобы не брать время из IVR
+          if CorrectTimeQueue(StringToTQueue(p_listQueue.listActiveQueue[i].waiting_time_start),p_listQueue.listActiveQueue[i].waiting_time_start,
+                              correct_time) then begin
+            ListItem.SubItems.Add(correct_time); // Время ожидания
+          end;
 
           ListItem.SubItems.Add(p_listQueue.listActiveQueue[i].queue); // очередь
 
@@ -119,8 +122,10 @@ begin
         end
         else
         begin
-          correct_time:=correctTimeQueue(StringToTQueue(p_listQueue.listActiveQueue[i].waiting_time_start),p_listQueue.listActiveQueue[i].waiting_time_start);
-          if correct_time<>'null' then existingItem.SubItems[1] := correct_time; // Время ожидания
+          if CorrectTimeQueue(StringToTQueue(p_listQueue.listActiveQueue[i].waiting_time_start),p_listQueue.listActiveQueue[i].waiting_time_start,
+                                              correct_time) then begin
+            existingItem.SubItems[1] := correct_time; // Время ожидания
+          end;
         end;
       end;
 

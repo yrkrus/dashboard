@@ -11,12 +11,7 @@ unit GlobalVariables;
 interface
 
 uses
-  SysUtils,
-  Windows,
-  Classes,
-  TCustomTypeUnit,
-  TLogFileUnit,
-  TMessageGeneratorSMSUnit,
+  SysUtils, Windows, Classes, TCustomTypeUnit, TLogFileUnit, TMessageGeneratorSMSUnit,
   TPacientsListUnit;
 
 

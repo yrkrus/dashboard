@@ -5493,20 +5493,22 @@
       Visible = False
     end
     object lblDEBUG: TLabel
-      Left = 257
+      Left = 258
       Top = 5
-      Width = 72
-      Height = 13
+      Width = 67
+      Height = 11
+      Alignment = taRightJustify
       Caption = 'DEBUG MODE'
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clRed
-      Font.Height = -11
+      Font.Height = -9
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
       ParentShowHint = False
       ShowHint = True
       Visible = False
+      WordWrap = True
     end
     object lblUserAuth: TLabel
       Left = 23

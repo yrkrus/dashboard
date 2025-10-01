@@ -7,7 +7,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ExtCtrls,
   Vcl.ComCtrls,FunctionUnit, Data.Win.ADODB, Data.DB, IdException,
   System.ImageList, Vcl.ImgList, TCustomTypeUnit, TWorkTimeCallCenterUnit,
-  Vcl.Samples.Spin;
+  Vcl.Samples.Spin,TIVRTimeUnit;
 
 
 
@@ -57,13 +57,19 @@ type
     lblWorkTimeCallCenterStop: TLabel;
     btnEditWorkingTimeCallCentre: TBitBtn;
     panel_ldap: TPanel;
-    BitBtn1: TBitBtn;
-    BitBtn3: TBitBtn;
+    btnSaveLdapSettings: TBitBtn;
+    btn_CheckLdap: TBitBtn;
     GroupBox4: TGroupBox;
     Label11: TLabel;
     edtLdapHost: TEdit;
     Label12: TLabel;
     SE_LdapPort: TSpinEdit;
+    panel_sip_phone: TPanel;
+    btnPhoneList: TBitBtn;
+    btnSipPhoneList: TBitBtn;
+    Label13: TLabel;
+    lblQueue_5911: TLabel;
+    StaticText3: TStaticText;
     procedure FormShow(Sender: TObject);
     procedure btnAddServerClick(Sender: TObject);
     procedure LoadSettings;
@@ -78,9 +84,14 @@ type
     procedure tree_menuClick(Sender: TObject);
     procedure btnEditAccessMenuClick(Sender: TObject);
     procedure btnEditWorkingTimeCallCentreClick(Sender: TObject);
+    procedure btn_CheckLdapClick(Sender: TObject);
+    procedure btnSaveLdapSettingsClick(Sender: TObject);
+    procedure btnSipPhoneListClick(Sender: TObject);
+    procedure btnPhoneListClick(Sender: TObject);
   private
 
    m_workTimeCallCenter:TWorkTimeCallCenter;  // время работы коллцентра
+   m_ivrTime:TIVRTime;                        // время
 
    procedure SetFirebirdAuth;
    procedure SetButtonCheckFirebirdServer;
@@ -109,7 +120,8 @@ implementation
 uses
   FormSettingsGlobal_addIVRUnit, FormSettingsGlobal_listIVRUnit,
   FormGlobalSettingCheckFirebirdConnectUnit, GlobalVariables,
-  GlobalVariablesLinkDLL, TSendSMSUint, FormMenuAccessUnit, FormWorkTimeCallCenterUnit;
+  GlobalVariablesLinkDLL, TSendSMSUint, FormMenuAccessUnit, FormWorkTimeCallCenterUnit,
+  TLdapUnit, FormSettingsGlobal_checkLdapUnit, FormSipPhoneListUnit, FormPhoneListUnit;
 
 {$R *.dfm}
 
@@ -123,6 +135,7 @@ begin
    panel_sms.Visible:=False;
    panel_access.Visible:=False;
    panel_ldap.Visible:=False;
+   panel_sip_phone.Visible:=False;
 
    case _tree  of
     tree_queue: begin
@@ -139,6 +152,9 @@ begin
     end;
     tree_ldap:begin
       currentPanel:=panel_ldap;
+    end;
+    tree_sip_phone:begin
+      currentPanel:=panel_sip_phone;
     end;
    end;
 
@@ -382,13 +398,19 @@ end;
 procedure TFormSettingsGlobal.LoadSettings;
 var
  SMS:TSendSMS;
+ ldap:TLdap;
 begin
    // панель по умолчанию
    ShowPanel(tree_queue);
 
-   // корректировка времени
-   lblQueue_5000.Caption:=IntToStr(GetIVRTimeQueue(queue_5000));
-   lblQueue_5050.Caption:=IntToStr(GetIVRTimeQueue(queue_5050));
+   // корректировка времени IVR
+   begin
+     if not Assigned(m_ivrTime) then m_ivrTime:=TIVRTime.Create
+     else m_ivrTime.UpdateTime;
+     lblQueue_5000.Caption:=IntToStr(m_ivrTime.GetTime(queue_5000));
+     lblQueue_5050.Caption:=IntToStr(m_ivrTime.GetTime(queue_5050));
+     lblQueue_5911.Caption:=IntToStr(m_ivrTime.GetTime(queue_5911));
+   end;
 
    // время работы коллцентра
    ShowWorkTimeCallCenter;
@@ -417,8 +439,32 @@ begin
 
      btnCheckSMSSettings.Enabled:=True;
    end;
+
+   // ldap
+   ldap:=TLdap.Create;
+   if ldap.LdapIsInit then begin
+     edtLdapHost.Text:=ldap.LdapHost;
+     SE_LdapPort.Value:=ldap.LdapPort;
+   end;
+
 end;
 
+
+procedure TFormSettingsGlobal.btnSaveLdapSettingsClick(Sender: TObject);
+var
+ ldap:TLdap;
+ error:string;
+begin
+ if Length(edtLdapHost.Text) = 0 then begin
+   MessageBox(Handle,PChar('ОШИБКА! Не заполнено поле "Хост LDAP"'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+   Exit;
+ end;
+
+ ldap:=TLdap.Create(LDAP_NO_DATA);
+
+ if not ldap.SaveLdapDataToBase(edtLdapHost.Text, SE_LdapPort.Value, error) then MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR)
+ else MessageBox(Handle,PChar('Настройка LDAP сохранена'),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
+end;
 
 procedure TFormSettingsGlobal.btnAddServerClick(Sender: TObject);
 begin
@@ -444,6 +490,11 @@ procedure TFormSettingsGlobal.btnEditWorkingTimeCallCentreClick(
   Sender: TObject);
 begin
  FormWorkTimeCallCenter.ShowModal;
+end;
+
+procedure TFormSettingsGlobal.btnPhoneListClick(Sender: TObject);
+begin
+  FormPhoneList.ShowModal;
 end;
 
 procedure TFormSettingsGlobal.btnSaveFirebirdSettingsClick(Sender: TObject);
@@ -486,6 +537,25 @@ begin
 
    // записываем данные
    SetSMSAuth;
+end;
+
+procedure TFormSettingsGlobal.btnSipPhoneListClick(Sender: TObject);
+begin
+ FormSipPhoneList.ShowModal;
+end;
+
+procedure TFormSettingsGlobal.btn_CheckLdapClick(Sender: TObject);
+begin
+ if Length(edtLdapHost.Text) = 0 then begin
+   MessageBox(Handle,PChar('ОШИБКА! Не заполнено поле "Хост LDAP"'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+   Exit;
+ end;
+
+ with FormSettingsGlobal_checkLdap do begin
+   SetLdap(edtLdapHost.Text, SE_LdapPort.Value);
+   ShowModal;
+ end;
+
 end;
 
 procedure TFormSettingsGlobal.FormClose(Sender: TObject;

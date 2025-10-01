@@ -5,7 +5,7 @@ object FormGenerateSMS: TFormGenerateSMS
   BorderStyle = bsSingle
   Caption = #1043#1077#1085#1077#1088#1072#1090#1086#1088
   ClientHeight = 366
-  ClientWidth = 742
+  ClientWidth = 738
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -45,6 +45,7 @@ object FormGenerateSMS: TFormGenerateSMS
     ParentFont = False
     TabOrder = 0
     OnChange = comboxReasonSmsMessageChange
+    OnDrawItem = comboxReasonSmsMessageDrawItem
   end
   object group_Params: TGroupBox
     Left = 12

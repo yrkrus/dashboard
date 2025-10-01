@@ -31,7 +31,7 @@ type
 implementation
 
 uses
-  FormHome, FunctionUnit, GlobalVariables, TCustomTypeUnit, TDebugStructUnit;
+  FormHome, FunctionUnit, GlobalVariables, TCustomTypeUnit, TDebugStructUnit, GlobalVariablesLinkDLL;
 
 { Thread_IVR }
 
@@ -114,13 +114,13 @@ begin
             ListItem := ListViewIVR.Items.Add;
             ListItem.Caption := IntToStr(p_SharedIVR.listActiveIVR[i].m_id); // id
             ListItem.SubItems.Add(p_SharedIVR.listActiveIVR[i].m_phone); // Номер телефона
-            ListItem.SubItems.Add(p_SharedIVR.listActiveIVR[i].m_waiting_time_start); // Время ожидания
+            ListItem.SubItems.Add(Copy(GetTimeAnsweredSecondsToString(p_SharedIVR.listActiveIVR[i].m_waiting_time_start), 4, 5)); // Время ожидания
             ListItem.SubItems.Add(p_SharedIVR.listActiveIVR[i].m_trunk); // trunk
           end
           else
           begin
             // Элемент найден, обновляем его данные
-            existingItem.SubItems[1] := p_SharedIVR.listActiveIVR[i].m_waiting_time_start; // Время ожидания
+            existingItem.SubItems[1] := Copy(GetTimeAnsweredSecondsToString(p_SharedIVR.listActiveIVR[i].m_waiting_time_start), 4, 5); ; // Время ожидания
            end;
         end;
       end;

@@ -14,6 +14,7 @@ object FormManualPodbor: TFormManualPodbor
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
+  OnClose = FormClose
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 16
@@ -39,7 +40,7 @@ object FormManualPodbor: TFormManualPodbor
     Height = 619
     BevelInner = bvLowered
     ShowCaption = False
-    TabOrder = 3
+    TabOrder = 4
     object list_History: TListView
       Left = 2
       Top = 2
@@ -89,7 +90,7 @@ object FormManualPodbor: TFormManualPodbor
     Height = 17
     Alignment = taLeftJustify
     Caption = #1090#1086#1083#1100#1082#1086' '#1089#1074#1086#1080' '#1079#1074#1086#1085#1082#1080
-    TabOrder = 2
+    TabOrder = 3
     OnClick = chkbox_MyCallsClick
   end
   object editFindMessage: TEdit
@@ -98,6 +99,8 @@ object FormManualPodbor: TFormManualPodbor
     Width = 175
     Height = 24
     TabOrder = 1
+    OnChange = editFindMessageChange
+    OnClick = editFindMessageClick
     OnKeyPress = editFindMessageKeyPress
   end
   object btn_Find: TBitBtn
@@ -161,5 +164,20 @@ object FormManualPodbor: TFormManualPodbor
     TabOrder = 0
     WordWrap = True
     OnClick = btn_FindClick
+  end
+  object st_PhoneFind: TStaticText
+    Left = 72
+    Top = 16
+    Width = 107
+    Height = 15
+    Caption = #1087#1086' '#1085#1086#1084#1077#1088#1091' '#1090#1077#1083#1077#1092#1086#1085#1072
+    Enabled = False
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 2
   end
 end

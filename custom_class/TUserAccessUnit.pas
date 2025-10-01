@@ -12,13 +12,8 @@ unit TUserAccessUnit;
 interface
 
 uses
-  System.Classes,
-  System.SysUtils,
-  Data.Win.ADODB,
-  Data.DB,
-  System.Variants,
-  GlobalVariablesLinkDLL,
-  TCustomTypeUnit;
+  System.Classes, System.SysUtils, Data.Win.ADODB, Data.DB, System.Variants,
+  GlobalVariablesLinkDLL, TCustomTypeUnit;
 
 
  // class TUserAccess
@@ -69,7 +64,7 @@ implementation
  end;
 
 
- procedure TUserAccess.LoadAccess(var p_InRole: enumRole);
+procedure TUserAccess.LoadAccess(var p_InRole: enumRole);
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;

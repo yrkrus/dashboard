@@ -4,8 +4,8 @@ object FormSettingsGlobal_listIVR: TFormSettingsGlobal_listIVR
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = #1048#1089#1090#1086#1088#1080#1103' '#1082#1086#1088#1088#1077#1082#1090#1080#1088#1086#1074#1086#1082
-  ClientHeight = 666
-  ClientWidth = 470
+  ClientHeight = 332
+  ClientWidth = 399
   Color = clWindow
   DefaultMonitor = dmDesktop
   Font.Charset = DEFAULT_CHARSET
@@ -15,83 +15,13 @@ object FormSettingsGlobal_listIVR: TFormSettingsGlobal_listIVR
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
-  OnClose = FormClose
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
-  object Panel: TPanel
-    Left = 0
-    Top = 0
-    Width = 470
-    Height = 599
-    Align = alTop
-    BevelOuter = bvNone
-    TabOrder = 0
-    object listSG_List_Footer: TStringGrid
-      Left = 0
-      Top = 0
-      Width = 470
-      Height = 24
-      Align = alTop
-      BorderStyle = bsNone
-      ColCount = 4
-      Enabled = False
-      FixedColor = clWindow
-      FixedCols = 0
-      RowCount = 2
-      Font.Charset = RUSSIAN_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -13
-      Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
-      Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRowSelect]
-      ParentFont = False
-      ScrollBars = ssNone
-      TabOrder = 0
-      ColWidths = (
-        49
-        153
-        131
-        133)
-      RowHeights = (
-        24
-        24)
-    end
-    object listSG_List: TStringGrid
-      Left = 0
-      Top = 24
-      Width = 470
-      Height = 575
-      Align = alClient
-      BorderStyle = bsNone
-      ColCount = 4
-      FixedColor = clWindow
-      FixedCols = 0
-      RowCount = 1
-      FixedRows = 0
-      Font.Charset = RUSSIAN_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -13
-      Font.Name = 'Tahoma'
-      Font.Style = []
-      Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRowSelect]
-      ParentFont = False
-      ScrollBars = ssVertical
-      TabOrder = 1
-      OnSelectCell = listSG_ListSelectCell
-      ColWidths = (
-        49
-        153
-        131
-        133)
-      RowHeights = (
-        24)
-    end
-  end
-  object btnDisable: TBitBtn
-    Left = 8
-    Top = 609
-    Width = 454
+  object btnDelete: TBitBtn
+    Left = 5
+    Top = 278
+    Width = 386
     Height = 47
     Caption = '&'#1059#1076#1072#1083#1080#1090#1100
     Font.Charset = RUSSIAN_CHARSET
@@ -171,6 +101,55 @@ object FormSettingsGlobal_listIVR: TFormSettingsGlobal_listIVR
     ShowHint = False
     TabOrder = 1
     WordWrap = True
-    OnClick = btnDisableClick
+    OnClick = btnDeleteClick
+  end
+  object panel_History: TPanel
+    Left = 3
+    Top = 3
+    Width = 390
+    Height = 267
+    BevelInner = bvLowered
+    ShowCaption = False
+    TabOrder = 0
+    object list_History: TListView
+      Left = 2
+      Top = 2
+      Width = 386
+      Height = 263
+      Align = alClient
+      BorderStyle = bsNone
+      Columns = <>
+      DoubleBuffered = True
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      FlatScrollBars = True
+      ReadOnly = True
+      RowSelect = True
+      ParentDoubleBuffered = False
+      ParentFont = False
+      TabOrder = 0
+      ViewStyle = vsReport
+      OnMouseDown = list_HistoryMouseDown
+    end
+    object st_NoHistory: TStaticText
+      Left = 5
+      Top = 138
+      Width = 380
+      Height = 20
+      Alignment = taCenter
+      AutoSize = False
+      Caption = #1058#1091#1090' '#1087#1086#1082#1072' '#1087#1091#1089#1090#1086
+      Enabled = False
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+      TabOrder = 1
+    end
   end
 end

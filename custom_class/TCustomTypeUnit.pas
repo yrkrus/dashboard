@@ -55,6 +55,8 @@ interface
  enumQueue =  (queue_5000,            // 5000 очередь
                queue_5050,            // 5050 очередь
                queue_5000_5050,       // 5000 и 5050 очередь
+               queue_5005,            // 5005 очередь (баба железная)
+               queue_5911,            // 5911 очередь (техподдержка ИК)
                queue_null             // нет очереди
                       );
 
@@ -116,7 +118,9 @@ interface
                     eLog_reserve              = 19,        // резерв
                     eLog_callback             = 20,        // callback
                     eLog_create_new_user      = 21,        // создание нового пользователя
-                    eLog_edit_user            = 22         // редактирование пользователя
+                    eLog_edit_user            = 22,        // редактирование пользователя
+                    eLog_add_queue_5911       = 23,        // добавление в очередь 5911
+                    eLog_del_queue_5911       = 24         // удаление из очереди 5911
                 );
 
    type   // текущие статусы операторов
@@ -295,7 +299,8 @@ interface
                            reason_VneplanoviiPriem                    = 14, // Согласован внеплановый прием (обозначить время)
                            reason_ReturnMoney                         = 15, // Пригласить за возвратом ДС
                            reason_ReturnMoneyInfo                     = 16, // Проинформировать об осуществлении возврата ДС
-                           reason_ReturnDiagnostic                    = 17  // Пригласить за гистологическим (цитологическим) материалом
+                           reason_ReturnDiagnostic                    = 17, // Пригласить за гистологическим (цитологическим) материалом
+                           reason_OtmenaPriemaNal_DMS                 = 18  // Отмена приема врача по причине того, что врач не принимает по ДМС
                           );
    type  // шаблон сообщения в зависимости от типа отправки
    enumReasonSmsMessageTemplate = (
@@ -317,7 +322,8 @@ interface
                            reasonTemplate_VneplanoviiPriem                    = 14, // Согласован внеплановый прием (обозначить время)
                            reasonTemplate_ReturnMoney                         = 15, // Пригласить за возвратом ДС
                            reasonTemplate_ReturnMoneyInfo                     = 16, // Проинформировать об осуществлении возврата ДС
-                           reasonTemplate_ReturnDiagnostic                    = 17  // Пригласить за гистологическим (цитологическим) материалом
+                           reasonTemplate_ReturnDiagnostic                    = 17, // Пригласить за гистологическим (цитологическим) материалом
+                           reasonTemplate_OtmenaPriemaNal_DMS                 = 18  // Отмена приема, врач не принимает по ДМС
      );
 
 
@@ -328,7 +334,8 @@ interface
                         tree_firebird,         // пароль firebird
                         tree_sms,              // настройка sms
                         tree_access,           // разграничение прав групп на меню
-                        tree_ldap              // LDAP
+                        tree_ldap,             // LDAP
+                        tree_sip_phone         // регистрация SIP
                       );
 
     type // параметры дней недели
@@ -454,9 +461,9 @@ interface
  function IntegerToSettingParamsStatus(_status:Integer):enumParamStatus;            // Int --> SettingParamsStatus
  function EnumTypeClinicToString(typeClinic:enumTypeClinic):string;                // EnumTypeClinic -> String
  function StringToEnumTypeClinic(typeClinic:string):enumTypeClinic;                // String -> EnumTypeClinic
- function EnumQueueCurrentToString(_queue:enumQueue):string;                // EnumQueueCurrent - > String
+ function EnumQueueToString(_queue:enumQueue):string;                // EnumQueueCurrent - > String
  function EnumQueueCurrentToInteger(_queue:enumQueue):Integer;              // EnumQueueCurrent - > Integer
- function StringToEnumQueueCurrent(_queue:string):enumQueue;                // String -> EnumQueueCurrent
+ function StringToEnumQueue(_queue:string):enumQueue;                // String -> EnumQueueCurrent
  function StringToSettingParamsStatus(status:string):enumParamStatus;             // String (Да\Нет) --> SettingParamsStatus
  function StrToBoolean(InValue:string):Boolean;                                    // string -> boolean
  function EnumStatusToString(InStatus:enumStatus):string;                          // enumStatus -> String
@@ -530,6 +537,8 @@ begin
     eLog_callback:            Result:=20;       // callback
     eLog_create_new_user:     Result:=21;       // создание нового пользователя
     eLog_edit_user:           Result:=22;       // редактирование пользователя
+    eLog_add_queue_5911:      Result:=23;       // добавление в очередь 5911
+    eLog_del_queue_5911:      Result:=24;       // удаление из очереди 5911
 
   else  Result:=-1;
   end;
@@ -563,6 +572,9 @@ begin
     20:   Result:=eLog_callback;            // callback
     21:   Result:=eLog_create_new_user;     // создание нового пользователя
     22:   Result:=eLog_edit_user;           // редактирование пользователя
+    23:   Result:=eLog_add_queue_5911;      // добавление в очередь 5911
+    24:   Result:=eLog_del_queue_5911;      // удаление из очереди 5911
+
   else Result:=eLog_unknown;
   end;
 end;
@@ -596,6 +608,8 @@ begin
     eLog_callback:            Result:='Callback';
     eLog_create_new_user:     Result:='Создание нового пользователя';
     eLog_edit_user:           Result:='Редактирование пользователя';
+    eLog_add_queue_5911:      Result:='Добавление в очередь 5911';
+    eLog_del_queue_5911:      Result:='Удаление из очереди 5911';
   end;
 end;
 
@@ -844,6 +858,8 @@ begin
     eLog_del_queue_5000_5050,
     eLog_create_new_user,
     eLog_edit_user,
+    eLog_add_queue_5911,
+    eLog_del_queue_5911,
     eLog_available:   Result:=eUnknown;
     eLog_home:        Result:=eHome;
     eLog_exodus:      Result:=eExodus;
@@ -920,12 +936,14 @@ begin
 end;
 
 // EnumQueueCurrent - > String
-function EnumQueueCurrentToString(_queue:enumQueue):string;
+function EnumQueueToString(_queue:enumQueue):string;
 begin
    case _queue of
     queue_5000:       Result:='5000';
     queue_5050:       Result:='5050';
     queue_5000_5050:  Result:='5000 и 5050';
+    queue_5005:       Result:='5005';
+    queue_5911:       Result:='5911';
     queue_null:       Result:='null';
    else  Result:='null';
    end;
@@ -947,11 +965,13 @@ begin
 end;
 
 // String -> EnumQueueCurrent
-function StringToEnumQueueCurrent(_queue:string):enumQueue;
+function StringToEnumQueue(_queue:string):enumQueue;
 begin
   if _queue = '5000' then         Result:=queue_5000;
   if _queue = '5050' then         Result:=queue_5050;
   if _queue = '5000 и 5050' then  Result:=queue_5000_5050;
+  if _queue = '5005' then         Result:=queue_5005;
+  if _queue = '5911' then         Result:=queue_5911;
   if _queue = 'null' then         Result:=queue_null;
 end;
 
@@ -1072,6 +1092,7 @@ begin
      reason_ReturnMoney                         :Result:='Пригласить за возвратом ДС';
      reason_ReturnMoneyInfo                     :Result:='Проинформировать об осуществлении возврата ДС';
      reason_ReturnDiagnostic                    :Result:='Пригласить за гистологическим (цитологическим) материалом';
+     reason_OtmenaPriemaNal_DMS                 :Result:='Отмена приема, врач не принимает по ДМС';
   end;
 end;
 
@@ -1232,7 +1253,12 @@ begin
     Result.Append('Забрать его Вы можете в часы работы клиники (%time_clinic%) по адресу %address%. ');
     Result.Append('При себе необходимо иметь паспорт');
    end;
+   reasonTemplate_OtmenaPriemaNal_DMS                    : begin // Отмена приема, врач не принимает по ДМС
+    Result.Append('Здравствуйте! %uvazaemii% %name% %otchestvo%, к сожалению, мы не смогли до Вас дозвониться. ');
+    Result.Append('Сообщаем, что Вы записаны к врачу, который принимает пациентов только за наличный расчет');
+   end;
   end;
+
 end;
 
 
@@ -1245,6 +1271,7 @@ begin
     tree_sms:       Result:='Настройка SMS';
     tree_access:    Result:='Права групп на меню';
     tree_ldap:      Result:='Настройка LDAP';
+    tree_sip_phone: Result:='Регистрация SIP';
   end;
 end;
 

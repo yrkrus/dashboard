@@ -14,7 +14,6 @@ object FormAbout: TFormAbout
   Font.Style = []
   OldCreateOrder = False
   Position = poMainFormCenter
-  OnClose = FormClose
   OnCreate = FormCreate
   OnShow = FormShow
   PixelsPerInch = 96
@@ -660,7 +659,7 @@ object FormAbout: TFormAbout
     Alignment = taRightJustify
     Caption = 'Petrov Yuri '#169' 2024'
     Font.Charset = RUSSIAN_CHARSET
-    Font.Color = clWindowText
+    Font.Color = clNavy
     Font.Height = -13
     Font.Name = 'Tahoma'
     Font.Style = [fsBold]
@@ -5924,17 +5923,11 @@ object FormAbout: TFormAbout
       end
     end
   end
-  object TimerStartPashalka1: TTimer
-    Enabled = False
-    OnTimer = TimerStartPashalka1Timer
-    Left = 66
-    Top = 80
-  end
   object ImageList1: TImageList
     Left = 32
     Top = 72
     Bitmap = {
-      494C010104000800240010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010104000800280010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

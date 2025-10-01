@@ -82,6 +82,10 @@ begin
                // обновление SL
                UpdateSL;
                ShowSL;
+
+               // обновление AR
+               UpdateAR;
+               ShowAR;
             end;
         end
         else begin
@@ -134,6 +138,7 @@ begin
   // создание класса с данными по статистике принятых звонков из очереди
   AnsweredQueue:=TAnsweredQueue.Create;
   AnsweredQueue.SetLinkSL(HomeForm.ST_SL);
+  AnsweredQueue.SetLinkAR(HomeForm.ST_AR);
 
   // событие что запустились
   m_initThread.SetEvent;

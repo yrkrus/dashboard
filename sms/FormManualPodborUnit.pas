@@ -16,6 +16,7 @@ type
     Label2: TLabel;
     editFindMessage: TEdit;
     btn_Find: TBitBtn;
+    st_PhoneFind: TStaticText;
     procedure FormShow(Sender: TObject);
     procedure chkbox_MyCallsClick(Sender: TObject);
     procedure list_HistoryCustomDrawItem(Sender: TCustomListView;
@@ -23,6 +24,9 @@ type
     procedure list_HistoryDblClick(Sender: TObject);
     procedure editFindMessageKeyPress(Sender: TObject; var Key: Char);
     procedure btn_FindClick(Sender: TObject);
+    procedure editFindMessageChange(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure editFindMessageClick(Sender: TObject);
   private
     { Private declarations }
   m_listTalkCalls:TSMSCallTalkInfo;  // основной список с данными по отвеченным звонкам
@@ -332,6 +336,17 @@ begin
 end;
 
 
+procedure TFormManualPodbor.editFindMessageChange(Sender: TObject);
+begin
+  if Length(editFindMessage.Text) > 0 then st_PhoneFind.Visible:=False
+  else st_PhoneFind.Visible:=True;
+end;
+
+procedure TFormManualPodbor.editFindMessageClick(Sender: TObject);
+begin
+ st_PhoneFind.Visible:=False;
+end;
+
 procedure TFormManualPodbor.editFindMessageKeyPress(Sender: TObject;
   var Key: Char);
 begin
@@ -370,6 +385,12 @@ begin
    ShowCalls(list_History,True,_phone);
 
   Screen.Cursor:=crDefault;
+end;
+
+procedure TFormManualPodbor.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  st_PhoneFind.Visible:=True;
 end;
 
 procedure TFormManualPodbor.FormShow(Sender: TObject);

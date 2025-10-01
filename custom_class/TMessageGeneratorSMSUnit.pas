@@ -545,6 +545,9 @@ begin
     // адрес клиники
     if not CheckParamsAddressClinic(_errorDescription) then Exit;
    end;
+   reason_OtmenaPriemaNal_DMS:begin                // Отмена приема, врач не принимает по ДМС
+     // ничего не проверяется уже все проверили
+   end;
   end;
 
   Result:=True;
@@ -736,6 +739,9 @@ begin
      // адрес клиники
      GenerateMessageAddressClinic(tmp);
 
+   end;
+   reason_OtmenaPriemaNal_DMS:begin                // Отмена приема, врач не принимает по ДМС
+     // тут нет ничего, т.к. уже сформировали в GenerateMessageFIO
    end;
   end;
 

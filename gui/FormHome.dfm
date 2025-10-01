@@ -6031,7 +6031,7 @@ object HomeForm: THomeForm
     Width = 335
     Height = 218
     BevelOuter = bvNone
-    TabOrder = 3
+    TabOrder = 4
     object lblCount_IVR: TLabel
       Left = 0
       Top = 0
@@ -6269,7 +6269,7 @@ object HomeForm: THomeForm
     Width = 335
     Height = 214
     BevelOuter = bvNone
-    TabOrder = 5
+    TabOrder = 6
     object lblCount_QUEUE: TLabel
       Left = 0
       Top = 0
@@ -6483,7 +6483,7 @@ object HomeForm: THomeForm
     Width = 1094
     Height = 588
     BevelOuter = bvNone
-    TabOrder = 4
+    TabOrder = 5
     DesignSize = (
       1094
       588)
@@ -6808,7 +6808,7 @@ object HomeForm: THomeForm
     Width = 1054
     Height = 120
     BevelOuter = bvNone
-    TabOrder = 8
+    TabOrder = 9
     object PanelStatusIN: TPanel
       Left = 0
       Top = 6
@@ -7685,7 +7685,7 @@ object HomeForm: THomeForm
     Width = 335
     Height = 83
     BevelOuter = bvNone
-    TabOrder = 7
+    TabOrder = 8
     object Label12: TLabel
       Left = 15
       Top = 1
@@ -7829,7 +7829,7 @@ object HomeForm: THomeForm
     Width = 335
     Height = 90
     BevelOuter = bvNone
-    TabOrder = 6
+    TabOrder = 7
     object StatisticsQueue_Answered30_Graph: TGauge
       Left = 5
       Top = 7
@@ -7985,7 +7985,7 @@ object HomeForm: THomeForm
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 9
+    TabOrder = 10
   end
   object st_Forecast_Tomorrow: TStaticText
     Left = 35
@@ -8005,7 +8005,7 @@ object HomeForm: THomeForm
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 11
+    TabOrder = 12
     Visible = False
   end
   object st_Forecast_AfterTomorrow: TStaticText
@@ -8026,7 +8026,7 @@ object HomeForm: THomeForm
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 12
+    TabOrder = 13
     Visible = False
   end
   object Button1: TButton
@@ -8036,28 +8036,53 @@ object HomeForm: THomeForm
     Height = 25
     Caption = 'Button1'
     TabOrder = 1
+    Visible = False
     OnClick = Button1Click
   end
   object ST_SL: TStaticText
     Left = 1308
-    Top = 7
-    Width = 134
-    Height = 26
+    Top = 4
+    Width = 137
+    Height = 20
+    Hint = #1063#1077#1084' '#1074#1099#1096#1077' '#1090#1077#1084' '#1093#1086#1088#1086#1096#1086
     Alignment = taRightJustify
-    Anchors = [akRight]
+    Anchors = [akTop, akRight]
     AutoSize = False
     Caption = 'SL: 100%'
     Color = clWindow
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
-    Font.Height = -19
+    Font.Height = -13
     Font.Name = 'Tahoma'
-    Font.Style = []
+    Font.Style = [fsBold]
     ParentColor = False
     ParentFont = False
     ParentShowHint = False
     ShowHint = True
     TabOrder = 0
+    Transparent = False
+  end
+  object ST_AR: TStaticText
+    Left = 1308
+    Top = 20
+    Width = 137
+    Height = 20
+    Hint = #1063#1077#1084' '#1085#1080#1078#1077' '#1090#1077#1084' '#1093#1086#1088#1086#1096#1086
+    Alignment = taRightJustify
+    Anchors = [akTop, akRight]
+    AutoSize = False
+    Caption = 'AR: 0%'
+    Color = clWindow
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 3
     Transparent = False
   end
   object FooterMenu: TMainMenu

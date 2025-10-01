@@ -4,8 +4,8 @@ object FormAddNewUsers: TFormAddNewUsers
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = #1044#1086#1073#1072#1074#1083#1077#1085#1080#1077' '#1085#1086#1074#1086#1075#1086' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1103
-  ClientHeight = 272
-  ClientWidth = 542
+  ClientHeight = 564
+  ClientWidth = 1060
   Color = clWindow
   Font.Charset = RUSSIAN_CHARSET
   Font.Color = clWindowText
@@ -19,8 +19,8 @@ object FormAddNewUsers: TFormAddNewUsers
   PixelsPerInch = 96
   TextHeight = 16
   object Label6: TLabel
-    Left = 286
-    Top = 5
+    Left = 494
+    Top = 197
     Width = 106
     Height = 16
     Caption = #1043#1088#1091#1087#1087#1072' '#1076#1086#1089#1090#1091#1087#1072
@@ -31,35 +31,9 @@ object FormAddNewUsers: TFormAddNewUsers
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object Label8: TLabel
-    Left = 15
-    Top = 5
-    Width = 60
-    Height = 16
-    Caption = #1060#1072#1084#1080#1083#1080#1103
-    Font.Charset = RUSSIAN_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
-  object Label1: TLabel
-    Left = 15
-    Top = 45
-    Width = 26
-    Height = 16
-    Caption = #1048#1084#1103
-    Font.Charset = RUSSIAN_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-  end
   object lblPwd_show: TLabel
-    Left = 584
-    Top = 189
+    Left = 792
+    Top = 381
     Width = 50
     Height = 16
     Caption = #1055#1072#1088#1086#1083#1100
@@ -71,16 +45,16 @@ object FormAddNewUsers: TFormAddNewUsers
     ParentFont = False
   end
   object lblInfoNewPwd: TLabel
-    Left = 18
-    Top = 143
+    Left = 226
+    Top = 335
     Width = 156
     Height = 32
     Caption = #1055#1086' '#1091#1084#1086#1083#1095#1072#1085#1080#1102' '#1076#1083#1103' '#1085#1086#1074#1099#1093' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1077#1081' '#1087#1072#1088#1086#1083#1100' "1"'
     WordWrap = True
   end
   object lblPwd2_show: TLabel
-    Left = 584
-    Top = 229
+    Left = 792
+    Top = 421
     Width = 111
     Height = 16
     Caption = #1055#1086#1076#1090#1074#1077#1088#1078#1076#1077#1085#1080#1077
@@ -92,8 +66,8 @@ object FormAddNewUsers: TFormAddNewUsers
     ParentFont = False
   end
   object lblLogin: TLabel
-    Left = 15
-    Top = 86
+    Left = 223
+    Top = 278
     Width = 39
     Height = 16
     Caption = #1051#1086#1075#1080#1085
@@ -106,8 +80,8 @@ object FormAddNewUsers: TFormAddNewUsers
     ParentFont = False
   end
   object comboxUserGroup: TComboBox
-    Left = 284
-    Top = 22
+    Left = 492
+    Top = 214
     Width = 232
     Height = 24
     Style = csDropDownList
@@ -117,62 +91,47 @@ object FormAddNewUsers: TFormAddNewUsers
     Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
-    TabOrder = 1
+    TabOrder = 2
     OnChange = comboxUserGroupChange
   end
-  object edtNewFamiliya: TEdit
-    Left = 15
-    Top = 22
-    Width = 230
-    Height = 24
-    TabOrder = 0
-    OnChange = edtNewFamiliyaChange
-  end
-  object edtNewName: TEdit
-    Left = 15
-    Top = 63
-    Width = 230
-    Height = 24
-    TabOrder = 3
-  end
   object edtPwdNew: TEdit
-    Left = 584
-    Top = 207
+    Left = 792
+    Top = 399
+    Width = 230
+    Height = 24
+    PasswordChar = '*'
+    TabOrder = 9
+  end
+  object chkboxmyPwd: TCheckBox
+    Left = 226
+    Top = 369
+    Width = 226
+    Height = 17
+    Caption = #1091#1089#1090#1072#1085#1086#1074#1080#1090#1100' '#1076#1088#1091#1075#1086#1081' '#1087#1072#1088#1086#1083#1100
+    TabOrder = 5
+    OnClick = chkboxmyPwdClick
+  end
+  object edtPwd2New: TEdit
+    Left = 792
+    Top = 439
     Width = 230
     Height = 24
     PasswordChar = '*'
     TabOrder = 10
   end
-  object chkboxmyPwd: TCheckBox
-    Left = 18
-    Top = 177
-    Width = 226
-    Height = 17
-    Caption = #1091#1089#1090#1072#1085#1086#1074#1080#1090#1100' '#1076#1088#1091#1075#1086#1081' '#1087#1072#1088#1086#1083#1100
-    TabOrder = 6
-    OnClick = chkboxmyPwdClick
-  end
-  object edtPwd2New: TEdit
-    Left = 584
-    Top = 247
-    Width = 230
-    Height = 24
-    PasswordChar = '*'
-    TabOrder = 12
-  end
   object edtNewLogin: TEdit
-    Left = 15
-    Top = 103
+    Left = 223
+    Top = 295
     Width = 230
     Height = 24
     Color = cl3DLight
     Enabled = False
-    TabOrder = 5
+    TabOrder = 4
     OnChange = edtNewLoginChange
   end
   object btnAddNewUser: TBitBtn
-    Left = 36
-    Top = 216
+    Left = 40
+    Top = 480
     Width = 461
     Height = 47
     Caption = '   &'#1044#1086#1073#1072#1074#1080#1090#1100
@@ -255,18 +214,9 @@ object FormAddNewUsers: TFormAddNewUsers
     WordWrap = True
     OnClick = btnAddNewUserClick
   end
-  object chkboxManualLogin: TCheckBox
-    Left = 58
-    Top = 87
-    Width = 96
-    Height = 15
-    Caption = #1091#1082#1072#1079#1072#1090#1100' '#1089#1074#1086#1081
-    TabOrder = 4
-    OnClick = chkboxManualLoginClick
-  end
   object chkboxAllowLocalChat: TCheckBox
-    Left = 386
-    Top = 191
+    Left = 594
+    Top = 383
     Width = 47
     Height = 17
     Caption = #1063#1072#1090
@@ -276,15 +226,15 @@ object FormAddNewUsers: TFormAddNewUsers
     Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     ParentFont = False
-    TabOrder = 8
+    TabOrder = 7
   end
   object PanelOperators: TPanel
-    Left = 286
-    Top = 54
+    Left = 494
+    Top = 246
     Width = 225
     Height = 128
     BevelInner = bvLowered
-    TabOrder = 2
+    TabOrder = 3
     object lblOperatorSetting_SIP_show: TLabel
       Left = 20
       Top = 7
@@ -343,8 +293,8 @@ object FormAddNewUsers: TFormAddNewUsers
     end
   end
   object chkboxAllowReports: TCheckBox
-    Left = 286
-    Top = 191
+    Left = 494
+    Top = 383
     Width = 69
     Height = 17
     Caption = #1054#1090#1095#1077#1090#1099
@@ -354,11 +304,11 @@ object FormAddNewUsers: TFormAddNewUsers
     Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     ParentFont = False
-    TabOrder = 7
+    TabOrder = 6
   end
   object chkboxAllowSMS: TCheckBox
-    Left = 463
-    Top = 191
+    Left = 671
+    Top = 383
     Width = 48
     Height = 17
     Caption = 'SMS'
@@ -368,6 +318,131 @@ object FormAddNewUsers: TFormAddNewUsers
     Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     ParentFont = False
-    TabOrder = 9
+    TabOrder = 8
+  end
+  object GroupBox1: TGroupBox
+    Left = 22
+    Top = 8
+    Width = 395
+    Height = 198
+    Caption = '  '#1040#1074#1090#1086#1088#1080#1079#1072#1094#1080#1103'  '
+    TabOrder = 0
+    object Label8: TLabel
+      Left = 47
+      Top = 23
+      Width = 53
+      Height = 16
+      Caption = #1060#1072#1084#1080#1083#1080#1103
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+    end
+    object Label1: TLabel
+      Left = 77
+      Top = 51
+      Width = 23
+      Height = 16
+      Caption = #1048#1084#1103
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+    end
+    object Label2: TLabel
+      Left = 10
+      Top = 75
+      Width = 90
+      Height = 32
+      Alignment = taRightJustify
+      AutoSize = False
+      Caption = #1058#1080#1087' '#1072#1074#1090#1086#1088#1080#1079#1072#1094#1080#1080
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      WordWrap = True
+    end
+    object Label3: TLabel
+      Left = 65
+      Top = 116
+      Width = 35
+      Height = 16
+      Caption = #1051#1086#1075#1080#1085
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+    end
+    object edtNewFamiliya: TEdit
+      Left = 113
+      Top = 20
+      Width = 143
+      Height = 24
+      TabOrder = 0
+      OnChange = edtNewFamiliyaChange
+    end
+    object edtNewName: TEdit
+      Left = 113
+      Top = 48
+      Width = 143
+      Height = 24
+      TabOrder = 1
+    end
+    object ComboBox1: TComboBox
+      Left = 113
+      Top = 79
+      Width = 143
+      Height = 24
+      Style = csDropDownList
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 2
+      OnChange = comboxUserGroupChange
+    end
+    object Edit1: TEdit
+      Left = 113
+      Top = 113
+      Width = 143
+      Height = 24
+      TabOrder = 3
+      OnChange = edtNewFamiliyaChange
+    end
+    object chkboxManualLogin: TCheckBox
+      Left = 167
+      Top = 115
+      Width = 83
+      Height = 17
+      Alignment = taLeftJustify
+      Caption = #1091#1082#1072#1079#1072#1090#1100' '#1089#1074#1086#1081
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 4
+      OnClick = chkboxManualLoginClick
+    end
+  end
+  object GroupBox2: TGroupBox
+    Left = 594
+    Top = 56
+    Width = 185
+    Height = 105
+    Caption = 'GroupBox2'
+    TabOrder = 1
   end
 end

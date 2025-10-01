@@ -264,7 +264,9 @@ begin
 
     // замена "добавление в очередь" на "доступен"
     status:=operatorStatus.GetStatus(i);
-    if status in [eLog_add_queue_5000 .. eLog_add_queue_5000_5050] then begin
+    if (status in [eLog_add_queue_5000 .. eLog_add_queue_5000_5050]) or
+       (status in [eLog_add_queue_5911])
+    then begin
       status:=eLog_available;
     end;
 

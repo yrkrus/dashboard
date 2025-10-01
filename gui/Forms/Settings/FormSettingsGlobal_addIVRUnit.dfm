@@ -4,7 +4,7 @@ object FormSettingsGlobal_addIVR: TFormSettingsGlobal_addIVR
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = #1044#1086#1073#1072#1074#1083#1077#1085#1080#1077' '#1085#1086#1074#1086#1075#1086' '#1074#1088#1077#1084#1077#1085#1080
-  ClientHeight = 188
+  ClientHeight = 201
   ClientWidth = 418
   Color = clWindow
   DefaultMonitor = dmDesktop
@@ -21,7 +21,7 @@ object FormSettingsGlobal_addIVR: TFormSettingsGlobal_addIVR
   TextHeight = 13
   object btnAdd: TBitBtn
     Left = 14
-    Top = 127
+    Top = 146
     Width = 388
     Height = 47
     Caption = '&'#1044#1086#1073#1072#1074#1080#1090#1100
@@ -108,7 +108,7 @@ object FormSettingsGlobal_addIVR: TFormSettingsGlobal_addIVR
     Left = 8
     Top = 8
     Width = 398
-    Height = 107
+    Height = 132
     TabOrder = 0
     object Label3: TLabel
       Left = 22
@@ -125,10 +125,23 @@ object FormSettingsGlobal_addIVR: TFormSettingsGlobal_addIVR
     end
     object Label4: TLabel
       Left = 22
-      Top = 45
+      Top = 40
       Width = 276
       Height = 16
       Caption = #1042#1088#1077#1084#1103' '#1087#1088#1086#1080#1075#1088#1099#1074#1072#1085#1080#1103' IVR '#1074' '#1086#1095#1077#1088#1077#1076#1080' 5050'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+    end
+    object Label1: TLabel
+      Left = 22
+      Top = 68
+      Width = 276
+      Height = 16
+      Caption = #1042#1088#1077#1084#1103' '#1087#1088#1086#1080#1075#1088#1099#1074#1072#1085#1080#1103' IVR '#1074' '#1086#1095#1077#1088#1077#1076#1080' 5911'
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
@@ -156,7 +169,7 @@ object FormSettingsGlobal_addIVR: TFormSettingsGlobal_addIVR
     end
     object edt5050: TEdit
       Left = 308
-      Top = 43
+      Top = 38
       Width = 70
       Height = 21
       MaxLength = 3
@@ -165,7 +178,7 @@ object FormSettingsGlobal_addIVR: TFormSettingsGlobal_addIVR
     end
     object StaticText2: TStaticText
       Left = 348
-      Top = 45
+      Top = 40
       Width = 21
       Height = 17
       Caption = #1089#1077#1082
@@ -174,7 +187,7 @@ object FormSettingsGlobal_addIVR: TFormSettingsGlobal_addIVR
     end
     object chkboxMyTime: TCheckBox
       Left = 122
-      Top = 75
+      Top = 101
       Width = 88
       Height = 17
       Caption = #1089#1074#1086#1077' '#1074#1088#1077#1084#1103
@@ -184,12 +197,12 @@ object FormSettingsGlobal_addIVR: TFormSettingsGlobal_addIVR
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
-      TabOrder = 6
+      TabOrder = 8
       OnClick = chkboxMyTimeClick
     end
     object DateQueue: TDateTimePicker
       Left = 214
-      Top = 72
+      Top = 98
       Width = 93
       Height = 24
       Date = 45594.742316747690000000
@@ -197,11 +210,11 @@ object FormSettingsGlobal_addIVR: TFormSettingsGlobal_addIVR
       Enabled = False
       ParentShowHint = False
       ShowHint = False
-      TabOrder = 4
+      TabOrder = 6
     end
     object TimeQueue: TDateTimePicker
       Left = 309
-      Top = 72
+      Top = 98
       Width = 69
       Height = 24
       Date = 45594.000000000000000000
@@ -210,6 +223,24 @@ object FormSettingsGlobal_addIVR: TFormSettingsGlobal_addIVR
       Kind = dtkTime
       ParentShowHint = False
       ShowHint = False
+      TabOrder = 7
+    end
+    object edt5911: TEdit
+      Left = 308
+      Top = 66
+      Width = 70
+      Height = 21
+      MaxLength = 3
+      TabOrder = 4
+      OnKeyPress = edt5911KeyPress
+    end
+    object StaticText3: TStaticText
+      Left = 348
+      Top = 68
+      Width = 21
+      Height = 17
+      Caption = #1089#1077#1082
+      Enabled = False
       TabOrder = 5
     end
   end

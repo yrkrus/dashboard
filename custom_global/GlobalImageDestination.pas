@@ -45,6 +45,7 @@ var
   ICON_SMS_STATUS_NOT_DELIVERED :string;
   ICON_SMS_STATUS_QUEUE         :string;
   ICON_SMS_STATUS_SENDING_OPERATOR:string;
+  ICON_SMS_CHOISE_REASON        :string;
 
 
 implementation
@@ -70,5 +71,6 @@ initialization
   ICON_SMS_STATUS_NOT_DELIVERED := FOLDER_ICON_SMS              + 'sms_status_not_delivered.jpg';
   ICON_SMS_STATUS_QUEUE         := FOLDER_ICON_SMS              + 'sms_status_queue.jpg';
   ICON_SMS_STATUS_SENDING_OPERATOR:= FOLDER_ICON_SMS            + 'sms_status_sending_operator.jpg';
+  ICON_SMS_CHOISE_REASON:= FOLDER_ICON_SMS                      + 'sms_choise_type.png';
 
 end.

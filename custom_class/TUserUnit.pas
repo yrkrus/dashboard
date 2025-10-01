@@ -32,7 +32,7 @@ uses  System.Classes,
       name                                  : string;   // имя
       familiya                              : string;   // фамилия
       id                                    : Integer;  // id в БД
-      group_role                            : enumRole; //  права
+      group_role                            : enumRole; // права
       login                                 : string;
       re_password                           : Boolean;  // необходимо сменить пароль
       acive_session_id                      : Integer;  // id активной сессии

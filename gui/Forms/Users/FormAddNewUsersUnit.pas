@@ -11,10 +11,6 @@ type
   TFormAddNewUsers = class(TForm)
     Label6: TLabel;
     comboxUserGroup: TComboBox;
-    Label8: TLabel;
-    edtNewFamiliya: TEdit;
-    Label1: TLabel;
-    edtNewName: TEdit;
     lblPwd_show: TLabel;
     edtPwdNew: TEdit;
     lblInfoNewPwd: TLabel;
@@ -24,7 +20,6 @@ type
     lblLogin: TLabel;
     edtNewLogin: TEdit;
     btnAddNewUser: TBitBtn;
-    chkboxManualLogin: TCheckBox;
     chkboxAllowLocalChat: TCheckBox;
     PanelOperators: TPanel;
     lblOperatorSetting_SIP_show: TLabel;
@@ -34,6 +29,17 @@ type
     chkboxZoiper: TCheckBox;
     chkboxAllowReports: TCheckBox;
     chkboxAllowSMS: TCheckBox;
+    GroupBox1: TGroupBox;
+    Label8: TLabel;
+    edtNewFamiliya: TEdit;
+    Label1: TLabel;
+    edtNewName: TEdit;
+    Label2: TLabel;
+    ComboBox1: TComboBox;
+    GroupBox2: TGroupBox;
+    Label3: TLabel;
+    Edit1: TEdit;
+    chkboxManualLogin: TCheckBox;
     procedure chkboxmyPwdClick(Sender: TObject);
     procedure comboxUserGroupChange(Sender: TObject);
     procedure btnAddNewUserClick(Sender: TObject);
@@ -82,7 +88,7 @@ const
 implementation
 
 uses
-  FunctionUnit, FormSettingsUnit, FormUsersUnit, GlobalVariables, GlobalVariablesLinkDLL;
+  FunctionUnit, FormUsersUnit, GlobalVariables, GlobalVariablesLinkDLL;
 
 {$R *.dfm}
 

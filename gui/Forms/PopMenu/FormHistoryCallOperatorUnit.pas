@@ -695,7 +695,7 @@ end;
 procedure TFormHistoryCallOperator.list_HistoryMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-  SelectedItemPopMenu := list_History.GetItemAt(X, Y);
+ SelectedItemPopMenu := list_History.GetItemAt(X, Y);
 
   // выбор варианта на прослушку\скачивание
   if Button = mbLeft then begin

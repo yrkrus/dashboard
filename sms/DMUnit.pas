@@ -4,7 +4,7 @@ interface
 
 uses
   System.SysUtils, System.Classes, Vcl.Menus,
-  Winapi.Windows, Vcl.Controls, Vcl.ComCtrls;
+  Winapi.Windows, Vcl.Controls, Vcl.ComCtrls, System.ImageList, Vcl.ImgList;
 
 type
   TDM = class(TDataModule)
@@ -14,6 +14,7 @@ type
     N1: TMenuItem;
     menu_Copy: TMenuItem;
     menu_Paste: TMenuItem;
+    ImageListIcon: TImageList;
     procedure menu_AddSpellingClick(Sender: TObject);
     procedure menu_DictionaryClick(Sender: TObject);
   private

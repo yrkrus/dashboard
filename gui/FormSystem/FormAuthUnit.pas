@@ -563,7 +563,11 @@ var
 begin
  // debug node
  begin
-  if DEBUG then lblDEBUG.Visible:=True;
+  if DEBUG then begin
+    lblDEBUG.Visible:=True;
+    lblDEBUG.Caption:=lblDEBUG.Caption+#13+GetDefaultDataBase;
+  end;
+
   // проверка запущена ли служба обновления
    if not DEBUG  then begin
      if not GetStatusUpdateService then begin

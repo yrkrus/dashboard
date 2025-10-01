@@ -5,23 +5,27 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Grids, Vcl.ComCtrls, Vcl.StdCtrls,
-  Vcl.Buttons, Data.Win.ADODB, Data.DB, Vcl.ExtCtrls, IdException;
+  Vcl.Buttons, Data.Win.ADODB, Data.DB, Vcl.ExtCtrls, IdException, TIVRTimeUnit, TCustomTypeUnit;
 
 type
   TFormSettingsGlobal_listIVR = class(TForm)
-    Panel: TPanel;
-    listSG_List_Footer: TStringGrid;
-    listSG_List: TStringGrid;
-    btnDisable: TBitBtn;
+    btnDelete: TBitBtn;
+    panel_History: TPanel;
+    list_History: TListView;
+    st_NoHistory: TStaticText;
     procedure FormShow(Sender: TObject);
-    procedure listSG_ListSelectCell(Sender: TObject; ACol, ARow: Integer;
-      var CanSelect: Boolean);
-    procedure btnDisableClick(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure btnDeleteClick(Sender: TObject);
+    procedure list_HistoryMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
   private
     { Private declarations }
-  currentID_del:string;
-  procedure LoadPanel_IVR;
+  m_ivrTime:TIVRTime;
+  SelectedItem: TListItem; // Переменная для хранения выбранного элемента
+
+  procedure ClearListView(var p_ListView:TListView);
+  procedure LoadData(var p_ListView:TListView; const p_ivrtime:TIVRTime);
+  procedure AddListItem(var p_ListView: TListView;  const p_ivrHistory: TIVRTimeHistory);
+  procedure LoadSettings;
 
   public
     { Public declarations }
@@ -90,126 +94,130 @@ begin
 end;
 
 
-procedure TFormSettingsGlobal_listIVR.LoadPanel_IVR;
+
+
+procedure TFormSettingsGlobal_listIVR.ClearListView(var p_ListView:TListView);
+const
+ cWidth_default  :Word = 386;
+ cWidth_date     :Word = 40;
+ cWidth_5000     :Word = 20;
+ cWidth_5050     :Word = 20;
+ cWidth_5911     :Word = 20;
+begin
+ with p_ListView do begin
+
+    Items.Clear;
+    Columns.Clear;
+    ViewStyle:= vsReport;
+
+    with Columns.Add do
+    begin
+      Caption:='ID';
+      Width:=0;
+    end;
+
+    with Columns.Add do
+    begin
+      Caption:=' Дата ';
+      Width:=Round((cWidth_default*cWidth_date)/100);
+      Alignment:=taCenter;
+    end;
+
+    with Columns.Add do
+    begin
+      Caption:=' 5000 ';
+      Width:=Round((cWidth_default*cWidth_5000)/100);
+      Alignment:=taCenter;
+    end;
+
+    with Columns.Add do
+    begin
+      Caption:=' 5050 ';
+      Width:=Round((cWidth_default*cWidth_5050)/100);
+      Alignment:=taCenter;
+    end;
+
+     with Columns.Add do
+    begin
+      Caption:=' 5911 ';
+      Width:=Round((cWidth_default*cWidth_5911)/100);
+      Alignment:=taCenter;
+    end;
+ end;
+end;
+
+
+procedure TFormSettingsGlobal_listIVR.AddListItem(var p_ListView: TListView;
+                                                  const p_ivrHistory: TIVRTimeHistory);
 var
- ado:TADOQuery;
- serverConnect:TADOConnection;
- countList,i:Integer;
- error:string;
+  ListItem: TListItem;
+  time_talk: Integer;
+begin
+  ListItem := p_ListView.Items.Add;
+  ListItem.Caption := IntToStr(p_ivrHistory.m_id); // id
+  ListItem.SubItems.Add(p_ivrHistory.m_date);      // дата время
+  ListItem.SubItems.Add(IntToStr(p_ivrHistory.GetTime(queue_5000)));   // 5000
+  ListItem.SubItems.Add(IntToStr(p_ivrHistory.GetTime(queue_5050)));   // 5050
+  ListItem.SubItems.Add(IntToStr(p_ivrHistory.GetTime(queue_5911)));   // 5911
+end;
+
+
+
+
+procedure TFormSettingsGlobal_listIVR.LoadData(var p_ListView:TListView;
+                                              const p_ivrtime:TIVRTime);
+var
+ i:Integer;
+begin
+  for i:=0 to p_ivrtime.CountHistory-1 do AddListItem(p_ListView, p_ivrtime.ItemsHistory[i]);
+
+  if p_ivrtime.CountHistory > 0 then st_NoHistory.Visible:=False
+  else st_NoHistory.Visible:=True;
+end;
+
+
+procedure TFormSettingsGlobal_listIVR.LoadSettings;
 begin
   Screen.Cursor:=crHourGlass;
 
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnectWithError(error);
+  ClearListView(list_History);
 
-  if not Assigned(serverConnect) then begin
-     Screen.Cursor:=crDefault;
-     ShowFormErrorMessage(error, SharedMainLog, 'TFormSettingsGlobal_listIVR.LoadPanel_IVR');
-     FreeAndNil(ado);
-     Exit;
+  if not Assigned(m_ivrTime) then m_ivrTime:=TIVRTime.Create(_IVR_TIME_LOAD_HYSTORY)
+  else begin
+    m_ivrTime.UpdateTime;
+    m_ivrTime.UpdateHistory;
   end;
 
-
-  try
-    with ado do begin
-      ado.Connection:=serverConnect;
-
-      SQL.Clear;
-      SQL.Add('select count(id) from settings');
-
-      Active:=True;
-
-      countList:=Fields[0].Value;
-    end;
-
-    with FormSettingsGlobal_listIVR.listSG_List do begin
-     RowCount:=1;      // типа очистка текущего списка
-     RowCount:=countList;
-
-      with ado do begin
-
-        SQL.Clear;
-        SQL.Add('select id, queue_5000_time, queue_5050_time, date_time from settings order by date_time DESC');
-
-        Active:=True;
-
-         for i:=0 to countList-1 do begin
-           Cells[0,i]:=Fields[0].Value;  // id
-           Cells[1,i]:=Fields[3].Value;  // дата добавление
-           Cells[2,i]:=Fields[1].Value;  // 5000
-           Cells[3,i]:=Fields[2].Value;  // 5050
-
-           ado.Next;
-         end;
-
-         FormSettingsGlobal_listIVR.Caption:='История корректировок: '+IntToStr(countList);
-      end;
-    end;
-  finally
-    FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
-  end;
+  LoadData(list_History, m_ivrTime);
 
   Screen.Cursor:=crDefault;
 end;
 
-procedure LoadSettings;
-begin
-   with FormSettingsGlobal_listIVR do begin
-
-    with listSG_List_Footer do begin
-     RowCount:=1;
-     Cells[0,0]:='ID';
-     Cells[1,0]:='Дата добавления';
-     Cells[2,0]:='Очередь 5000';
-     Cells[3,0]:='Очередь 5050';
-    end;
-
-    currentID_del:='';
-
-   // прогрузка списка
-   LoadPanel_IVR;
-  end;
-end;
-
-procedure TFormSettingsGlobal_listIVR.btnDisableClick(Sender: TObject);
+procedure TFormSettingsGlobal_listIVR.btnDeleteClick(Sender: TObject);
 var
-resultat:Word;
-resulatat_str:string;
+ resultat:Word;
+ error:string;
 begin
 
- if currentID_del='' then begin
+   if not Assigned(SelectedItem) then begin
     MessageBox(Handle,PChar('Не выбрана строка'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
- end;
+   end;
 
- resultat:=MessageBox(Handle,PChar('Точно удалить?'),PChar('Уточнение'),MB_YESNO+MB_ICONWARNING);
- if resultat=mrNo then Exit;
+   resultat:=MessageBox(Handle,PChar('Точно удалить?'),PChar('Уточнение'),MB_YESNO+MB_ICONWARNING);
+   if resultat=mrNo then Exit;
 
-
-  // удаляем
-  resulatat_str:=getDeleteList(currentID_del);
-  if AnsiPos('ОШИБКА',resulatat_str)<>0 then begin
-    MessageBox(Handle,PChar(resultat),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+   if not (m_ivrTime.Delete(StrToInt(SelectedItem.Caption), error)) then begin
+    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
-  end;
+   end;
 
   // загружаем новые данные
   LoadSettings;
-  FormSettingsGlobal.LoadSettings;
-  currentID_del:='';
-
   MessageBox(Handle,PChar('Строка удалена'),PChar('Успешно'),MB_OK+MB_ICONINFORMATION);
 end;
 
-procedure TFormSettingsGlobal_listIVR.FormClose(Sender: TObject;
-  var Action: TCloseAction);
-begin
-  currentID_del:='';
-end;
+
 
 procedure TFormSettingsGlobal_listIVR.FormShow(Sender: TObject);
 begin
@@ -220,12 +228,13 @@ begin
   Screen.Cursor:=crDefault;
 end;
 
-procedure TFormSettingsGlobal_listIVR.listSG_ListSelectCell(Sender: TObject;
-  ACol, ARow: Integer; var CanSelect: Boolean);
+
+
+procedure TFormSettingsGlobal_listIVR.list_HistoryMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-  if listSG_List.Cells[0,ARow]<>'' then begin
-    currentID_del:=listSG_List.Cells[0,ARow];
-  end;
+  // Получаем элемент, на который кликнули
+   SelectedItem:= list_History.GetItemAt(X, Y);
 end;
 
 end.

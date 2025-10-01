@@ -1155,8 +1155,9 @@ begin
        call.m_phone     :=VarToStr(Fields[1].Value);
 
        // скорректируем время
-       correct_time:=correctTimeQueue(_queue,VarToStr(Fields[2].Value));
-       call.m_waiting   := correct_time;
+       if correctTimeQueue(_queue,VarToStr(Fields[2].Value),correct_time) then begin
+         call.m_waiting   := correct_time;
+       end;
 
        call.m_dateTime  :=StrToDateTime(VarToStr(Fields[3].Value));
 

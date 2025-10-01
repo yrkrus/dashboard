@@ -5,7 +5,7 @@
         <FrameworkType>VCL</FrameworkType>
         <MainSource>report.dpr</MainSource>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Release</Config>
+        <Config Condition="'$(Config)'==''">Debug</Config>
         <Platform Condition="'$(Platform)'==''">Win64</Platform>
         <TargetedPlatforms>2</TargetedPlatforms>
         <AppType>Application</AppType>
@@ -170,9 +170,9 @@
         </DCCReference>
         <DCCReference Include="..\custom_class\TAutoPodborPeopleUnit.pas"/>
         <DCCReference Include="..\custom_class\TLogFileUnit.pas"/>
-        <DCCReference Include="..\gui\GlobalImageDestination.pas"/>
-        <DCCReference Include="..\gui\GlobalVariablesLinkDLL.pas"/>
         <DCCReference Include="..\custom_class\from_report\TDisableOperatorUnit.pas"/>
+        <DCCReference Include="..\custom_global\GlobalImageDestination.pas"/>
+        <DCCReference Include="..\custom_global\GlobalVariablesLinkDLL.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -201,12 +201,6 @@
                 </Excluded_Packages>
             </Delphi.Personality>
             <Deployment Version="3">
-                <DeployFile LocalName="Win64\Debug\report.rsm" Configuration="Debug" Class="DebugSymbols">
-                    <Platform Name="Win64">
-                        <RemoteName>report.rsm</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
                 <DeployFile LocalName="Win32\Debug\report.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>report.exe</RemoteName>
@@ -221,6 +215,12 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="Win64\Debug\report.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win64">
+                        <RemoteName>report.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Win64\Release\report.exe" Configuration="Release" Class="ProjectOutput">
                     <Platform Name="Win64">
                         <RemoteName>report.exe</RemoteName>
                         <Overwrite>true</Overwrite>

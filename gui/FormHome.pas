@@ -154,6 +154,7 @@ type
     btnStatus_add_queue5000_5050: TBitBtn;
     btnStatus_del_queue_all: TBitBtn;
     menu_clear_status_operator: TMenuItem;
+    ST_AR: TStaticText;
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure menu_missed_callsClick(Sender: TObject);
@@ -336,13 +337,12 @@ var
 implementation
 
 uses
-    FunctionUnit, FormPropushennieUnit, FormSettingsUnit,
-    FormAboutUnit, FormServerIKCheckUnit, FormAuthUnit,
-    FormActiveSessionUnit, FormRePasswordUnit, FormDEBUGUnit, FormErrorUnit,
+    FunctionUnit, FormPropushennieUnit, FormAboutUnit, FormServerIKCheckUnit,
+    FormAuthUnit, FormActiveSessionUnit, FormRePasswordUnit, FormDEBUGUnit, FormErrorUnit,
     GlobalVariables, FormUsersUnit, FormServersIKUnit, FormSettingsGlobalUnit,
     FormTrunkUnit, TFTPUnit, TForecastCallsUnit, FormStatusInfoUnit,
     FormHistoryCallOperatorUnit, TDebugStructUnit, FormHistoryStatusOperatorUnit,
-    GlobalVariablesLinkDLL, TStatusUnit, FormTrunkSipUnit;
+    GlobalVariablesLinkDLL, TStatusUnit, FormTrunkSipUnit, TLdapUnit;
 
 
 {$R *.dfm}
@@ -641,64 +641,14 @@ begin
 end;
 
 procedure THomeForm.Button1Click(Sender: TObject);
-//  var
-//  ld: PLDAP;
-//  rc: TLdapInt;
-//  opt: TLdapInt;
-//  resu:Boolean;
+var
+ ldap:TLdap;
+ nameUser:string;
 begin
+ ldap:=TLdap.Create;
+ ldap.GetUserFullName('petrov_yu',nameUser);
 
-
-//
-//  resu := False;
-//  ld := ldap_init(PAnsiChar(AnsiString('dialine.local')), 389);
-//  if ld = nil then Exit;
-//
-//  // Переключаемся на LDAPv3
-//  opt := LDAP_VERSION3;
-//  ldap_set_option(ld, LDAP_OPT_PROTOCOL_VERSION, opt);
-//
-//  // Пытаемся привязаться
-//  rc := ldap_simple_bind_s(ld,
-//    PAnsiChar(AnsiString('itus@dialine.local')),
-//    PAnsiChar(AnsiString('123456789')));
-//
-//  if rc = LDAP_SUCCESS then
-//    resu := True;
-//
-//  ldap_unbind(ld);
-
-
-
-//  // Получаем размеры рабочего стола с учетом панели задач
-//  SystemParametersInfo(SPI_GETWORKAREA, 0, @ScreenRect, 0);
-//
-//  // Устанавливаем позицию формы
-//  FormChatNewMessage.Left := ScreenRect.Right - FormChatNewMessage.Width - 10; // 10 - отступ от края экрана
-//  FormChatNewMessage.Top := ScreenRect.Bottom - FormChatNewMessage.Height - 10; // 10 - отступ от края экрана
-//
-//  // Показываем форму
-//
-//
-//  FormChatNewMessage.Show;
-//
-//
-//
-//
-//  FlashInfo.cbSize := SizeOf(TFlashWindowInfo);
-//  FlashInfo.hwnd := Handle; // Указываем дескриптор окна
-//  FlashInfo.dwFlags := FLASHW_ALL; // Мерцание всего окна
-//  FlashInfo.uCount := 999999999; // Количество мерцаний
-//  FlashInfo.dwTimeout := 0; // Интервал между мерцаниями (0 - стандартный)
-//
-//  FlashWindowEx(FlashInfo);
-
-  // test:=TDebugStruct.Create('Thread_test');
-  // SharedCountResponseThread.Add(test);
-  // SharedCountResponseThread.SetCurrentResponse('Thread_test',100);
-
- // CreateThreadDashboard(test);
-
+ ShowMessage(nameUser);
 end;
 
 

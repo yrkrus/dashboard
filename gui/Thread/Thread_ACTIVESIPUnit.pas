@@ -272,7 +272,7 @@ begin
     // ===== ОЧЕРЕДЬ =====
     begin
      if p_ActiveSipOperators.GetListOperators_Queue(i) = queue_null then ListItem.SubItems.Add('---')
-     else ListItem.SubItems.Add(EnumQueueCurrentToString(p_ActiveSipOperators.GetListOperators_Queue(i)));
+     else ListItem.SubItems.Add(EnumQueueToString(p_ActiveSipOperators.GetListOperators_Queue(i)));
     end;
 
     // ===== ОБЩЕЕ ВРЕМЯ РАЗГОВОРА =====
@@ -460,7 +460,7 @@ begin
       // ===== ОЧЕРЕДЬ =====
       begin
        if p_ActiveSipOperators.GetListOperators_Queue(i) = queue_null then ListItem.SubItems[6]:='---'
-       else ListItem.SubItems[6]:=EnumQueueCurrentToString(p_ActiveSipOperators.GetListOperators_Queue(i));
+       else ListItem.SubItems[6]:=EnumQueueToString(p_ActiveSipOperators.GetListOperators_Queue(i));
       end;
 
       // ===== ОБЩЕЕ ВРЕМЯ РАЗГОВОРА =====

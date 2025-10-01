@@ -38,7 +38,8 @@ procedure DeleteOperator(InUserID:Integer);                                     
 function getUserPwd(InUserID:Integer):Integer;                                       // полчуение userPwd из userID
 function getUserLogin(InUserID:Integer):string;                                      // полчуение userLogin из userID
 function GetUserRoleSTR(InUserID:Integer):string;                                    // отображение роли пользвоател€
-function correctTimeQueue(InQueue:enumQueue;InTime:string):string;            // правильноt отображение времени в очереди
+function CorrectTimeQueue(InQueue:enumQueue;InTime:string;
+                           var _correctedTime:string):Boolean;                      // правильноt отображение времени в очереди
 function GetUserRePassword(InUserID:Integer):Boolean;                                // необходимо ли помен€ть пароль при входе
 function UpdateUserPassword(InUserID,InUserNewPassword:Integer;
                             var _errorDescription:string):boolean;                   // обновление парол€ пользовател€
@@ -161,7 +162,7 @@ implementation
 uses
   FormPropushennieUnit, Thread_StatisticsUnit, Thread_IVRUnit, Thread_QUEUEUnit,
   Thread_ACTIVESIPUnit, FormAboutUnit, FormServerIKCheckUnit, Thread_CHECKSERVERSUnit,
-  FormSettingsUnit, FormAuthUnit, FormErrorUnit, FormWaitUnit, Thread_AnsweredQueueUnit,
+  FormAuthUnit, FormErrorUnit, FormWaitUnit, Thread_AnsweredQueueUnit,
   FormUsersUnit, TTranslirtUnit, Thread_ACTIVESIP_updatetalkUnit, Thread_ACTIVESIP_updatePhoneTalkUnit,
   Thread_ACTIVESIP_countTalkUnit, Thread_ACTIVESIP_QueueUnit, FormActiveSessionUnit, TIVRUnit,
   TXmlUnit, TOnlineChat, Thread_ChatUnit, Thread_ForecastUnit,
@@ -1111,23 +1112,25 @@ begin
 end;
 
 // правильное отображение времени в очереди
-function correctTimeQueue(InQueue:enumQueue;InTime:string):string;
+function CorrectTimeQueue(InQueue:enumQueue;InTime:string;
+                          var _correctedTime:string):Boolean;
 var
  correctTime,delta_time:Integer;
 begin
+  Result:=False;
   // найдем корректно врем€ дл€ нужной очереди
   try
     delta_time:=GetIVRTimeQueue(InQueue);
   except
     delta_time:=-1;
-    Result:='null';
     Exit;
   end;
 
   // переведем врем€ в секунлы
   correctTime:=getTimeAnsweredToSeconds(InTime) - delta_time;
 
-  Result:=GetTimeAnsweredSecondsToString(correctTime);
+  _correctedTime:=GetTimeAnsweredSecondsToString(correctTime);
+  Result:=True;
 end;
 
 // кол-во отвеченных звонков оператором
@@ -4735,8 +4738,7 @@ begin
   end;
 
   // отображать ли excel рассылку
-  if (SharedCurrentUserLogon.GetRole = role_senior_operator) or
-     (SharedCurrentUserLogon.GetRole = role_operator) or
+  if (SharedCurrentUserLogon.GetRole = role_operator) or
      (SharedCurrentUserLogon.GetRole = role_operator_no_dash)
    then showSendingSMS:=False
    else showSendingSMS:=True;
@@ -5071,6 +5073,11 @@ begin
   if AnsiPos('EDatabaseError',_errorMessage )<> 0 then begin
     _errorMessage:='„то то пошло не так и база данных стала недоступна';
     EggMessage:='—лыш,'+#13+'давай поднимайс€!';
+  end;
+
+  // не правильна€ авторизаци€
+  if AnsiPos('ѕревышено максимальное кол-во попыток входа',_errorMessage )<> 0 then begin
+    EggMessage:='—лыш,'+#13+'давай авторизуйс€!';
   end;
 
 

@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls,
-  Vcl.Buttons, TCheckServersUnit, TCustomTypeUnit;
+  Vcl.Buttons, TCheckServersUnit, TCustomTypeUnit, System.ImageList, Vcl.ImgList,Vcl.Imaging.pngimage;
 
 type
   TFormGenerateSMS = class(TForm)
@@ -54,6 +54,8 @@ type
     procedure edtSummaKeyPress(Sender: TObject; var Key: Char);
     procedure btnPrimerClick(Sender: TObject);
     procedure lblAutoPodborClick(Sender: TObject);
+    procedure comboxReasonSmsMessageDrawItem(Control: TWinControl;
+      Index: Integer; Rect: TRect; State: TOwnerDrawState);
   private
     { Private declarations }
   list_clinic    :TCheckServersIK;  // список с клиниками
@@ -87,6 +89,10 @@ type
 
   procedure CreateMessage;    // создать сообщение
 
+  // загрузка иконок в лист бокс для последующего отображения в combobox
+  procedure LoadIconListBox;
+
+
   public
     { Public declarations }
   procedure SetServiceChoise(_service:string);   // добавление в списко выбьранных услуг
@@ -106,7 +112,7 @@ var
 implementation
 
 uses
-  FunctionUnit, FormHomeUnit, GlobalVariables, TMessageGeneratorSMSUnit, FormServiceChoiseUnit, DMUnit, TAutoPodborPeopleUnit, FormPodborUnit;
+  FunctionUnit, FormHomeUnit, GlobalVariables, TMessageGeneratorSMSUnit, FormServiceChoiseUnit, DMUnit, TAutoPodborPeopleUnit, FormPodborUnit, GlobalImageDestination;
 
 
 {$R *.dfm}
@@ -559,6 +565,10 @@ begin
      // адрес клинки
      EnableParamsAddressClinic;
    end;
+   reason_OtmenaPriemaNal_DMS:begin                // Отмена приема, врач не принимает по ДМС
+     // + ФИО + пол
+     EnableParamsFIO;
+   end;
   end;
 end;
 
@@ -586,6 +596,45 @@ begin
 end;
 
 
+// загрузка иконок в лист бокс для последующего отображения в combobox
+procedure TFormGenerateSMS.LoadIconListBox;
+const
+ SIZE_ICON:Word=16;
+var
+ i:Integer;
+ pngbmp: TPngImage;
+ bmp: TBitmap;
+begin
+ // **********************************************************
+ // добавление тут + в events DrawItem самого combox
+ // **********************************************************
+  if not FileExists(ICON_SMS_CHOISE_REASON) then Exit;
+
+  // изменение стиля для отображения иконок в combox
+  comboxReasonSmsMessage.Style:=csOwnerDrawFixed;
+
+  DM.ImageListIcon.SetSize(SIZE_ICON,SIZE_ICON);
+  DM.ImageListIcon.ColorDepth:=cd32bit;
+
+  pngbmp:=TPngImage.Create;
+  bmp:=TBitmap.Create;
+
+  pngbmp.LoadFromFile(ICON_SMS_CHOISE_REASON);
+
+  // сжимаем иконку до размера 16х16
+  with bmp do begin
+   Height:=SIZE_ICON;
+   Width:=SIZE_ICON;
+   Canvas.StretchDraw(Rect(0, 0, Width, Height), pngbmp);
+  end;
+
+  DM.ImageListIcon.Add(bmp, nil);
+
+  if pngbmp<>nil then pngbmp.Free;
+  if bmp<>nil then bmp.Free;
+end;
+
+
 procedure TFormGenerateSMS.CreateReasonBox;
 var
  i:Integer;
@@ -594,10 +643,16 @@ begin
   for i:=Ord(Low(enumReasonSmsMessage)) to Ord(High(enumReasonSmsMessage)) do
   begin
     reason:=enumReasonSmsMessage(i);
-    if reason = reason_Empty then Continue; // пропускаем пустой -1 
+    if reason = reason_Empty then Continue; // пропускаем пустой -1
     
     comboxReasonSmsMessage.Items.Add(EnumReasonSmsMessageToString(reason));
   end;
+
+  // кол-во значений выбора в выпадабщем меню
+  comboxReasonSmsMessage.DropDownCount:=Ord(High(enumReasonSmsMessage))+1;
+
+  // прогрузка инконки выбора
+  LoadIconListBox;
 end;
 
 
@@ -677,6 +732,44 @@ begin
   // отображаем нужные параметры
  params:=StringToEnumReasonSmsMessage(comboxReasonSmsMessage.Items[comboxReasonSmsMessage.ItemIndex]);
  ShowParams(params);
+end;
+
+procedure TFormGenerateSMS.comboxReasonSmsMessageDrawItem(Control: TWinControl;
+  Index: Integer; Rect: TRect; State: TOwnerDrawState);
+var
+ ComboBox: TComboBox;
+ bitmap: TBitmap;
+ IconIndex:Integer;
+begin
+  if DM.ImageListIcon.Count = 0 then  Exit;
+
+  IconIndex:=0;
+  ComboBox:=(Control as TComboBox);
+  Bitmap:= TBitmap.Create;
+  try
+    DM.ImageListIcon.GetBitmap(IconIndex, Bitmap);
+    with ComboBox.Canvas do
+    begin
+      FillRect(Rect);
+      if Bitmap.Handle <> 0 then
+        Draw(Rect.Left + 2, Rect.Top, Bitmap);
+      Rect := Bounds(
+        Rect.Left + ComboBox.ItemHeight + 3,
+        Rect.Top,
+        Rect.Right - Rect.Left,
+        Rect.Bottom - Rect.Top
+      );
+      DrawText(
+        handle,
+        PChar(ComboBox.Items[Index]),
+        length(ComboBox.Items[index]),
+        Rect,
+        DT_VCENTER + DT_SINGLELINE
+      );
+    end;
+  finally
+    Bitmap.Free;
+  end;
 end;
 
 procedure TFormGenerateSMS.CreateListAddressClinic;
@@ -767,7 +860,7 @@ begin
   if people.Count = 0 then begin
     showWait(show_close);
     Screen.Cursor:=crDefault;
-    MessageBox(Handle,PChar('Не найдено пациентов с таким номером'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    MessageBox(Handle,PChar('В базе ИК нет записи по номеру '+#39+phonePodbor+#39),PChar('Нет записи'),MB_OK+MB_ICONINFORMATION);
     Exit;
   end;
 

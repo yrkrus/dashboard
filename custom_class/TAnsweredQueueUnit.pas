@@ -25,6 +25,9 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
    type enumStatusSL = (eSlUp,
                         eSlDown);
 
+   type enumStatusAR = (eARUp,
+                        eARDown);
+
 
    // class TStructAnswered_list
   type
@@ -79,6 +82,11 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
       m_SL            :Double;                          // текущее значение SL = 0.0   ↑↓
       m_SL_type       :enumStatusSL;
 
+      // AR
+      m_staticText_ar :TStaticText;
+      m_AR            :Double;                          // текущее значение AR = 0.0   ↑↓
+      m_AR_type       :enumStatusAR;
+
       function isExistAnsweredId(id:Integer): Boolean;                  // есть ли такой id в памяти
       procedure addAnswered(id,answered_time:Integer);                  // добавление в память
       procedure FindMaxAnsweredTime;                  // нахождене максимального времени ожидания в очереди
@@ -93,6 +101,7 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
       destructor  Destroy;                    overload;
 
       procedure SetLinkSL(var _sl:TStaticText); // линковка SL(только при инициализации)
+      procedure SetLinkAR(var _ar:TStaticText); // линковка AR(только при инициализации)
 
       function GetCountAllAnswered          : Integer;                  // всего отвечено
       function isExistNewAnswered           : Boolean;                  // есть ли новые отвеченные по БД
@@ -107,6 +116,8 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
       procedure UpdateSL;                       // обновдение SL
       procedure ShowSL;                         // обновдение SL
 
+      procedure UpdateAR;                       // обновдение AR
+      procedure ShowAR;                         // обновдение AR
 
       end;
  // class TAnsweredQueue END
@@ -199,7 +210,8 @@ end;
 
  procedure TAnsweredQueue.Clear;
  const
- colorGood:TColor     = $0031851F;
+  // Очень хорошо — тёмно-зелёный
+  colorVeryGood: TColor = $0031851F; // RGB(31,133,49)
  var
   i:Integer;
  begin
@@ -212,10 +224,24 @@ end;
     Self.m_SL:=100;
     Self.m_SL_type:=eSlUp;
 
+    Self.m_AR:=0;
+    Self.m_AR_type:=eARUp;
+
+    // SL
     if Assigned(m_staticText_sl) then begin
       with m_staticText_sl do begin
         Caption:='SL: '+GetProcent(m_SL,False)+'%';
-        Font.Color:=colorGood;
+        Font.Color:=colorVeryGood;
+        InitiateAction;
+        Repaint;
+      end;
+    end;
+
+    // AR
+    if Assigned(m_staticText_ar) then begin
+      with m_staticText_ar do begin
+        Caption:='AR: '+GetProcent(m_AR,False)+'%';
+        Font.Color:=colorVeryGood;
         InitiateAction;
         Repaint;
       end;
@@ -419,6 +445,12 @@ begin
  m_staticText_sl:=_sl;
 end;
 
+// линковка AR(только при инициализации)
+procedure TAnsweredQueue.SetLinkAR(var _ar:TStaticText);
+begin
+ m_staticText_ar:=_ar;
+end;
+
 
 function TAnsweredQueue.isExistNewAnswered;
 var
@@ -563,13 +595,35 @@ begin
  else m_SL_type:=eSlDown;
 end;
 
+
+// обновдение AR
+procedure TAnsweredQueue.UpdateAR;
+var
+ countCalls:Integer;
+ oldAR:Double;
+begin
+ m_queueStatistics.Update;
+
+ if m_queueStatistics.CountAllCalls = 0 then Exit;
+ oldAR:=m_AR;
+ // расчет AR = (пропущенные / все звонки) * 100
+ m_AR:= ( m_queueStatistics.CountAllCallsMissed / m_queueStatistics.CountAllCalls) * 100;
+
+ if m_AR > oldAR then m_AR_type:=eARUp
+ else m_AR_type:=eARDown;
+end;
+
  // обновдение SL
 procedure TAnsweredQueue.ShowSL;
 const
- colorGood:TColor     = $0031851F;
- colorNotBad:Tcolor   = $0000D5D5;
- colorBad:TColor      = $0000C8C8;
- colorVeryBad:TColor  = $0000009B;
+ // Очень хорошо — тёмно-зелёный
+  colorVeryGood: TColor = $0031851F; // RGB(31,133,49)
+  // Хорошо — жёлто-зелёный
+  colorGood:     TColor = $0000D5D5; // RGB(213,213,0)
+  // Плохо — тёмно-жёлтый / горчичный
+  colorBad:      TColor = $0000C8C8; // RGB(200,200,0)
+  // Очень плохо — тёмно-красный
+  colorVeryBad:  TColor = $0000009B; // RGB(155,0,0)
  slUP:string          = '↑';
  slDOWN:string        = '↓';
 
@@ -596,17 +650,59 @@ begin
         Font.Color:=colorBad;
      end;
      60..79:begin
-        Font.Color:=colorNotBad;
-     end;
-     80..100:begin
         Font.Color:=colorGood;
      end;
-
-    // Hint:='Текущий SL = '+GetProcent(m_SL,False);
+     80..100:begin
+        Font.Color:=colorVeryGood;
+     end;
    end;
+  end;
+end;
 
+// обновдение AR
+procedure TAnsweredQueue.ShowAR;
+const
+ // Очень хорошо — тёмно-зелёный
+  colorVeryGood: TColor = $0031851F; // RGB(31,133,49)
+  // Хорошо — жёлто-зелёный
+  colorGood:     TColor = $0000D5D5; // RGB(213,213,0)
+  // Плохо — тёмно-жёлтый / горчичный
+  colorBad:      TColor = $0000C8C8; // RGB(200,200,0)
+  // Очень плохо — тёмно-красный
+  colorVeryBad:  TColor = $0000009B; // RGB(155,0,0)
+ arUP:string          = '↑';
+ arDOWN:string        = '↓';
+var
+ currentStatusAR:string;
+begin
+
+  case m_AR_type of
+   eArUp:   currentStatusAR:=arUP;
+   eARDown: currentStatusAR:=arDOWN;
   end;
 
+  // считаем AR
+  with m_staticText_ar do begin
+     Caption:='AR: ' + currentStatusAR + GetProcent(m_AR,True)+'%';
+     InitiateAction;
+     Repaint;
+
+   case Round(m_AR) of
+     0..2: begin
+        Font.Color:=colorVeryGood;
+     end;
+     3..5: begin
+        Font.Color:=colorGood;
+     end;
+     6..10:begin
+        Font.Color:=colorBad;
+     end;
+     11..100:begin
+        Font.Color:=colorVeryBad;
+     end;
+   end;
+  end;
 end;
+
 
 end.

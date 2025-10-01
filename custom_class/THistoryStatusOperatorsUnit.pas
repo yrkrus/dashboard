@@ -370,6 +370,8 @@ begin
     eLog_callback             :m_status.m_callback  := m_status.m_callback + _count;          // callback
     eLog_create_new_user      :Exit;         // создание нового пользователя  (не считаем)
     eLog_edit_user            :Exit;         // редактирование пользователя  (не считаем)
+    eLog_add_queue_5911       :m_status.m_available := m_status.m_available + _count;         // добавление в очередь 5911
+    eLog_del_queue_5911       :Exit;         // удаление из очереди 5911 (не считаем)
   end;
 end;
 end.

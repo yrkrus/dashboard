@@ -16,6 +16,7 @@ begin
   Result:=GetServerName;
  //  Result:=GetServerNameTest;
 end;
+// ======== СМЕНА АДРЕСА БАЗЫ ДАННЫХ =========
 
 function GetDefaultDataBase:PChar; stdcall; export;
 begin
@@ -611,10 +612,13 @@ begin
 
       case InQueue of
          queue_5000:begin
-           SQL.Add('select queue_5000_time from settings order by id desc limit 1');
+           SQL.Add('select queue_5000_time from settings order by date_time desc limit 1');
          end;
          queue_5050:begin
-           SQL.Add('select queue_5050_time from settings order by id desc limit 1');
+           SQL.Add('select queue_5050_time from settings order by date_time desc limit 1');
+         end;
+         queue_5911:begin
+           SQL.Add('select queue_5911_time from settings order by date_time desc limit 1');
          end;
       end;
 
@@ -861,7 +865,7 @@ end;
 
 
 // нахождение на какой транк звонил номер который ушел в очередь
-function GetPhoneTrunkQueue(_table:enumReportTableIVR; _phone:string;_timecall:string):PChar; stdcall; export;
+function GetPhoneTrunkQueue(_table:enumReportTableIVR; _phone:string;_call_id:string):PChar; stdcall; export;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -881,7 +885,7 @@ begin
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
-      SQL.Add('select trunk from '+table+' where phone = '+#39+_phone+#39+' and date_time < '+#39+GetDateTimeToDateBD(_timecall)+#39+' and to_queue = 1 limit 1');
+      SQL.Add('select trunk from '+table+' where phone = '+#39+_phone+#39+' and call_id = '+#39+_call_id+#39+' and to_queue = 1 limit 1');
 
       Active:=True;
       if Fields[0].Value<>null then begin
@@ -897,6 +901,10 @@ begin
     end;
   end;
 end;
+
+
+// нахождение id_ivr через таблицу на какой транк звонил номер который ушел в очередь
+//function GetQueuePhoneCallIdIvr()
 
 
 // нахождение у какого оператора зарегистрирован телефон

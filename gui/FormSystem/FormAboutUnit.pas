@@ -12,7 +12,6 @@ type
   TFormAbout = class(TForm)
     imgAbout: TImage;
     lblDevelop: TLabel;
-    TimerStartPashalka1: TTimer;
     ImgNewYear: TImage;
     PageInfo: TPageControl;
     sheetGUI: TTabSheet;
@@ -34,7 +33,6 @@ type
     ImageList1: TImageList;
     procedure FormShow(Sender: TObject);
     procedure imgAboutClick(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure TimerStartPashalka1Timer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure ShowVersion;
@@ -69,11 +67,6 @@ begin
   end;
 end;
 
-procedure TFormAbout.FormClose(Sender: TObject; var Action: TCloseAction);
-begin
-  TimerStartPashalka1.Enabled:=False;
-end;
-
 procedure TFormAbout.FormCreate(Sender: TObject);
 begin
   Randomize;
@@ -90,8 +83,6 @@ begin
   lblDevelop.Caption:=GetCopyright;
 
   Screen.Cursor:=crDefault;
-
-  TimerStartPashalka1.Enabled:=True;
 end;
 
 procedure TFormAbout.imgAboutClick(Sender: TObject);

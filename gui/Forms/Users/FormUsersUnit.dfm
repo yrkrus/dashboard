@@ -21,23 +21,23 @@ object FormUsers: TFormUsers
   PixelsPerInch = 96
   TextHeight = 16
   object PageControl: TPageControl
-    Left = 860
-    Top = 355
-    Width = 717
-    Height = 230
-    ActivePage = OnlyOPerators
+    Left = 35
+    Top = 373
+    Width = 964
+    Height = 295
+    ActivePage = UsersAll
     Align = alCustom
     MultiLine = True
-    TabOrder = 1
+    TabOrder = 6
     OnChange = PageControlChange
     object UsersAll: TTabSheet
       Caption = #1042#1089#1077' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1080
-      ExplicitWidth = 974
-      ExplicitHeight = 370
+      ExplicitWidth = 846
+      ExplicitHeight = 199
       object listSG_Users_Footer: TStringGrid
         Left = 0
         Top = 0
-        Width = 709
+        Width = 956
         Height = 24
         Align = alTop
         BorderStyle = bsNone
@@ -54,7 +54,7 @@ object FormUsers: TFormUsers
         ParentFont = False
         ScrollBars = ssNone
         TabOrder = 0
-        ExplicitWidth = 974
+        ExplicitWidth = 846
         ColWidths = (
           40
           235
@@ -68,8 +68,8 @@ object FormUsers: TFormUsers
       object listSG_Users: TStringGrid
         Left = 0
         Top = 24
-        Width = 709
-        Height = 175
+        Width = 956
+        Height = 240
         Align = alClient
         BorderStyle = bsNone
         FixedColor = clWindow
@@ -86,8 +86,8 @@ object FormUsers: TFormUsers
         ScrollBars = ssVertical
         TabOrder = 1
         OnSelectCell = listSG_UsersSelectCell
-        ExplicitWidth = 974
-        ExplicitHeight = 346
+        ExplicitWidth = 846
+        ExplicitHeight = 175
         ColWidths = (
           40
           236
@@ -101,12 +101,12 @@ object FormUsers: TFormUsers
     object OnlyOPerators: TTabSheet
       Caption = #1054#1087#1077#1088#1072#1090#1086#1088#1099
       ImageIndex = 1
-      ExplicitWidth = 545
+      ExplicitHeight = 199
       object listSG_Operators: TStringGrid
         Left = 0
         Top = 24
-        Width = 709
-        Height = 175
+        Width = 956
+        Height = 240
         Align = alClient
         BorderStyle = bsNone
         FixedColor = clWindow
@@ -123,7 +123,7 @@ object FormUsers: TFormUsers
         ScrollBars = ssVertical
         TabOrder = 1
         OnSelectCell = listSG_OperatorsSelectCell
-        ExplicitWidth = 545
+        ExplicitHeight = 175
         ColWidths = (
           40
           271
@@ -136,7 +136,7 @@ object FormUsers: TFormUsers
       object listSG_Operators_Footer: TStringGrid
         Left = 0
         Top = 0
-        Width = 709
+        Width = 956
         Height = 24
         Align = alTop
         BorderStyle = bsNone
@@ -153,7 +153,6 @@ object FormUsers: TFormUsers
         ParentFont = False
         ScrollBars = ssNone
         TabOrder = 0
-        ExplicitWidth = 545
         ColWidths = (
           40
           271
@@ -167,8 +166,8 @@ object FormUsers: TFormUsers
     end
   end
   object btnShowUsers: TBitBtn
-    Left = 96
-    Top = 397
+    Left = 268
+    Top = 245
     Width = 180
     Height = 47
     Caption = '&'#1044#1086#1073#1072#1074#1080#1090#1100
@@ -247,13 +246,13 @@ object FormUsers: TFormUsers
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 2
+    TabOrder = 1
     WordWrap = True
     OnClick = btnShowUsersClick
   end
   object btnDisable: TBitBtn
-    Left = 297
-    Top = 397
+    Left = 469
+    Top = 245
     Width = 180
     Height = 47
     Caption = '&'#1054#1090#1082#1083#1102#1095#1080#1090#1100
@@ -332,13 +331,13 @@ object FormUsers: TFormUsers
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 3
+    TabOrder = 2
     WordWrap = True
     OnClick = btnDisableClick
   end
   object btnEditUser: TBitBtn
-    Left = 96
-    Top = 450
+    Left = 268
+    Top = 298
     Width = 180
     Height = 47
     Caption = '&'#1056#1077#1076#1072#1082#1090#1080#1088#1086#1074#1072#1090#1100
@@ -422,17 +421,17 @@ object FormUsers: TFormUsers
     OnClick = btnEditUserClick
   end
   object chkboxViewDisabled: TCheckBox
-    Left = 588
-    Top = 450
+    Left = 52
+    Top = 290
     Width = 155
     Height = 17
     Caption = #1087#1086#1082#1072#1079#1072#1090#1100' '#1086#1090#1082#1083#1102#1095#1077#1085#1085#1099#1093
-    TabOrder = 6
+    TabOrder = 3
     OnClick = chkboxViewDisabledClick
   end
   object btnEnable: TBitBtn
-    Left = 297
-    Top = 450
+    Left = 469
+    Top = 298
     Width = 180
     Height = 47
     Caption = '&'#1042#1082#1083#1102#1095#1080#1090#1100
@@ -518,7 +517,7 @@ object FormUsers: TFormUsers
   object panel_Users: TPanel
     Left = 4
     Top = 7
-    Width = 950
+    Width = 1061
     Height = 259
     BevelInner = bvLowered
     ShowCaption = False
@@ -526,7 +525,7 @@ object FormUsers: TFormUsers
     object list_Users: TListView
       Left = 2
       Top = 2
-      Width = 946
+      Width = 1057
       Height = 255
       Align = alClient
       BorderStyle = bsNone
@@ -544,8 +543,6 @@ object FormUsers: TFormUsers
       ParentFont = False
       TabOrder = 0
       ViewStyle = vsReport
-      ExplicitWidth = 660
-      ExplicitHeight = 615
     end
     object st_NoUsers: TStaticText
       Left = 0

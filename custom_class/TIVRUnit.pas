@@ -28,7 +28,7 @@ uses  System.Classes,
       public
       m_id                                   : Integer; // id по БД
       m_phone                                : string;  // номер телефона
-      m_waiting_time_start                   : string;  // стартовое значение времени ожидание
+      m_waiting_time_start                   : Integer;  // стартовое значение времени ожидание
       m_trunk                                : string;  // откуда пришел звонок
       m_countNoChange                        : Integer; // кол-во раз сколько не изменилось значение ожидания во времени
 
@@ -67,8 +67,8 @@ uses  System.Classes,
 
       procedure ClearActiveAll;
       function GetLastFreeIDStructActiveIVR:Integer;      //свободный  id какой есть в TIVRStruct
-      function isChangeWaitingTime(In_m_ID:Integer; InNewTime:string):Boolean; // проверка изменилось ли время
-      function GetWaitingTime(In_m_ID:Integer):string;  // нахождение времени ожидания
+      function isChangeWaitingTime(In_m_ID:Integer; InNewTime:Integer):Boolean; // проверка изменилось ли время
+      function GetWaitingTime(In_m_ID:Integer):Integer;  // нахождение времени ожидания
       function GetStructIVRID(In_m_ID:Integer):Integer; // нахождение номера TIVRStruct по его m_id
       function isExistIDIVRtoBD(In_m_id:Integer):Boolean;  // проверка есть ли еще звонок в IVR по БД
       procedure CheckToQueuePhone;                      // проверка ушел ли у нас в очередь звонок
@@ -96,7 +96,7 @@ constructor TIVRStruct.Create;
  begin
    Self.m_id:=0;
    Self.m_phone:='';
-   Self.m_waiting_time_start:='';
+   Self.m_waiting_time_start:=0;
    Self.m_trunk:='';
    Self.m_countNoChange:=0;
  end;
@@ -180,14 +180,14 @@ begin
 end;
 
 // проверка изменилось ли время
-function TIVR.isChangeWaitingTime(In_m_ID:Integer; InNewTime:string):Boolean;
+function TIVR.isChangeWaitingTime(In_m_ID:Integer; InNewTime:Integer):Boolean;
 var
- oldWaiting:string;
+ oldWaiting:Integer;
 begin
  Result:=False;
 
  oldWaiting:=GetWaitingTime(In_m_ID);
- if oldWaiting='' then Exit;
+ if oldWaiting=0 then Exit;
 
  // время изменилось
  if oldWaiting<>InNewTime then Result:=True;
@@ -196,11 +196,11 @@ end;
 
 
 // нахождение времени ожидания
-function TIVR.GetWaitingTime(In_m_ID:Integer):string;
+function TIVR.GetWaitingTime(In_m_ID:Integer):Integer;
 var
  i:Integer;
 begin
- Result:='';
+ Result:=0;
   if m_mutex.WaitFor(INFINITE)=wrSignaled then
   try
     for i:=Low(listActiveIVR) to High(listActiveIVR) do begin
@@ -396,7 +396,7 @@ end;
        if countIVR>=1 then begin
 
           SQL.Clear;
-          SQL.Add('select id,phone,waiting_time,trunk from ivr where to_queue=''0'' and  date_time > '+#39+GetNowDateTimeDec(cTimeResponse)+#39);
+          SQL.Add('select id,phone,call_time,trunk from ivr where to_queue=''0'' and date_time > '+#39+GetNowDateTimeDec(cTimeResponse)+#39);
 
           Active:=True;
 
@@ -422,9 +422,9 @@ end;
                  currentIDStructIVR:=GetStructIVRID(StrToInt(VarToStr(Fields[0].Value)));
 
                  // проверим изменилось ли время
-                 if isChangeWaitingTime(StrToInt(VarToStr(Fields[0].Value)),VarToStr(Fields[2].Value)) then begin
+                 if isChangeWaitingTime(StrToInt(VarToStr(Fields[0].Value)),StrToInt(VarToStr(Fields[2].Value))) then begin
                    // обновим время
-                   listActiveIVR[currentIDStructIVR].m_waiting_time_start:=VarToStr(Fields[2].Value); //Copy(VarToStr(Fields[2].Value), 4, 5);
+                   listActiveIVR[currentIDStructIVR].m_waiting_time_start:=StrToInt(VarToStr(Fields[2].Value)); //Copy(VarToStr(Fields[2].Value), 4, 5);
                    listActiveIVR[currentIDStructIVR].m_countNoChange:=0;
                  end
                  else begin // время не изменилось значит надо увеличить счетчик
@@ -439,7 +439,7 @@ end;
                  begin // тут первый запуск, чтобы были какие то данные которые будем проверять
                   listActiveIVR[freeIDStructIVR].m_id:=StrToInt(VarToStr(Fields[0].Value));
                   listActiveIVR[freeIDStructIVR].m_phone:=VarToStr(Fields[1].Value);
-                  listActiveIVR[freeIDStructIVR].m_waiting_time_start:=VarToStr(Fields[2].Value);// Copy(VarToStr(Fields[2].Value), 4, 5);
+                  listActiveIVR[freeIDStructIVR].m_waiting_time_start:=StrToInt(VarToStr(Fields[2].Value));
                   listActiveIVR[freeIDStructIVR].m_trunk:=VarToStr(Fields[3].Value);
                  end;
               end;

@@ -161,4 +161,9 @@ object DM: TDM
       Visible = False
     end
   end
+  object ImageListIcon: TImageList
+    Masked = False
+    Left = 161
+    Top = 10
+  end
 end

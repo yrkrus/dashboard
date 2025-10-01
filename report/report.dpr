@@ -19,9 +19,9 @@ uses
   FormReportShowStatusOperatorsUnit in 'FormReportShowStatusOperatorsUnit.pas' {FormReportShowStatusOperators},
   TAutoPodborPeopleUnit in '..\custom_class\TAutoPodborPeopleUnit.pas',
   TLogFileUnit in '..\custom_class\TLogFileUnit.pas',
-  GlobalImageDestination in '..\gui\GlobalImageDestination.pas',
-  GlobalVariablesLinkDLL in '..\gui\GlobalVariablesLinkDLL.pas',
-  TDisableOperatorUnit in '..\custom_class\from_report\TDisableOperatorUnit.pas';
+  TDisableOperatorUnit in '..\custom_class\from_report\TDisableOperatorUnit.pas',
+  GlobalImageDestination in '..\custom_global\GlobalImageDestination.pas',
+  GlobalVariablesLinkDLL in '..\custom_global\GlobalVariablesLinkDLL.pas';
 
 {$R *.res}
 

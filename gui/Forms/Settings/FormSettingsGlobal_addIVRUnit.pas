@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ComCtrls,
   Vcl.ExtCtrls, Vcl.Grids,Data.Win.ADODB, Data.DB, IdException, Vcl.Menus,
-  Vcl.Mask, System.DateUtils;
+  Vcl.Mask, System.DateUtils, TIVRTimeUnit;
 
 type
   TFormSettingsGlobal_addIVR = class(TForm)
@@ -21,14 +21,22 @@ type
     chkboxMyTime: TCheckBox;
     DateQueue: TDateTimePicker;
     TimeQueue: TDateTimePicker;
+    Label1: TLabel;
+    edt5911: TEdit;
+    StaticText3: TStaticText;
     procedure btnAddClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure edt5000KeyPress(Sender: TObject; var Key: Char);
     procedure edt5050KeyPress(Sender: TObject; var Key: Char);
     procedure chkboxMyTimeClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure edt5911KeyPress(Sender: TObject; var Key: Char);
   private
     { Private declarations }
+  m_ivrTime:TIVRTime;
+  function GetCheckFields(var _errorDescription:string):Boolean;
+  function Insert(_anyTime:Boolean; var _errorDescription:string):Boolean;
+
   public
     { Public declarations }
   end;
@@ -43,131 +51,99 @@ uses
 
 {$R *.dfm}
 
-function getResponseBD(InQueue5000,InQueue5050:string; InEditTime:Boolean = False):string;
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
- CodOshibki:string;
-begin
-  Screen.Cursor:=crHourGlass;
-
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-    Screen.Cursor:=crDefault;
-    FreeAndNil(ado);
-    Exit;
-  end;
-
-  try
-    with ado do begin
-      ado.Connection:=serverConnect;
-      SQL.Clear;
-      if not InEditTime then SQL.Add('insert into settings (queue_5000_time,queue_5050_time) values ('+#39+InQueue5000+#39
-                                                                                                      +','+#39+InQueue5050+#39+')')
-      else begin
-
-       SQL.Add('insert into settings (queue_5000_time,queue_5050_time,date_time) values ('+#39+InQueue5000+#39
-                                                                                              +','+#39+InQueue5050+#39
-                                                                                              +','+#39+GetDateTimeToDateBD(DateToStr(FormSettingsGlobal_addIVR.DateQueue.Date)+' '+TimeToStr(FormSettingsGlobal_addIVR.TimeQueue.Time))+#39+')');
-      end;
-
-      try
-          ExecSQL;
-      except
-          on E:EIdException do begin
-             Screen.Cursor:=crDefault;
-             CodOshibki:=e.Message;
-             Result:='ОШИБКА! '+CodOshibki;
-             FreeAndNil(ado);
-             if Assigned(serverConnect) then begin
-               serverConnect.Close;
-               FreeAndNil(serverConnect);
-             end;
-             Exit;
-          end;
-      end;
-    end;
-  finally
-    FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
-  end;
-
-  Screen.Cursor:=crDefault;
-  Result:='OK';
-end;
-
 
 procedure Clear;
 begin
   with FormSettingsGlobal_addIVR do begin
     edt5000.Text:='';
     edt5050.Text:='';
+    edt5911.Text:='';
   end;
 end;
 
-function getCheckFields:string;
+function TFormSettingsGlobal_addIVR.GetCheckFields(var _errorDescription:string):Boolean;
 var
  dtPicker: TDateTimePicker; // Kind = dtkDate
  tmPicker: TDateTimePicker; // Kind = dtkTime
  combined: TDateTime;
  unixTime,unixCurrentTime:Int64;
 begin
-  Result:='OK';
+  Result:=false;
+  _errorDescription:='';
 
-  with FormSettingsGlobal_addIVR do begin
+  begin
     if edt5000.Text='' then begin
-       Result:='ОШИБКА! Не заполнено время очереди "5000"';
+       _errorDescription:='ОШИБКА! Не заполнено время очереди "5000"';
        Exit;
     end;
 
     if edt5050.Text='' then begin
-       Result:='ОШИБКА! Не заполнено время очереди "5050"';
+       _errorDescription:='ОШИБКА! Не заполнено время очереди "5050"';
        Exit;
     end;
 
-
-    // проверка даты
-    if chkboxMyTime.Checked then begin
-      combined := Trunc(DateQueue.DateTime)         // только «дата» в виде целого
-                + Frac(TimeQueue.DateTime);        // только время в виде дробной части
-
-      unixTime:=DateTimeToUnix(combined);
-      unixCurrentTime:=DateTimeToUnix(Now);
-
-      if unixTime>unixCurrentTime then begin
-       Result:='ОШИБКА! Дата не может быть из будущего';
+    if edt5911.Text='' then begin
+       _errorDescription:='ОШИБКА! Не заполнено время очереди "5911"';
        Exit;
-
-      end;
     end;
   end;
+
+  // проверка даты
+  if chkboxMyTime.Checked then begin
+    combined := Trunc(DateQueue.DateTime)        // только «дата» в виде целого
+              + Frac(TimeQueue.DateTime);        // только время в виде дробной части
+
+    unixTime:=DateTimeToUnix(combined);
+    unixCurrentTime:=DateTimeToUnix(Now);
+
+    if unixTime>unixCurrentTime then begin
+     _errorDescription:='ОШИБКА! Дата не может быть из будущего';
+     Exit;
+    end;
+  end;
+
+  Result:=True;
+end;
+
+
+function TFormSettingsGlobal_addIVR.Insert(_anyTime:Boolean; var _errorDescription:string):Boolean;
+var
+ dateTime:string;
+begin
+  Screen.Cursor:=crHourGlass;
+  Result:=False;
+  _errorDescription:='';
+
+  if not _anyTime then Result:=m_ivrTime.Insert(edt5000.Text,edt5050.Text,edt5911.Text,_errorDescription)
+  else begin
+   with FormSettingsGlobal_addIVR do begin
+     dateTime:=GetDateTimeToDateBD(DateToStr(DateQueue.Date)+' '+TimeToStr(TimeQueue.Time));
+   end;
+   Result:=m_ivrTime.Insert(edt5000.Text,edt5050.Text,edt5911.Text,dateTime,_errorDescription);
+  end;
+
+  Screen.Cursor:=crDefault;
 end;
 
 
 procedure TFormSettingsGlobal_addIVR.btnAddClick(Sender: TObject);
 var
-  resultat:string;
+  error:string;
+  anyTime:Boolean;
 begin
-   resultat:=getCheckFields;
-   if AnsiPos('ОШИБКА!',resultat)<>0 then begin
-     MessageBox(Handle,PChar(resultat),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+   if not GetCheckFields(error) then begin
+     MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
      Exit;
    end;
 
+   // добавляем
+  anyTime:=chkboxMyTime.Checked;
 
-   // добавляем  
-  if not chkboxMyTime.Checked then resultat:=getResponseBD(edt5000.Text,edt5050.Text)
-  else resultat:=getResponseBD(edt5000.Text,edt5050.Text,True);
-
-  if AnsiPos('ОШИБКА',resultat)<>0  then begin
+  if not (Insert(anyTime,error)) then begin
     // не удалось добавить
-    MessageBox(Handle,PChar(resultat),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-    Exit;
-  end;       
+   MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+   Exit;
+  end;
 
   // обновляем данные в окне настроек
   FormSettingsGlobal.LoadSettings;
@@ -200,6 +176,12 @@ begin
    if Not (Key in ['0'..'9'])then Key:=#0;
 end;
 
+procedure TFormSettingsGlobal_addIVR.edt5911KeyPress(Sender: TObject;
+  var Key: Char);
+begin
+  if Not (Key in ['0'..'9'])then Key:=#0;
+end;
+
 procedure TFormSettingsGlobal_addIVR.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
@@ -213,11 +195,9 @@ var
  DateNachalo:TDate;
 begin
 
-  //DateNachalo:=EncodeDateTime(YearOf(Now),MonthOf(Now),1, 00,00,01,000);
-  //FormatDateTime('yyyy-mm-dd hh:nn:ss',DateNachalo);
-  //DateTimeQueue.Value:=DateNachalo;
+  if not Assigned(m_ivrTime) then m_ivrTime:=TIVRTime.Create
+  else m_ivrTime.UpdateTime;
 
-  //DateTimePicker1.showTime:=True;
   DateQueue.Date:=Now;
 
   Clear;

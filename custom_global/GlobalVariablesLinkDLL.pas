@@ -45,7 +45,7 @@ uses
   function IsServerIkExistWorkingTime(_id:Integer):Boolean;             stdcall;  external 'core.dll';      // настроен ли время работы в сервере ИК
   function GetClinicId(_nameClinic:string):Integer;                     stdcall;  external 'core.dll';      // id клиники
   function GetAliveCoreDashboard:Boolean;                               stdcall;  external 'core.dll';      // есть ли подключение к ядро дашборда по tcp:12345 порту
-  function GetPhoneTrunkQueue(_table:enumReportTableIVR; _phone:string;_timecall:string):PChar; stdcall;  external 'core.dll';   // нахождение на какой транк звонил номер который ушел в очередь
+  function GetPhoneTrunkQueue(_table:enumReportTableIVR; _phone:string;_call_id:string):PChar; stdcall;  external 'core.dll';   // нахождение на какой транк звонил номер который ушел в очередь
   function GetPhoneOperatorQueue(_table:enumReportTableIVR; _phone:string;_timecall:string):PChar; stdcall;  external 'core.dll'; // нахождение у какого оператора зарегистрирован телефон
   function GetPhoneRegionQueue(_table:enumReportTableIVR; _phone:string;_timecall:string):PChar; stdcall;  external 'core.dll'; // нахождение у в каком регионе зарегистрирован телефон
   function GetCodeStatusSms(_idSMS:Integer; _table:enumReportTableSMSStatus):enumStatusCodeSms; stdcall;  external 'core.dll';      // нахождение статуса SMS сообщения
@@ -64,6 +64,8 @@ uses
  function GetTCPServerAddress:string;   stdcall;   external 'connect_to_server.dll'; // адрес tcp server core_dashboard
  function GetTCPServerPort:Word;        stdcall;   external 'connect_to_server.dll'; // port tcp server core_dashboard
 
+ // --- ldap.dll ---
+ function LdapAuth(_user,_pwd:string):Boolean;      stdcall;   external 'ldap.dll';  // проверка атворизации на ldap
 
 implementation
 

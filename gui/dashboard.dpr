@@ -50,7 +50,6 @@ uses
   FormGlobalSettingCheckFirebirdConnectUnit in 'Forms\Settings\FormGlobalSettingCheckFirebirdConnectUnit.pas' {FormGlobalSettingCheckFirebirdConnect},
   FormSettingsGlobal_addIVRUnit in 'Forms\Settings\FormSettingsGlobal_addIVRUnit.pas' {FormSettingsGlobal_addIVR},
   FormSettingsGlobal_listIVRUnit in 'Forms\Settings\FormSettingsGlobal_listIVRUnit.pas' {FormSettingsGlobal_listIVR},
-  FormSettingsUnit in 'Forms\Settings\FormSettingsUnit.pas' {FormSettings},
   FormSettingsGlobalUnit in 'Forms\Settings\FormSettingsGlobalUnit.pas' {FormSettingsGlobal},
   FormUsersUnit in 'Forms\Users\FormUsersUnit.pas' {FormUsers},
   FormAddNewUsersUnit in 'Forms\Users\FormAddNewUsersUnit.pas' {FormAddNewUsers},
@@ -76,7 +75,16 @@ uses
   FormTrunkSipUnit in 'Forms\FooterSubMenu\FormTrunkSipUnit.pas' {FormTrunkSip},
   GlobalImageDestination in '..\custom_global\GlobalImageDestination.pas',
   GlobalVariablesLinkDLL in '..\custom_global\GlobalVariablesLinkDLL.pas',
-  FormRePasswordUnit in 'FormSystem\FormRePasswordUnit.pas' {FormRePassword};
+  FormRePasswordUnit in 'FormSystem\FormRePasswordUnit.pas' {FormRePassword},
+  TLdapUnit in '..\custom_class\TLdapUnit.pas',
+  FormSettingsGlobal_checkLdapUnit in 'Forms\Settings\FormSettingsGlobal_checkLdapUnit.pas' {FormSettingsGlobal_checkLdap},
+  FormSipPhoneListUnit in 'Forms\Settings\FormSipPhoneListUnit.pas' {FormSipPhoneList},
+  TSipPhoneListUnit in '..\custom_class\TSipPhoneListUnit.pas',
+  FormSipPhoneListAddUnit in 'Forms\Settings\FormSipPhoneListAddUnit.pas' {FormSipPhoneListAdd},
+  FormPhoneListUnit in 'Forms\Settings\FormPhoneListUnit.pas' {FormPhoneList},
+  TPhoneListUnit in '..\custom_class\TPhoneListUnit.pas',
+  FormPhoneListAddUnit in 'Forms\Settings\FormPhoneListAddUnit.pas' {FormPhoneListAdd},
+  TIVRTimeUnit in '..\custom_class\TIVRTimeUnit.pas';
 
 {$R *.res}
 
@@ -91,7 +99,6 @@ begin
   Application.HintPause:=100;
 
   Application.CreateForm(THomeForm, HomeForm);
-  Application.CreateForm(TFormSettings, FormSettings);
   Application.CreateForm(TFormUsers, FormUsers);
   Application.CreateForm(TFormSettingsGlobal, FormSettingsGlobal);
   Application.CreateForm(TFormSettingsGlobal_addIVR, FormSettingsGlobal_addIVR);
@@ -120,6 +127,11 @@ begin
   Application.CreateForm(TFormServerIKCheck, FormServerIKCheck);
   Application.CreateForm(TFormTrunkSip, FormTrunkSip);
   Application.CreateForm(TFormRePassword, FormRePassword);
+  Application.CreateForm(TFormSettingsGlobal_checkLdap, FormSettingsGlobal_checkLdap);
+  Application.CreateForm(TFormSipPhoneList, FormSipPhoneList);
+  Application.CreateForm(TFormSipPhoneListAdd, FormSipPhoneListAdd);
+  Application.CreateForm(TFormPhoneList, FormPhoneList);
+  Application.CreateForm(TFormPhoneListAdd, FormPhoneListAdd);
   Application.Run;
 end.
 end.
