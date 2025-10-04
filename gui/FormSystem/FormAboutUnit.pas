@@ -10,7 +10,6 @@ uses
 
 type
   TFormAbout = class(TForm)
-    imgAbout: TImage;
     lblDevelop: TLabel;
     ImgNewYear: TImage;
     PageInfo: TPageControl;
@@ -32,11 +31,10 @@ type
     STInfoVersionSMS: TStaticText;
     ImageList1: TImageList;
     procedure FormShow(Sender: TObject);
-    procedure imgAboutClick(Sender: TObject);
-    procedure TimerStartPashalka1Timer(Sender: TObject);
+
+
     procedure FormCreate(Sender: TObject);
     procedure ShowVersion;
-    procedure lblDevelopClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -45,7 +43,6 @@ type
 
 var
   FormAbout: TFormAbout;
-  Pashalka:Word;
 
 
 implementation
@@ -75,7 +72,6 @@ end;
 procedure TFormAbout.FormShow(Sender: TObject);
 begin
   Screen.Cursor:=crHourGlass;
-  Pashalka:=0;
 
   // отображение истории версий
   ShowVersion;
@@ -85,36 +81,6 @@ begin
   Screen.Cursor:=crDefault;
 end;
 
-procedure TFormAbout.imgAboutClick(Sender: TObject);
-begin
- Inc(Pashalka);
 
- if Pashalka=10 then begin
-   MessageBox(Handle,PChar('Тут типа должна быть какая то пасхалка, но мне ее лень делать =)'),PChar('У меня так много времени что я кликаю на все подряд'),MB_OK+MB_ICONEXCLAMATION);
- end;
-
- if Pashalka=50 then begin
-   MessageBox(Handle,PChar('Я же говорю мне лень было делать пасхалку, не ищи, ее тут нет'),PChar('Вот это ты ворвался с кликаньем'),MB_OK+MB_ICONEXCLAMATION);
- end;
-
- if Pashalka=100 then begin
-   MessageBox(Handle,PChar('Слашай, прекращай, разработчик серьезно не оставил тут никакой пасхалки!!!'),PChar('Упорство Упорство и еще раз Упорство'),MB_OK+MB_ICONEXCLAMATION);
- end;
-
- if Pashalka=200 then begin
-   MessageBox(Handle,PChar('Ну хорошо, упортсво должны быть вознаграждено, напиши мне в телеграм @yrkrus кодовое слово "хочу мороженку" и я угощю тебя вкусной мороженкой'+#13+'Шутка, с меня конечно же вискарик!!!'),PChar('Мммм... мне бы твое терпение и упоротость'),MB_OK+MB_ICONERROR);
- end;
-
-end;
-
-procedure TFormAbout.lblDevelopClick(Sender: TObject);
-begin
- lblDevelop.Visible:=False;
-end;
-
-procedure TFormAbout.TimerStartPashalka1Timer(Sender: TObject);
-begin
-  SetRandomFontColor(lblDevelop);
-end;
 
 end.

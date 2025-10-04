@@ -56,6 +56,10 @@ type
     procedure lblAutoPodborClick(Sender: TObject);
     procedure comboxReasonSmsMessageDrawItem(Control: TWinControl;
       Index: Integer; Rect: TRect; State: TOwnerDrawState);
+    procedure combox_PolDrawItem(Control: TWinControl; Index: Integer;
+      Rect: TRect; State: TOwnerDrawState);
+    procedure combox_AddressClinicDrawItem(Control: TWinControl; Index: Integer;
+      Rect: TRect; State: TOwnerDrawState);
   private
     { Private declarations }
   list_clinic    :TCheckServersIK;  // список с клиниками
@@ -90,7 +94,13 @@ type
   procedure CreateMessage;    // создать сообщение
 
   // загрузка иконок в лист бокс для последующего отображения в combobox
-  procedure LoadIconListBox;
+  procedure LoadIconListBoxChoise;
+
+    // загрузка иконок в лист бокс для последующего отображения в combobox
+  procedure LoadIconListBoxPol;
+
+      // загрузка иконок в лист бокс для последующего отображения в combobox
+  procedure LoadIconListBoxBase;
 
 
   public
@@ -597,7 +607,7 @@ end;
 
 
 // загрузка иконок в лист бокс для последующего отображения в combobox
-procedure TFormGenerateSMS.LoadIconListBox;
+procedure TFormGenerateSMS.LoadIconListBoxChoise;
 const
  SIZE_ICON:Word=16;
 var
@@ -613,8 +623,8 @@ begin
   // изменение стиля для отображения иконок в combox
   comboxReasonSmsMessage.Style:=csOwnerDrawFixed;
 
-  DM.ImageListIcon.SetSize(SIZE_ICON,SIZE_ICON);
-  DM.ImageListIcon.ColorDepth:=cd32bit;
+  DM.ImageListIcon_choise.SetSize(SIZE_ICON,SIZE_ICON);
+  DM.ImageListIcon_choise.ColorDepth:=cd32bit;
 
   pngbmp:=TPngImage.Create;
   bmp:=TBitmap.Create;
@@ -628,11 +638,114 @@ begin
    Canvas.StretchDraw(Rect(0, 0, Width, Height), pngbmp);
   end;
 
-  DM.ImageListIcon.Add(bmp, nil);
+  DM.ImageListIcon_choise.Add(bmp, nil);
 
   if pngbmp<>nil then pngbmp.Free;
   if bmp<>nil then bmp.Free;
 end;
+
+
+
+// загрузка иконок в лист бокс для последующего отображения в combobox
+procedure TFormGenerateSMS.LoadIconListBoxPol;
+const
+ SIZE_ICON:Word=16;
+var
+ i:Integer;
+ pngbmpMale,pngbmpFeMale: TPngImage;
+ bmpMale,bmpFeMale: TBitmap;
+begin
+ // **********************************************************
+ // добавление тут + в events DrawItem самого combox
+ // **********************************************************
+  if not FileExists(ICON_SMS_POL_MALE) then Exit;
+  if not FileExists(ICON_SMS_POL_FEMALE) then Exit;
+
+  // изменение стиля для отображения иконок в combox
+  combox_Pol.Style:=csOwnerDrawFixed;
+
+  DM.ImageListIcon_pol.SetSize(SIZE_ICON,SIZE_ICON);
+  DM.ImageListIcon_pol.ColorDepth:=cd32bit;
+
+  begin
+   // male
+   pngbmpMale:=TPngImage.Create;
+   bmpMale:=TBitmap.Create;
+
+   pngbmpMale.LoadFromFile(ICON_SMS_POL_MALE);
+
+    // сжимаем иконку до размера 16х16
+    with bmpMale do begin
+     Height:=SIZE_ICON;
+     Width:=SIZE_ICON;
+     Canvas.StretchDraw(Rect(0, 0, Width, Height), pngbmpMale);
+    end;
+
+   // female
+   pngbmpFeMale:=TPngImage.Create;
+   bmpFeMale:=TBitmap.Create;
+
+   pngbmpFeMale.LoadFromFile(ICON_SMS_POL_FEMALE);
+
+    // сжимаем иконку до размера 16х16
+    with bmpFeMale do begin
+     Height:=SIZE_ICON;
+     Width:=SIZE_ICON;
+     Canvas.StretchDraw(Rect(0, 0, Width, Height), pngbmpFeMale);
+    end;
+
+  end;
+
+  DM.ImageListIcon_pol.Add(bmpMale, nil);
+  DM.ImageListIcon_pol.Add(bmpFeMale, nil);
+
+
+  if pngbmpMale<>nil then pngbmpMale.Free;
+  if bmpMale<>nil then bmpMale.Free;
+  if pngbmpFeMale<>nil then pngbmpFeMale.Free;
+  if bmpFeMale<>nil then bmpFeMale.Free;
+end;
+
+
+// загрузка иконок в лист бокс для последующего отображения в combobox
+procedure TFormGenerateSMS.LoadIconListBoxBase;
+const
+ SIZE_ICON:Word=16;
+var
+ i:Integer;
+ pngbmp: TPngImage;
+ bmp: TBitmap;
+begin
+ // **********************************************************
+ // добавление тут + в events DrawItem самого combox
+ // **********************************************************
+  if not FileExists(ICON_SMS_BASE_CHOISE) then Exit;
+
+  // изменение стиля для отображения иконок в combox
+  combox_AddressClinic.Style:=csOwnerDrawFixed;
+
+  DM.ImageListIcon_base.SetSize(SIZE_ICON,SIZE_ICON);
+  DM.ImageListIcon_base.ColorDepth:=cd32bit;
+
+  pngbmp:=TPngImage.Create;
+  bmp:=TBitmap.Create;
+
+  pngbmp.LoadFromFile(ICON_SMS_BASE_CHOISE);
+
+  // сжимаем иконку до размера 16х16
+  with bmp do begin
+   Height:=SIZE_ICON;
+   Width:=SIZE_ICON;
+   Canvas.StretchDraw(Rect(0, 0, Width, Height), pngbmp);
+  end;
+
+  DM.ImageListIcon_base.Add(bmp, nil);
+
+  if pngbmp<>nil then pngbmp.Free;
+  if bmp<>nil then bmp.Free;
+end;
+
+
 
 
 procedure TFormGenerateSMS.CreateReasonBox;
@@ -652,7 +765,7 @@ begin
   comboxReasonSmsMessage.DropDownCount:=Ord(High(enumReasonSmsMessage))+1;
 
   // прогрузка инконки выбора
-  LoadIconListBox;
+  LoadIconListBoxChoise;
 end;
 
 
@@ -666,6 +779,9 @@ begin
     gender:=enumGender(i);
     combox_Pol.Items.Add(EnumGenderToString(gender));
   end;
+
+    // прогрузка инконки пола
+  LoadIconListBoxPol;
 end;
 
 
@@ -741,13 +857,89 @@ var
  bitmap: TBitmap;
  IconIndex:Integer;
 begin
-  if DM.ImageListIcon.Count = 0 then  Exit;
+  if DM.ImageListIcon_choise.Count = 0 then  Exit;
 
   IconIndex:=0;
   ComboBox:=(Control as TComboBox);
   Bitmap:= TBitmap.Create;
   try
-    DM.ImageListIcon.GetBitmap(IconIndex, Bitmap);
+    DM.ImageListIcon_choise.GetBitmap(IconIndex, Bitmap);
+    with ComboBox.Canvas do
+    begin
+      FillRect(Rect);
+      if Bitmap.Handle <> 0 then
+        Draw(Rect.Left + 2, Rect.Top, Bitmap);
+      Rect := Bounds(
+        Rect.Left + ComboBox.ItemHeight + 3,
+        Rect.Top,
+        Rect.Right - Rect.Left,
+        Rect.Bottom - Rect.Top
+      );
+      DrawText(
+        handle,
+        PChar(ComboBox.Items[Index]),
+        length(ComboBox.Items[index]),
+        Rect,
+        DT_VCENTER + DT_SINGLELINE
+      );
+    end;
+  finally
+    Bitmap.Free;
+  end;
+end;
+
+procedure TFormGenerateSMS.combox_AddressClinicDrawItem(Control: TWinControl;
+  Index: Integer; Rect: TRect; State: TOwnerDrawState);
+var
+ ComboBox: TComboBox;
+ bitmap: TBitmap;
+ IconIndex:Integer;
+begin
+  if DM.ImageListIcon_base.Count = 0 then  Exit;
+
+  IconIndex:=0;
+  ComboBox:=(Control as TComboBox);
+  Bitmap:= TBitmap.Create;
+  try
+    DM.ImageListIcon_base.GetBitmap(IconIndex, Bitmap);
+    with ComboBox.Canvas do
+    begin
+      FillRect(Rect);
+      if Bitmap.Handle <> 0 then
+        Draw(Rect.Left + 2, Rect.Top, Bitmap);
+      Rect := Bounds(
+        Rect.Left + ComboBox.ItemHeight + 3,
+        Rect.Top,
+        Rect.Right - Rect.Left,
+        Rect.Bottom - Rect.Top
+      );
+      DrawText(
+        handle,
+        PChar(ComboBox.Items[Index]),
+        length(ComboBox.Items[index]),
+        Rect,
+        DT_VCENTER + DT_SINGLELINE
+      );
+    end;
+  finally
+    Bitmap.Free;
+  end;
+end;
+
+procedure TFormGenerateSMS.combox_PolDrawItem(Control: TWinControl;
+  Index: Integer; Rect: TRect; State: TOwnerDrawState);
+var
+ ComboBox: TComboBox;
+ bitmap: TBitmap;
+ IconIndex:Integer;
+begin
+  if DM.ImageListIcon_pol.Count = 0 then  Exit;
+
+  IconIndex:=Index;
+  ComboBox:=(Control as TComboBox);
+  Bitmap:= TBitmap.Create;
+  try
+    DM.ImageListIcon_pol.GetBitmap(IconIndex, Bitmap);
     with ComboBox.Canvas do
     begin
       FillRect(Rect);
@@ -782,6 +974,9 @@ begin
   for i:=0 to list_clinic.Count-1 do begin
     combox_AddressClinic.Items.Add(list_clinic.GetAddress(i));
   end;
+
+  // прогрузка инконки
+  LoadIconListBoxBase;
 end;
 
 

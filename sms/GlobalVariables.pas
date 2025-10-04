@@ -12,7 +12,7 @@ interface
 
 uses
   SysUtils, Windows, Classes, TCustomTypeUnit, TLogFileUnit, TMessageGeneratorSMSUnit,
-  TPacientsListUnit;
+  TPacientsListUnit, TCheckBoxUIUnit;
 
 
   type   // тип отправки
@@ -75,8 +75,14 @@ var
   // список с номерами тлф для проверки статуса сообщения
   SharedStatusSendingSMS   : TStringList;
 
+
+  // все активные чек боксы на форме
+  SharedCheckBox : TCheckBoxUI;
+
   // Сохранение в глобальный шаблон
   ISGLOBAL_MESSAGE:Boolean = True;
+
+
 
   // текстовка SMS сообщения, напоминания о приеме   // TODO %к_доктору  сделать счобы менялось на или к доктору!
   REMEMBER_MESSAGE        :string='%FIO_Pacienta %записан(а) %к_доктору %FIO_Doctora в %Time %Data в клинику по адресу %Address.'+
@@ -99,6 +105,8 @@ initialization  // Инициализация
  SharedMainLog                :=TLoggingFile.Create('sms');   // лог работы формы
  SharedSendindPhoneManualSMS  :=TStringList.Create;
  SharedStatusSendingSMS       :=TStringList.Create;
+
+ SharedCheckBox               :=TCheckBoxUI.Create;         // все активные чек боксы на форме
 
  finalization
 

@@ -1,7 +1,7 @@
 object DM: TDM
   OldCreateOrder = False
-  Height = 79
-  Width = 433
+  Height = 177
+  Width = 253
   object popmenu_AddSpellnig: TPopupMenu
     Left = 50
     Top = 11
@@ -161,9 +161,19 @@ object DM: TDM
       Visible = False
     end
   end
-  object ImageListIcon: TImageList
+  object ImageListIcon_choise: TImageList
     Masked = False
     Left = 161
     Top = 10
+  end
+  object ImageListIcon_pol: TImageList
+    Masked = False
+    Left = 161
+    Top = 57
+  end
+  object ImageListIcon_base: TImageList
+    Masked = False
+    Left = 159
+    Top = 113
   end
 end

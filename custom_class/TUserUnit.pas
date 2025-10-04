@@ -10,17 +10,9 @@ unit TUserUnit;
 
 interface
 
-uses  System.Classes,
-      Data.Win.ADODB,
-      Data.DB,
-      System.SysUtils,
-      Variants,
-      Graphics,
-      System.SyncObjs,
-      IdException,
-      TUserAccessUnit,
-      TCustomTypeUnit;
-
+uses  System.Classes, Data.Win.ADODB, Data.DB,System.SysUtils,
+      Variants, Graphics, System.SyncObjs, IdException,
+      TUserAccessUnit, TCustomTypeUnit,  System.Generics.Collections;
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -53,14 +45,25 @@ uses  System.Classes,
   type
       TUser = class
       private
-      Params                                  : TUserList;
-      Access                                  : TUserAccess;
+      m_params                                  : TUserList;
+      m_access                                  : TUserAccess;
+      isUserOperator                          : Boolean;   // пользователь оператор или нет
+      m_externalAccessEXE                     : TDictionary<enumExternalAccessEXE, Boolean>;  // подобие std::map c++
 
-      isOperator                              : Boolean;   // пользователь оператор или нет
-      isAccessLocalChat                       : Boolean;   // есть ли доступ в локальному чату
-      isAccessReports                         : Boolean;   // есть ли доступ к отчетам
-      isAccessSMS                             : Boolean;   // есть ли доступ к sms рассылке
-      isAccessService                         : Boolean;   // есть ли доступ к услугам
+      function GetID                          :Integer;    // получить текущий id
+      function GetName                        :string;     // получить текущий Name
+      function GetFamiliya                    :string;     // получить текущий familiya
+      function GetIP                          :string;     // получить текущий ip
+      function GetUserLoginPC                 :string;     // получить текущий user_login_pc
+      function GetPC                          :string;     // получить текущий pc
+      function GetRePassword                  :Boolean;    // получить текущий re_password
+      function GetIsOperator                  :Boolean;    // текущий пользователь в роли оператора?
+      function GetIsAccessLocalChat           :Boolean;    // текущий пользователь есть доступ к локальному чату
+      function GetIsAccessReports             :Boolean;    // текущий пользователь есть доступ к отчетам
+      function GetIsAccessSMS                 :Boolean;    // текущий пользователь есть доступ к sms рассылке
+      function GetIsAccessService             :Boolean;    // текущий пользователь есть доступ услугам
+      function GetAccess(Menu:enumAccessList):enumAccessStatus; // получение данных о том какие параметры могут быть открыты на доступе у пользователя
+
 
 
       function GetRoleIsOperator(InRole:enumRole)     :Boolean;   // проверка роль пользователя это операторская роль
@@ -72,28 +75,28 @@ uses  System.Classes,
 
       public
       procedure UpdateParams(InParams:TUserList);         // обновление параметров пользователя
-      function GetID                         :Integer;    // получить текущий id
-      function GetName                       :string;     // получить текущий Name
-      function GetFamiliya                   :string;     // получить текущий familiya
-      function GetIP                         :string;     // получить текущий ip
-      function GetUserLoginPC                :string;     // получить текущий user_login_pc
-      function GetPC                         :string;     // получить текущий pc
-      function GetRePassword                 :Boolean;    // получить текущий re_password
-      function GetIsOperator                 :Boolean;    // текущий пользователь в роли оператора?
-      function GetIsAccessLocalChat          :Boolean;    // текущий пользователь есть доступ к локальному чату
-      function GetIsAccessReports            :Boolean;    // текущий пользователь есть доступ к отчетам
-      function GetIsAccessSMS                :Boolean;    // текущий пользователь есть доступ к sms рассылке
-      function GetIsAccessService            :Boolean;    // текущий пользователь есть доступ услугам
 
-
-      function GetAccess(Menu:enumAccessList):enumAccessStatus; // получение данных о том какие параметры могут быть открыты на доступе у пользователя
 
       function GetUserList:TUserList; // вывод текущих данных о пользователе
 
       function GetRole                        :enumRole;
       constructor Create;                     overload;
 
+      // === property ===
+      property ID:Integer read GetID;
+      property Name:string read GetName;
+      property Familiya:string read GetFamiliya;
+      property IP:string read GetIP;
+      property UserLoginPC:string read GetUserLoginPC;
+      property PC:string read GetPC;
+      property RePassword:Boolean read GetRePassword;
+      property IsOperator:Boolean read GetIsOperator;
+      property IsAccessLocalChat:Boolean read GetIsAccessLocalChat;
+      property IsAccessReports:Boolean read GetIsAccessReports;
+      property IsAccessSMS:Boolean read GetIsAccessSMS;
+      property IsAccessService:Boolean read GetIsAccessService;
 
+      property Access[_menu:enumAccessList]:enumAccessStatus read GetAccess; default;
 
       end;
  // class TUser END
@@ -134,9 +137,21 @@ end;
 
 // class TUser START
  constructor TUser.Create;
+ var
+  capacity:Integer;
+  i:Integer;
  begin
    inherited;
-   Params:=TUserList.Create;
+
+   capacity:=Ord(High(enumExternalAccessEXE));
+   m_externalAccessEXE:=TDictionary<enumExternalAccessEXE, Boolean>.Create(capacity);
+   for i:=0 to capacity do begin
+    m_externalAccessEXE.Add(enumExternalAccessEXE(i),False);
+   end;
+
+
+
+   m_params:=TUserList.Create;
  end;
 
 
@@ -291,13 +306,13 @@ end;
 // проверка есть ли доступ к SMS рассылке
 function TUser.GetAccessService:Boolean;
 begin
-  Result:=Access.menu_service;
+  Result:=m_access.menu_service;
 end;
 
 
  procedure TUser.UpdateParams(InParams:TUserList);
  begin
-   with Self.Params do begin
+   with Self.m_params do begin
      name               :=InParams.name;
      familiya           :=InParams.familiya;
      id                 :=InParams.id;
@@ -310,88 +325,87 @@ end;
      user_login_pc      :=InParams.user_login_pc;
    end;
 
-   Self.Access:=TUserAccess.Create(InParams.group_role);
+   Self.m_access:=TUserAccess.Create(InParams.group_role);
 
    // проверка оператор ли залогинелся или нет
-   Self.isOperator:=GetRoleIsOperator(InParams.group_role);
+   Self.isUserOperator:=GetRoleIsOperator(InParams.group_role);
 
    // проверка есть ли досутп к локальному чату
-   Self.isAccessLocalChat:=GetAccessLocalChat(InParams.id);
+   Self.m_externalAccessEXE[eExternalAccessLocalChat]:=GetAccessLocalChat(InParams.id);
 
    // проверка есть ли досутп к отчетам
-   Self.isAccessReports:=GetAccessReports(InParams.id);
+   Self.m_externalAccessEXE[eExternalAccessReports]:=GetAccessReports(InParams.id);
 
    // проверка есть ли досутп к SMS рассылке
-   Self.isAccessSMS:=GetAccessSMS(InParams.id);
+   Self.m_externalAccessEXE[eExternalAccessSMS]:=GetAccessSMS(InParams.id);
 
       // проверка есть ли досутп к услугам
-   Self.isAccessService:=GetAccessService;
+   Self.m_externalAccessEXE[eExternalAccessService]:=GetAccessService;
  end;
 
  function TUser.GetID:Integer;
  begin
-  Result:=Self.Params.id;
+  Result:=Self.m_params.id;
  end;
 
  function TUser.GetName:string;
  begin
-  Result:=Self.Params.name;
+  Result:=Self.m_params.name;
  end;
 
  function TUser.GetFamiliya:string;
  begin
-  Result:=Self.Params.familiya;
+  Result:=Self.m_params.familiya;
  end;
 
  function TUser.GetIP:string;
  begin
-  Result:=Self.Params.ip;
+  Result:=Self.m_params.ip;
  end;
 
  function TUser.GetUserLoginPC:string;
  begin
-  Result:=Self.Params.user_login_pc;
+  Result:=Self.m_params.user_login_pc;
  end;
 
  function TUser.GetPC:string;
  begin
-  Result:=Self.Params.pc;
+  Result:=Self.m_params.pc;
  end;
 
  function TUser.GetRole:enumRole;
  begin
-  Result:=Self.Params.group_role;
+  Result:=Self.m_params.group_role;
  end;
 
  function TUser.GetRePassword:Boolean;
  begin
-  Result:=Self.Params.re_password;
+  Result:=Self.m_params.re_password;
  end;
-
 
  function TUser.GetIsOperator:Boolean;
  begin
-  Result:=Self.isOperator;
+  Result:=Self.isUserOperator;
  end;
 
  function TUser.GetIsAccessLocalChat:Boolean;
  begin
-  Result:=Self.isAccessLocalChat;
+  Result:=Self.m_externalAccessEXE[eExternalAccessLocalChat];
  end;
 
  function TUser.GetIsAccessReports:Boolean;
  begin
-  Result:=Self.isAccessReports;
+  Result:=Self.m_externalAccessEXE[eExternalAccessReports];
  end;
 
  function TUser.GetIsAccessSMS:Boolean;
  begin
-  Result:=Self.isAccessSMS;
+  Result:=Self.m_externalAccessEXE[eExternalAccessSMS];
  end;
 
 function TUser.GetIsAccessService:Boolean;
  begin
-  Result:=Self.isAccessService;
+  Result:=Self.m_externalAccessEXE[eExternalAccessService];;
  end;
 
 
@@ -401,35 +415,35 @@ function TUser.GetIsAccessService:Boolean;
 
    case Menu of
     menu_settings_users:begin
-     if Access.menu_settings_users then Result:=access_ENABLED;
+     if m_access.menu_settings_users then Result:=access_ENABLED;
     end;
     menu_settings_serversik:begin
-     if Access.menu_settings_serversik then Result:=access_ENABLED;
+     if m_access.menu_settings_serversik then Result:=access_ENABLED;
     end;
     menu_settings_siptrunk:begin
-     if Access.menu_settings_siptrunk then Result:=access_ENABLED;
+     if m_access.menu_settings_siptrunk then Result:=access_ENABLED;
     end;
     menu_settings_global:begin
-     if Access.menu_settings_global then Result:=access_ENABLED;
+     if m_access.menu_settings_global then Result:=access_ENABLED;
     end;
     menu_active_session:begin
-      if Access.menu_active_session then Result:=access_ENABLED;
+      if m_access.menu_active_session then Result:=access_ENABLED;
     end;
     menu_service:begin
-      if Access.menu_service then Result:=access_ENABLED;
+      if m_access.menu_service then Result:=access_ENABLED;
     end;
     menu_missed_calls:begin
-      if Access.menu_missed_calls then Result:=access_ENABLED;
+      if m_access.menu_missed_calls then Result:=access_ENABLED;
     end;
     menu_clear_status_operator:begin
-      if Access.menu_clear_status_operator then Result:=access_ENABLED;
+      if m_access.menu_clear_status_operator then Result:=access_ENABLED;
     end;
    end;
  end;
 
  function TUser.GetUserList:TUserList;
  begin
-   Result:=Self.Params;
+   Result:=Self.m_params;
  end;
 
 // class TUser END

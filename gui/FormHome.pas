@@ -420,7 +420,7 @@ begin
    PanelStatusIN.Height:=cPanelStatusHeight_showqueue;
 
     // проверяем в какой очереди находится оператор
-    curr_queue:=getCurrentQueueOperator(getUserSIP(SharedCurrentUserLogon.GetID));
+    curr_queue:=getCurrentQueueOperator(getUserSIP(SharedCurrentUserLogon.ID));
 
     case curr_queue of
       queue_5000:begin
@@ -458,12 +458,12 @@ var
  error:string;
 begin
   // проверка есть ли сейчас отложенный статус
-  if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.GetID,error) then begin
+  if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.ID,error) then begin
     MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
   end;
 
-  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.GetID);
+  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
   // перерыв
   SendCommand(eLog_break,delay);
@@ -491,7 +491,7 @@ var
  delay:enumStatus;
 begin
   // проверим разговариавет ли оператор
-  sip:=getUserSIP(SharedCurrentUserLogon.GetID);
+  sip:=getUserSIP(SharedCurrentUserLogon.ID);
   if SharedActiveSipOperators.IsTalkOperator(sip) = eYES then begin
     MessageBox(Handle,PChar('При разговоре выходить из очереди нельзя'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
@@ -509,12 +509,12 @@ var
  error:string;
 begin
   // проверка есть ли сейчас отложенный статус
-  if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.GetID,error) then begin
+  if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.ID,error) then begin
     MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
   end;
 
-  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.GetID);
+  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
    // обед
   SendCommand(eLog_dinner,delay);
@@ -526,12 +526,12 @@ var
  error:string;
 begin
   // проверка есть ли сейчас отложенный статус
-  if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.GetID,error) then begin
+  if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.ID,error) then begin
     MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
   end;
 
-  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.GetID);
+  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
  // исход
   SendCommand(eLog_exodus, delay);
@@ -544,12 +544,12 @@ var
  error:string;
 begin
   // проверка есть ли сейчас отложенный статус
-  if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.GetID,error) then begin
+  if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.ID,error) then begin
     MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
   end;
 
-  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.GetID);
+  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
  // домой
   SendCommand(eLog_home,delay);
@@ -561,12 +561,12 @@ var
  error:string;
 begin
   // проверка есть ли сейчас отложенный статус
-  if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.GetID,error) then begin
+  if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.ID,error) then begin
     MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
   end;
 
-  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.GetID);
+  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
   // ИТ
    SendCommand(eLog_IT,delay);
@@ -578,12 +578,12 @@ var
  error:string;
 begin
   // проверка есть ли сейчас отложенный статус
-  if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.GetID,error) then begin
+  if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.ID,error) then begin
     MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
   end;
 
-  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.GetID);
+  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
  // поствызов
   SendCommand(eLog_postvyzov, delay);
@@ -595,12 +595,12 @@ var
  error:string;
 begin
   // проверка есть ли сейчас отложенный статус
-  if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.GetID,error) then begin
+  if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.ID,error) then begin
     MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
   end;
 
-  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.GetID);
+  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
  // переносы
   SendCommand(eLog_reserve,delay);
@@ -612,12 +612,12 @@ var
  error:string;
 begin
   // проверка есть ли сейчас отложенный статус
-  if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.GetID,error) then begin
+  if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.ID,error) then begin
     MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
   end;
 
-  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.GetID);
+  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
  // учеба
    SendCommand(eLog_studies,delay);
@@ -629,12 +629,12 @@ var
  error:string;
 begin
   // проверка есть ли сейчас отложенный статус
-  if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.GetID,error) then begin
+  if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.ID,error) then begin
     MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
   end;
 
-  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.GetID);
+  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
 // переносы
  SendCommand(eLog_transfer,delay);
@@ -677,16 +677,16 @@ begin
   if DEBUG then KillProcess;
 
   // проверка вдруг роль оператора и он не вышел из линии
-  if getIsExitOperatorCurrentQueue(SharedCurrentUserLogon.GetRole, SharedCurrentUserLogon.GetID) then begin
+  if getIsExitOperatorCurrentQueue(SharedCurrentUserLogon.GetRole, SharedCurrentUserLogon.ID) then begin
     CanClose:= Application.MessageBox(PChar('Вы забыли выйти из очереди'), 'Ошибка при выходе', MB_OK + MB_ICONERROR) = IDNO;
   end
   else begin
     // проверяем правильно ли оператор вышел через команду
-    if getIsExitOperatorCurrentGoHome(SharedCurrentUserLogon.GetRole, SharedCurrentUserLogon.GetID) then begin
+    if getIsExitOperatorCurrentGoHome(SharedCurrentUserLogon.GetRole, SharedCurrentUserLogon.ID) then begin
       CanClose:= Application.MessageBox(PChar('Прежде чем закрыть, необходимо выбрать статус "Домой"'), 'Ошибка при выходе', MB_OK + MB_ICONERROR) = IDNO;
     end
     else begin
-      if getStatusIndividualSettingsUser(SharedCurrentUserLogon.GetID,settingUsers_noConfirmExit) = paramStatus_DISABLED then begin
+      if getStatusIndividualSettingsUser(SharedCurrentUserLogon.ID,settingUsers_noConfirmExit) = paramStatus_DISABLED then begin
 
         AMsgDialog := CreateMessageDialog('Вы действительно хотите завершить работу?', mtConfirmation, [mbYes, mbNo]);
         ACheckBox := TCheckBox.Create(AMsgDialog);
@@ -712,7 +712,7 @@ begin
           begin
             if ACheckBox.Checked then begin
               // созраняем параметр чтобы больше не показывать это окно
-              saveIndividualSettingUser(SharedCurrentUserLogon.GetID,settingUsers_noConfirmExit,paramStatus_ENABLED);
+              saveIndividualSettingUser(SharedCurrentUserLogon.ID,settingUsers_noConfirmExit,paramStatus_ENABLED);
             end;
 
             KillProcess;
@@ -763,7 +763,7 @@ begin
   clearList_SIP(Width - DEFAULT_SIZE_PANEL_ACTIVESIP, SharedFontSize.GetSize(eActiveSip));
 
   if Assigned(SharedCurrentUserLogon) then begin
-    if SharedCurrentUserLogon.GetIsOperator then begin
+    if SharedCurrentUserLogon.IsOperator then begin
       // подгонем размер статусов оператора
       XML:=TXML.Create;
       if not XML.IsExistStatusOperatorPosition then begin
@@ -838,7 +838,7 @@ begin
   FormAuth.ShowModal;
 
   // нужно ли сменить пароль
-  if SharedCurrentUserLogon.GetRePassword then begin
+  if SharedCurrentUserLogon.RePassword then begin
     Screen.Cursor:=crDefault;
     FormRePassword.ShowModal;
   end;
@@ -848,13 +848,13 @@ begin
 
    // стататус бар
    with StatusBar do begin
-    Panels[2].Text:=SharedCurrentUserLogon.GetFamiliya+' '+SharedCurrentUserLogon.GetName;
-    Panels[3].Text:=getUserRoleSTR(SharedCurrentUserLogon.GetID);
+    Panels[2].Text:=SharedCurrentUserLogon.Familiya+' '+SharedCurrentUserLogon.Name;
+    Panels[3].Text:=getUserRoleSTR(SharedCurrentUserLogon.ID);
     Panels[4].Text:=GetCopyright;
    end;
 
    // заведение данных о текущей сесии
-   CreateCurrentActiveSession(SharedCurrentUserLogon.GetID);
+   CreateCurrentActiveSession(SharedCurrentUserLogon.ID);
 
 
   // создание списка серверов для проверки доступности
@@ -863,14 +863,16 @@ begin
   CreateCheckSipTrunk;
 
   // прогрузка индивидуальных настроек пользователя
-  LoadIndividualSettingUser(SharedCurrentUserLogon.GetID);
-
+  LoadIndividualSettingUser(SharedCurrentUserLogon.ID);
 
   // выставление прав доступа
   accessRights(SharedCurrentUserLogon);
 
+  // прогрузка красивых чекбоксов на форме
+  AddCustomCheckBoxUI;
+
   // пасхалки
-   Egg;
+  Egg;
 
   // линковка окна формы debug info в класс для подсчета статистики работы потоков
   SharedCountResponseThread.SetAddForm(FormDEBUG);

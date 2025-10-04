@@ -4,7 +4,7 @@ object FormUsers: TFormUsers
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = #1055#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1080
-  ClientHeight = 709
+  ClientHeight = 765
   ClientWidth = 1540
   Color = clWindow
   DefaultMonitor = dmPrimary
@@ -32,8 +32,6 @@ object FormUsers: TFormUsers
     OnChange = PageControlChange
     object UsersAll: TTabSheet
       Caption = #1042#1089#1077' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1080
-      ExplicitWidth = 846
-      ExplicitHeight = 199
       object listSG_Users_Footer: TStringGrid
         Left = 0
         Top = 0
@@ -54,7 +52,6 @@ object FormUsers: TFormUsers
         ParentFont = False
         ScrollBars = ssNone
         TabOrder = 0
-        ExplicitWidth = 846
         ColWidths = (
           40
           235
@@ -86,8 +83,6 @@ object FormUsers: TFormUsers
         ScrollBars = ssVertical
         TabOrder = 1
         OnSelectCell = listSG_UsersSelectCell
-        ExplicitWidth = 846
-        ExplicitHeight = 175
         ColWidths = (
           40
           236
@@ -101,7 +96,6 @@ object FormUsers: TFormUsers
     object OnlyOPerators: TTabSheet
       Caption = #1054#1087#1077#1088#1072#1090#1086#1088#1099
       ImageIndex = 1
-      ExplicitHeight = 199
       object listSG_Operators: TStringGrid
         Left = 0
         Top = 24
@@ -123,7 +117,6 @@ object FormUsers: TFormUsers
         ScrollBars = ssVertical
         TabOrder = 1
         OnSelectCell = listSG_OperatorsSelectCell
-        ExplicitHeight = 175
         ColWidths = (
           40
           271
@@ -166,8 +159,8 @@ object FormUsers: TFormUsers
     end
   end
   object btnShowUsers: TBitBtn
-    Left = 268
-    Top = 245
+    Left = 1276
+    Top = 73
     Width = 180
     Height = 47
     Caption = '&'#1044#1086#1073#1072#1074#1080#1090#1100
@@ -251,8 +244,8 @@ object FormUsers: TFormUsers
     OnClick = btnShowUsersClick
   end
   object btnDisable: TBitBtn
-    Left = 469
-    Top = 245
+    Left = 1276
+    Top = 179
     Width = 180
     Height = 47
     Caption = '&'#1054#1090#1082#1083#1102#1095#1080#1090#1100
@@ -331,13 +324,13 @@ object FormUsers: TFormUsers
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 2
+    TabOrder = 3
     WordWrap = True
     OnClick = btnDisableClick
   end
   object btnEditUser: TBitBtn
-    Left = 268
-    Top = 298
+    Left = 1276
+    Top = 126
     Width = 180
     Height = 47
     Caption = '&'#1056#1077#1076#1072#1082#1090#1080#1088#1086#1074#1072#1090#1100
@@ -416,22 +409,22 @@ object FormUsers: TFormUsers
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 4
+    TabOrder = 2
     WordWrap = True
     OnClick = btnEditUserClick
   end
   object chkboxViewDisabled: TCheckBox
-    Left = 52
-    Top = 290
+    Left = 1276
+    Top = 317
     Width = 155
     Height = 17
     Caption = #1087#1086#1082#1072#1079#1072#1090#1100' '#1086#1090#1082#1083#1102#1095#1077#1085#1085#1099#1093
-    TabOrder = 3
+    TabOrder = 5
     OnClick = chkboxViewDisabledClick
   end
   object btnEnable: TBitBtn
-    Left = 469
-    Top = 298
+    Left = 1276
+    Top = 232
     Width = 180
     Height = 47
     Caption = '&'#1042#1082#1083#1102#1095#1080#1090#1100
@@ -510,14 +503,14 @@ object FormUsers: TFormUsers
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 5
+    TabOrder = 4
     WordWrap = True
     OnClick = btnEnableClick
   end
   object panel_Users: TPanel
     Left = 4
     Top = 7
-    Width = 1061
+    Width = 1117
     Height = 259
     BevelInner = bvLowered
     ShowCaption = False
@@ -525,7 +518,7 @@ object FormUsers: TFormUsers
     object list_Users: TListView
       Left = 2
       Top = 2
-      Width = 1057
+      Width = 1113
       Height = 255
       Align = alClient
       BorderStyle = bsNone
@@ -543,6 +536,9 @@ object FormUsers: TFormUsers
       ParentFont = False
       TabOrder = 0
       ViewStyle = vsReport
+      ExplicitLeft = 0
+      ExplicitTop = 5
+      ExplicitWidth = 1057
     end
     object st_NoUsers: TStaticText
       Left = 0

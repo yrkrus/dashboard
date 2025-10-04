@@ -12,11 +12,12 @@ type
     panel_History: TPanel;
     list_History: TListView;
     st_NoCalls: TStaticText;
-    chkbox_MyCalls: TCheckBox;
     Label2: TLabel;
     editFindMessage: TEdit;
     btn_Find: TBitBtn;
     st_PhoneFind: TStaticText;
+    chkbox_MyCalls: TLabel;
+    img_MyCalls: TImage;
     procedure FormShow(Sender: TObject);
     procedure chkbox_MyCallsClick(Sender: TObject);
     procedure list_HistoryCustomDrawItem(Sender: TCustomListView;
@@ -27,6 +28,7 @@ type
     procedure editFindMessageChange(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure editFindMessageClick(Sender: TObject);
+    procedure img_MyCallsClick(Sender: TObject);
   private
     { Private declarations }
   m_listTalkCalls:TSMSCallTalkInfo;  // основной список с данными по отвеченным звонкам
@@ -259,7 +261,7 @@ begin
 
   if Length(editFindMessage.Text) > 0 then LoadData(editFindMessage.Text)
   else begin
-    if chkbox_MyCalls.Checked then LoadData(USER_STARTED_SMS_ID)
+    if SharedCheckBox.Checked['MyCalls'] then LoadData(USER_STARTED_SMS_ID)
     else LoadData(-1);
   end;
 
@@ -268,12 +270,12 @@ end;
 
 procedure TFormManualPodbor.chkbox_MyCallsClick(Sender: TObject);
 begin
-  showWait(show_open);
+ SharedCheckBox.ChangeStatusCheckBox('MyCalls');
 
-  if chkbox_MyCalls.Checked then LoadData(USER_STARTED_SMS_ID)
-  else LoadData(-1);
-
-  showWait(show_close);
+ showWait(show_open);
+ if SharedCheckBox.Checked['MyCalls'] then LoadData(USER_STARTED_SMS_ID)
+ else LoadData(-1);
+ showWait(show_close);
 end;
 
 procedure TFormManualPodbor.ClearListView(var p_ListView:TListView);
@@ -398,6 +400,16 @@ begin
   showWait(show_open);
   LoadData(-1);
   showWait(show_close);
+end;
+
+procedure TFormManualPodbor.img_MyCallsClick(Sender: TObject);
+begin
+ SharedCheckBox.ChangeStatusCheckBox('MyCalls');
+
+ showWait(show_open);
+ if SharedCheckBox.Checked['MyCalls'] then LoadData(USER_STARTED_SMS_ID)
+ else LoadData(-1);
+ showWait(show_close);
 end;
 
 procedure TFormManualPodbor.list_HistoryCustomDrawItem(Sender: TCustomListView;

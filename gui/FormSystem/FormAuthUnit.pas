@@ -319,12 +319,12 @@ begin
      end;
 
      SharedCurrentUserLogon.UpdateParams(currentUser);
-     USER_STARTED_SMS_ID:=SharedCurrentUserLogon.GetID;
+     USER_STARTED_SMS_ID:=SharedCurrentUserLogon.ID;
 
 
      //////////////////////////////////////////////////
      // Смена статуса (для операторов)
-     SharedStatus.SetUserID(SharedCurrentUserLogon.GetID);
+     SharedStatus.SetUserID(SharedCurrentUserLogon.ID);
      SharedStatus.SetUser(currentUser);
 
      currentUser.Free;
@@ -340,14 +340,14 @@ begin
     end;
 
     // логирование (авторизация)
-    LoggingRemote(eLog_enter,SharedCurrentUserLogon.GetID);
+    LoggingRemote(eLog_enter,SharedCurrentUserLogon.ID);
     Screen.Cursor:=crDefault;
     Close;
   end
   else begin
 
     // логирование (не успешная авторизация)
-   LoggingRemote(eLog_auth_error,SharedCurrentUserLogon.GetID);
+   LoggingRemote(eLog_auth_error,SharedCurrentUserLogon.ID);
    Screen.Cursor:=crDefault;
 
    FormSizeWithError('Ошибка авторизации, не верный пароль');

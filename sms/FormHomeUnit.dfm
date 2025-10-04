@@ -23,20 +23,24 @@ object FormHome: TFormHome
     Left = 8
     Top = 8
     Width = 490
-    Height = 350
-    ActivePage = sheet_ManualSMS
+    Height = 351
+    ActivePage = sheet_SendingSMS
     Images = ImageList1
     TabOrder = 0
     OnChange = page_TypesSMSChange
     object sheet_ManualSMS: TTabSheet
       Caption = #1056#1091#1095#1085#1072#1103' '#1086#1090#1087#1088#1072#1074#1082#1072
+      ExplicitHeight = 313
       object group_ManualSMS: TGroupBox
         Left = 0
         Top = 3
         Width = 473
-        Height = 308
+        Height = 309
         Caption = ' '#1054#1076#1080#1085#1086#1095#1085#1072#1103' '#1086#1090#1087#1088#1072#1074#1082#1072' '
         TabOrder = 0
+        DesignSize = (
+          473
+          309)
         object Label1: TLabel
           Left = 16
           Top = 20
@@ -147,6 +151,68 @@ object FormHome: TFormHome
           Visible = False
           OnClick = lblManualPodborClick
         end
+        object chkbox_SignSMS: TLabel
+          Left = 32
+          Top = 252
+          Width = 184
+          Height = 16
+          Caption = #1074#1089#1090#1072#1074#1080#1090#1100' '#1087#1086#1076#1087#1080#1089#1100' '#1074' '#1082#1086#1085#1094#1077' SMS'
+          OnClick = chkbox_SignSMSClick
+        end
+        object img_SignSMS: TImage
+          Left = 11
+          Top = 253
+          Width = 16
+          Height = 16
+          Anchors = [akRight, akBottom]
+          ParentShowHint = False
+          ShowHint = False
+          Transparent = True
+          OnClick = img_SignSMSClick
+        end
+        object chkbox_SaveMyTemplate: TLabel
+          Left = 32
+          Top = 270
+          Width = 307
+          Height = 16
+          Caption = #1089#1086#1093#1088#1072#1085#1080#1090#1100' '#1089#1086#1086#1073#1097#1077#1085#1080#1077' '#1074' "'#1052#1086#1080' '#1096#1072#1073#1083#1086#1085#1099' '#1089#1086#1086#1073#1097#1077#1085#1080#1081'"'
+          OnClick = chkbox_SaveMyTemplateClick
+        end
+        object img_SaveMyTemplate: TImage
+          Left = 11
+          Top = 271
+          Width = 16
+          Height = 16
+          Anchors = [akRight, akBottom]
+          ParentShowHint = False
+          ShowHint = False
+          Transparent = True
+          OnClick = img_SaveMyTemplateClick
+        end
+        object chkbox_SaveGlobalTemplate: TLabel
+          Left = 32
+          Top = 288
+          Width = 285
+          Height = 16
+          Hint = 
+            #1057#1086#1086#1073#1097#1077#1085#1080#1077' '#1084#1086#1078#1085#1086' '#1073#1091#1076#1077#1090' '#1074#1099#1073#1088#1072#1090#1100' '#1076#1083#1103' '#1087#1086#1074#1090#1086#1088#1085#1086#1081' '#1086#1090#1087#1088#1072#1074#1082#1080#13#10'('#1076#1086#1089#1090#1091#1087#1085#1086' ' +
+            #1042#1057#1045#1052' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1103#1084', '#1088#1077#1076#1072#1082#1090#1080#1088#1091#1077#1090#1089#1103' '#1090#1086#1083#1100#1082#1086' "'#1042#1077#1076#1091#1097#1080#1084#1080' '#1086#1087#1077#1088#1072#1090#1086#1088#1072#1084#1080'")'
+          Caption = #1089#1086#1093#1088#1072#1085#1080#1090#1100' '#1089#1086#1086#1073#1097#1077#1085#1080#1077' '#1074' "'#1043#1083#1086#1073#1072#1083#1100#1085#1099#1077' '#1096#1072#1073#1083#1086#1085#1099'"'
+          ParentShowHint = False
+          ShowHint = True
+          OnClick = chkbox_SaveGlobalTemplateClick
+        end
+        object img_SaveGlobalTemplate: TImage
+          Left = 11
+          Top = 289
+          Width = 16
+          Height = 16
+          Anchors = [akRight, akBottom]
+          ParentShowHint = False
+          ShowHint = False
+          Transparent = True
+          OnClick = img_SaveGlobalTemplateClick
+        end
         object edtManualSMS: TEdit
           Left = 151
           Top = 38
@@ -245,19 +311,6 @@ object FormHome: TFormHome
           WordWrap = True
           OnClick = btnSaveFirebirdSettingsClick
         end
-        object chkbox_SaveMyTemplate: TCheckBox
-          Left = 12
-          Top = 271
-          Width = 375
-          Height = 17
-          Hint = 
-            #1057#1086#1086#1073#1097#1077#1085#1080#1077' '#1084#1086#1078#1085#1086' '#1073#1091#1076#1077#1090' '#1074#1099#1073#1088#1072#1090#1100' '#1076#1083#1103' '#1087#1086#1074#1090#1086#1088#1085#1086#1081' '#1086#1090#1087#1088#1072#1074#1082#1080#13#10'('#1076#1086#1089#1090#1091#1087#1085#1086' ' +
-            #1090#1086#1083#1100#1082#1086' '#1072#1074#1090#1086#1088#1091')'
-          Caption = #1089#1086#1093#1088#1072#1085#1080#1090#1100' '#1089#1086#1086#1073#1097#1077#1085#1080#1077' '#1074' "'#1052#1086#1080' '#1096#1072#1073#1083#1086#1085#1099' '#1089#1086#1086#1073#1097#1077#1085#1080#1081'"'
-          ParentShowHint = False
-          ShowHint = True
-          TabOrder = 7
-        end
         object st_PhoneInfo: TStaticText
           Left = 215
           Top = 42
@@ -273,31 +326,6 @@ object FormHome: TFormHome
           ParentFont = False
           TabOrder = 2
           Visible = False
-        end
-        object chkbox_SaveGlobalTemplate: TCheckBox
-          Left = 12
-          Top = 287
-          Width = 375
-          Height = 17
-          Hint = 
-            #1057#1086#1086#1073#1097#1077#1085#1080#1077' '#1084#1086#1078#1085#1086' '#1073#1091#1076#1077#1090' '#1074#1099#1073#1088#1072#1090#1100' '#1076#1083#1103' '#1087#1086#1074#1090#1086#1088#1085#1086#1081' '#1086#1090#1087#1088#1072#1074#1082#1080#13#10'('#1076#1086#1089#1090#1091#1087#1085#1086' ' +
-            #1042#1057#1045#1052' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1103#1084', '#1088#1077#1076#1072#1082#1090#1080#1088#1091#1077#1090#1089#1103' '#1090#1086#1083#1100#1082#1086' "'#1042#1077#1076#1091#1097#1080#1084#1080' '#1086#1087#1077#1088#1072#1090#1086#1088#1072#1084#1080'")'
-          Caption = #1089#1086#1093#1088#1072#1085#1080#1090#1100' '#1089#1086#1086#1073#1097#1077#1085#1080#1077' '#1074' "'#1043#1083#1086#1073#1072#1083#1100#1085#1099#1077' '#1096#1072#1073#1083#1086#1085#1099'"'
-          ParentShowHint = False
-          ShowHint = True
-          TabOrder = 8
-        end
-        object chkbox_SignSMS: TCheckBox
-          Left = 12
-          Top = 255
-          Width = 305
-          Height = 17
-          Caption = #1074#1089#1090#1072#1074#1080#1090#1100' '#1087#1086#1076#1087#1080#1089#1100' '#1074' '#1082#1086#1085#1094#1077' SMS'
-          Checked = True
-          ParentShowHint = False
-          ShowHint = True
-          State = cbChecked
-          TabOrder = 6
         end
         object panel_message_group: TPanel
           Left = 9
@@ -548,6 +576,10 @@ object FormHome: TFormHome
     object sheet_SendingSMS: TTabSheet
       Caption = #1052#1072#1089#1089#1086#1074#1072#1103' '#1088#1072#1089#1089#1099#1083#1082#1072
       ImageIndex = 1
+      ExplicitHeight = 313
+      DesignSize = (
+        482
+        314)
       object lblCountSendingSMS: TLabel
         Left = 332
         Top = 132
@@ -603,6 +635,27 @@ object FormHome: TFormHome
         ParentFont = False
         ParentShowHint = False
         ShowHint = False
+      end
+      object img_ShowLog: TImage
+        Left = 22
+        Top = 283
+        Width = 16
+        Height = 16
+        Anchors = [akRight, akBottom]
+        ParentShowHint = False
+        ShowHint = False
+        Transparent = True
+        OnClick = img_ShowLogClick
+      end
+      object chkbox_ShowLog: TLabel
+        Left = 43
+        Top = 282
+        Width = 153
+        Height = 16
+        Caption = #1086#1090#1086#1073#1088#1072#1078#1072#1090#1100' '#1083#1086#1075' '#1088#1072#1089#1089#1099#1083#1082#1080
+        ParentShowHint = False
+        ShowHint = False
+        OnClick = chkbox_ShowLogClick
       end
       object group_SendingSMS: TGroupBox
         Left = 4
@@ -726,15 +779,6 @@ object FormHome: TFormHome
           OnClick = btnLoadFileClick
         end
       end
-      object chkboxShowLog: TCheckBox
-        Left = 16
-        Top = 285
-        Width = 378
-        Height = 17
-        Caption = #1054#1090#1086#1073#1088#1072#1078#1072#1090#1100' '#1083#1086#1075' '#1088#1072#1089#1089#1099#1083#1082#1080
-        TabOrder = 4
-        OnClick = chkboxShowLogClick
-      end
       object ProgressStatusText: TStaticText
         Left = 20
         Top = 235
@@ -793,9 +837,10 @@ object FormHome: TFormHome
     object sheet_StatusSMS: TTabSheet
       Caption = #1057#1090#1072#1090#1091#1089' '#1089#1086#1086#1073#1097#1077#1085#1080#1103
       ImageIndex = 2
+      ExplicitHeight = 313
       DesignSize = (
         482
-        313)
+        314)
       object Label5: TLabel
         Left = 72
         Top = 144
@@ -829,7 +874,7 @@ object FormHome: TFormHome
       end
       object ImgNewYear: TImage
         Left = 181
-        Top = 22
+        Top = 23
         Width = 100
         Height = 100
         Anchors = [akRight, akBottom]
@@ -943,6 +988,7 @@ object FormHome: TFormHome
           0500A0140280500A0140280500A0140280500A0140280FFFD9}
         ShowHint = False
         Stretch = True
+        ExplicitTop = 22
       end
       object edtFindSMS: TEdit
         Left = 191
@@ -1153,7 +1199,7 @@ object FormHome: TFormHome
     Left = 816
     Top = 432
     Bitmap = {
-      494C010103000C00A80018001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010103000C00AC0018001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000600000001800000001002000000000000024
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

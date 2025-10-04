@@ -8,7 +8,8 @@ interface
     Math, IdHashCRC, Nb30, IdMessage, StrUtils, WinSvc, System.Win.ComObj, IdSMTP, IdText, IdSSL, IdSSLOpenSSL,
     IdAttachmentFile, FormHome, Data.Win.ADODB, Data.DB, IdIcmpClient, IdException, System.DateUtils,
     FIBDatabase, pFIBDatabase, TCustomTypeUnit, TUserUnit, Vcl.Menus, GlobalVariables, GlobalVariablesLinkDLL,
-    TActiveSIPUnit, System.IOUtils, TLogFileUnit, Vcl.Buttons, IdGlobal;
+    TActiveSIPUnit, System.IOUtils, TLogFileUnit, Vcl.Buttons, IdGlobal, System.ImageList,
+    Vcl.ImgList,Vcl.Imaging.pngimage;
 
 
 procedure KillProcess;                                                               // принудительное завершение работы
@@ -154,7 +155,7 @@ function IsAllowChangeStatusOperators(_userID:Integer; var _errorDescription:str
 procedure SetLinkColor(var _label:TLabel);                                          // установка цвета на label если на него можно нажать
 procedure ResetPanelStatusOperator;                                                 // сброс панели статусы оператора на дефолтные значения
 procedure ForceExitOperatorAllQueue(_userID:Integer);                               // принудительный выход из всех очередей оператора
-
+procedure AddCustomCheckBoxUI;                                                      // подгрузка своих красивых чекбоксов
 
 
 implementation
@@ -166,7 +167,7 @@ uses
   FormUsersUnit, TTranslirtUnit, Thread_ACTIVESIP_updatetalkUnit, Thread_ACTIVESIP_updatePhoneTalkUnit,
   Thread_ACTIVESIP_countTalkUnit, Thread_ACTIVESIP_QueueUnit, FormActiveSessionUnit, TIVRUnit,
   TXmlUnit, TOnlineChat, Thread_ChatUnit, Thread_ForecastUnit,
-  Thread_InternalProcessUnit, TActiveSessionUnit, FormTrunkSipUnit, Thread_CheckTrunkUnit, TStatusUnit;
+  Thread_InternalProcessUnit, TActiveSessionUnit, FormTrunkSipUnit, Thread_CheckTrunkUnit, TStatusUnit, GlobalImageDestination, DMUnit, FormSettingsGlobalUnit, FormHistoryStatusOperatorUnit;
 
  // логирование действий
 procedure LoggingRemote(InLoggingID:enumLogging; _userID:Integer);
@@ -191,10 +192,10 @@ begin
         ado.Connection:=serverConnect;
         SQL.Clear;
 
-        SQL.Add('insert into logging (ip,user_id,user_login_pc,pc,action) values ('+#39+SharedCurrentUserLogon.GetIP+#39+','
+        SQL.Add('insert into logging (ip,user_id,user_login_pc,pc,action) values ('+#39+SharedCurrentUserLogon.IP+#39+','
                                                                                    +#39+IntToStr(_userID)+#39+','
-                                                                                   +#39+SharedCurrentUserLogon.GetUserLoginPC+#39+','
-                                                                                   +#39+SharedCurrentUserLogon.GetPC+#39+','
+                                                                                   +#39+SharedCurrentUserLogon.UserLoginPC+#39+','
+                                                                                   +#39+SharedCurrentUserLogon.PC+#39+','
                                                                                    +#39+IntToStr(EnumLoggingToInteger(InLoggingID))+#39+')');
 
         try
@@ -535,7 +536,7 @@ begin
     begin
      FreeAndNil(INTERNALPROCESS_thread);
      try
-       INTERNALPROCESS_thread:=Thread_InternalProcess.Create(SharedCurrentUserLogon.GetID);
+       INTERNALPROCESS_thread:=Thread_InternalProcess.Create(SharedCurrentUserLogon.ID);
        INTERNALPROCESS_thread.Priority:=tpNormal;
      except
       on E:Exception do
@@ -637,7 +638,7 @@ begin
 
       Sleep(10);
 
-      if SharedCurrentUserLogon.GetIsAccessLocalChat then ONLINECHAT_thread.Start; // TODO тут не делаем проверку т.к. этот поток будет переделываться
+      if SharedCurrentUserLogon.IsAccessLocalChat then ONLINECHAT_thread.Start; // TODO тут не делаем проверку т.к. этот поток будет переделываться
 
       Sleep(10);
 
@@ -661,18 +662,18 @@ begin
      if not CONNECT_BD_ERROR then begin
 
        // логирование (выход)  , через команду или руками
-       if GetForceActiveSessionClosed(SharedCurrentUserLogon.GetID) then LoggingRemote(eLog_exit_force,SharedCurrentUserLogon.GetID)
+       if GetForceActiveSessionClosed(SharedCurrentUserLogon.ID) then LoggingRemote(eLog_exit_force,SharedCurrentUserLogon.ID)
        else
        begin
         // проверка на вдруг нажали просто отмена
-        if SharedCurrentUserLogon.GetID<>0 then LoggingRemote(eLog_exit,SharedCurrentUserLogon.GetID);
+        if SharedCurrentUserLogon.ID<>0 then LoggingRemote(eLog_exit,SharedCurrentUserLogon.ID);
        end;
 
        // очичтка текущего статуса оператора
-       UpdateOperatorStatus(eUnknown, SharedCurrentUserLogon.GetID);
+       UpdateOperatorStatus(eUnknown, SharedCurrentUserLogon.ID);
 
        // удаление активной сессии
-       DeleteActiveSession(GetActiveSessionUser(SharedCurrentUserLogon.GetID));
+       DeleteActiveSession(GetActiveSessionUser(SharedCurrentUserLogon.ID));
      end;
 
      // закрываем chat_exe если открыт
@@ -2855,9 +2856,9 @@ begin
 
 
 
-  ip:=SharedCurrentUserLogon.GetIP;
-  user_pc:=SharedCurrentUserLogon.GetUserLoginPC;
-  pc_name:=SharedCurrentUserLogon.GetPC;
+  ip:=SharedCurrentUserLogon.IP;
+  user_pc:=SharedCurrentUserLogon.UserLoginPC;
+  pc_name:=SharedCurrentUserLogon.PC;
 
   try
      with ado do begin
@@ -2865,7 +2866,7 @@ begin
         SQL.Clear;
 
         SQL.Add('insert into active_session (ip,user_id,user_login_pc,pc) values ('+#39+ip+#39+','
-                                                                                   +#39+IntToStr(SharedCurrentUserLogon.GetID)+#39+','
+                                                                                   +#39+IntToStr(SharedCurrentUserLogon.ID)+#39+','
                                                                                    +#39+user_pc+#39+','
                                                                                    +#39+pc_name+#39+')');
 
@@ -3154,7 +3155,7 @@ begin
         for i:=Ord(Low(enumAccessList)) to Ord(High(enumAccessList)) do
         begin
           Access:=enumAccessList(i);
-          SetAccessMenu(Access,p_TUser.GetAccess(Access));
+          SetAccessMenu(Access,p_TUser.Access[Access]);
         end;
       end;
 
@@ -4540,7 +4541,7 @@ begin
     case InStatus of
      goHome_Hide:begin
        if InClick then begin
-        saveIndividualSettingUser(SharedCurrentUserLogon.GetID,settingUsers_gohome,paramStatus_ENABLED);
+        saveIndividualSettingUser(SharedCurrentUserLogon.ID,settingUsers_gohome,paramStatus_ENABLED);
         chkboxGoHome.Checked:=True;
        end;
 
@@ -4558,7 +4559,7 @@ begin
      goHome_Show:begin
 
        if InClick then begin
-        saveIndividualSettingUser(SharedCurrentUserLogon.GetID,settingUsers_gohome,paramStatus_DISABLED);
+        saveIndividualSettingUser(SharedCurrentUserLogon.ID,settingUsers_gohome,paramStatus_DISABLED);
         chkboxGoHome.Checked:=False;
        end;
 
@@ -4656,12 +4657,12 @@ function OpenMissedCalls(var _errorDescriptions:string; _queue:enumQueue = queue
 begin
   Result:=False;
 
-  if SharedCurrentUserLogon.GetAccess(menu_missed_calls) = access_DISABLED then begin
+  if SharedCurrentUserLogon.Access[menu_missed_calls] = access_DISABLED then begin
    _errorDescriptions:='Отсутствует доступ к пропущенным звонкам';
    Exit;
   end;
 
- if SharedCurrentUserLogon.GetAccess(menu_missed_calls) = access_ENABLED then begin
+ if SharedCurrentUserLogon.Access[menu_missed_calls] = access_ENABLED then begin
    with FormPropushennie do begin
     SetQueue(_queue, _missed);
    end;
@@ -4675,7 +4676,7 @@ end;
 // открытые exe локального чата
 procedure OpenLocalChat;
 begin
- if not SharedCurrentUserLogon.GetIsAccessLocalChat then begin
+ if not SharedCurrentUserLogon.IsAccessLocalChat then begin
     MessageBox(HomeForm.Handle,PChar('Отсутствует доступ к локальному чату'),PChar('Отсутствует доступ'),MB_OK+MB_ICONINFORMATION);
     Exit;
  end;
@@ -4685,14 +4686,14 @@ begin
     Exit;
   end;
 
-  ShellExecute(HomeForm.Handle, 'Open', PChar(CHAT_EXE),PChar(USER_ID_PARAM+' '+IntToStr(SharedCurrentUserLogon.GetID)),nil,SW_SHOW);
+  ShellExecute(HomeForm.Handle, 'Open', PChar(CHAT_EXE),PChar(USER_ID_PARAM+' '+IntToStr(SharedCurrentUserLogon.ID)),nil,SW_SHOW);
 end;
 
 
 // открытые exe отчетов
 procedure OpenReports;
 begin
- if not SharedCurrentUserLogon.GetIsAccessReports then begin
+ if not SharedCurrentUserLogon.IsAccessReports then begin
     MessageBox(HomeForm.Handle,PChar('Отсутствует доступ к отчетам'),PChar('Отсутствует доступ'),MB_OK+MB_ICONINFORMATION);
     Exit;
  end;
@@ -4702,14 +4703,14 @@ begin
     Exit;
   end;
 
-  ShellExecute(HomeForm.Handle, 'Open', PChar(REPORT_EXE),PChar(USER_ID_PARAM+' '+IntToStr(SharedCurrentUserLogon.GetID)),nil,SW_SHOW);
+  ShellExecute(HomeForm.Handle, 'Open', PChar(REPORT_EXE),PChar(USER_ID_PARAM+' '+IntToStr(SharedCurrentUserLogon.ID)),nil,SW_SHOW);
 end;
 
 
 // открытые exe услуг
 procedure OpenService;
 begin
- if not SharedCurrentUserLogon.GetIsAccessService then begin
+ if not SharedCurrentUserLogon.IsAccessService then begin
     MessageBox(HomeForm.Handle,PChar('Отсутствует доступ к услугам'),PChar('Отсутствует доступ'),MB_OK+MB_ICONINFORMATION);
     Exit;
  end;
@@ -4719,7 +4720,7 @@ begin
     Exit;
   end;
 
-  ShellExecute(HomeForm.Handle, 'Open', PChar(SERVICE_EXE),PChar(USER_ID_PARAM+' '+IntToStr(SharedCurrentUserLogon.GetID)),nil,SW_SHOW);
+  ShellExecute(HomeForm.Handle, 'Open', PChar(SERVICE_EXE),PChar(USER_ID_PARAM+' '+IntToStr(SharedCurrentUserLogon.ID)),nil,SW_SHOW);
 end;
 
 // открытые exe SMS рассылки
@@ -4727,7 +4728,7 @@ procedure OpenSMS;
  var
   showSendingSMS:Boolean; // отображать ли excel рассылку
 begin
- if not SharedCurrentUserLogon.GetIsAccessSMS then begin
+ if not SharedCurrentUserLogon.IsAccessSMS then begin
     MessageBox(HomeForm.Handle,PChar('Отсутствует доступ к SMS рассылке'),PChar('Отсутствует доступ'),MB_OK+MB_ICONINFORMATION);
     Exit;
  end;
@@ -4744,7 +4745,7 @@ begin
    else showSendingSMS:=True;
 
   ShellExecute(HomeForm.Handle, 'Open', PChar(SMS_EXE),PChar(USER_ID_PARAM+' '+
-                                                            IntToStr(SharedCurrentUserLogon.GetID)+' '+
+                                                            IntToStr(SharedCurrentUserLogon.ID)+' '+
                                                             USER_ACCESS_PARAM +' '+
                                                             BooleanToString(showSendingSMS)),nil,SW_SHOW);
 end;
@@ -4753,7 +4754,7 @@ end;
 // открытые exe Звонилки
 procedure OpenOutgoing;
 begin
-  if not SharedCurrentUserLogon.GetIsAccessService then begin
+  if not SharedCurrentUserLogon.IsAccessService then begin
     MessageBox(HomeForm.Handle,PChar('Отсутствует доступ к звонкам'),PChar('Отсутствует доступ'),MB_OK+MB_ICONINFORMATION);
     Exit;
   end;
@@ -4763,7 +4764,7 @@ begin
     Exit;
   end;
 
-  ShellExecute(HomeForm.Handle, 'Open', PChar(OUTGOING_EXE),PChar(USER_ID_PARAM+' '+IntToStr(SharedCurrentUserLogon.GetID)),nil,SW_SHOW);
+  ShellExecute(HomeForm.Handle, 'Open', PChar(OUTGOING_EXE),PChar(USER_ID_PARAM+' '+IntToStr(SharedCurrentUserLogon.ID)),nil,SW_SHOW);
 
 end;
 
@@ -4921,7 +4922,7 @@ begin
        eNumbers: begin
         if InClick then begin
           // сохраняем текущий выбор
-         saveIndividualSettingUser(SharedCurrentUserLogon.GetID,settingUsers_showStatisticsQueueDay,paramStatus_DISABLED);
+         saveIndividualSettingUser(SharedCurrentUserLogon.ID,settingUsers_showStatisticsQueueDay,paramStatus_DISABLED);
         end;
 
         PanelStatisticsQueue_Numbers.Visible:=True;
@@ -4933,7 +4934,7 @@ begin
        eGraph: begin
         if InClick then begin
          // сохраняем текущий выбор
-         saveIndividualSettingUser(SharedCurrentUserLogon.GetID,settingUsers_showStatisticsQueueDay,paramStatus_ENABLED);
+         saveIndividualSettingUser(SharedCurrentUserLogon.ID,settingUsers_showStatisticsQueueDay,paramStatus_ENABLED);
 
         end;
 
@@ -5441,12 +5442,12 @@ begin
    XML.Free;
   end;
 
-  id_sip:=getUserSIP(SharedCurrentUserLogon.GetID);
+  id_sip:=getUserSIP(SharedCurrentUserLogon.ID);
 
   // в очереди ли находится оператор
   if SharedActiveSipOperators.isExistOperatorInQueue(id_sip) then begin
     // выход из всех очередей
-   ForceExitOperatorAllQueue(SharedCurrentUserLogon.GetID);
+   ForceExitOperatorAllQueue(SharedCurrentUserLogon.ID);
   end;
 end;
 
@@ -5470,6 +5471,25 @@ begin
   UpdateOperatorStatus(eUnknown,_userID);
 
   LoggingRemote(eLog_home,_userID);
+end;
+
+
+// подгрузка своих красивых чекбоксов
+procedure AddCustomCheckBoxUI;
+begin
+  with FormSettingsGlobal do begin
+    // ldap
+    begin
+      // Включить авторизацию по LDAP (LdapEnabledStatus)
+      SharedCheckBoxUI.Add('LdapEnabledStatus', lbl_checkbox_LdapEnabledStatus, img_LdapEnabledStatus, paramStatus_DISABLED);
+    end;
+  end;
+
+  with FormHistoryStatusOperator do begin
+    // статусы произвольного дня (anyDay)
+    SharedCheckBoxUI.Add('anyDay', chkbox_anyDay, img_anyDay, paramStatus_DISABLED);
+  end;
+
 end;
 
 

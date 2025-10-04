@@ -184,6 +184,7 @@ object FormGenerateSMS: TFormGenerateSMS
       Font.Style = []
       ParentFont = False
       TabOrder = 2
+      OnDrawItem = combox_PolDrawItem
     end
     object dateShow: TDateTimePicker
       Left = 88
@@ -220,6 +221,7 @@ object FormGenerateSMS: TFormGenerateSMS
       Font.Style = []
       ParentFont = False
       TabOrder = 5
+      OnDrawItem = combox_AddressClinicDrawItem
     end
     object btnServiceList: TButton
       Left = 88

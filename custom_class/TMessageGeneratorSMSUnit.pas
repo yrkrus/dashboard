@@ -355,12 +355,12 @@ begin
   messageTime:=DateTimeToUnix(messageDateTime);
 
   if messageTime < currentTime then begin
-   _errorDescription:='Время в смс сообщении будет из прошлого! Установите правильное время';
+   _errorDescription:='Время в смс сообщении будет из прошлого!'+#13+'Установите правильное время';
    Exit;
   end;
 
    if currentTime+cINTERVAL > messageTime then begin
-   _errorDescription:='Смс отправляем за 30 мин до начала приема? Что то мало вероятно. Установите правильное время';
+   _errorDescription:='Смс отправляем за 30 мин до начала приема? Что то мало вероятно'+#13+'Установите правильное время';
    Exit;
   end;
 

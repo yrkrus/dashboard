@@ -100,6 +100,7 @@ function ldap_msgfree(msg: PLDAPMessage): Integer; stdcall; external 'wldap32.dl
     m_init:Boolean;     // есть все данные по ldap
     m_host:string;      // хост ldap
     m_port:Integer;     // порт ldap
+    m_enabled:Boolean;  // включнена ли авторизация по LDAP
 
     procedure CreateLdapData;   // получение данных ldap
 
@@ -112,6 +113,8 @@ function ldap_msgfree(msg: PLDAPMessage): Integer; stdcall; external 'wldap32.dl
     function CheckAuth(_userName,_userPassword:string):Boolean; overload; // проверка на авторизацию
     function CheckAuth: Boolean;                                overload;      // НЕ ГОТОВО!!
     function SaveLdapDataToBase(_host:string;_port:Integer; var _errorDescription:string):Boolean; // сохранение данных ldap в БД
+    function SetStatusLdap(_value:Boolean; var _errorDescription:string):Boolean; // вкл\выкл возможность авторизации по LDAP
+    function GetStatusLdap:Boolean;
     function GetUserFullName(const Login: string; out FullName: string): Boolean;
 
 
@@ -164,13 +167,18 @@ begin
       with ado do begin
        ado.Connection:=serverConnect;
        SQL.Clear;
-       SQL.Add('select host,port from settings_ldap where id = ''1'' ');
+       SQL.Add('select host,port,enable from settings_ldap where id = ''1'' ');
        Active:=True;
 
        if (Fields[0].Value=null) or (Fields[1].Value=null) then Exit;
 
        m_host:=VarToStr(Fields[0].Value);
        m_port:=StrToInt(VarToStr(Fields[1].Value));
+
+       if StrToInt(VarToStr(Fields[2].Value)) = 0 then m_enabled:=False
+       else m_enabled:=True;
+
+
       // m_port:=636;
        m_init:=True;
       end;
@@ -182,6 +190,13 @@ begin
     end;
    end;
 end;
+
+
+function TLdap.GetStatusLdap:Boolean;
+begin
+  Result:=m_enabled;
+end;
+
 
 // сохранение данных ldap в БД
 function TLdap.SaveLdapDataToBase(_host:string;_port:Integer;
@@ -208,6 +223,60 @@ begin
       SQL.Add('update settings_ldap set host = '+#39+_host+#39
                                               +', port = '+#39+IntToStr(_port)+#39
                                               +' where id = ''1'' ');
+      try
+          ExecSQL;
+      except
+          on E:EIdException do begin
+            _errorDescription:='ОШИБКА! '+e.Message;
+            FreeAndNil(ado);
+            if Assigned(serverConnect) then begin
+              serverConnect.Close;
+              FreeAndNil(serverConnect);
+            end;
+            Exit;
+          end;
+      end;
+
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+
+  Result:=True;
+end;
+
+
+// вкл\выкл возможность авторизации по LDAP
+function TLdap.SetStatusLdap(_value:Boolean; var _errorDescription:string):Boolean;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ status:string;
+begin
+  Result:=False;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnectWithError(_errorDescription);
+
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  if _value then status:='1' else status:='0';
+
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+
+      SQL.Add('update settings_ldap set enable = '+#39+status+#39
+                                                  +' where id = ''1'' ');
       try
           ExecSQL;
       except

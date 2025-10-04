@@ -186,6 +186,7 @@ object FormPhoneList: TFormPhoneList
     ShowHint = False
     TabOrder = 3
     WordWrap = True
+    OnClick = btnDeleteClick
   end
   object panel_phone: TPanel
     Left = 4

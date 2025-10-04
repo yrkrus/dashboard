@@ -39,7 +39,8 @@ uses
   GlobalImageDestination in '..\custom_global\GlobalImageDestination.pas',
   GlobalVariablesLinkDLL in '..\custom_global\GlobalVariablesLinkDLL.pas',
   FormServerIKCheckUnit in '..\gui\Forms\FooterSubMenu\FormServerIKCheckUnit.pas' {FormServerIKCheck},
-  FormWaitUnit in '..\gui\FormSystem\FormWaitUnit.pas' {FormWait};
+  FormWaitUnit in '..\gui\FormSystem\FormWaitUnit.pas' {FormWait},
+  TCheckBoxUIUnit in '..\custom_class\TCheckBoxUIUnit.pas';
 
 {$R *.res}
 

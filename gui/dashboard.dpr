@@ -84,7 +84,9 @@ uses
   FormPhoneListUnit in 'Forms\Settings\FormPhoneListUnit.pas' {FormPhoneList},
   TPhoneListUnit in '..\custom_class\TPhoneListUnit.pas',
   FormPhoneListAddUnit in 'Forms\Settings\FormPhoneListAddUnit.pas' {FormPhoneListAdd},
-  TIVRTimeUnit in '..\custom_class\TIVRTimeUnit.pas';
+  TIVRTimeUnit in '..\custom_class\TIVRTimeUnit.pas',
+  TCheckBoxUIUnit in '..\custom_class\TCheckBoxUIUnit.pas',
+  TUsersAllUnit in '..\custom_class\TUsersAllUnit.pas';
 
 {$R *.res}
 

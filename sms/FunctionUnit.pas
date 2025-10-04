@@ -3,15 +3,14 @@ unit FunctionUnit;
 interface
 
 uses
-FormHomeUnit,
- Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
- System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
- Vcl.StdCtrls,System.Win.ComObj,System.StrUtils,math, IdHTTP,
- IdSSL,IdIOHandlerStack, IdSSLOpenSSL, System.DateUtils,System.IniFiles,
- Winapi.WinSock,  Vcl.ComCtrls, GlobalVariables, Vcl.Grids, Data.Win.ADODB,
- Data.DB, IdException, TPacientsListUnit, Vcl.Menus, System.SyncObjs,
- TCustomTypeUnit, Word_TLB, ActiveX, FormGenerateSMSUnit, Winapi.RichEdit,
- Vcl.Imaging.Jpeg, System.IOUtils, Vcl.ExtCtrls;
+    FormHomeUnit, Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+    System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
+    Vcl.StdCtrls,System.Win.ComObj,System.StrUtils,math, IdHTTP,
+    IdSSL,IdIOHandlerStack, IdSSLOpenSSL, System.DateUtils,System.IniFiles,
+    Winapi.WinSock,  Vcl.ComCtrls, GlobalVariables, Vcl.Grids, Data.Win.ADODB,
+    Data.DB, IdException, TPacientsListUnit, Vcl.Menus, System.SyncObjs,
+    TCustomTypeUnit, Word_TLB, ActiveX, FormGenerateSMSUnit, Winapi.RichEdit,
+    Vcl.Imaging.Jpeg, System.IOUtils, Vcl.ExtCtrls;
 
 
 function GetSMS(inPacientPhone:string):string; overload;                                      // отправка смс v2
@@ -80,11 +79,12 @@ function SetFindDate(var _startDate:TDateTimePicker;
                      var _errorDescriptions:string):Boolean;                                 // установка дата начала и конца времени отбора
 function SaveResultSendingSMS(var _panel:TPanel; _path:string;
                               var _errorDescription:string):Boolean;                             // сохранение результата отправки на диске в jpg
+procedure AddCustomCheckBoxUI;                                                               // подгрузка своих красивых чекбоксов
 
 implementation
 
 uses
-  FormMyTemplateUnit, TSendSMSUint, TAddressClinicPopMenuUnit, TThreadSendSMSUnit, TSpellingUnit, GlobalVariablesLinkDLL, FormWaitUnit;
+  FormMyTemplateUnit, TSendSMSUint, TAddressClinicPopMenuUnit, TThreadSendSMSUnit, TSpellingUnit, GlobalVariablesLinkDLL, FormWaitUnit, DMUnit, GlobalImageDestination, FormManualPodborUnit;
 
 
 
@@ -379,7 +379,7 @@ begin
            Exit;
          end;
 
-         if not chkbox_SignSMS.Checked then begin
+         if not SharedCheckBox.Checked['SignSMS'] then begin
            resultat:=MessageBox(Handle,PChar('Не установлена галка "вставить подпись в конце SMS"'+#13#13+
                                              'Это так и задумано?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
 
@@ -492,7 +492,7 @@ begin
         // телефон
         phone:=SharedSendindPhoneManualSMS[i];
 
-        if FormHome.chkbox_SignSMS.Checked then addSign:=True
+        if SharedCheckBox.Checked['SignSMS'] then addSign:=True
         else addSign:=False;
 
         if not SMS.SendSMS(SMSMessage, phone, _reasonSMS, _errorDescription, addSign) then begin
@@ -526,7 +526,7 @@ begin
       end;
 
       // отправляем смс  (в потоке = MAX_COUNT_THREAD_SENDIND)
-      showLog:=FormHome.chkboxShowLog.Checked;
+      showLog:=SharedCheckBox.Checked['ShowLog'];
       SendingRemember(showLog,executionTime);
       executionTime:= Round(executionTime/1000);
       _errorDescription:='Отправлено за '+IntToStr(executionTime)+' сек';
@@ -592,9 +592,9 @@ begin
        //st_PhoneInfo.Visible:=True;            // инфо что телдефон должен начинаться с 8
        re_ManualSMS.Clear;                    // сообщение
 
-       //chkbox_SignSMS.Checked:=True;          // подпись в конце SMS
-       chkbox_SaveMyTemplate.Checked:=False;  // сохранить сообщение в мои шаблоны
-       chkbox_SaveGlobalTemplate.Checked:=False;  // сохранить сообщение в глобальные шаблоны
+       SharedCheckBox.Checked['SignSMS']:=True;          // подпись в конце SMS
+       SharedCheckBox.Checked['SaveMyTemplate']:=False;  // сохранить сообщение в мои шаблоны
+       SharedCheckBox.Checked['SaveGlobalTemplate']:=False; // сохранить сообщение в глобальные шаблоны
 
        st_ShowInfoAddAddressClinic.Visible:=True; // справка как добавить адрес клиники
 
@@ -1717,21 +1717,23 @@ begin
   with FormHome do begin
     if not sms.isExistAuth then begin
       chkbox_SignSMS.Enabled:=False;
-      chkbox_SignSMS.Checked:=False;
+      SharedCheckBox.Checked['SignSMS']:=False;
 
       Exit;
     end;
 
     if sms.GetSignSMS = 'null' then begin
       chkbox_SignSMS.Enabled:=False;
-      chkbox_SignSMS.Checked:=False;
+      SharedCheckBox.Checked['SignSMS']:=False;
 
       Exit;
     end;
 
    with chkbox_SignSMS do begin
      Hint:='К отправляемому SMS будет подставляться подпись'+#13+#10+'"'+sms.GetSignSMS+'"';
-     Checked:=True;
+     ShowHint:=True;
+
+     SharedCheckBox.Checked['SignSMS']:=True;
      Enabled:=True;
    end;
   end;
@@ -2081,6 +2083,31 @@ begin
     JpegImg.Free;
   end;
 end;
+
+
+// подгрузка своих красивых чекбоксов
+procedure AddCustomCheckBoxUI;
+begin
+  with FormHome do begin
+    // вставить подпись в конце SMS (chkbox_SignSMS)
+    SharedCheckBox.Add('SignSMS', chkbox_SignSMS, img_SignSMS, paramStatus_ENABLED);
+
+    // сохранить сообщение в "Мои шаблоны сообщений" (SaveMyTemplate)
+    SharedCheckBox.Add('SaveMyTemplate', chkbox_SaveMyTemplate, img_SaveMyTemplate, paramStatus_DISABLED);
+
+    // сохранить сообщение в "Глобальные шаблоны" (SaveGlobalTemplate)
+    SharedCheckBox.Add('SaveGlobalTemplate', chkbox_SaveGlobalTemplate, img_SaveGlobalTemplate, paramStatus_DISABLED);
+
+    // отображать лог рассылки (chkbox_ShowLog)
+    SharedCheckBox.Add('ShowLog', chkbox_ShowLog, img_ShowLog, paramStatus_DISABLED);
+  end;
+
+  with FormManualPodbor do begin
+    // только свои звонки (MyCalls)
+    SharedCheckBox.Add('MyCalls', chkbox_MyCalls, img_MyCalls, paramStatus_DISABLED);
+  end;
+end;
+
 
 
 end.

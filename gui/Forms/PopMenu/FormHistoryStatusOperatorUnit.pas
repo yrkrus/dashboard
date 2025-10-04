@@ -35,15 +35,18 @@ type
     panel_History: TPanel;
     list_History: TListView;
     st_NoStatus: TStaticText;
-    chkbox_anyDay: TCheckBox;
     dateStart: TDateTimePicker;
     btn_Find: TBitBtn;
+    chkbox_anyDay: TLabel;
+    img_anyDay: TImage;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure list_HistoryCustomDrawItem(Sender: TCustomListView;
       Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
     procedure chkbox_anyDayClick(Sender: TObject);
     procedure btn_FindClick(Sender: TObject);
+    procedure lbl_checkbox_LdapEnabledStatusClick(Sender: TObject);
+    procedure img_anyDayClick(Sender: TObject);
   private
     { Private declarations }
    m_id:Integer;  // id пользователя
@@ -107,7 +110,7 @@ end;
 
 procedure TFormHistoryStatusOperator.chkbox_anyDayClick(Sender: TObject);
 begin
-  if chkbox_anyDay.Checked then begin
+  if SharedCheckBoxUI.Checked['anyDay'] then begin
     dateStart.Visible:=True;
     btn_Find.Visible:=True;
 
@@ -130,8 +133,11 @@ begin
     m_sip:=0;
 
     // статусы произвольного дня
-   chkbox_anyDay.Checked:=False;
+   SharedCheckBoxUI.ChangeStatusCheckBox('anyDay',paramStatus_DISABLED);
+   dateStart.Visible:=False;
+   btn_Find.Visible:=False;
   end;
+
 
   lbl_available.Caption:='---';
   lbl_exodus.Caption:='---';
@@ -227,7 +233,7 @@ var
 begin
   // подгрузим данные
   if not Assigned(operatorStatus) then begin
-    if not chkbox_anyDay.Checked then operatorStatus:=THistoryStatusOperators.Create(eTableOperatorStatus, Now, Now, m_id,m_sip)
+    if not SharedCheckBoxUI.Checked['anyDay'] then operatorStatus:=THistoryStatusOperators.Create(eTableOperatorStatus, Now, Now, m_id,m_sip)
     else begin
      operatorStatus:=THistoryStatusOperators.Create(eTableHistoryOperatorStatus, dateStart.Date, dateStart.Date, m_id,m_sip);
      Caption:=Caption+' за '+DateToStr(dateStart.Date);
@@ -235,7 +241,7 @@ begin
   end
   else begin
    // ставим даты вдруг нужно другой период отобразить
-   if not chkbox_anyDay.Checked then
+   if not SharedCheckBoxUI.Checked['anyDay'] then
    begin
      operatorStatus.SetDate(Now,Now);
      operatorStatus.SetTable(eTableOperatorStatus);
@@ -291,13 +297,13 @@ begin
   _errorDescription:='';
 
   if dateStart.Date > Now then begin
-    _errorDescription:='Что то как то дебет с кредитом не сходится! '+#13#13+'Дата из будущего';
+    _errorDescription:='Что то как то дебет с кредитом не сходится!'+#13#13+'Дата из будущего';
      Exit;
   end;
 
   // проверим есть ли в проимежутке дат текущий день
   if (dateStart.Date = Trunc(Now)) then begin
-   _errorDescription:='Указан текущий день, для отображения данных по текущему дню нужно снать галку "статусы произвольного дня"';
+   _errorDescription:='Указан текущий день, для отображения данных по текущему дню нужно снять галку "статусы произвольного дня"';
    Exit;
   end;
 
@@ -343,6 +349,48 @@ procedure TFormHistoryStatusOperator.FormShow(Sender: TObject);
 begin
   isClose:=False;
   Show;
+end;
+
+procedure TFormHistoryStatusOperator.img_anyDayClick(
+  Sender: TObject);
+begin
+ SharedCheckBoxUI.ChangeStatusCheckBox('anyDay');
+
+ if SharedCheckBoxUI.Checked['anyDay'] then begin
+    dateStart.Visible:=True;
+    btn_Find.Visible:=True;
+
+    dateStart.Date:=Now-1;
+ end
+ else begin
+    dateStart.Visible:=False;
+    btn_Find.Visible:=False;
+
+    if not isClose then begin
+      btn_Find.Click;
+    end;
+ end;
+end;
+
+procedure TFormHistoryStatusOperator.lbl_checkbox_LdapEnabledStatusClick(
+  Sender: TObject);
+begin
+ SharedCheckBoxUI.ChangeStatusCheckBox('anyDay');
+
+ if SharedCheckBoxUI.Checked['anyDay'] then begin
+    dateStart.Visible:=True;
+    btn_Find.Visible:=True;
+
+    dateStart.Date:=Now-1;
+  end
+  else begin
+    dateStart.Visible:=False;
+    btn_Find.Visible:=False;
+
+    if not isClose then begin
+      btn_Find.Click;
+    end;
+ end;
 end;
 
 procedure TFormHistoryStatusOperator.list_HistoryCustomDrawItem(

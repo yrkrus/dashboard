@@ -4,7 +4,7 @@ object FormPhoneListAdd: TFormPhoneListAdd
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = #1044#1086#1073#1072#1074#1083#1077#1085#1080#1077' '#1085#1086#1074#1086#1075#1086' '#1090#1077#1083#1077#1092#1086#1085#1072
-  ClientHeight = 191
+  ClientHeight = 190
   ClientWidth = 266
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
@@ -186,6 +186,7 @@ object FormPhoneListAdd: TFormPhoneListAdd
     ShowHint = False
     TabOrder = 3
     WordWrap = True
+    OnClick = btnEditClick
   end
   object chkboxCloseForm: TCheckBox
     Left = 10

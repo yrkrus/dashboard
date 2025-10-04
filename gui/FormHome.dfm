@@ -2,7 +2,7 @@ object HomeForm: THomeForm
   Left = 0
   Top = 0
   Caption = #1044#1072#1096#1073#1086#1088#1076' '#1050#1086#1083#1083#1062#1077#1085#1090#1088#1072
-  ClientHeight = 780
+  ClientHeight = 760
   ClientWidth = 1454
   Color = clWindow
   DefaultMonitor = dmDesktop
@@ -20,7 +20,7 @@ object HomeForm: THomeForm
   OnShow = FormShow
   DesignSize = (
     1454
-    780)
+    760)
   PixelsPerInch = 96
   TextHeight = 15
   object Label5: TLabel
@@ -542,7 +542,7 @@ object HomeForm: THomeForm
   end
   object lblNewMessageLocalChat: TLabel
     Left = 1202
-    Top = 739
+    Top = 719
     Width = 243
     Height = 16
     Cursor = crHandPoint
@@ -695,7 +695,7 @@ object HomeForm: THomeForm
   end
   object Img8Mart: TImage
     Left = 1374
-    Top = 708
+    Top = 688
     Width = 79
     Height = 50
     Anchors = [akRight, akBottom]
@@ -822,7 +822,7 @@ object HomeForm: THomeForm
   end
   object ImageLogo: TImage
     Left = 1277
-    Top = 700
+    Top = 680
     Width = 157
     Height = 37
     Anchors = [akRight, akBottom]
@@ -989,7 +989,7 @@ object HomeForm: THomeForm
   end
   object ImgNewYear: TImage
     Left = 1389
-    Top = 680
+    Top = 660
     Width = 55
     Height = 55
     Anchors = [akRight, akBottom]
@@ -6445,7 +6445,7 @@ object HomeForm: THomeForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 759
+    Top = 739
     Width = 1454
     Height = 21
     Panels = <
@@ -7561,11 +7561,11 @@ object HomeForm: THomeForm
         OnClick = btnStatus_add_queue5000_5050Click
       end
       object btnStatus_del_queue_all: TBitBtn
-        Left = 665
+        Left = 901
         Top = 70
         Width = 139
         Height = 30
-        Hint = #1042#1099#1093#1086#1076' '#1080#1079' '#1074#1089#1077#1093' '#1083#1080#1085#1080#1081
+        Hint = #1042#1099#1093#1086#1076' '#1080#1079' '#1074#1089#1077#1093' '#1086#1095#1077#1088#1077#1076#1077#1081
         Caption = '&'#1074#1099#1081#1090#1080' '#1080#1079' '#1074#1089#1077#1093
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clBlack
@@ -7985,7 +7985,7 @@ object HomeForm: THomeForm
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 10
+    TabOrder = 11
   end
   object st_Forecast_Tomorrow: TStaticText
     Left = 35

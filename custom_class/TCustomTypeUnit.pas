@@ -433,6 +433,12 @@ interface
                           eStatusCodeSms20281 = 20281	     // Достигнут месячный лимит на отправку SMS с платформы A2P
                     );
 
+   type // доступ к внешним приложениям
+   enumExternalAccessEXE = (  eExternalAccessLocalChat,   // есть ли доступ в локальному чату
+                              eExternalAccessReports,     // есть ли доступ к отчетам
+                              eExternalAccessSMS,         // есть ли доступ к sms рассылке
+                              eExternalAccessService      // есть ли доступ к услугам
+                            );
   // =================== ПРОЕОБРАЗОВАНИЯ ===================
 
   // Boolean -> string
@@ -465,6 +471,8 @@ interface
  function EnumQueueCurrentToInteger(_queue:enumQueue):Integer;              // EnumQueueCurrent - > Integer
  function StringToEnumQueue(_queue:string):enumQueue;                // String -> EnumQueueCurrent
  function StringToSettingParamsStatus(status:string):enumParamStatus;             // String (Да\Нет) --> SettingParamsStatus
+ function EnumParamStatusToBoolean(_status:enumParamStatus):Boolean;               // EnumParamStatus --> Boolean
+ function BooleanToEnumParamStatus(_status:Boolean):enumParamStatus;               // Boolean --> EnumParamStatus
  function StrToBoolean(InValue:string):Boolean;                                    // string -> boolean
  function EnumStatusToString(InStatus:enumStatus):string;                          // enumStatus -> String
  function EnumStatusToInteger(InStatus:enumStatus):Integer;                        // enumStatus -> Integer
@@ -906,6 +914,24 @@ begin
   if tmp='да' then Result:=paramStatus_ENABLED
   else if tmp='нет' then Result:=paramStatus_DISABLED
   else Result:=paramStatus_DISABLED;
+end;
+
+// EnumParamStatus --> Boolean
+function EnumParamStatusToBoolean(_status:enumParamStatus):Boolean;
+begin
+  case _status of
+    paramStatus_DISABLED: Result:=False;
+    paramStatus_ENABLED:  Result:=True;
+  end;
+end;
+
+// Boolean --> EnumParamStatus
+function BooleanToEnumParamStatus(_status:Boolean):enumParamStatus;
+begin
+  case _status of
+    False: Result:=paramStatus_DISABLED;
+    True:  Result:=paramStatus_ENABLED;
+  end;
 end;
 
 

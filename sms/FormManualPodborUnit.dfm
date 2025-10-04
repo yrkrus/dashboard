@@ -16,6 +16,9 @@ object FormManualPodbor: TFormManualPodbor
   Position = poScreenCenter
   OnClose = FormClose
   OnShow = FormShow
+  DesignSize = (
+    677
+    677)
   PixelsPerInch = 96
   TextHeight = 16
   object Label2: TLabel
@@ -33,6 +36,27 @@ object FormManualPodbor: TFormManualPodbor
     Font.Style = []
     ParentFont = False
   end
+  object chkbox_MyCalls: TLabel
+    Left = 525
+    Top = 24
+    Width = 115
+    Height = 16
+    Caption = #1090#1086#1083#1100#1082#1086' '#1089#1074#1086#1080' '#1079#1074#1086#1085#1082#1080
+    ParentShowHint = False
+    ShowHint = False
+    OnClick = chkbox_MyCallsClick
+  end
+  object img_MyCalls: TImage
+    Left = 647
+    Top = 25
+    Width = 16
+    Height = 16
+    Anchors = [akRight, akBottom]
+    ParentShowHint = False
+    ShowHint = False
+    Transparent = True
+    OnClick = img_MyCallsClick
+  end
   object panel_History: TPanel
     Left = 6
     Top = 47
@@ -40,7 +64,7 @@ object FormManualPodbor: TFormManualPodbor
     Height = 619
     BevelInner = bvLowered
     ShowCaption = False
-    TabOrder = 4
+    TabOrder = 3
     object list_History: TListView
       Left = 2
       Top = 2
@@ -82,16 +106,6 @@ object FormManualPodbor: TFormManualPodbor
       ParentFont = False
       TabOrder = 1
     end
-  end
-  object chkbox_MyCalls: TCheckBox
-    Left = 529
-    Top = 23
-    Width = 136
-    Height = 17
-    Alignment = taLeftJustify
-    Caption = #1090#1086#1083#1100#1082#1086' '#1089#1074#1086#1080' '#1079#1074#1086#1085#1082#1080
-    TabOrder = 3
-    OnClick = chkbox_MyCallsClick
   end
   object editFindMessage: TEdit
     Left = 8
@@ -168,8 +182,8 @@ object FormManualPodbor: TFormManualPodbor
   object st_PhoneFind: TStaticText
     Left = 72
     Top = 16
-    Width = 107
-    Height = 15
+    Width = 108
+    Height = 17
     Caption = #1087#1086' '#1085#1086#1084#1077#1088#1091' '#1090#1077#1083#1077#1092#1086#1085#1072
     Enabled = False
     Font.Charset = DEFAULT_CHARSET

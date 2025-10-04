@@ -22,6 +22,7 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btnAddClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure btnEditClick(Sender: TObject);
   private
     { Private declarations }
    m_phoneList:TPhoneList;
@@ -32,6 +33,7 @@ type
   function CheckFields(var _errorDescription:string):Boolean; // проверка полей
 
   function Add(var _errorDescription:string):Boolean;
+  function Update(var _errorDescription:string):Boolean;
   procedure Clear;
   procedure LoadFormCaption(_is_edit:Boolean);
 
@@ -56,7 +58,6 @@ procedure TFormPhoneListAdd.LoadFormCaption(_is_edit:Boolean);
 const
  cButtonLeft:Word = 50;
  cButtonTop:Word = 138;
-
 begin
   case _is_edit of
     false: begin   // добавление нового номера
@@ -131,6 +132,22 @@ begin
   Result:=True;
 end;
 
+function TFormPhoneListAdd.Update(var _errorDescription:string):Boolean;
+var
+ namePC, IPPhone, IPpc:string;
+begin
+  Result:=False;
+
+  namePC:=edtNamePC.Text;
+  IPPhone:=edtPhoneIP.Text;
+  IPpc:=edtPCIP.Text;
+
+  if not m_phoneList.Update(m_id_edit, namePC,IPPhone,IPpc,_errorDescription) then Exit;
+
+  Result:=True;
+end;
+
+
 procedure TFormPhoneListAdd.btnAddClick(Sender: TObject);
 var
  error:string;
@@ -148,6 +165,27 @@ begin
   // обновим родительскую форму
   FormPhoneList.UpdateDataForm;
 
+
+  if chkboxCloseForm.Checked then Close
+  else Clear;
+end;
+
+procedure TFormPhoneListAdd.btnEditClick(Sender: TObject);
+var
+ error:string;
+begin
+  if not CheckFields(error) then begin
+    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    Exit;
+  end;
+
+  if not Update(error) then begin
+    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    Exit;
+  end;
+
+  // обновим родительскую форму
+  FormPhoneList.UpdateDataForm;
 
   if chkboxCloseForm.Checked then Close
   else Clear;
@@ -175,13 +213,15 @@ begin
   // подгрузка
   LoadFormCaption(is_edit);
 
-  if not is_edit then begin
-
-  end;
-
-
   if not Assigned(m_phoneList) then m_phoneList:=TPhoneList.Create
   else m_phoneList.UpdateData;
+
+  if is_edit then begin
+    edtNamePC.Text:=m_phoneList.ItemsData[m_id_edit].m_namePC;
+    edtPhoneIP.Text:=m_phoneList.ItemsData[m_id_edit].m_phoneIP;
+    edtPCIP.Text:=m_phoneList.ItemsData[m_id_edit].m_pcIP;
+  end;
+
 end;
 
 end.

@@ -108,7 +108,15 @@ end;
 
 procedure TFormUsers.LoadData;
 begin
+   Screen.Cursor:=crHourGlass;
    ClearListView(list_Users);
+
+
+
+
+
+   Screen.Cursor:=crDefault;
+
 end;
 
 procedure TFormUsers.ClearListView(var p_ListView:TListView);
@@ -190,7 +198,7 @@ begin
 
     with Columns.Add do
     begin
-      Caption:=' ¬ход ';
+      Caption:=' јктивность ';
       Width:=Round((cWidth_default*cWidth_last_enter)/100);
       Alignment:=taCenter;
     end;

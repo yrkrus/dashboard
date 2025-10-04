@@ -5,7 +5,7 @@ object FormHistoryStatusOperator: TFormHistoryStatusOperator
   BorderStyle = bsSingle
   Caption = #1048#1089#1090#1086#1088#1080#1103' '#1089#1090#1072#1090#1091#1089#1086#1074' (operatorID)'
   ClientHeight = 710
-  ClientWidth = 518
+  ClientWidth = 517
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,13 +18,37 @@ object FormHistoryStatusOperator: TFormHistoryStatusOperator
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
+  object chkbox_anyDay: TLabel
+    Left = 10
+    Top = 7
+    Width = 163
+    Height = 16
+    Caption = #1089#1090#1072#1090#1091#1089#1099' '#1087#1088#1086#1080#1079#1074#1086#1083#1100#1085#1086#1075#1086' '#1076#1085#1103
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+    OnClick = lbl_checkbox_LdapEnabledStatusClick
+  end
+  object img_anyDay: TImage
+    Left = 179
+    Top = 8
+    Width = 16
+    Height = 16
+    ParentShowHint = False
+    ShowHint = False
+    Transparent = True
+    OnClick = img_anyDayClick
+  end
   object panel_status: TPanel
     Left = 8
     Top = 33
     Width = 500
     Height = 130
     BevelInner = bvLowered
-    TabOrder = 3
+    TabOrder = 2
     object Label1: TLabel
       Left = 22
       Top = 5
@@ -319,7 +343,7 @@ object FormHistoryStatusOperator: TFormHistoryStatusOperator
     Height = 529
     BevelInner = bvLowered
     ShowCaption = False
-    TabOrder = 4
+    TabOrder = 3
     object list_History: TListView
       Left = 2
       Top = 2
@@ -360,21 +384,6 @@ object FormHistoryStatusOperator: TFormHistoryStatusOperator
       ParentFont = False
       TabOrder = 1
     end
-  end
-  object chkbox_anyDay: TCheckBox
-    Left = 11
-    Top = 8
-    Width = 184
-    Height = 17
-    Caption = #1089#1090#1072#1090#1091#1089#1099' '#1087#1088#1086#1080#1079#1074#1086#1083#1100#1085#1086#1075#1086' '#1076#1085#1103
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 2
-    OnClick = chkbox_anyDayClick
   end
   object dateStart: TDateTimePicker
     Left = 207

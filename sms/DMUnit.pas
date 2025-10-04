@@ -14,7 +14,9 @@ type
     N1: TMenuItem;
     menu_Copy: TMenuItem;
     menu_Paste: TMenuItem;
-    ImageListIcon: TImageList;
+    ImageListIcon_choise: TImageList;
+    ImageListIcon_pol: TImageList;
+    ImageListIcon_base: TImageList;
     procedure menu_AddSpellingClick(Sender: TObject);
     procedure menu_DictionaryClick(Sender: TObject);
   private

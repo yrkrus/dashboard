@@ -705,7 +705,7 @@ begin
   p_button.Enabled:=False;
 
   // пользователь не оператор
-  if not SharedCurrentUserLogon.GetIsOperator then Exit;
+  if not SharedCurrentUserLogon.IsOperator then Exit;
 
  // пользователь опертаор
   // запустил из под статуса callbek?
@@ -720,7 +720,7 @@ begin
     countActiveSipOperators:=SharedActiveSipOperators.getCountSipOperators;
 
     for i:=0 to countActiveSipOperators - 1 do begin
-       if SharedActiveSipOperators.GetListOperators_OperatorName(i) = SharedCurrentUserLogon.GetFamiliya+' '+SharedCurrentUserLogon.GetName then begin
+       if SharedActiveSipOperators.GetListOperators_OperatorName(i) = SharedCurrentUserLogon.Familiya+' '+SharedCurrentUserLogon.Name then begin
          if SharedActiveSipOperators.GetListOperators_Status(i) <> eCallback then begin
            m_showInfoRecallMissed:=True;
            Exit;
@@ -850,7 +850,7 @@ begin
  Show;
 
  // показываем информацию что нужно находится в статусе callback чтобы включился перезвон на копках
- if SharedCurrentUserLogon.GetIsOperator then begin
+ if SharedCurrentUserLogon.IsOperator then begin
     if m_showInfoRecallMissed then ShowInfoRecallMissed;
  end;
 

@@ -1329,6 +1329,9 @@ object FormSettingsGlobal: TFormSettingsGlobal
       Width = 394
       Height = 145
       TabOrder = 0
+      DesignSize = (
+        394
+        145)
       object Label11: TLabel
         Left = 81
         Top = 31
@@ -1354,6 +1357,31 @@ object FormSettingsGlobal: TFormSettingsGlobal
         Font.Name = 'Tahoma'
         Font.Style = [fsBold]
         ParentFont = False
+      end
+      object img_LdapEnabledStatus: TImage
+        Left = 276
+        Top = 104
+        Width = 16
+        Height = 16
+        Anchors = [akRight, akBottom]
+        ParentShowHint = False
+        ShowHint = False
+        Transparent = True
+        OnClick = img_LdapEnabledStatusClick
+      end
+      object lbl_checkbox_LdapEnabledStatus: TLabel
+        Left = 79
+        Top = 104
+        Width = 190
+        Height = 16
+        Caption = #1042#1082#1083#1102#1095#1080#1090#1100' '#1072#1074#1090#1086#1088#1080#1079#1072#1094#1080#1102' '#1087#1086' LDAP'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+        OnClick = lbl_checkbox_LdapEnabledStatusClick
       end
       object edtLdapHost: TEdit
         Left = 163

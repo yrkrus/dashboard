@@ -710,7 +710,7 @@ begin
    Caption:='Активные сессии';
   end
   else begin
-   Caption:='Активные сессии ('+IntToStr(_countSession)+')';
+   Caption:='Активные сессии ['+IntToStr(_countSession)+']';
   end;
 
   // размер формы
@@ -789,7 +789,7 @@ begin
      Exit;    
     end;
 
-    if id = SharedCurrentUserLogon.GetID then begin
+    if id = SharedCurrentUserLogon.ID then begin
      MessageBox(Handle,PChar('Свою сессию нельзя завершить'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
      Exit;
     end;  

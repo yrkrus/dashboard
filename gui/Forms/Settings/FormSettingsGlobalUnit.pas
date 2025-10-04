@@ -70,6 +70,8 @@ type
     Label13: TLabel;
     lblQueue_5911: TLabel;
     StaticText3: TStaticText;
+    img_LdapEnabledStatus: TImage;
+    lbl_checkbox_LdapEnabledStatus: TLabel;
     procedure FormShow(Sender: TObject);
     procedure btnAddServerClick(Sender: TObject);
     procedure LoadSettings;
@@ -88,6 +90,8 @@ type
     procedure btnSaveLdapSettingsClick(Sender: TObject);
     procedure btnSipPhoneListClick(Sender: TObject);
     procedure btnPhoneListClick(Sender: TObject);
+    procedure img_LdapEnabledStatusClick(Sender: TObject);
+    procedure lbl_checkbox_LdapEnabledStatusClick(Sender: TObject);
   private
 
    m_workTimeCallCenter:TWorkTimeCallCenter;  // время работы коллцентра
@@ -99,6 +103,7 @@ type
    procedure AddNode(const AText: string);
    procedure CreateTree;                      // создание дерева настроек
    procedure ShowPanel(_tree:enumTreeSettings); // отображение панели
+   procedure SetStatusLdapAuth;               // чек бокс на изменение статуса "Включить авторизацию по LDAP"
 
 
     { Private declarations }
@@ -121,7 +126,7 @@ uses
   FormSettingsGlobal_addIVRUnit, FormSettingsGlobal_listIVRUnit,
   FormGlobalSettingCheckFirebirdConnectUnit, GlobalVariables,
   GlobalVariablesLinkDLL, TSendSMSUint, FormMenuAccessUnit, FormWorkTimeCallCenterUnit,
-  TLdapUnit, FormSettingsGlobal_checkLdapUnit, FormSipPhoneListUnit, FormPhoneListUnit;
+  TLdapUnit, FormSettingsGlobal_checkLdapUnit, FormSipPhoneListUnit, FormPhoneListUnit, DMUnit;
 
 {$R *.dfm}
 
@@ -440,13 +445,22 @@ begin
      btnCheckSMSSettings.Enabled:=True;
    end;
 
-   // ldap
+   // LDAP
    ldap:=TLdap.Create;
    if ldap.LdapIsInit then begin
      edtLdapHost.Text:=ldap.LdapHost;
      SE_LdapPort.Value:=ldap.LdapPort;
-   end;
 
+     // статус ldap (вкл\выкл)
+     case ldap.GetStatusLdap of
+      true: begin   // вкл
+       SharedCheckBoxUI.ChangeStatusCheckBox('LdapEnabledStatus',paramStatus_ENABLED);
+      end;
+      false:begin   // выкл
+       SharedCheckBoxUI.ChangeStatusCheckBox('LdapEnabledStatus',paramStatus_DISABLED);
+      end;
+     end;
+   end;
 end;
 
 
@@ -596,6 +610,54 @@ begin
   LoadSettings;
 
   Screen.Cursor:=crDefault;
+end;
+
+
+procedure TFormSettingsGlobal.SetStatusLdapAuth;
+var
+ ldap:TLdap;
+ error:string;
+begin
+   ldap:=TLdap.Create;
+   if not ldap.LdapIsInit then begin
+    MessageBox(Handle,PChar('ОШИБКА! LDAP не настроен'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    Exit;
+   end;
+
+   // статус ldap (вкл\выкл)
+   case ldap.GetStatusLdap of
+      true: begin   // вкл
+       // выключаем ldap
+        if not ldap.SetStatusLdap(False,error) then begin
+          MessageBox(Handle,PChar('ОШИБКА! Не удалось изменить статус LDAP'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+          Exit;
+        end;
+
+        SharedCheckBoxUI.ChangeStatusCheckBox('LdapEnabledStatus',paramStatus_DISABLED);
+      end;
+      false:begin   // выкл
+
+        // включаем ldap
+        if not ldap.SetStatusLdap(True,error) then begin
+          MessageBox(Handle,PChar('ОШИБКА! Не удалось изменить статус LDAP'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+          Exit;
+        end;
+
+        SharedCheckBoxUI.ChangeStatusCheckBox('LdapEnabledStatus',paramStatus_ENABLED);
+      end;
+   end;
+end;
+
+
+procedure TFormSettingsGlobal.img_LdapEnabledStatusClick(Sender: TObject);
+begin
+  SetStatusLdapAuth;
+end;
+
+procedure TFormSettingsGlobal.lbl_checkbox_LdapEnabledStatusClick(
+  Sender: TObject);
+begin
+ SetStatusLdapAuth;
 end;
 
 end.

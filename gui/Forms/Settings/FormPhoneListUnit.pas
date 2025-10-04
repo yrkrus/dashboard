@@ -20,6 +20,7 @@ type
     procedure list_phoneMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure btnEditClick(Sender: TObject);
+    procedure btnDeleteClick(Sender: TObject);
   private
     { Private declarations }
    m_phoneList:TPhoneList;
@@ -81,6 +82,31 @@ begin
    SetEdit(false);
    ShowModal;
   end;
+end;
+
+procedure TFormPhoneList.btnDeleteClick(Sender: TObject);
+var
+ resultat:Word;
+ error:string;
+begin
+
+   if not Assigned(SelectedItem) then begin
+    MessageBox(Handle,PChar('Не выбрана строка'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    Exit;
+   end;
+
+   resultat:=MessageBox(Handle,PChar('Точно удалить '+#13
+                                      + m_phoneList.ItemsData[StrToInt(SelectedItem.Caption)].m_namePC+'?'),PChar('Уточнение'),MB_YESNO+MB_ICONWARNING);
+   if resultat=mrNo then Exit;
+
+   if not m_phoneList.Delete(StrToInt(SelectedItem.Caption),error) then begin
+    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    Exit;
+   end;
+
+  // загружаем новые данные
+  UpdateDataForm;
+  MessageBox(Handle,PChar('Строка удалена'),PChar('Успешно'),MB_OK+MB_ICONINFORMATION);
 end;
 
 procedure TFormPhoneList.btnEditClick(Sender: TObject);

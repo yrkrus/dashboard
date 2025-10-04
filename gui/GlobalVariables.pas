@@ -12,11 +12,9 @@ interface
 
 uses
   Forms,
-  TActiveSIPUnit, TUserUnit, Data.Win.ADODB,
-  Data.DB, SysUtils, Windows, TLogFileUnit,
-  TIVRUnit, TCustomTypeUnit, TFontSizeUnit,
-  TQueueStatisticsUnit, TStatusUnit,
-  TDebugCountResponseUnit, GlobalVariablesLinkDLL;
+  TActiveSIPUnit, TUserUnit, Data.Win.ADODB, Data.DB, SysUtils, Windows, TLogFileUnit,
+  TIVRUnit, TCustomTypeUnit, TFontSizeUnit, TQueueStatisticsUnit, TStatusUnit,
+  TDebugCountResponseUnit, GlobalVariablesLinkDLL, TCheckBoxUIUnit;
 
  type // глобальный перехват всех незарегистрированных исключений
   TGlobalExeption = class
@@ -84,6 +82,7 @@ var
   SharedFontSize            :TFontSize;            // размеры шрифтов на дашборде
   SharedCountResponseThread :TDebugCountResponse;  // список для отслеживания времени работы в потоках
   SharedStatus              :TStatus;              // смена текущего статуса оператора
+  SharedCheckBoxUI          :TCheckBoxUI;          // список с красивыми чекбоксами
  ///////////////////// CLASSES /////////////////////
 
 
@@ -96,6 +95,7 @@ var
 
 
 implementation
+
 
 
 procedure TGlobalExeption.HandleGlobalException(Sender: TObject; E: Exception);
@@ -120,7 +120,7 @@ initialization  // Инициализация
   SharedFontSize            := TFontSize.Create;
   SharedCountResponseThread := TDebugCountResponse.Create(SharedMainLog);
   SharedStatus              := TStatus.Create(True);
-
+  SharedCheckBoxUI          := TCheckBoxUI.Create;
 
   if not DEBUG then begin
     GlobalExceptions        := TGlobalExeption.Create;
@@ -138,5 +138,6 @@ finalization
   SharedCurrentUserLogon.Free;
   SharedCountResponseThread.Free;
   SharedStatus.Free;
+  SharedCheckBoxUI.Free;
 
 end.

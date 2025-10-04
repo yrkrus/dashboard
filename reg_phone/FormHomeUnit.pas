@@ -178,7 +178,21 @@ begin
   {
   https://admin:asz741@10.34.42.47/servlet?phonecfg=set[&account.1.label=64197][&account.1.display_name=64197][&account.1.auth_name=64197][&account.1.user_name=64197][&account.1.password=1240]
 
-   https://admin:5000@10.34.42.183/screencapture
+ https://admin:5000@10.34.43.89/servlet?phonecfg=set&RemoteControl.Enable=1
+ https://admin:5000@10.34.43.89/servlet?phonecfg=set&SIP.RemoteControl.Enable=1&SIP.RemoteControl.ACL.Enable=1&SIP.RemoteControl.ACL.PermitIP[1]=0.0.0.0/0
+
+
+    https://admin:5000@10.34.43.89/servlet?key=OK
+
+   https://admin:5000@10.34.43.89/screencapture
+    https://admin:5000@10.34.43.89/servlet?phonecfg=get[&accounts=1]
+
+
+   https://admin:5000@10.34.43.89/servlet?m=mod_action&command=get_reg
+
+
+   https://admin:5000@10.34.200.10/servlet?m=mod_action&command=get_reg
+   https://admin:5000@10.34.200.10/screencapture
 
    Лейбл     = &account.1.label=XXX
    Отображаемое имя = &account.1.display_name=XXX
@@ -225,7 +239,7 @@ begin
        HTTPGet:='https://'+phone+'/servlet?phonecfg=get[&accounts=1]';
       end;
 
-          // https://admin:5000@10.34.42.183/servlet?m=mod_action&command=screenshot
+          // https://admin:5000@10.34.43.89/servlet?m=mod_action&command=screenshot
     end;
 
 

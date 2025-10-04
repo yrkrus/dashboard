@@ -67,7 +67,7 @@ begin
     // меняем пароль
    pwd:=getHashPwd(edtPwdNew.Text);
 
-   if not UpdateUserPassword(SharedCurrentUserLogon.GetID,pwd, error) then begin
+   if not UpdateUserPassword(SharedCurrentUserLogon.ID,pwd, error) then begin
     MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
    end;

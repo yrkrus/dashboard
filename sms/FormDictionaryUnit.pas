@@ -219,7 +219,9 @@ end;
 
 procedure TFormDictionary.FormShow(Sender: TObject);
 begin
-  ShowData;
+ Screen.Cursor:=crHourGlass;
+ ShowData;
+ Screen.Cursor:=crDefault;
 end;
 
 procedure TFormDictionary.list_DictionaryMouseDown(Sender: TObject;

@@ -21,11 +21,9 @@ type
     Label1: TLabel;
     edtManualSMS: TEdit;
     btnSaveFirebirdSettings: TBitBtn;
-    chkbox_SaveMyTemplate: TCheckBox;
     group_SendingSMS: TGroupBox;
     Label2: TLabel;
     btnLoadFile: TBitBtn;
-    chkboxShowLog: TCheckBox;
     GroupBox1: TGroupBox;
     RELog: TRichEdit;
     lblCountSendingSMS: TLabel;
@@ -35,9 +33,7 @@ type
     lblCountNotSendingSMS: TLabel;
     st_ShowNotSendingSMS: TStaticText;
     st_PhoneInfo: TStaticText;
-    chkbox_SaveGlobalTemplate: TCheckBox;
     popmenu_AddressClinic: TPopupMenu;
-    chkbox_SignSMS: TCheckBox;
     lblNameExcelFile: TLabel;
     lblManualSMS_List: TLabel;
     lblManualSMS_One: TLabel;
@@ -59,6 +55,14 @@ type
     Label5: TLabel;
     lblManualPodborFindStatus: TLabel;
     ImgNewYear: TImage;
+    chkbox_SignSMS: TLabel;
+    img_SignSMS: TImage;
+    chkbox_SaveMyTemplate: TLabel;
+    img_SaveMyTemplate: TImage;
+    chkbox_SaveGlobalTemplate: TLabel;
+    img_SaveGlobalTemplate: TImage;
+    img_ShowLog: TImage;
+    chkbox_ShowLog: TLabel;
     procedure ProcessCommandLineParams(DEBUG:Boolean = False);
     procedure FormCreate(Sender: TObject);
     procedure btnLoadFileClick(Sender: TObject);
@@ -108,6 +112,14 @@ type
     procedure edtFindSMSKeyPress(Sender: TObject; var Key: Char);
     procedure lblManualPodborFindStatusClick(Sender: TObject);
     procedure edtFindSMSChange(Sender: TObject);
+    procedure img_SignSMSClick(Sender: TObject);
+    procedure chkbox_SignSMSClick(Sender: TObject);
+    procedure chkbox_SaveMyTemplateClick(Sender: TObject);
+    procedure img_SaveMyTemplateClick(Sender: TObject);
+    procedure chkbox_SaveGlobalTemplateClick(Sender: TObject);
+    procedure img_SaveGlobalTemplateClick(Sender: TObject);
+    procedure chkbox_ShowLogClick(Sender: TObject);
+    procedure img_ShowLogClick(Sender: TObject);
 
 
   private
@@ -435,8 +447,9 @@ begin
       end
       else begin
         // запись в качестве шаблона сообщений
-        if chkbox_SaveMyTemplate.Checked then SaveMyTemplateMesaage(re_ManualSMS.Text);
-        if chkbox_SaveGlobalTemplate.Checked then SaveMyTemplateMesaage(re_ManualSMS.Text, ISGLOBAL_MESSAGE);
+        if  SharedCheckBox.Checked['SaveMyTemplate'] then SaveMyTemplateMesaage(re_ManualSMS.Text);
+        if SharedCheckBox.Checked['SaveGlobalTemplate'] then SaveMyTemplateMesaage(re_ManualSMS.Text, ISGLOBAL_MESSAGE);
+
 
         Screen.Cursor:=crDefault;
         if SharedSendindPhoneManualSMS.Count > 1 then begin
@@ -519,10 +532,25 @@ end;
 
 procedure TFormHome.chkboxShowLogClick(Sender: TObject);
 begin
-  if chkboxShowLog.Checked then ShowOrHideLog(log_show)
+  if SharedCheckBox.Checked['ShowLog'] then ShowOrHideLog(log_show)
   else ShowOrHideLog(log_hide);
 end;
 
+
+procedure TFormHome.chkbox_SaveGlobalTemplateClick(Sender: TObject);
+begin
+ SharedCheckBox.ChangeStatusCheckBox('SaveGlobalTemplate');
+end;
+
+procedure TFormHome.chkbox_SaveMyTemplateClick(Sender: TObject);
+begin
+ SharedCheckBox.ChangeStatusCheckBox('SaveMyTemplate');
+end;
+
+procedure TFormHome.chkbox_SignSMSClick(Sender: TObject);
+begin
+  SharedCheckBox.ChangeStatusCheckBox('SignSMS');
+end;
 
 procedure TFormHome.edtFindSMSChange(Sender: TObject);
 begin
@@ -878,8 +906,41 @@ begin
   // стартовая вкладка
   page_TypesSMS.ActivePage:=sheet_ManualSMS;
 
+  // подгружаем красивенькие чекбоксы
+  AddCustomCheckBoxUI;
 
   Screen.Cursor:=crDefault;
+end;
+
+procedure TFormHome.img_ShowLogClick(Sender: TObject);
+begin
+  SharedCheckBox.ChangeStatusCheckBox('ShowLog');
+
+  if SharedCheckBox.Checked['ShowLog'] then ShowOrHideLog(log_show)
+  else ShowOrHideLog(log_hide);
+end;
+
+procedure TFormHome.img_SaveGlobalTemplateClick(Sender: TObject);
+begin
+ SharedCheckBox.ChangeStatusCheckBox('SaveGlobalTemplate');
+end;
+
+procedure TFormHome.img_SaveMyTemplateClick(Sender: TObject);
+begin
+ SharedCheckBox.ChangeStatusCheckBox('SaveMyTemplate');
+end;
+
+procedure TFormHome.img_SignSMSClick(Sender: TObject);
+begin
+  SharedCheckBox.ChangeStatusCheckBox('SignSMS');
+end;
+
+procedure TFormHome.chkbox_ShowLogClick(Sender: TObject);
+begin
+  SharedCheckBox.ChangeStatusCheckBox('ShowLog');
+
+  if SharedCheckBox.Checked['ShowLog'] then ShowOrHideLog(log_show)
+  else ShowOrHideLog(log_hide);
 end;
 
 procedure TFormHome.lblinfoEditMessageClick(Sender: TObject);
