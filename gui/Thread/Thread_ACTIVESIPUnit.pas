@@ -236,7 +236,7 @@ begin
       if p_ActiveSipOperators.GetListOperators_CountTalk(i) = 0 then ListItem.SubItems.Add('0')
       else begin
         // если обычный оператор\старший не нужно ему показывать %
-         if (SharedCurrentUserLogon.GetRole = role_operator) or (SharedCurrentUserLogon.GetRole = role_senior_operator) then ListItem.SubItems.Add(IntToStr(p_ActiveSipOperators.GetListOperators_CountTalk(i)))
+         if (SharedCurrentUserLogon.Role = role_operator) or (SharedCurrentUserLogon.Role = role_senior_operator) then ListItem.SubItems.Add(IntToStr(p_ActiveSipOperators.GetListOperators_CountTalk(i)))
         else ListItem.SubItems.Add(IntToStr(p_ActiveSipOperators.GetListOperators_CountTalk(i))+' ('+p_ActiveSipOperators.GetListOperators_CountProcentTalk(i)+')');
       end;
     end;
@@ -422,7 +422,7 @@ begin
         if p_ActiveSipOperators.GetListOperators_CountTalk(i) = 0 then ListItem.SubItems[2]:='0'
         else begin
          // если обычный оператор\старший не нужно ему показывать %
-         if (SharedCurrentUserLogon.GetRole = role_operator) or (SharedCurrentUserLogon.GetRole = role_senior_operator) then ListItem.SubItems[2]:=IntToStr(p_ActiveSipOperators.GetListOperators_CountTalk(i))
+         if (SharedCurrentUserLogon.Role = role_operator) or (SharedCurrentUserLogon.Role = role_senior_operator) then ListItem.SubItems[2]:=IntToStr(p_ActiveSipOperators.GetListOperators_CountTalk(i))
          else ListItem.SubItems[2]:=IntToStr(p_ActiveSipOperators.GetListOperators_CountTalk(i))+' ('+p_ActiveSipOperators.GetListOperators_CountProcentTalk(i)+')';
         end;
       end;

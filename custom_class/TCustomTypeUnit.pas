@@ -439,6 +439,12 @@ interface
                               eExternalAccessSMS,         // есть ли доступ к sms рассылке
                               eExternalAccessService      // есть ли доступ к услугам
                             );
+
+   type // тип авторизации
+   enumAuth = (  eAuthLocal = 0,   // локальный доступ
+                 eAuthLdap = 1     // LDAP авторизаци€
+              );
+
   // =================== ѕ–ќ≈ќЅ–ј«ќ¬јЌ»я ===================
 
   // Boolean -> string
@@ -504,9 +510,12 @@ interface
  function StringToEnumStatusCodeSms(_value:string):enumStatusCodeSms;                 // String -> EnumStatusCodeSms
  function EnumStatusCodeSmsToString(_code:enumStatusCodeSms):string;                  // EnumStatusCodeSms -> String
  function EnumReportTableOperatorStatusToString(_table:enumReportTableOperatorStatus):string; //EnumReportTableOperatorStatus -> String
+ function IntegerToEnumAuth(_value:Integer):enumAuth;                                 // Integer --> enumAuth
+
 
  // =================== ѕ–ќ≈ќЅ–ј«ќ¬јЌ»я ===================
  implementation
+
 
 
  // Boolean -> string
@@ -1474,13 +1483,21 @@ begin
   end;
 end;
 
-
 // EnumReportTableSMSStatus -> String
 function EnumReportTableOperatorStatusToString(_table:enumReportTableOperatorStatus):string;
 begin
   case _table of
    eTableOperatorStatus:         Result:='logging';
    eTableHistoryOperatorStatus:  Result:='history_logging';
+  end;
+end;
+
+// Integer --> enumAuth
+function IntegerToEnumAuth(_value:Integer):enumAuth;
+begin
+ case _value of
+   0:  Result:=eAuthLocal;
+   1:  Result:=eAuthLdap;
   end;
 end;
 

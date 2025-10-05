@@ -850,7 +850,7 @@ procedure TFormActiveSession.EnableOrDisableActionButton(_role:enumRole; var p_b
 var
  currentRole:enumRole;
 begin
- currentRole:=SharedCurrentUserLogon.GetRole;
+ currentRole:=SharedCurrentUserLogon.Role;
 
  if currentRole = role_administrator then begin
    p_btn.Enabled:=True;

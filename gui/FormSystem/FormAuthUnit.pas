@@ -257,7 +257,7 @@ var
  successEnter:Boolean;
  user_name,user_familiya:string;
  user_pwd:Integer;
- currentUser:TUserList;
+ currentUser:TUserData;
  activeSession:string;
  error:string;
 begin
@@ -305,17 +305,17 @@ begin
 
   // глобальные параретры пользака
    begin
-     currentUser:=TUserList.Create;
+     currentUser:=TUserData.Create;
      with currentUser do begin
-      name          := user_name;
-      familiya      := user_familiya;
-      id            := getUserID(user_name,user_familiya);
-      login         := getUserLogin(id);
-      group_role    := StringToEnumRole(getUserRoleSTR(id));
-      re_password   := getUserRePassword(id);
-      ip            := getLocalIP;
-      pc            := getComputerPCName;
-      user_login_pc := GetCurrentUserNamePC;
+      m_name          := user_name;
+      m_familiya      := user_familiya;
+      m_id            := getUserID(user_name,user_familiya);
+      m_login         := getUserLogin(m_id);
+      m_group_role    := StringToEnumRole(getUserRoleSTR(m_id));
+      m_re_password   := getUserRePassword(m_id);
+      m_ip            := getLocalIP;
+      m_pc            := getComputerPCName;
+      m_user_login_pc := GetCurrentUserNamePC;
      end;
 
      SharedCurrentUserLogon.UpdateParams(currentUser);

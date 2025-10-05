@@ -765,10 +765,10 @@ begin
 
 
   // обновление данных
-   show_form(SharedCurrentUserLogon.GetRole);
+   show_form(SharedCurrentUserLogon.Role);
 
    // прогрузка списка пользователей (False - не показывать отключенных пользователей)
-   loadPanel_Users(SharedCurrentUserLogon.GetRole);
+ //  loadPanel_Users(SharedCurrentUserLogon.Role);
 
    // прогрузка списка пользователей (операторы) (False - не показывать отключенных пользователей)
    loadPanel_Operators;
@@ -881,8 +881,8 @@ end;
 procedure TFormAddNewUsers.FormShow(Sender: TObject);
 begin
 
-  if not currentEditUsers then show_form(SharedCurrentUserLogon.GetRole)   // не редактируется
-  else show_form(SharedCurrentUserLogon.GetRole,True);                    // редактируется
+  if not currentEditUsers then show_form(SharedCurrentUserLogon.Role)   // не редактируется
+  else show_form(SharedCurrentUserLogon.Role,True);                    // редактируется
 
 end;
 

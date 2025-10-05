@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Grids, Vcl.ComCtrls, Vcl.StdCtrls,
-  Vcl.Buttons, Vcl.ExtCtrls;
+  Vcl.Buttons, Vcl.ExtCtrls, TUsersAllUnit;
 
 type
   TFormUsers = class(TForm)
@@ -41,6 +41,8 @@ type
     { Private declarations }
    currentEditUserId:string;
 
+   m_usersAll: TUsersAll;
+
   procedure LoadData;
   procedure ClearListView(var p_ListView:TListView);
   procedure AddListItem(const id, dateTime, sip, phone, numberQueue, talkTime: string;
@@ -59,7 +61,7 @@ var
 implementation
 
 uses
-  FunctionUnit, FormAddNewUsersUnit, GlobalVariables, GlobalVariablesLinkDLL;
+  FunctionUnit, FormAddNewUsersUnit, GlobalVariables, GlobalVariablesLinkDLL, TCustomTypeUnit;
 
 {$R *.dfm}
 
@@ -98,7 +100,7 @@ begin
 
 
    // прогрузка списка пользователей (False - не показывать отключенных пользователей)
-   loadPanel_Users(SharedCurrentUserLogon.GetRole);
+  // loadPanel_Users(SharedCurrentUserLogon.Role);
 
    // прогрузка списка пользователей (операторы) (False - не показывать отключенных пользователей)
    loadPanel_Operators;
@@ -108,14 +110,16 @@ end;
 
 procedure TFormUsers.LoadData;
 begin
-   Screen.Cursor:=crHourGlass;
+   showWait(show_open);
    ClearListView(list_Users);
 
+   if not Assigned(m_usersAll) then m_usersAll:=TUsersAll.Create(SharedCurrentUserLogon.Role)
+   else m_usersAll.Update;
 
 
 
 
-   Screen.Cursor:=crDefault;
+    showWait(show_close);
 
 end;
 
@@ -340,7 +344,7 @@ end;
 procedure TFormUsers.chkboxViewDisabledClick(Sender: TObject);
 begin
   if chkboxViewDisabled.Checked then begin
-   loadPanel_Users(SharedCurrentUserLogon.GetRole,True);
+  // loadPanel_Users(SharedCurrentUserLogon.Role,True);
    btnDisable.Visible:=False;
 
    btnEditUser.Enabled:=False;
@@ -351,7 +355,7 @@ begin
    btnEnable.Left:=btnDisable.Left;
   end
   else begin
-   loadPanel_Users(SharedCurrentUserLogon.GetRole);
+  // loadPanel_Users(SharedCurrentUserLogon.Role);
 
    btnEditUser.Enabled:=True;
 

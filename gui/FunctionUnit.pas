@@ -31,7 +31,6 @@ function GetUserGroupID(InGroup:string):Integer;                                
 function getUserID(InLogin:string):Integer; overload;                                // отображение ID пользвоателя
 function getUserID(InUserName,InUserFamiliya:string):Integer; overload;              // полчуение userID из ФИО
 function getUserID(InSIPNumber:integer):Integer; overload;                           // полчуение userID из SIP номера
-procedure LoadPanel_Users(InUserRole:enumRole; InShowDisableUsers:Boolean = False);  // прогрузка спика пользвоателей
 procedure LoadPanel_Operators;                                                       // прогрузка спика пользвоателей (операторы)
 function GetCheckLogin(inLogin:string):Boolean;                                      // существует ли login пользвоателчя
 function DisableUser(InUserID:Integer; var _errorDescription:string):Boolean;        // отключение пользователя
@@ -41,7 +40,7 @@ function getUserLogin(InUserID:Integer):string;                                 
 function GetUserRoleSTR(InUserID:Integer):string;                                    // отображение роли пользвоателя
 function CorrectTimeQueue(InQueue:enumQueue;InTime:string;
                            var _correctedTime:string):Boolean;                      // правильноt отображение времени в очереди
-function GetUserRePassword(InUserID:Integer):Boolean;                                // необходимо ли поменять пароль при входе
+function GetUserRePassword(InUserID:Integer):enumStatus;                                // необходимо ли поменять пароль при входе
 function UpdateUserPassword(InUserID,InUserNewPassword:Integer;
                             var _errorDescription:string):boolean;                   // обновление пароля пользователя
 function getLocalIP: string;                                                         // функция получения локального IP
@@ -100,7 +99,6 @@ function GetFirbirdAuth(FBType:enumFirebirdAuth):string;                        
 function GetStatusMonitoring(status:Integer):enumMonitoringTrunk;                    // мониторится ли транк
 function GetCountServersIK:Integer;                                                  // получение кол-ва серверов ИК
 procedure SetAccessMenu(InNameMenu:enumAccessList; InStatus: enumAccessStatus);      // установка разрешение\запрет на доступ к меню
-function GetOnlyOperatorsRoleID:TStringList;                                         // получение только операторские ID роли
 procedure ShowOperatorsStatus;                                                       // отображение оотдельного окна со статусами оператора
 procedure ResizeCentrePanelStatusOperators(WidthMainWindow:Integer);                 // изменение позиции панели статусы операторов в зависимости от размера главного окна
 procedure VisibleIconOperatorsGoHome(InStatus:enumHideShowGoHomeOperators;
@@ -1872,7 +1870,7 @@ end;
 
 
 // необходимо ли поменять пароль при входе
-function GetUserRePassword(InUserID:Integer):Boolean;
+function GetUserRePassword(InUserID:Integer):enumStatus;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -1897,8 +1895,8 @@ begin
       SQL.Add('select is_need_reset_pwd from users where id = '+#39+IntToStr(InUserID)+#39);
       Active:=True;
 
-      if Fields[0].Value=0 then Result:=False
-      else Result:=True;
+      if Fields[0].Value=0 then Result:=eNO
+      else Result:=eYES;
     end;
   finally
    FreeAndNil(ado);
@@ -1907,7 +1905,6 @@ begin
       FreeAndNil(serverConnect);
     end;
   end;
-
 end;
 
 
@@ -2018,109 +2015,6 @@ begin
     end;
   end;
 end;
-
-
-// прогрузка спика пользвоателей
-procedure LoadPanel_Users(InUserRole:enumRole; InShowDisableUsers:Boolean = False);
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
- countUsers,i:Integer;
- only_operators_roleID:TStringList;
- id_operators:string;
- error:string;
-begin
-  Screen.Cursor:=crHourGlass;
-
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnectWithError(error);
-
-  if not Assigned(serverConnect) then begin
-     ShowFormErrorMessage(error,SharedMainLog,'LoadPanel_Users');
-     FreeAndNil(ado);
-     Exit;
-  end;
-
-
-  try
-      with ado do begin
-      ado.Connection:=serverConnect;
-
-      SQL.Clear;
-
-      if InUserRole = role_administrator then begin
-        if InShowDisableUsers=False then SQL.Add('select count(id) from users where disabled =''0'' ')
-        else SQL.Add('select count(id) from users where disabled =''1'' ');
-      end
-      else begin
-        only_operators_roleID:=GetOnlyOperatorsRoleID;
-        for i:=0 to only_operators_roleID.Count-1 do begin
-          if id_operators='' then id_operators:=#39+only_operators_roleID[i]+#39
-          else id_operators:=id_operators+','#39+only_operators_roleID[i]+#39;
-        end;
-
-        if InShowDisableUsers=False then SQL.Add('select count(id) from users where disabled =''0'' and role IN('+id_operators+') ')
-        else SQL.Add('select count(id) from users where disabled =''1'' and role IN('+id_operators+') ');
-       if only_operators_roleID<>nil then FreeAndNil(only_operators_roleID);
-      end;
-
-      Active:=True;
-
-      countUsers:=Fields[0].Value;
-    end;
-
-    with FormUsers.listSG_Users do begin
-       RowCount:=1;      // типа очистка текущего списка
-       RowCount:=countUsers;
-
-        with ado do begin
-
-          SQL.Clear;
-
-          if InUserRole = role_administrator then begin
-           if InShowDisableUsers=False then SQL.Add('select id,familiya,name,login,role,disabled from users where disabled = ''0'' order by familiya ASC')
-           else SQL.Add('select id,familiya,name,login,role,disabled from users where disabled = ''1'' order by familiya ASC');
-          end
-          else  begin
-           if InShowDisableUsers=False then SQL.Add('select id,familiya,name,login,role,disabled from users where disabled = ''0'' and role IN('+id_operators+') order by familiya ASC')
-           else SQL.Add('select id,familiya,name,login,role,disabled from users where disabled = ''1'' and role IN('+id_operators+') order by familiya ASC');
-          end;
-
-
-          Active:=True;
-
-           for i:=0 to countUsers-1 do begin
-             Cells[0,i]:=Fields[0].Value;                       // id
-             Cells[1,i]:=Fields[1].Value+ ' '+Fields[2].Value;  // фамилия + имя
-             Cells[2,i]:=Fields[3].Value;                       // login
-             Cells[3,i]:=getUserGroupSTR(Fields[4].Value);      // группа прав
-             if InShowDisableUsers=False then begin             // состояние
-              Cells[4,i]:='Активен';
-             end
-             else begin
-              if VarToStr(Fields[3].Value)='0' then Cells[4,i]:='Активен'
-              else Cells[4,i]:='Отключен';
-             end;
-
-             ado.Next;
-           end;
-
-           FormUsers.Caption:='Пользователи: ['+IntToStr(countUsers)+']';
-
-        end;
-    end;
-  finally
-    FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
-
-    Screen.Cursor:=crDefault;
-  end;
-
-end;
-
 
 
 // прогрузка спика пользвоателей (операторы)
@@ -3113,7 +3007,7 @@ begin
     // HomeForm
     begin
 
-     case p_TUser.GetRole of
+     case p_TUser.Role of
        role_administrator:begin                  // администратор
         // панель статусы операторов
         ShowStatusOperator(False);
@@ -4453,55 +4347,6 @@ begin
 end;
 
 
-// получение только операторские ID роли
-function GetOnlyOperatorsRoleID:TStringList;
-var
- i:Integer;
- ado:TADOQuery;
- serverConnect:TADOConnection;
- countID:Cardinal;
-begin
-  Result:=TStringList.Create;
-
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
-  end;
-
-
-  try
-    with ado do begin
-      ado.Connection:=serverConnect;
-      SQL.Clear;
-      SQL.Add('select count(id) from role where id <> ''-1'' and only_operators = ''1'' ');
-
-      Active:=True;
-      countID:= Fields[0].Value;
-
-      if countID<>0 then begin
-
-        SQL.Clear;
-        SQL.Add('select id from role where id <> ''-1'' and only_operators = ''1'' ');
-
-        Active:=True;
-        for i:=0 to countID-1 do begin
-           Result.Add(VarToStr(Fields[0].Value));
-           ado.Next;
-        end;
-      end;
-
-    end;
-  finally
-    FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
-  end;
-end;
-
 
 // отображение оотдельного окна со статусами оператора
 procedure ShowOperatorsStatus;
@@ -4739,8 +4584,8 @@ begin
   end;
 
   // отображать ли excel рассылку
-  if (SharedCurrentUserLogon.GetRole = role_operator) or
-     (SharedCurrentUserLogon.GetRole = role_operator_no_dash)
+  if (SharedCurrentUserLogon.Role = role_operator) or
+     (SharedCurrentUserLogon.Role = role_operator_no_dash)
    then showSendingSMS:=False
    else showSendingSMS:=True;
 
@@ -5459,7 +5304,7 @@ var
  error:string;
  delay:enumStatus;
 begin
-  status:=TStatus.Create(_userID,SharedCurrentUserLogon.GetUserList, True);
+  status:=TStatus.Create(_userID,SharedCurrentUserLogon.GetUserData, True);
   delay:=eNO;
 
   if not status.SendCommand(eLog_home,delay,error) then begin

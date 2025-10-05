@@ -677,12 +677,12 @@ begin
   if DEBUG then KillProcess;
 
   // проверка вдруг роль оператора и он не вышел из линии
-  if getIsExitOperatorCurrentQueue(SharedCurrentUserLogon.GetRole, SharedCurrentUserLogon.ID) then begin
+  if getIsExitOperatorCurrentQueue(SharedCurrentUserLogon.Role, SharedCurrentUserLogon.ID) then begin
     CanClose:= Application.MessageBox(PChar('Вы забыли выйти из очереди'), 'Ошибка при выходе', MB_OK + MB_ICONERROR) = IDNO;
   end
   else begin
     // проверяем правильно ли оператор вышел через команду
-    if getIsExitOperatorCurrentGoHome(SharedCurrentUserLogon.GetRole, SharedCurrentUserLogon.ID) then begin
+    if getIsExitOperatorCurrentGoHome(SharedCurrentUserLogon.Role, SharedCurrentUserLogon.ID) then begin
       CanClose:= Application.MessageBox(PChar('Прежде чем закрыть, необходимо выбрать статус "Домой"'), 'Ошибка при выходе', MB_OK + MB_ICONERROR) = IDNO;
     end
     else begin
@@ -838,7 +838,7 @@ begin
   FormAuth.ShowModal;
 
   // нужно ли сменить пароль
-  if SharedCurrentUserLogon.RePassword then begin
+  if SharedCurrentUserLogon.RePassword = eYES  then begin
     Screen.Cursor:=crDefault;
     FormRePassword.ShowModal;
   end;
@@ -1556,7 +1556,7 @@ begin
   // найдем id
   user_id:=getUserID(_userSip);
 
-  status:=TStatus.Create(user_id,SharedCurrentUserLogon.GetUserList, True);
+  status:=TStatus.Create(user_id,SharedCurrentUserLogon.GetUserData, True);
   delay:=eNO;
 
 

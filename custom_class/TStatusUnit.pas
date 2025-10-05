@@ -23,7 +23,7 @@ uses
     TStatus = class
   private
     m_userID:Integer;
-    m_user:TUserList;
+    m_user:TUserData;
     m_waitInfo:Boolean;   // флаг отображаения окна подождите или нет
 
 
@@ -36,13 +36,13 @@ uses
 
   public
    procedure SetUserID(_userID:integer);
-   procedure SetUser(_user:TUserList);
+   procedure SetUser(_user:TUserData);
    function SendCommand(_command:enumLogging; _delay:enumStatus; var _errorDescriptions:string):Boolean;  // отправка команды
 
 
 
   constructor Create(_waitInfo:Boolean);      overload;
-  constructor Create(_userID:Integer; _user:TUserList; _waitInfo:Boolean);      overload;
+  constructor Create(_userID:Integer; _user:TUserData; _waitInfo:Boolean);      overload;
 
   end;
  // class TStatus END
@@ -63,7 +63,7 @@ uses
 
  end;
 
-  constructor TStatus.Create(_userID:Integer; _user:TUserList; _waitInfo:Boolean);
+  constructor TStatus.Create(_userID:Integer; _user:TUserData; _waitInfo:Boolean);
  begin
    //inherited;
    m_userID:=_userID;
@@ -77,9 +77,9 @@ begin
   m_userID:=_userID;
 end;
 
-procedure TStatus.SetUser(_user:TUserList);
+procedure TStatus.SetUser(_user:TUserData);
 begin
-  m_user:=TUserList.Create;
+  m_user:=TUserData.Create;
   m_user.Clone(_user);
 end;
 
@@ -156,19 +156,19 @@ begin
   if _delay = eNO then begin
     response:='insert into remote_commands (sip,command,ip,user_id,user_login_pc,pc) values ('+#39+getUserSIP(m_userID) +#39+','
                                                                                             +#39+IntToStr(EnumLoggingToInteger(_command))+#39+','
-                                                                                            +#39+m_user.ip+#39+','
-                                                                                            +#39+IntToStr(m_user.id)+#39+','
-                                                                                            +#39+m_user.user_login_pc+#39+','
-                                                                                            +#39+m_user.pc+#39+')';
+                                                                                            +#39+m_user.m_ip+#39+','
+                                                                                            +#39+IntToStr(m_user.m_id)+#39+','
+                                                                                            +#39+m_user.m_user_login_pc+#39+','
+                                                                                            +#39+m_user.m_pc+#39+')';
 
   end
   else begin
     response:='insert into remote_commands (sip,command,ip,user_id,user_login_pc,pc,delay) values ('+#39+getUserSIP(m_userID) +#39+','
                                                                                             +#39+IntToStr(EnumLoggingToInteger(_command))+#39+','
-                                                                                            +#39+m_user.ip+#39+','
-                                                                                            +#39+IntToStr(m_user.id)+#39+','
-                                                                                            +#39+m_user.user_login_pc+#39+','
-                                                                                            +#39+m_user.pc+#39+','
+                                                                                            +#39+m_user.m_ip+#39+','
+                                                                                            +#39+IntToStr(m_user.m_id)+#39+','
+                                                                                            +#39+m_user.m_user_login_pc+#39+','
+                                                                                            +#39+m_user.m_pc+#39+','
                                                                                             +#39+IntToStr(EnumStatusToInteger(_delay))+#39+')';
   end;
 

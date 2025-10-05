@@ -318,7 +318,7 @@ var
 begin
   delay:=eNO;
 
-  status:=TStatus.Create(_idUser, SharedCurrentUserLogon.GetUserList, False);
+  status:=TStatus.Create(_idUser, SharedCurrentUserLogon.GetUserData, False);
   Result:=status.SendCommand(eLog_home, delay, _errorDescription);
 end;
 
