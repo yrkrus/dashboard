@@ -24,13 +24,12 @@ object FormHome: TFormHome
     Top = 8
     Width = 490
     Height = 351
-    ActivePage = sheet_SendingSMS
+    ActivePage = sheet_StatusSMS
     Images = ImageList1
     TabOrder = 0
     OnChange = page_TypesSMSChange
     object sheet_ManualSMS: TTabSheet
       Caption = #1056#1091#1095#1085#1072#1103' '#1086#1090#1087#1088#1072#1074#1082#1072
-      ExplicitHeight = 313
       object group_ManualSMS: TGroupBox
         Left = 0
         Top = 3
@@ -576,7 +575,6 @@ object FormHome: TFormHome
     object sheet_SendingSMS: TTabSheet
       Caption = #1052#1072#1089#1089#1086#1074#1072#1103' '#1088#1072#1089#1089#1099#1083#1082#1072
       ImageIndex = 1
-      ExplicitHeight = 313
       DesignSize = (
         482
         314)
@@ -837,7 +835,6 @@ object FormHome: TFormHome
     object sheet_StatusSMS: TTabSheet
       Caption = #1057#1090#1072#1090#1091#1089' '#1089#1086#1086#1073#1097#1077#1085#1080#1103
       ImageIndex = 2
-      ExplicitHeight = 313
       DesignSize = (
         482
         314)
@@ -1199,7 +1196,7 @@ object FormHome: TFormHome
     Left = 816
     Top = 432
     Bitmap = {
-      494C010103000C00AC0018001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010103000C00B00018001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000600000001800000001002000000000000024
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

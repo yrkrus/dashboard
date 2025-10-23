@@ -1552,7 +1552,7 @@ begin
         case InTemplate of
           template_my:begin
            FormMyTemplate.st_NoMessage_MyTemplate.Visible:=True;
-           p_PageControl.Pages[0].Caption:='Мои сохраненные шаблоны ('+IntToStr(countTemplate)+')';
+           p_PageControl.Pages[0].Caption:='Сохраненные шаблоны ('+IntToStr(countTemplate)+')';
           end;
           template_global:begin
            FormMyTemplate.st_NoMessage_GlobalTemplate.Visible:=True;
@@ -1582,7 +1582,7 @@ begin
       case InTemplate of
         template_my:begin
           SQL.Add('select id,template from sms_template where user_id = '+#39+inttostr(USER_STARTED_SMS_ID) +#39+' and is_global = ''0'' ');
-          p_PageControl.Pages[0].Caption:='Мои сохраненные шаблоны ('+IntToStr(countTemplate)+')';
+          p_PageControl.Pages[0].Caption:='Сохраненные шаблоны ('+IntToStr(countTemplate)+')';
         end;
         template_global:begin
           SQL.Add('select id,template from sms_template where is_global = ''1'' ');

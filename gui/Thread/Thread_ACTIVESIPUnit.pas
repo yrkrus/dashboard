@@ -104,20 +104,21 @@ function Thread_ACTIVESIP.CreateListSubMenuItems(var p_ActiveSipOperators: TActi
 var
  ListItem: TListItem;
  TimeAnsweredSeconds:string;
+ timeAnsweredAwarage,timeAnsweredAll:string;
 begin
 
  ListItem := ListView.Items.Add;
- ListItem.Caption := p_ActiveSipOperators.GetListOperators_SipNumber(i);
+ ListItem.Caption := IntToStr(p_ActiveSipOperators.GetListOperators_SipNumber(i));
 
   // submenu
   begin
     // ===== ИМЯ ОПЕРАТОРА =====
      if p_ActiveSipOperators.GetListOperators_OperatorName(i)<>'null' then
      begin
-       ListItem.SubItems.Add(p_ActiveSipOperators.GetListOperators_OperatorName(i)+' ('+p_ActiveSipOperators.GetListOperators_SipNumber(i)+')');
+       ListItem.SubItems.Add(p_ActiveSipOperators.GetListOperators_OperatorName(i)+' ('+IntToStr(p_ActiveSipOperators.GetListOperators_SipNumber(i))+')');
      end
      else begin
-       ListItem.SubItems.Add(p_ActiveSipOperators.GetListOperators_SipNumber(i));
+       ListItem.SubItems.Add(IntToStr(p_ActiveSipOperators.GetListOperators_SipNumber(i)));
      end;
 
 
@@ -128,9 +129,9 @@ begin
          // проверим есть ли доступ к дашборду
          if p_ActiveSipOperators.GetListOperators_AccessDashboad(i) then begin
             // проверим вдруг разговаривал оператор и просто ушел домой
-            if isOperatorGoHome(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i)))) then ListItem.SubItems.Add(getStatus(eHome))
+            if isOperatorGoHome(getUserID(p_ActiveSipOperators.GetListOperators_SipNumber(i))) then ListItem.SubItems.Add(getStatus(eHome))
             else begin
-              if isOperatorGoHomeWithForceClosed(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i)))) then ListItem.SubItems.Add(getStatus(eHome))
+              if isOperatorGoHomeWithForceClosed(getUserID(p_ActiveSipOperators.GetListOperators_SipNumber(i))) then ListItem.SubItems.Add(getStatus(eHome))
               else ListItem.SubItems.Add('---');
             end;
 
@@ -192,7 +193,7 @@ begin
             if p_ActiveSipOperators.GetListOperators_Status(i) > eHome then begin
 
               ListItem.SubItems.Add(getStatus(p_ActiveSipOperators.GetListOperators_Status(i))
-                                    +' ('+getLastStatusTime(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i))), p_ActiveSipOperators.GetListOperators_Status(i))
+                                    +' ('+getLastStatusTime(getUserID(p_ActiveSipOperators.GetListOperators_SipNumber(i)), p_ActiveSipOperators.GetListOperators_Status(i))
                                     +')');
 
             end
@@ -216,7 +217,7 @@ begin
           if p_ActiveSipOperators.GetListOperators_OperatorName(i) = SharedCurrentUserLogon.Familiya+' '+SharedCurrentUserLogon.Name then begin
            // для привязвнной форме
            HomeForm.lblCurrentStatus.Caption:=getStatus(p_ActiveSipOperators.GetListOperators_Status(i))
-                                      +' ('+getLastStatusTime(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i))), p_ActiveSipOperators.GetListOperators_Status(i))
+                                      +' ('+getLastStatusTime(getUserID(p_ActiveSipOperators.GetListOperators_SipNumber(i)), p_ActiveSipOperators.GetListOperators_Status(i))
                                       +')';
 
 //            // для отвязанонй формы
@@ -277,11 +278,15 @@ begin
 
     // ===== ОБЩЕЕ ВРЕМЯ РАЗГОВОРА =====
     begin
-     if  p_ActiveSipOperators.GetListOperators_TalkTimeAll(i) = 0 then ListItem.SubItems.Add('00:00:00 | 00:00:00')
-     else ListItem.SubItems.Add(GetTimeAnsweredSecondsToString(p_ActiveSipOperators.GetListOperators_TalkTimeAvg(i))
-                                +' | '
-                                +GetTimeAnsweredSecondsToString(p_ActiveSipOperators.GetListOperators_TalkTimeAll(i)));
+     if  p_ActiveSipOperators.TalkTimeAll[i] = 0 then ListItem.SubItems.Add('00:00:00 | 00:00:00')
+     else begin
+        timeAnsweredAwarage:=GetTimeAnsweredSecondsToString(p_ActiveSipOperators.TalkTimeAvg[i]);
+        timeAnsweredAll:=GetTimeAnsweredSecondsToString(p_ActiveSipOperators.TalkTimeAll[i]);
 
+        if CheckAnsweredSecondsToString(timeAnsweredAwarage) and CheckAnsweredSecondsToString(timeAnsweredAll) then begin
+         ListItem.SubItems.Add(timeAnsweredAwarage+' | '+timeAnsweredAll);
+        end;
+     end;
     end;
   end;
 
@@ -292,6 +297,8 @@ procedure Thread_ACTIVESIP.UpdateListSubMenuItems(var p_ActiveSipOperators: TAct
                                                       i: Integer;
                                                       ListItem: TListItem);
 
+var
+ timeAnsweredAwarage, timeAnsweredAll:string;
 begin
   try
     // submenu
@@ -299,10 +306,10 @@ begin
       // ===== ИМЯ ОПЕРАТОРА =====
        if p_ActiveSipOperators.GetListOperators_OperatorName(i)<>'null' then
        begin
-         ListItem.SubItems[0]:=p_ActiveSipOperators.GetListOperators_OperatorName(i)+' ('+p_ActiveSipOperators.GetListOperators_SipNumber(i)+')';
+         ListItem.SubItems[0]:=p_ActiveSipOperators.GetListOperators_OperatorName(i)+' ('+IntToStr(p_ActiveSipOperators.GetListOperators_SipNumber(i))+')';
        end
        else begin
-         ListItem.SubItems[0]:=p_ActiveSipOperators.GetListOperators_SipNumber(i);
+         ListItem.SubItems[0]:=IntToStr(p_ActiveSipOperators.GetListOperators_SipNumber(i));
        end;
 
 
@@ -313,9 +320,9 @@ begin
            // проверим есть ли доступ к дашборду
            if p_ActiveSipOperators.GetListOperators_AccessDashboad(i) then begin
               // проверим вдруг разговаривал оператор и просто ушел домой
-              if isOperatorGoHome(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i)))) then ListItem.SubItems[1]:=getStatus(eHome)
+              if isOperatorGoHome(getUserID(p_ActiveSipOperators.GetListOperators_SipNumber(i))) then ListItem.SubItems[1]:=getStatus(eHome)
               else begin // проверим вдруг закрыли через "завепшение активной сессии"
-                if isOperatorGoHomeWithForceClosed(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i)))) then ListItem.SubItems[1]:=getStatus(eHome)
+                if isOperatorGoHomeWithForceClosed(getUserID(p_ActiveSipOperators.GetListOperators_SipNumber(i))) then ListItem.SubItems[1]:=getStatus(eHome)
                 else ListItem.SubItems[1]:='---';
               end;
 
@@ -380,7 +387,7 @@ begin
               if p_ActiveSipOperators.GetListOperators_Status(i) > eHome then begin
 
                 ListItem.SubItems[1]:=getStatus(p_ActiveSipOperators.GetListOperators_Status(i))
-                                      +' ('+getLastStatusTime(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i))), p_ActiveSipOperators.GetListOperators_Status(i))
+                                      +' ('+getLastStatusTime(getUserID(p_ActiveSipOperators.GetListOperators_SipNumber(i)), p_ActiveSipOperators.GetListOperators_Status(i))
                                       +')';
 
               end
@@ -403,7 +410,7 @@ begin
             if p_ActiveSipOperators.GetListOperators_OperatorName(i) = SharedCurrentUserLogon.Familiya+' '+SharedCurrentUserLogon.Name then begin
              // для привязвнной форме
              HomeForm.lblCurrentStatus.Caption:=getStatus(p_ActiveSipOperators.GetListOperators_Status(i))
-                                        +' ('+getLastStatusTime(getUserID(StrToInt(p_ActiveSipOperators.GetListOperators_SipNumber(i))), p_ActiveSipOperators.GetListOperators_Status(i))
+                                        +' ('+getLastStatusTime(getUserID(p_ActiveSipOperators.GetListOperators_SipNumber(i)), p_ActiveSipOperators.GetListOperators_Status(i))
                                         +')';
              // для отвязанонй формы
 //             FormOperatorStatus.Caption:='Текущий статус: '+getStatus(p_ActiveSipOperators.GetListOperators_Status(i))
@@ -465,10 +472,15 @@ begin
 
       // ===== ОБЩЕЕ ВРЕМЯ РАЗГОВОРА =====
       begin
-       if  p_ActiveSipOperators.GetListOperators_TalkTimeAll(i) = 0 then ListItem.SubItems[7]:='00:00:00 | 00:00:00'
-       else ListItem.SubItems[7]:=GetTimeAnsweredSecondsToString(p_ActiveSipOperators.GetListOperators_TalkTimeAvg(i))
-                                  +' | '
-                                  +GetTimeAnsweredSecondsToString(p_ActiveSipOperators.GetListOperators_TalkTimeAll(i));
+       if  p_ActiveSipOperators.TalkTimeAll[i] = 0 then ListItem.SubItems[7]:='00:00:00 | 00:00:00'
+       else begin
+        timeAnsweredAwarage:=GetTimeAnsweredSecondsToString(p_ActiveSipOperators.TalkTimeAvg[i]);
+        timeAnsweredAll:=GetTimeAnsweredSecondsToString(p_ActiveSipOperators.TalkTimeAll[i]);
+
+        if CheckAnsweredSecondsToString(timeAnsweredAwarage) and CheckAnsweredSecondsToString(timeAnsweredAll) then begin
+          ListItem.SubItems[7]:=timeAnsweredAwarage+' | '+timeAnsweredAll;
+        end;
+       end;
 
       end;
     end;
@@ -503,7 +515,7 @@ begin
         // Проходим по всем операторам
         for i:=0 to countActiveSipOperators-1 do
         begin
-          idToFind := p_ActiveSipOperators.GetListOperators_SipNumber(i);
+          idToFind := IntToStr(p_ActiveSipOperators.GetListOperators_SipNumber(i));
           existingItem := nil;
 
           // Поиск существующего элемента по id
@@ -534,7 +546,7 @@ begin
         // Удаляем элементы, которые отсутствуют в новых данных
         for i:= ListViewSIP.Items.Count - 1 downto 0 do
         begin
-           if not p_ActiveSipOperators.isExistOperator(ListViewSIP.Items[i].Caption) then
+           if not p_ActiveSipOperators.isExistOperator(StrToInt(ListViewSIP.Items[i].Caption)) then
            begin
              try
                ListViewSIP.Items.Delete(i);

@@ -301,20 +301,23 @@ object FormStatusSendingSMS: TFormStatusSendingSMS
       ParentFont = False
       WordWrap = True
     end
-    object lblMessage: TLabel
+    object re_Message: TRichEdit
       Left = 16
-      Top = 160
+      Top = 156
       Width = 460
       Height = 104
-      AutoSize = False
-      Caption = #1058#1077#1082#1089#1090' '#1089#1086#1086#1073#1097#1077#1085#1080#1103
-      Font.Charset = DEFAULT_CHARSET
+      BorderStyle = bsNone
+      Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
       Font.Name = 'Tahoma'
       Font.Style = []
+      Lines.Strings = (
+        #1058#1077#1082#1089#1090' '#1089#1086#1086#1073#1097#1077#1085#1080#1103)
       ParentFont = False
-      WordWrap = True
+      ReadOnly = True
+      TabOrder = 0
+      Zoom = 100
     end
   end
   object btnSaveFirebirdSettings: TBitBtn

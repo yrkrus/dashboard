@@ -5,54 +5,60 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Grids, Vcl.ComCtrls, Vcl.StdCtrls,
-  Vcl.Buttons, Vcl.ExtCtrls, TUsersAllUnit;
+  Vcl.Buttons, Vcl.ExtCtrls, TUsersAllUnit, TUserUnit, System.DateUtils,
+  Vcl.Imaging.pngimage, Vcl.Imaging.jpeg;
+
+//type  // поиск по
+// enumFind = ( eFindFamiliya,  // фамилия
+//              eFindName       // имя
+//            );
 
 type
   TFormUsers = class(TForm)
-    PageControl: TPageControl;
-    UsersAll: TTabSheet;
-    OnlyOPerators: TTabSheet;
-    listSG_Users_Footer: TStringGrid;
-    listSG_Users: TStringGrid;
     btnShowUsers: TBitBtn;
-    btnDisable: TBitBtn;
+    btnDisabled: TBitBtn;
     btnEditUser: TBitBtn;
-    listSG_Operators: TStringGrid;
-    listSG_Operators_Footer: TStringGrid;
-    chkboxViewDisabled: TCheckBox;
     btnEnable: TBitBtn;
     panel_Users: TPanel;
     list_Users: TListView;
-    st_NoUsers: TStaticText;
+    editFindMessage: TEdit;
+    btn_Find: TBitBtn;
+    StaticText1: TStaticText;
+    combox_find: TComboBox;
+    chkbox_users_NoEnterProgramm: TLabel;
+    img_users_NoEnterProgramm: TImage;
+    chkbox_users_ShowDisabled: TLabel;
+    img_users_ShowDisabled: TImage;
+    Button1: TButton;
     procedure FormShow(Sender: TObject);
     procedure btnShowUsersClick(Sender: TObject);
-    procedure PageControlChange(Sender: TObject);
-    procedure chkboxViewDisabledClick(Sender: TObject);
     procedure btnEditUserClick(Sender: TObject);
-    procedure listSG_UsersSelectCell(Sender: TObject; ACol, ARow: Integer;
-      var CanSelect: Boolean);
-    procedure listSG_OperatorsSelectCell(Sender: TObject; ACol, ARow: Integer;
-      var CanSelect: Boolean);
-    procedure btnDisableClick(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure btnDisabledClick(Sender: TObject);
     procedure btnEnableClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
+    procedure chkbox_users_NoEnterProgrammClick(Sender: TObject);
+    procedure img_users_NoEnterProgrammClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure list_UsersMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+
   private
     { Private declarations }
-   currentEditUserId:string;
-
    m_usersAll: TUsersAll;
+   SelectedItemPopMenu: TListItem;  // Переменная для хранения выбранного элемента
+
 
   procedure LoadData;
   procedure ClearListView(var p_ListView:TListView);
-  procedure AddListItem(const id, dateTime, sip, phone, numberQueue, talkTime: string;
-                                isReducedTime: Boolean;
-                                var p_ListView: TListView);
+  procedure AddListItem(const _user:TUser; var p_ListView: TListView);
+  function ShowLastActiveTime(_datetime:TDateTime):string;
+  procedure ShowHideUsersNotEntered; // показать\скрыть пользователей не входивших ни разу
 
 
-  public
+  public  { Public declarations }
+  procedure UpdateUsersAfterAddOrEdit; // обновление данных после добавения\редактирования пользователя
 
-    { Public declarations }
   end;
 
 var
@@ -65,76 +71,131 @@ uses
 
 {$R *.dfm}
 
-procedure LoadSettingsLogic;
+// === NO CLASS ===
+// START
+
+
+function PluralDays(Days: Int64): string;
+var
+  d100, d10: Integer;
 begin
- with FormUsers do begin
-   chkboxViewDisabled.Checked:=False;
-   chkboxViewDisabled.Visible:=True;
-   PageControl.ActivePageIndex:=0;
- end;
+  // проверяем исключения для 11…14
+  d100 := Days mod 100;
+  if (d100 >= 11) and (d100 <= 14) then
+    Exit(Format('%d дней', [Days]));
+
+  // смотрим последнюю цифру
+  d10 := Days mod 10;
+  case d10 of
+    1: Result := Format('%d день', [Days]);
+    2, 3, 4: Result := Format('%d дня', [Days]);
+  else
+    Result := Format('%d дней', [Days]);
+  end;
+end;
+// END
+// === NO CLASS ===
+
+
+// показать\скрыть пользователей не входивших ни разу
+procedure TFormUsers.ShowHideUsersNotEntered;
+var
+ i:Integer;
+ countUsers:Integer;
+begin
+  Screen.Cursor:=crHourGlass;
+
+  // меняем статус
+  SharedCheckBoxUI.ChangeStatusCheckBox('users_NoEnterProgramm');
+  ClearListView(list_Users);
+  countUsers:=0;
+
+  for i:=0 to m_usersAll.Count-1 do begin
+    if m_usersAll.Items[i].IsNotActiveAccount then Continue;
+
+    if SharedCheckBoxUI.Checked['users_NoEnterProgramm'] then begin
+       if m_usersAll.Items[i].LastActive = 0 then Continue;
+    end;
+
+    AddListItem(m_usersAll.Items[i], list_Users);
+    Inc(countUsers);
+  end;
+
+  Caption:='Пользователи ['+IntToStr(countUsers)+']';
+
+  Screen.Cursor:=crDefault;
 end;
 
-procedure LoadSettings;
+
+
+// время активности
+function TFormUsers.ShowLastActiveTime(_datetime:TDateTime):string;
+const
+ cDayTime:Cardinal = 86400;
+var
+ diff:Int64;
+ unixTime,unixCurrentTime:Int64;
+ days: Int64;
 begin
-  with FormUsers do begin
+  unixCurrentTime:=DateTimeToUnix(_datetime);
+  unixTime:=DateTimeToUnix(Now);
 
-    // вкладка все пользователи
-    with listSG_Users_Footer do begin
-     RowCount:=1;
-     Cells[0,0]:='ID';
-     Cells[1,0]:='Фамилия Имя';
-     Cells[2,0]:='Логин';
-     Cells[3,0]:='Группа прав';
-     Cells[4,0]:='Состояние';
-    end;
-
-     // вкладка операторы
-    with listSG_Operators_Footer do begin
-      RowCount:=1;
-      Cells[0,0]:='ID';
-      Cells[1,0]:='Фамилия Имя';
-      Cells[2,0]:='Sip';
-      Cells[3,0]:='IP телефон';
-      Cells[4,0]:='Группа прав';
-    end;
-
-
-   // прогрузка списка пользователей (False - не показывать отключенных пользователей)
-  // loadPanel_Users(SharedCurrentUserLogon.Role);
-
-   // прогрузка списка пользователей (операторы) (False - не показывать отключенных пользователей)
-   loadPanel_Operators;
-
+  diff := unixTime - unixCurrentTime;
+  if diff <= cDayTime then begin
+    Result:=' (сегодня)';
+    Exit;
+  end
+  else begin
+    days := diff div cDayTime;
+    if days = 1 then begin
+     Result:=' (вчера)';
+    end
+    else Result := Format(' (%s назад)', [PluralDays(days)]);
   end;
 end;
 
+
+
 procedure TFormUsers.LoadData;
+var
+ i:Integer;
+ countUsers:Integer;
 begin
    showWait(show_open);
-   ClearListView(list_Users);
 
    if not Assigned(m_usersAll) then m_usersAll:=TUsersAll.Create(SharedCurrentUserLogon.Role)
    else m_usersAll.Update;
 
+   ClearListView(list_Users);
+   countUsers:=0;
+
+   for i:=0 to m_usersAll.Count-1 do begin
+     if m_usersAll.Items[i].IsNotActiveAccount then Continue;
+
+     AddListItem(m_usersAll.Items[i], list_Users);
+     Inc(countUsers);
+   end;
 
 
-
-    showWait(show_close);
+   Caption:='Пользователи ['+IntToStr(countUsers)+']';
+   showWait(show_close);
 
 end;
 
 procedure TFormUsers.ClearListView(var p_ListView:TListView);
 const
- cWidth_default       :Word = 950;
+ cWidth_default       :Word = 1210;
  cWidth_id            :Word = 3;
- cWidth_auth          :Word = 10;
- cWidth_fio           :Word = 10;
- cWidth_group         :Word = 10;
- cWidth_access_report :Word = 10;
- cWidth_access_chat   :Word = 10;
- cWidth_access_sms    :Word = 10;
- cWidth_access_call   :Word = 10;
- cWidth_last_enter    :Word = 10;
+ cWidth_auth          :Word = 8;
+ cWidth_fio           :Word = 19;
+ cWidth_group         :Word = 15;
+ cWidth_sip           :Word = 5;
+ cWidth_queue         :Word = 10;
+ cWidth_access_report :Word = 5;
+ cWidth_access_chat   :Word = 4;
+ cWidth_access_sms    :Word = 4;
+ cWidth_access_call   :Word = 5;
+ cWidth_last_enter    :Word = 20;
 begin
  with p_ListView do begin
 
@@ -158,51 +219,63 @@ begin
 
     with Columns.Add do
     begin
-      Caption:=' Фамилия Имя ';
+      Caption:='Фамилия Имя';
       Width:=Round((cWidth_default*cWidth_fio)/100);
       Alignment:=taCenter;
     end;
 
-
-
     with Columns.Add do
     begin
-      Caption:=' Группа ';
+      Caption:='Группа';
       Width:=Round((cWidth_default*cWidth_group)/100);
       Alignment:=taCenter;
     end;
 
     with Columns.Add do
     begin
-      Caption:=' Отчеты ';
+      Caption:='Sip';
+      Width:=Round((cWidth_default*cWidth_sip)/100);
+      Alignment:=taCenter;
+    end;
+
+    with Columns.Add do
+    begin
+      Caption:='Очереди';
+      Width:=Round((cWidth_default*cWidth_queue)/100);
+      Alignment:=taCenter;
+    end;
+
+    with Columns.Add do
+    begin
+      Caption:='Отчеты';
       Width:=Round((cWidth_default*cWidth_access_report)/100);
       Alignment:=taCenter;
     end;
 
      with Columns.Add do
     begin
-      Caption:=' Чат ';
+      Caption:='Чат';
       Width:=Round((cWidth_default*cWidth_access_chat)/100);
       Alignment:=taCenter;
     end;
 
     with Columns.Add do
     begin
-      Caption:=' SMS ';
+      Caption:='SMS';
       Width:=Round((cWidth_default*cWidth_access_sms)/100);
       Alignment:=taCenter;
     end;
 
     with Columns.Add do
     begin
-      Caption:=' Звонки ';
+      Caption:='Звонки';
       Width:=Round((cWidth_default*cWidth_access_call)/100);
       Alignment:=taCenter;
     end;
 
     with Columns.Add do
     begin
-      Caption:=' Активность ';
+      Caption:='Активность';
       Width:=Round((cWidth_default*cWidth_last_enter)/100);
       Alignment:=taCenter;
     end;
@@ -210,97 +283,140 @@ begin
 end;
 
 
-procedure TFormUsers.AddListItem(const id, dateTime, sip, phone, numberQueue, talkTime: string;
-                                        isReducedTime: Boolean;
-                                        var p_ListView: TListView);
+procedure TFormUsers.AddListItem(const _user:TUser;
+                                 var p_ListView: TListView);
 var
   ListItem: TListItem;
   time_talk: Integer;
+  sip:Integer;
 begin
   ListItem := p_ListView.Items.Add;
-  ListItem.Caption := id;      // id
-  ListItem.SubItems.Add(dateTime); // дата время
-  ListItem.SubItems.Add(sip);     // sip
-  ListItem.SubItems.Add(phone);   // номер телефона
-  ListItem.SubItems.Add(numberQueue); // очередь
+  ListItem.Caption := IntToStr(_user.ID);      // id
+  ListItem.SubItems.Add(EnumAuthToString(_user.Auth));          // авторизация
+  ListItem.SubItems.Add(_user.Familiya+' '+_user.Name);         // фаимилия и имя
+  ListItem.SubItems.Add(EnumRoleToString(_user.Role));          // группа
 
-
-  // Получаем время разговора
-  if isReducedTime then
-  begin
-    ListItem.SubItems.Add(Copy(VarToStr(talkTime), 4, 5));
-    time_talk := GetTimeAnsweredToSeconds(Copy(VarToStr(talkTime), 4, 5), True);
+  // sip
+  if _user.IsOperator then begin
+   sip:=GetOperatorSIP(_user.ID);
+   if sip <> -1 then ListItem.SubItems.Add(IntToStr(sip))
+   else  ListItem.SubItems.Add('---');
   end
-  else
+  else  ListItem.SubItems.Add('---');
+
+  // очереди
+  ListItem.SubItems.Add(_user.CommonQueueSTR);
+
+  // доступы
   begin
-    ListItem.SubItems.Add(VarToStr(talkTime));
-    time_talk := GetTimeAnsweredToSeconds(VarToStr(talkTime), False);
+    // отчеты
+    if _user.IsAccessReports then ListItem.SubItems.Add('X')
+    else ListItem.SubItems.Add('---');
+
+    // чат
+    if _user.IsAccessLocalChat then ListItem.SubItems.Add('X')
+    else ListItem.SubItems.Add('---');
+
+    // sms
+    if _user.IsAccessSMS then ListItem.SubItems.Add('X')
+    else ListItem.SubItems.Add('---');
+
+    // звонки
+    if _user.IsAccessCalls then ListItem.SubItems.Add('X')
+    else ListItem.SubItems.Add('---');
   end;
+
+  // активность
+  if _user.LastActive <> 0 then begin
+    ListItem.SubItems.Add(DateTimeToStr(_user.LastActive) + ShowLastActiveTime(_user.LastActive))
+  end
+  else ListItem.SubItems.Add('никогда');
 
 end;
 
-procedure TFormUsers.btnDisableClick(Sender: TObject);
+procedure TFormUsers.btnDisabledClick(Sender: TObject);
 var
-resultat:Word;
-id:Integer;
-error:string;
+ userId:Integer;
+ resultat:Word;
+ errorDescription:string;
 begin
- if currentEditUserId='1' then begin
-    MessageBox(Handle,PChar('Разработчика нельзя отключить!'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-    Exit;
- end;
-
- if currentEditUserId='' then begin
+  if not Assigned(SelectedItemPopMenu) then begin
     MessageBox(Handle,PChar('Не выбран пользователь'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
- end;
+  end;
 
- id:=StrToInt(currentEditUserId);
+  userId:=StrToInt(SelectedItemPopMenu.Caption);
 
- // проверим операторская ли учетка
- if not IsUserOperator(id) then begin
-   resultat:=MessageBox(Handle,PChar('Точно отключить '+getUserNameFIO(id)+'?'),PChar('Уточнение'),MB_YESNO+MB_ICONWARNING);
- end
- else begin
-   resultat:=MessageBox(Handle,PChar('Точно отключить '+getUserNameFIO(id)+'?'+#13#13+
-                                     'ВАЖНО! Отключенную учетную запись оператора не получится обратно восстановить' ),PChar('Уточнение'),MB_YESNO+MB_ICONWARNING);
- end;
+  if userId=1 then begin
+    MessageBox(Handle,PChar('Разработчика не получится удалить'),PChar('Низя'),MB_OK+MB_ICONERROR);
+    Exit;
+  end;
 
- if resultat=mrNo then Exit;
+
+  resultat:=MessageBox(Handle,PChar('Точно удалить '+GetUserNameFIO(userId)+'?'+#13#13+
+                                    'ВНИМАНИЕ! Восстановить удаленную учетную запись не получиться' ),PChar('Уточнение'),MB_YESNO+MB_ICONWARNING);
+  if resultat=mrNo then Exit;
+
+  resultat:=MessageBox(Handle,PChar('ВНИМАНИЕ! ВОССТАНОВИТЬ НЕ ПОЛУЧИТСЯ!!!'+#13#13+'Точно удаляем?' ),PChar('Последнее предупреждение'),MB_YESNO+MB_ICONWARNING);
+  if resultat=mrNo then Exit;
 
   // отключаем
-  if not DisableUser(id, error) then begin
-    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+  if not DisableUser(userId, errorDescription) then begin
+    MessageBox(Handle,PChar(errorDescription),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
   end;
 
-
   // загружаем новые данные
-    LoadSettings;
+  LoadData;
 
-  MessageBox(Handle,PChar('Пользователь отключен'),PChar('Успешно'),MB_OK+MB_ICONINFORMATION);
+  MessageBox(Handle,PChar('Пользователь удален'),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
 
 end;
 
-procedure TFormUsers.btnEditUserClick(Sender: TObject);
+
+{
+
+var
+ userId:string;
 begin
-  if currentEditUserId='1' then begin
-    MessageBox(Handle,PChar('Разработчика нельзя отредактировать!'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+
+
+
+
+
+
+  with FormAddNewUsers do begin
+    IsEdit:=True;
+    IsEditID:=StrToInt(userId);
+    ShowModal;
+  end;
+
+end;
+
+}
+
+
+procedure TFormUsers.btnEditUserClick(Sender: TObject);
+var
+ userId:string;
+begin
+  if not Assigned(SelectedItemPopMenu) then begin
+    MessageBox(Handle,PChar('Не выбран пользователь'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
   end;
 
-  if currentEditUserId='' then begin
-    MessageBox(Handle,PChar('Не выбран пользователь'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-    Exit;
+  userId:=SelectedItemPopMenu.Caption;
+
+  if userId='1' then begin
+    if SharedCurrentUserLogon.ID <> 1 then begin
+     MessageBox(Handle,PChar('Разработчика не получится отредактировать'),PChar('Низя'),MB_OK+MB_ICONERROR);
+     Exit;
+    end;
   end;
 
   with FormAddNewUsers do begin
-    currentEditUsers:=True;
-    currentEditUsersID:=StrToInt64(currentEditUserId);
-
-    // сбрасываем что идет редактирование
-    currentEditUserId:='';
-
+    IsEdit:=True;
+    IsEditID:=StrToInt(userId);
     ShowModal;
   end;
 
@@ -312,28 +428,28 @@ var
   id:Integer;
   error:string;
 begin
- if currentEditUserId='' then begin
-    MessageBox(Handle,PChar('Не выбран пользователь'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-    Exit;
- end;
-
- id:=StrToInt(currentEditUserId);
-
- resultat:=MessageBox(Handle,PChar('Точно включить '+getUserNameFIO(id)+'?'),PChar('Уточнение'),MB_YESNO+MB_ICONWARNING);
- if resultat=mrNo then Exit;
-
-
-  // включаем
-  if not EnableUser(id,error) then begin
-    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-    Exit;
-  end;
-
-  // загружаем новые данные
-  LoadSettings;
-  LoadSettingsLogic;
-
-  MessageBox(Handle,PChar('Пользователь включен'),PChar('Успешно'),MB_OK+MB_ICONINFORMATION);
+// if currentEditUserId='' then begin
+//    MessageBox(Handle,PChar('Не выбран пользователь'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+//    Exit;
+// end;
+//
+// id:=StrToInt(currentEditUserId);
+//
+// resultat:=MessageBox(Handle,PChar('Точно включить '+getUserNameFIO(id)+'?'),PChar('Уточнение'),MB_YESNO+MB_ICONWARNING);
+// if resultat=mrNo then Exit;
+//
+//
+//  // включаем
+//  if not EnableUser(id,error) then begin
+//    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+//    Exit;
+//  end;
+//
+////  // загружаем новые данные
+////  LoadSettings;
+////  LoadSettingsLogic;
+//
+//  MessageBox(Handle,PChar('Пользователь включен'),PChar('Успешно'),MB_OK+MB_ICONINFORMATION);
 end;
 
 procedure TFormUsers.btnShowUsersClick(Sender: TObject);
@@ -341,33 +457,36 @@ begin
  FormAddNewUsers.ShowModal;
 end;
 
-procedure TFormUsers.chkboxViewDisabledClick(Sender: TObject);
+procedure TFormUsers.Button1Click(Sender: TObject);
+var
+ txt:string;
+ i:Integer;
 begin
-  if chkboxViewDisabled.Checked then begin
-  // loadPanel_Users(SharedCurrentUserLogon.Role,True);
-   btnDisable.Visible:=False;
+  with list_Users do begin
 
-   btnEditUser.Enabled:=False;
+   txt:='';
+   for i:=0 to 10 do begin
+      if txt='' then txt:=Column[i].Caption+' : '+IntToStr(Column[i].Width)
+      else  txt:=txt+#13+Column[i].Caption+' : '+IntToStr(Column[i].Width)
+   end;
 
+   ShowMessage(txt);
 
-   btnEnable.Visible:=True;
-   btnEnable.Top:=btnDisable.Top;
-   btnEnable.Left:=btnDisable.Left;
-  end
-  else begin
-  // loadPanel_Users(SharedCurrentUserLogon.Role);
-
-   btnEditUser.Enabled:=True;
-
-   btnDisable.Visible:=True;
-   btnEnable.Visible:=False;
   end;
+end;
 
+
+procedure TFormUsers.chkbox_users_NoEnterProgrammClick(Sender: TObject);
+begin
+ ShowHideUsersNotEntered;
 end;
 
 procedure TFormUsers.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  LoadSettingsLogic;
+  SharedCheckBoxUI.ChangeStatusCheckBox('users_NoEnterProgramm', paramStatus_DISABLED);
+
+   btnEditUser.Enabled:=False;
+   btnDisabled.Enabled:=False;
 end;
 
 procedure TFormUsers.FormCreate(Sender: TObject);
@@ -380,60 +499,55 @@ begin
  Screen.Cursor:=crHourGlass;
 
   // текущий выбранный пользак
-  currentEditUserId:='';
+ // currentEditUserId:='';
 
 
   LoadData;
 
-//
-  LoadSettings;
-  LoadSettingsLogic;
+
 
   Screen.Cursor:=crDefault;
 end;
 
-procedure TFormUsers.listSG_OperatorsSelectCell(Sender: TObject; ACol,
-  ARow: Integer; var CanSelect: Boolean);
-  var
-   id:Integer;
+procedure TFormUsers.img_users_NoEnterProgrammClick(Sender: TObject);
 begin
-  // получаем id из sip
-  if listSG_Operators.Cells[2,ARow]<>'' then begin
-    id:=getUserID(StrToInt(listSG_Operators.Cells[2,ARow]));
-
-    currentEditUserId:=IntToStr(id);
-  end;
-
+ ShowHideUsersNotEntered;
 end;
 
-procedure TFormUsers.listSG_UsersSelectCell(Sender: TObject; ACol,
-  ARow: Integer; var CanSelect: Boolean);
+
+
+procedure TFormUsers.list_UsersMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
 begin
-  if listSG_Users.Cells[0,ARow]<>'' then begin
-    currentEditUserId:=listSG_Users.Cells[0,ARow];
+  SelectedItemPopMenu := list_Users.GetItemAt(X, Y);
+
+  if Button = mbLeft then begin
+   btnEditUser.Enabled:=True;
+   btnDisabled.Enabled:=True;
   end;
 end;
 
-procedure TFormUsers.PageControlChange(Sender: TObject);
+// обновление данных после добавения\редактирования пользователя
+procedure TFormUsers.UpdateUsersAfterAddOrEdit;
 begin
-   currentEditUserId:='';
 
-   if PageControl.ActivePage.Caption='Все пользователи' then begin
-    chkboxViewDisabled.Visible:=True;
-    btnDisable.Enabled:=True;
+   LoadData;
 
-    if chkboxViewDisabled.Checked then begin
-     btnEnable.Enabled:=True;
-    end;
-
-   end
-   else begin
-     chkboxViewDisabled.Visible:=False;
-     btnDisable.Enabled:=False;
-
-     btnEnable.Enabled:=False;
-   end;
+//   m_usersAll.Update;
+//
+//   ClearListView(list_Users);
+//   countUsers:=0;
+//
+//   for i:=0 to m_usersAll.Count-1 do begin
+//     if m_usersAll.Items[i].IsNotActiveAccount then Continue;
+//
+//     AddListItem(m_usersAll.Items[i], list_Users);
+//     Inc(countUsers);
+//   end;
+//
+//   Caption:='Пользователи ['+IntToStr(countUsers)+']';
 
 end;
+
 
 end.

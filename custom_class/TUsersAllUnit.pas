@@ -30,7 +30,9 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
 
       procedure LoadAllUsers;                       // прогрузка всех пользователей которые есть в БД
       function GetOnlyOperatorsRoleID:TStringList;  // получение только операторские ID роли
+      function GetItemUser(_id:Integer):TUser;
 
+      procedure Clear;    // очистка всех данных чтобы обновить их в будущем
 
       public
       constructor Create(_role:enumRole);   overload;
@@ -39,6 +41,7 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       procedure Update;
 
       property Count:Integer read m_count;
+      property Items[_id:Integer]:TUser read GetItemUser; default;
 
       end;
    // class TUsersAll END
@@ -116,6 +119,12 @@ begin
     end;
   end;
 end;
+
+function TUsersAll.GetItemUser(_id: Integer):TUser;
+begin
+  Result:=m_list[_id];
+end;
+
 
 procedure TUsersAll.LoadAllUsers;
 var
@@ -203,13 +212,21 @@ begin
     if Assigned(serverConnect) then begin
       serverConnect.Close;
       FreeAndNil(serverConnect);
+      FreeAndNil(request);
     end;
   end;
 end;
 
+procedure TUsersAll.Clear;
+begin
+  SetLength(m_list,0);
+  m_count:=0;
+end;
+
 procedure TUsersAll.Update;
 begin
-
+  Clear;
+  LoadAllUsers;
 end;
 
 

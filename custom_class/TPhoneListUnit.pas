@@ -17,7 +17,6 @@ uses
       m_id      :Integer;  // id по Ѕƒ
       m_sip     :Integer;  // sip зарегистрированный
       m_phoneIP :string;   // ip телефона
-      m_pcIP    :string;   // ip пк
       m_namePC  :string;   // им€ пк на котром тлф стоит
 
       constructor Create;               overload;
@@ -39,10 +38,9 @@ uses
       procedure LoadData;
       function GetItems(_id:Integer):TPhone;
       function GetItemsData(_id_base:Integer):TPhone;
-      function CheckExist(_namepc, _ipphone, _ippc :string; var _errorDescription:string):Boolean;  // чекалка проверки есть ли уже данные
+      function CheckExist(_namepc, _ipphone:string; var _errorDescription:string):Boolean;  // чекалка проверки есть ли уже данные
       function IsExistPCName(_namepc:string; var _errorDescription:string):Boolean;
       function IsExistIpPhone(_ipphone:string; var _errorDescription:string):Boolean;
-      function IsExistIpPc(_ippc:string; var _errorDescription:string):Boolean;
 
       public
       constructor Create;                   overload;
@@ -50,8 +48,8 @@ uses
 
       procedure Clear;
       procedure UpdateData;                  // обновление данных
-      function Insert(_namepc, _ipphone, _ippc :string; var _errorDescription:string):Boolean;  // добавление нового
-      function Update(_id:Integer; _namepc, _ipphone, _ippc :string; var _errorDescription:string):Boolean;  // редактирование
+      function Insert(_namepc, _ipphone:string; var _errorDescription:string):Boolean;  // добавление нового
+      function Update(_id:Integer; _namepc, _ipphone:string; var _errorDescription:string):Boolean;  // редактирование
       function Delete(_id:Integer; var _errorDescription:string):Boolean;  // удаление
 
 
@@ -76,7 +74,6 @@ begin
    m_id      :=-1;
    m_sip     :=-1;
    m_phoneIP :='0.0.0.0';
-   m_pcIP    :='0.0.0.0';
    m_namePC  :='';
 end;
 
@@ -137,7 +134,7 @@ begin
 
     with request do begin
       Clear;
-      Append('select id,sip,phone_ip,pc_name,pc_ip');
+      Append('select id,sip,phone_ip,pc_name');
       Append(' from settings_sip_phone');
       Append(' order by pc_name ASC');
     end;
@@ -156,7 +153,6 @@ begin
       m_list[i].m_sip     :=StrToInt(VarToStr(Fields[1].Value));
       m_list[i].m_phoneIP :=VarToStr(Fields[2].Value);
       m_list[i].m_namePC  :=VarToStr(Fields[3].Value);
-      m_list[i].m_pcIP    :=VarToStr(Fields[4].Value);
 
       ado.Next;
     end;
@@ -208,13 +204,12 @@ begin
 end;
 
 // чекалка проверки есть ли уже данные
-function TPhoneList.CheckExist(_namepc, _ipphone, _ippc :string; var _errorDescription:string):Boolean;
+function TPhoneList.CheckExist(_namepc, _ipphone :string; var _errorDescription:string):Boolean;
 begin
   Result:=False;
 
   if IsExistPCName(_namepc, _errorDescription) then Exit;
   if IsExistIpPhone(_ipphone, _errorDescription) then Exit;
-  if IsExistIpPc(_ippc, _errorDescription) then Exit;
 
   Result:=True;
 end;
@@ -314,56 +309,9 @@ begin
    end;
 end;
 
-function TPhoneList.IsExistIpPc(_ippc:string; var _errorDescription:string):Boolean;
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
- request:TStringBuilder;
-begin
-   Result:=True; // по умолчанию считаем что есть такие данные
-   _errorDescription:='';
-
-   ado:=TADOQuery.Create(nil);
-   serverConnect:=createServerConnectWithError(_errorDescription);
-   if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
-   end;
-
-   try
-    with ado do begin
-      ado.Connection:=serverConnect;
-
-      request:=TStringBuilder.Create;
-      with request do begin
-        Clear;
-        Append('select count(pc_ip) ');
-        Append('from settings_sip_phone ');
-        Append('where pc_ip = '+#39+_ippc+#39);
-      end;
-
-      SQL.Clear;
-      SQL.Add(request.ToString);
-
-      Active:=True;
-
-      if StrToInt(VarToStr(Fields[0].Value)) = 0 then Result:=False
-      else begin
-        _errorDescription:='IP ѕ  "'+_ippc+'" был добавлен ранее';
-      end;
-    end;
-   finally
-     FreeAndNil(ado);
-     if Assigned(serverConnect) then begin
-       serverConnect.Close;
-       FreeAndNil(serverConnect);
-     end;
-   end;
-end;
-
 
 // добавление нового
-function TPhoneList.Insert(_namepc, _ipphone, _ippc :string; var _errorDescription:string):Boolean;
+function TPhoneList.Insert(_namepc, _ipphone:string; var _errorDescription:string):Boolean;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -371,7 +319,7 @@ begin
   Result:=False;
   _errorDescription:='';
 
-  if not CheckExist(_namepc, _ipphone, _ippc, _errorDescription) then begin
+  if not CheckExist(_namepc, _ipphone, _errorDescription) then begin
     Exit;
   end;
 
@@ -386,9 +334,8 @@ begin
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
-      SQL.Add('insert into settings_sip_phone (phone_ip,pc_name,pc_ip) values ('+#39+_ipphone+#39
-                                                                                +','+#39+_namepc+#39
-                                                                                +','+#39+_ippc+#39+')');
+      SQL.Add('insert into settings_sip_phone (phone_ip,pc_name) values ('+#39+_ipphone+#39
+                                                                                +','+#39+_namepc+#39+')');
 
       try
           ExecSQL;
@@ -418,7 +365,7 @@ end;
 
 
 // редактирование
-function TPhoneList.Update(_id:Integer; _namepc, _ipphone, _ippc :string; var _errorDescription:string):Boolean;
+function TPhoneList.Update(_id:Integer; _namepc, _ipphone:string; var _errorDescription:string):Boolean;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -439,7 +386,6 @@ begin
       SQL.Clear;
       SQL.Add('update settings_sip_phone set phone_ip = '+#39+_ipphone+#39+
                                              ',pc_name = '+#39+_namepc+#39+
-                                             ',pc_ip = '+#39+_ippc+#39+
                                              ' where id = '+#39+IntToStr(_id)+#39);
 
       try

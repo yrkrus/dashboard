@@ -66,7 +66,6 @@ begin
     ListItem.Caption := IntToStr(_phoneList.Items[i].m_id);  // id
     ListItem.SubItems.Add(_phoneList.Items[i].m_namePC);     // имя пк
     ListItem.SubItems.Add(_phoneList.Items[i].m_phoneIP);    // ip телефона
-    ListItem.SubItems.Add(_phoneList.Items[i].m_pcIP);       // ip пк
 
     if _phoneList.Items[i].m_sip <> -1 then begin
       ListItem.SubItems.Add(IntToStr(_phoneList.Items[i].m_sip));     // текущий закрепленный sip
@@ -124,11 +123,10 @@ end;
 
 procedure TFormPhoneList.ClearListView(var p_ListView:TListView);
 const
- cWidth_default       :Word = 540;
+ cWidth_default       :Word = 450;
  cWidth_namePC        :Word = 14;
- cWidth_IPPhone       :Word = 18;
- cWidth_IPPC          :Word = 18;
- cWidth_ActiveSip     :Word = 49;
+ cWidth_IPPhone       :Word = 23;
+ cWidth_ActiveSip     :Word = 61;
 begin
  with p_ListView do begin
 
@@ -153,13 +151,6 @@ begin
     begin
       Caption:=' IP телефона ';
       Width:=Round((cWidth_default*cWidth_IPPhone)/100);
-      Alignment:=taCenter;
-    end;
-
-    with Columns.Add do
-    begin
-      Caption:=' IP ПК ';
-      Width:=Round((cWidth_default*cWidth_IPPC)/100);
       Alignment:=taCenter;
     end;
 

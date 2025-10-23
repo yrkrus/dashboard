@@ -147,9 +147,9 @@
         <UWP_DelphiLogo44>C:\Users\home0\Desktop\DASHBOARD\develop\gui\ico\diagram09(1).png</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>C:\Users\home0\Desktop\DASHBOARD\develop\gui\ico\diagram09.png</UWP_DelphiLogo150>
         <VerInfo_MinorVer>25</VerInfo_MinorVer>
-        <VerInfo_Keys>CompanyName=Petrov Yuri;FileDescription=Дашборд коллцентра;FileVersion=1.25.0.65;InternalName=;LegalCopyright=Petrov Yuri;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Дашборд коллцентра;ProductVersion=0.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Petrov Yuri;FileDescription=Дашборд коллцентра;FileVersion=1.25.0.66;InternalName=;LegalCopyright=Petrov Yuri;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Дашборд коллцентра;ProductVersion=0.0.0.0;Comments=</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
-        <VerInfo_Build>65</VerInfo_Build>
+        <VerInfo_Build>66</VerInfo_Build>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -338,6 +338,7 @@
         <DCCReference Include="..\custom_class\TIVRTimeUnit.pas"/>
         <DCCReference Include="..\custom_class\TCheckBoxUIUnit.pas"/>
         <DCCReference Include="..\custom_class\TUsersAllUnit.pas"/>
+        <DCCReference Include="FormHomeInit.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

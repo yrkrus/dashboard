@@ -4,8 +4,8 @@ object FormSettingsGlobal_checkLdap: TFormSettingsGlobal_checkLdap
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = #1055#1088#1086#1074#1077#1088#1082#1072' Ldap'
-  ClientHeight = 98
-  ClientWidth = 497
+  ClientHeight = 157
+  ClientWidth = 309
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -44,7 +44,7 @@ object FormSettingsGlobal_checkLdap: TFormSettingsGlobal_checkLdap
     ParentFont = False
   end
   object Label3: TLabel
-    Left = 11
+    Left = 23
     Top = 35
     Width = 273
     Height = 13
@@ -69,11 +69,11 @@ object FormSettingsGlobal_checkLdap: TFormSettingsGlobal_checkLdap
     Width = 177
     Height = 24
     PasswordChar = '*'
-    TabOrder = 2
+    TabOrder = 1
   end
   object btnSaveFirebirdSettings: TBitBtn
-    Left = 310
-    Top = 20
+    Left = 70
+    Top = 102
     Width = 166
     Height = 47
     Caption = '&'#1055#1088#1086#1074#1077#1088#1082#1072
@@ -152,7 +152,7 @@ object FormSettingsGlobal_checkLdap: TFormSettingsGlobal_checkLdap
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 1
+    TabOrder = 2
     WordWrap = True
     OnClick = btnSaveFirebirdSettingsClick
   end

@@ -2,7 +2,7 @@ object HomeForm: THomeForm
   Left = 0
   Top = 0
   Caption = #1044#1072#1096#1073#1086#1088#1076' '#1050#1086#1083#1083#1062#1077#1085#1090#1088#1072
-  ClientHeight = 760
+  ClientHeight = 780
   ClientWidth = 1454
   Color = clWindow
   DefaultMonitor = dmDesktop
@@ -20,17 +20,17 @@ object HomeForm: THomeForm
   OnShow = FormShow
   DesignSize = (
     1454
-    760)
+    780)
   PixelsPerInch = 96
   TextHeight = 15
   object Label5: TLabel
     Left = 10
-    Top = 688
+    Top = 600
     Width = 335
     Height = 22
     Alignment = taCenter
     AutoSize = False
-    Caption = #1057#1090#1072#1090#1080#1089#1090#1080#1082#1072' '#1079#1072' '#1076#1077#1085#1100
+    Caption = #1057#1090#1072#1090#1080#1089#1090#1080#1082#1072' '#1090#1077#1082#1091#1097#1077#1075#1086' '#1076#1085#1103
     Color = clGradientInactiveCaption
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -44,7 +44,7 @@ object HomeForm: THomeForm
   end
   object Label18: TLabel
     Left = 78
-    Top = 709
+    Top = 621
     Width = 73
     Height = 22
     Alignment = taCenter
@@ -61,7 +61,7 @@ object HomeForm: THomeForm
   end
   object Label21: TLabel
     Left = 151
-    Top = 709
+    Top = 621
     Width = 82
     Height = 22
     Alignment = taCenter
@@ -78,7 +78,7 @@ object HomeForm: THomeForm
   end
   object Label20: TLabel
     Left = 234
-    Top = 709
+    Top = 621
     Width = 113
     Height = 22
     Alignment = taCenter
@@ -95,7 +95,7 @@ object HomeForm: THomeForm
   end
   object lblStstistisc_Day_Answered: TLabel
     Left = 78
-    Top = 729
+    Top = 641
     Width = 73
     Height = 19
     Alignment = taCenter
@@ -112,7 +112,7 @@ object HomeForm: THomeForm
   end
   object lblStstistisc_Day_No_Answered: TLabel
     Left = 151
-    Top = 729
+    Top = 641
     Width = 82
     Height = 19
     Hint = #1042#1089#1077#1075#1086' '#1087#1088#1086#1087#1091#1097#1077#1085#1085#1099#1077' ('#1087#1088#1086#1087#1091#1097#1077#1085#1085#1099#1077' '#1080' '#1085#1077' '#1087#1077#1088#1077#1079#1074#1086#1085#1080#1074#1096#1080#1077')'
@@ -132,7 +132,7 @@ object HomeForm: THomeForm
   end
   object lblStstistisc_Day_Procent: TLabel
     Left = 237
-    Top = 729
+    Top = 641
     Width = 113
     Height = 19
     Hint = #1042#1089#1077#1075#1086' '#1087#1088#1086#1087#1091#1097#1077#1085#1085#1099#1077' ('#1087#1088#1086#1087#1091#1097#1077#1085#1085#1099#1077' '#1080' '#1085#1077' '#1087#1077#1088#1077#1079#1074#1086#1085#1080#1074#1096#1080#1077')'
@@ -152,7 +152,7 @@ object HomeForm: THomeForm
   end
   object Label7: TLabel
     Left = 10
-    Top = 709
+    Top = 621
     Width = 69
     Height = 22
     Alignment = taCenter
@@ -169,7 +169,7 @@ object HomeForm: THomeForm
   end
   object lblStstistisc_Day_Summa: TLabel
     Left = 10
-    Top = 729
+    Top = 641
     Width = 69
     Height = 19
     Alignment = taCenter
@@ -185,13 +185,13 @@ object HomeForm: THomeForm
     WordWrap = True
   end
   object Label1: TLabel
-    Left = 10
-    Top = 600
+    Left = 9
+    Top = 695
     Width = 335
     Height = 22
     Alignment = taCenter
     AutoSize = False
-    Caption = #1057#1090#1072#1090#1080#1089#1090#1080#1082#1072' '#1087#1086' '#1086#1095#1077#1088#1077#1076#1103#1084
+    Caption = #1057#1090#1072#1090#1080#1089#1090#1080#1082#1072' '#1087#1086' '#1086#1095#1077#1088#1077#1076#1103#1084' '#1090#1077#1082#1091#1097#1077#1075#1086' '#1076#1085#1103
     Color = clGradientInactiveCaption
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -204,8 +204,8 @@ object HomeForm: THomeForm
     Layout = tlCenter
   end
   object Label2: TLabel
-    Left = 10
-    Top = 622
+    Left = 9
+    Top = 717
     Width = 74
     Height = 22
     Alignment = taCenter
@@ -220,8 +220,8 @@ object HomeForm: THomeForm
     Layout = tlCenter
   end
   object Label6: TLabel
-    Left = 92
-    Top = 622
+    Left = 91
+    Top = 717
     Width = 75
     Height = 22
     Alignment = taCenter
@@ -236,8 +236,8 @@ object HomeForm: THomeForm
     Layout = tlCenter
   end
   object Label3: TLabel
-    Left = 179
-    Top = 622
+    Left = 178
+    Top = 717
     Width = 75
     Height = 22
     Alignment = taCenter
@@ -252,8 +252,8 @@ object HomeForm: THomeForm
     Layout = tlCenter
   end
   object Label4: TLabel
-    Left = 265
-    Top = 622
+    Left = 264
+    Top = 717
     Width = 80
     Height = 22
     Alignment = taCenter
@@ -268,8 +268,8 @@ object HomeForm: THomeForm
     Layout = tlCenter
   end
   object lblStstatisc_Queue5000_No_Answered: TLabel
-    Left = 265
-    Top = 646
+    Left = 264
+    Top = 741
     Width = 80
     Height = 17
     Cursor = crHandPoint
@@ -294,8 +294,8 @@ object HomeForm: THomeForm
     OnMouseLeave = lblStstatisc_Queue5000_No_AnsweredMouseLeave
   end
   object lblStstatisc_Queue5000_Answered: TLabel
-    Left = 179
-    Top = 646
+    Left = 178
+    Top = 741
     Width = 75
     Height = 17
     Alignment = taCenter
@@ -310,8 +310,8 @@ object HomeForm: THomeForm
     Layout = tlCenter
   end
   object lblStstatisc_Queue5000_Summa: TLabel
-    Left = 92
-    Top = 646
+    Left = 91
+    Top = 741
     Width = 75
     Height = 17
     Alignment = taCenter
@@ -326,8 +326,8 @@ object HomeForm: THomeForm
     Layout = tlCenter
   end
   object Label8: TLabel
-    Left = 9
-    Top = 646
+    Left = 8
+    Top = 741
     Width = 75
     Height = 17
     Alignment = taCenter
@@ -342,8 +342,8 @@ object HomeForm: THomeForm
     Layout = tlCenter
   end
   object Label13: TLabel
-    Left = 9
-    Top = 665
+    Left = 8
+    Top = 760
     Width = 75
     Height = 17
     Alignment = taCenter
@@ -358,8 +358,8 @@ object HomeForm: THomeForm
     Layout = tlCenter
   end
   object lblStstatisc_Queue5050_Summa: TLabel
-    Left = 92
-    Top = 665
+    Left = 91
+    Top = 760
     Width = 75
     Height = 17
     Alignment = taCenter
@@ -374,8 +374,8 @@ object HomeForm: THomeForm
     Layout = tlCenter
   end
   object lblStstatisc_Queue5050_Answered: TLabel
-    Left = 179
-    Top = 665
+    Left = 178
+    Top = 760
     Width = 75
     Height = 17
     Alignment = taCenter
@@ -390,8 +390,8 @@ object HomeForm: THomeForm
     Layout = tlCenter
   end
   object lblStstatisc_Queue5050_No_Answered: TLabel
-    Left = 265
-    Top = 665
+    Left = 264
+    Top = 760
     Width = 80
     Height = 17
     Cursor = crHandPoint
@@ -542,7 +542,7 @@ object HomeForm: THomeForm
   end
   object lblNewMessageLocalChat: TLabel
     Left = 1202
-    Top = 719
+    Top = 739
     Width = 243
     Height = 16
     Cursor = crHandPoint
@@ -676,7 +676,7 @@ object HomeForm: THomeForm
   end
   object Label25: TLabel
     Left = 9
-    Top = 752
+    Top = 666
     Width = 335
     Height = 22
     Alignment = taCenter
@@ -695,7 +695,7 @@ object HomeForm: THomeForm
   end
   object Img8Mart: TImage
     Left = 1374
-    Top = 688
+    Top = 708
     Width = 79
     Height = 50
     Anchors = [akRight, akBottom]
@@ -822,7 +822,7 @@ object HomeForm: THomeForm
   end
   object ImageLogo: TImage
     Left = 1277
-    Top = 680
+    Top = 700
     Width = 157
     Height = 37
     Anchors = [akRight, akBottom]
@@ -989,7 +989,7 @@ object HomeForm: THomeForm
   end
   object ImgNewYear: TImage
     Left = 1389
-    Top = 660
+    Top = 680
     Width = 55
     Height = 55
     Anchors = [akRight, akBottom]
@@ -6445,7 +6445,7 @@ object HomeForm: THomeForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 739
+    Top = 759
     Width = 1454
     Height = 21
     Panels = <
@@ -7969,7 +7969,7 @@ object HomeForm: THomeForm
   end
   object STForecastCount: TStaticText
     Left = 256
-    Top = 755
+    Top = 669
     Width = 81
     Height = 16
     AutoSize = False
@@ -7985,11 +7985,11 @@ object HomeForm: THomeForm
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 11
+    TabOrder = 10
   end
   object st_Forecast_Tomorrow: TStaticText
     Left = 35
-    Top = 777
+    Top = 689
     Width = 70
     Height = 20
     BiDiMode = bdLeftToRight
@@ -8005,12 +8005,12 @@ object HomeForm: THomeForm
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 12
+    TabOrder = 11
     Visible = False
   end
   object st_Forecast_AfterTomorrow: TStaticText
     Left = 195
-    Top = 777
+    Top = 689
     Width = 110
     Height = 20
     BiDiMode = bdLeftToRight
@@ -8026,7 +8026,7 @@ object HomeForm: THomeForm
     ParentFont = False
     ParentShowHint = False
     ShowHint = False
-    TabOrder = 13
+    TabOrder = 12
     Visible = False
   end
   object Button1: TButton

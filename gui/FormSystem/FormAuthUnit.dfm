@@ -14,23 +14,25 @@
   Font.Height = -13
   Font.Name = 'Times New Roman'
   Font.Style = []
+  KeyPreview = True
   OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
+  OnKeyDown = FormKeyDown
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 15
   object PanelAuth: TPanel
     Left = 0
     Top = 0
-    Width = 337
+    Width = 335
     Height = 275
     BevelInner = bvRaised
     BevelOuter = bvLowered
     TabOrder = 0
     object Пользователь: TLabel
-      Left = 23
+      Left = 17
       Top = 77
       Width = 299
       Height = 16
@@ -44,9 +46,9 @@
       ParentFont = False
     end
     object Label1: TLabel
-      Left = 23
+      Left = 17
       Top = 129
-      Width = 299
+      Width = 54
       Height = 16
       AutoSize = False
       Caption = #1055#1072#1088#1086#1083#1100
@@ -143,19 +145,6 @@
         931964080C2DB9A264591A68F3D1C90C2AEEF26E2AD033C0A1E34D25BF2A8212
         8753000E3031CF19AF0D0675776282A81A400050006C3E57FFD9}
       Proportional = True
-    end
-    object lblVersion: TLabel
-      Left = 12
-      Top = 5
-      Width = 70
-      Height = 14
-      Caption = 'lblVersion'
-      Font.Charset = ANSI_CHARSET
-      Font.Color = clSilver
-      Font.Height = -12
-      Font.Name = 'Consolas'
-      Font.Style = [fsBold]
-      ParentFont = False
     end
     object img_eay_open: TImage
       Left = 349
@@ -261,7 +250,7 @@
     end
     object ImageLogo: TImage
       Left = 88
-      Top = 30
+      Top = 17
       Width = 157
       Height = 38
       Enabled = False
@@ -425,7 +414,7 @@
     end
     object ImgNewYear: TImage
       Left = 198
-      Top = 10
+      Top = -3
       Width = 55
       Height = 55
       ParentShowHint = False
@@ -5459,7 +5448,7 @@
       Visible = False
     end
     object lblInfoError: TLabel
-      Left = 23
+      Left = 17
       Top = 177
       Width = 299
       Height = 33
@@ -5476,24 +5465,8 @@
       Visible = False
       WordWrap = True
     end
-    object lblInfoUpdateService: TLabel
-      Left = 16
-      Top = 63
-      Width = 299
-      Height = 15
-      Alignment = taCenter
-      AutoSize = False
-      Caption = 'C'#1083#1091#1078#1073#1072' '#1086#1073#1085#1086#1074#1083#1077#1085#1080#1103' '#1085#1077' '#1079#1072#1087#1091#1097#1077#1085#1072'!'
-      Font.Charset = RUSSIAN_CHARSET
-      Font.Color = clRed
-      Font.Height = -11
-      Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
-      ParentFont = False
-      Visible = False
-    end
     object lblDEBUG: TLabel
-      Left = 258
+      Left = 262
       Top = 5
       Width = 67
       Height = 11
@@ -5511,7 +5484,7 @@
       WordWrap = True
     end
     object lblUserAuth: TLabel
-      Left = 23
+      Left = 17
       Top = 77
       Width = 299
       Height = 16
@@ -5529,27 +5502,78 @@
       Transparent = True
       Visible = False
     end
-    object lblChangeUser: TLabel
-      Left = 123
-      Top = 79
-      Width = 58
-      Height = 13
-      Cursor = crHandPoint
-      Hint = #1042#1099#1073#1088#1072#1090#1100' '#1076#1088#1091#1075#1086#1075#1086' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1103
-      Caption = '('#1089#1084#1077#1085#1080#1090#1100')'
+    object lblRskladka: TLabel
+      Left = 69
+      Top = 127
+      Width = 56
+      Height = 11
+      Hint = #1056#1072#1089#1082#1083#1072#1076#1082#1072' '#1082#1083#1072#1074#1080#1072#1090#1091#1088#1099
+      Caption = '[UNKNOWN]'
+      Enabled = False
       Font.Charset = RUSSIAN_CHARSET
-      Font.Color = clSilver
+      Font.Color = clWindowText
+      Font.Height = -9
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
+    end
+    object lblCaps: TLabel
+      Left = 191
+      Top = 131
+      Width = 125
+      Height = 13
+      Alignment = taRightJustify
+      Caption = '[ '#1074#1082#1083#1102#1095#1077#1085' CapsLock ]'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clRed
       Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
       ParentShowHint = False
-      ShowHint = True
+      ShowHint = False
       Visible = False
-      OnClick = lblChangeUserClick
+    end
+    object img_change: TImage
+      Left = 118
+      Top = 79
+      Width = 16
+      Height = 16
+      Cursor = crHandPoint
+      Hint = #1057#1084#1077#1085#1080#1090#1100' '#1085#1072' '#1076#1088#1091#1075#1086#1075#1086' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1103
+      ParentShowHint = False
+      Picture.Data = {
+        0A544A504547496D616765C8020000FFD8FFE000104A46494600010102001C00
+        1C0000FFE100624578696600004D4D002A000000080005011200030000000100
+        010000011A0005000000010000004A011B000500000001000000520128000300
+        00000100030000021300030000000100010000000000000000001C0000000100
+        00001C00000001FFDB0043000302020202020302020203030303040604040404
+        04080606050609080A0A090809090A0C0F0C0A0B0E0B09090D110D0E0F101011
+        100A0C12131210130F101010FFDB00430103030304030408040408100B090B10
+        1010101010101010101010101010101010101010101010101010101010101010
+        1010101010101010101010101010101010FFC000110800100010030111000211
+        01031101FFC40017000003010000000000000000000000000002040508FFC400
+        2510000104010401040300000000000000000201030405060007111208131416
+        21323341FFC4001801000301010000000000000000000000000003060102FFC4
+        0023110001040202020203000000000000000001020304110031052112130641
+        71C1F0FFDA000C03010002110311003F00D6B438BDA794765737F94E45361E2F
+        1DEF6D0E14651E450C10C1044D080491A71A2271448949CE0545051355EFBEDF
+        C7DB432CA01708B24E4E34D2B98529C7144201A00658CB67E5F89791D573AEEE
+        2D971CBD9CC355D09AB77C6390AB31E3176604D013AC9740B854542470957F9A
+        4466D895C4AD2DA47B10092685EC9DEF431CFADD639049593E0A34059AD01AFC
+        E06DAE2BB9BB5B91E6168CE216BF178B59652AB2B565C6359D21B26962808326
+        E1A38AD01B7CF55FA41FAECBC68E42544E459652563D9690A347A1DD9EC0157D
+        E10D8910DC714127C28902C767EB578E6338CEE26ECEE25667FB81445454F44A
+        2E4182E010384E09218A209F07FB05B323310E7D36C447F22D7322444E3622A2
+        C5579AD7B3F55FDFBCD65991364264484F8A53A19FFFD9}
+      ShowHint = True
+      Stretch = True
+      OnClick = img_changeClick
     end
     object edtPassword: TEdit
-      Left = 23
+      Left = 16
       Top = 149
       Width = 299
       Height = 24
@@ -5565,7 +5589,7 @@
       OnKeyPress = edtPasswordKeyPress
     end
     object comboxUser: TComboBox
-      Left = 23
+      Left = 16
       Top = 95
       Width = 299
       Height = 24
@@ -5591,11 +5615,11 @@
       OnClick = Button1Click
     end
     object btnAuth: TBitBtn
-      Left = 23
+      Left = 17
       Top = 220
       Width = 122
       Height = 40
-      Hint = #1040#1074#1090#1086#1088#1080#1079#1086#1074#1072#1090#1100#1089#1103' '#1074' '#1076#1072#1096#1073#1086#1088#1076#1077
+      Hint = #1040#1074#1090#1086#1088#1080#1079#1086#1074#1072#1090#1100#1089#1103
       Caption = '&'#1042#1086#1081#1090#1080#13#10'(ENTER)'
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
@@ -5678,11 +5702,11 @@
       OnClick = btnAuthClick
     end
     object btnClose: TBitBtn
-      Left = 198
+      Left = 192
       Top = 220
       Width = 124
       Height = 40
-      Hint = #1042#1099#1093#1086#1076
+      Hint = #1047#1072#1082#1088#1099#1090#1100
       Caption = '&'#1047#1072#1082#1088#1099#1090#1100#13#10'(ESC)'
       Font.Charset = RUSSIAN_CHARSET
       Font.Color = clWindowText
@@ -5769,11 +5793,5 @@
     Masked = False
     Left = 389
     Top = 26
-  end
-  object TimerNotRunUpdate: TTimer
-    Enabled = False
-    OnTimer = TimerNotRunUpdateTimer
-    Left = 32
-    Top = 24
   end
 end

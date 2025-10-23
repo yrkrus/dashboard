@@ -59,6 +59,7 @@ uses
 
 
       procedure Add(_name:string; var _label:TLabel; var _img:TImage; _state:enumParamStatus); // добавление
+      function IsExist(_name:string):Boolean;
       procedure ChangeStatusCheckBox(_nameComponent:string; _status:enumParamStatus); overload;  // изменение статуса красивенького чек бокса
       procedure ChangeStatusCheckBox(_nameComponent:string);    overload;      // изменение статуса красивенького чек бокса
 
@@ -265,12 +266,30 @@ end;
 
 procedure TCheckBoxUI.Add(_name:string; var _label:TLabel; var _img:TImage; _state:enumParamStatus);
 begin
+  if IsExist(_name) then Exit;
+
   SetLength(m_list, m_count+1);
 
   m_list[m_count]:=TCheckBoxUIStruct.Create(_name, _label, _img, _state);
   Inc(m_count);
 
   ChangeStatusCheckBox(_name, _state);  // поставим сразу нужный статус
+end;
+
+
+// есть ли такой элемент
+function TCheckBoxUI.IsExist(_name:string):Boolean;
+var
+ i:Integer;
+begin
+  Result:=False;
+
+  for i:=0 to m_count-1 do begin
+    if m_list[i].m_name = _name then begin
+     Result:=True;
+     Break;
+    end;
+  end;
 end;
 
 end.

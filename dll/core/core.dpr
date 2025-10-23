@@ -1114,6 +1114,19 @@ begin
 end;
 
 
+function _dll_GetAllowCommonQueueList:TStringList; stdcall; export;
+const
+ queue5000:string = '5000';
+ queue5050:string = '5050';
+ queue5911:string = '5911';
+begin
+  Result:=TStringList.Create;
+  Result.Add(queue5000);
+  Result.Add(queue5050);
+  Result.Add(queue5911);
+end;
+
+
 exports
   GetDefaultDataBase,
   createServerConnect,
@@ -1155,7 +1168,8 @@ exports
   GetPhoneRegionQueue,
   GetCodeStatusSms,
   GetStatusSms,
-  GetCountSmsSendingMessageInPhone;
+  GetCountSmsSendingMessageInPhone,
+  _dll_GetAllowCommonQueueList;
 
 begin
 end.

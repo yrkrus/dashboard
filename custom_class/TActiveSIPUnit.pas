@@ -40,7 +40,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
 
       //id                                     : Integer;
       user_id                                : Integer;       // ID пользака в БД users
-      sip_number                             : string;        // номер оператора
+      sip_number                             : Integer;        // номер оператора
       count_talk                             : integer;       // кол-во отвеченных вызовов
       count_procent                          : Double;        // % отвеченных звонков от общего кол-ва звонков
       trunk                                  : string;        // транк с которого пришел звонок
@@ -94,6 +94,8 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       function GetListOperatorsGoHomeNotCloseDashboard:TStringList; // список операторов которые ушли домой но забыли закрыть дашборб
       function GetListOperatorsGoHomeClosedActiveSession:TStringList; // список операторов которые ушли через закрытие активной сессии
 
+      function GetListOperators_TalkTimeAll(id:Integer):Integer;        // listOperators.list_talk_time_all
+      function GetListOperators_TalkTimeAvg(id:Integer):Integer;        // listOperators.list_talk_time_avf
 
       public
       countActiveCalls                       :Integer; // кол-во активных звонков
@@ -130,9 +132,9 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       procedure checkNewSipOperators(isDashStarted:Boolean = False);        // обновление списка активных операторов если увидили нового оператора
       // true только при первом запуске дашборда
 
-      function isExistOperatorInQueue(InSip:string):Boolean;        // проверка состояит ли оператор в какой либо очереди
-      function isExistOperator(InSip:string):Boolean;               // проверка есть ли оператор
-      function isExistOperatorInLastActiveBD(InSip:string):Boolean; // проверка есть ли оператор в таблице active_session
+      function isExistOperatorInQueue(_sip:Integer):Boolean;        // проверка состояит ли оператор в какой либо очереди
+      function isExistOperator(_sip:Integer):Boolean;               // проверка есть ли оператор
+      function isExistOperatorInLastActiveBD(_sip:Integer):Boolean; // проверка есть ли оператор в таблице active_session
 
 
 
@@ -140,7 +142,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       function GetListOperators_ID(_sip:Integer):Cardinal;              // listOperators.ID
       function GetListOperators_UserID(id:Integer):Integer;             // listOperators.user_id
       function GetListOperators_OperatorName(id:Integer):string;        // listOperators.operator_name
-      function GetListOperators_SipNumber(id:Integer):string;           // listOperators.sip_number
+      function GetListOperators_SipNumber(id:Integer):Integer;           // listOperators.sip_number
       function GetListOperators_Status(id:Integer):enumStatusOperators; // listOperators.status
       function GetListOperators_StatusDelay(id:Integer):enumStatusOperators; // listOperators.status_delay
       function GetListOperators_AccessDashboad(id:Integer):Boolean;     // listOperators.access_dashboard
@@ -152,13 +154,18 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       function GetListOperators_OnHoldStartTime(id:Integer):string;     // listOperators.onHoldStartTime
       function GetListOperators_CountTalk(id:Integer):Integer;          // listOperators.count_talk
       function GetListOperators_CountProcentTalk(id:Integer):string;    // listOperators.count_procent
-      function GetListOperators_TalkTimeAll(id:Integer):Integer;        // listOperators.list_talk_time_all
-      function GetListOperators_TalkTimeAvg(id:Integer):Integer;        // listOperators.list_talk_time_avf
       function GetListOperators_OnlineHide(id:Integer):Boolean;         // listOperators.online.hide
       // методы TStructSIP END
 
+      function IsTalkOperator(_sip:Integer):enumStatus;                  // разговаривает ли сейчас оператор
 
-      function IsTalkOperator(_sip:string):enumStatus;                  // разговаривает ли сейчас оператор
+
+      // ================ property ================
+      property TalkTimeAll[_id:Integer]:Integer read GetListOperators_TalkTimeAll;
+      property TalkTimeAvg[_id:Integer]:Integer read GetListOperators_TalkTimeAvg;
+
+      // ================ property END ================
+
 
       end;
  // class TActiveSIP END
@@ -212,7 +219,7 @@ uses
 
  procedure TStructSIP.Сlear;
  begin
-   Self.sip_number:='';
+   Self.sip_number:=-1;
    Self.count_talk:=0;
    Self.count_procent:=0;
    Self.trunk:='';
@@ -453,7 +460,7 @@ begin
          Active:=True;
 
          for i:=0 to countStatus-1 do begin
-           if getCurrentQueueOperator(VarToStr(Fields[0].Value)) = queue_null then Result.Add(IntToStr(getUserID(StrToInt(VarToStr(Fields[0].Value)))));
+           if GetCurrentQueueOperator(StrToInt(VarToStr(Fields[0].Value))) = queue_null then Result.Add(IntToStr(getUserID(StrToInt(VarToStr(Fields[0].Value)))));
            ado.Next;
          end;
        end;
@@ -673,8 +680,8 @@ end;
    // проверяем вдруг изменолось кол-во звонков
    for i:=0 to Length(listOperators)-1 do begin
 
-      if listOperators[i].sip_number<>'' then begin
-        if (listOperators[i].count_talk<>0) then begin
+      if listOperators[i].sip_number <> -1 then begin
+        if (listOperators[i].count_talk <> 0) then begin
 
           if (listOperators[i].count_talk > listOperators[i].list_talk_time_all.Count) then begin
 
@@ -846,8 +853,8 @@ end;
 
             operatorsGoHomeNow:='';
             for i:=0 to operatorsGoHome.Count-1 do begin
-              if operatorsGoHomeNow='' then operatorsGoHomeNow:=#39+getUserSIP(StrToInt(operatorsGoHome[i]))+#39
-              else operatorsGoHomeNow:=operatorsGoHomeNow+','+#39+getUserSIP(StrToInt(operatorsGoHome[i]))+#39;
+              if operatorsGoHomeNow='' then operatorsGoHomeNow:=#39+IntToStr(GetOperatorSIP(StrToInt(operatorsGoHome[i])))+#39
+              else operatorsGoHomeNow:=operatorsGoHomeNow+','+#39+IntToStr(GetOperatorSIP(StrToInt(operatorsGoHome[i])))+#39;
             end;
 
           try
@@ -938,7 +945,7 @@ end;
              for j:=0 to Length(listOperators)-1 do begin
 
                // проверим есть ли уже такой номер
-               if listOperators[j].sip_number=sipOperators[i] then begin
+               if listOperators[j].sip_number = StrToInt(sipOperators[i]) then begin
                   isSipNoExist:=True;
                   Break;
                end;
@@ -946,8 +953,8 @@ end;
 
               if isSipNoExist = False  then begin
                 for j:=0 to Length(listOperators)-1 do begin
-                  if listOperators[j].sip_number='' then begin
-                    listOperators[j].sip_number:=sipOperators[i];
+                  if listOperators[j].sip_number= -1 then begin
+                    listOperators[j].sip_number:=StrToInt(sipOperators[i]);
                     listOperators[j].operator_name:=GetUserNameOperators(sipOperators[i]);
 
                     // проверим доступ оператора к дашборду
@@ -976,7 +983,7 @@ end;
    if getCountSipOperators=0 then Exit;
 
    for i:=0 to Length(listOperators)-1 do begin
-      if listOperators[i].sip_number<>'' then begin
+      if listOperators[i].sip_number <> -1 then begin
         isUpdateProcent:=False;
 
          // кол-во звонков
@@ -1025,10 +1032,10 @@ end;
 
           if Active then Active:=False;
 
-          if listOperators[i].sip_number<>'' then begin
+          if listOperators[i].sip_number<> -1 then begin
 
               SQL.Clear;
-              SQL.Add('select phone from queue where date_time > '+#39+GetNowDateTime+#39+' and sip = '+#39+listOperators[i].sip_number+#39+' and answered=''1'' and hash is null limit 1');
+              SQL.Add('select phone from queue where date_time > '+#39+GetNowDateTime+#39+' and sip = '+#39+IntToStr(listOperators[i].sip_number)+#39+' and answered=''1'' and hash is null limit 1');
               Active:=True;
 
               if Fields[0].Value = null then listOperators[i].phone:=''
@@ -1070,7 +1077,7 @@ end;
 
        for i:=0 to Length(listOperators)-1 do begin
           if Active then Active:=False;
-          if listOperators[i].sip_number<>'' then begin
+          if listOperators[i].sip_number <> -1 then begin
 
               if listOperators[i].phone = '' then begin
                 listOperators[i].trunk:='';
@@ -1125,11 +1132,11 @@ end;
 
           if Active then Active:=False;
 
-          if listOperators[i].sip_number<>'' then begin
+          if listOperators[i].sip_number <> -1 then begin
             oldQueue:=listOperators[i].queue;
 
             SQL.Clear;
-            SQL.Add('select count(id) from operators_queue where sip = '+#39+listOperators[i].sip_number+#39);
+            SQL.Add('select count(id) from operators_queue where sip = '+#39+IntToStr(listOperators[i].sip_number)+#39);
             Active:=True;
 
             countQueue:=Fields[0].Value;
@@ -1141,7 +1148,7 @@ end;
 
             // найдем все очереди
             SQL.Clear;
-            SQL.Add('select queue from operators_queue where sip = '+#39+listOperators[i].sip_number+#39);
+            SQL.Add('select queue from operators_queue where sip = '+#39+IntToStr(listOperators[i].sip_number)+#39);
             Active:=True;
 
             if Fields[0].Value <> null then begin
@@ -1190,7 +1197,7 @@ var
       if Active then Active:=False;
 
         SQL.Clear;
-        SQL.Add('select status from operators where sip = '+#39+listOperators[i].sip_number+#39);
+        SQL.Add('select status from operators where sip = '+#39+IntToStr(listOperators[i].sip_number)+#39);
         Active:=True;
 
        try
@@ -1252,7 +1259,7 @@ var
       if Active then Active:=False;
 
         SQL.Clear;
-        SQL.Add('select command from remote_commands where sip = '+#39+listOperators[i].sip_number+#39 + ' and delay = ''1'' and error = ''0'' ');
+        SQL.Add('select command from remote_commands where sip = '+#39+IntToStr(listOperators[i].sip_number)+#39 + ' and delay = ''1'' and error = ''0'' ');
         Active:=True;
 
        try
@@ -1313,7 +1320,7 @@ var
         if Active then Active:=False;
 
           SQL.Clear;
-          SQL.Add('select date_time_start from operators_ohhold where date_time_stop is NULL and sip = '+#39+listOperators[i].sip_number+#39);
+          SQL.Add('select date_time_start from operators_ohhold where date_time_stop is NULL and sip = '+#39+IntToStr(listOperators[i].sip_number)+#39);
           Active:=True;
 
          try
@@ -1378,10 +1385,10 @@ var
 
         if Active then Active:=False;
 
-        if listOperators[i].sip_number<>'' then begin
+        if listOperators[i].sip_number <> -1 then begin
 
            SQL.Clear;
-           SQL.Add('select talk_time from queue where date_time > '+#39+GetNowDateTime+#39+' and sip = '+#39+listOperators[i].sip_number+#39+' and answered=''1'' and hash is null limit 1');
+           SQL.Add('select talk_time from queue where date_time > '+#39+GetNowDateTime+#39+' and sip = '+#39+IntToStr(listOperators[i].sip_number)+#39+' and answered=''1'' and hash is null limit 1');
            Active:=True;
 
            try
@@ -1444,7 +1451,7 @@ var
 
         if Active then Active:=False;
 
-        if listOperators[i].sip_number<>'' then begin
+        if listOperators[i].sip_number <> -1 then begin
 
             // нет смысла проверять т.к. его тупо нет в списке
             if not isExistOperatorInLastActiveBD(listOperators[i].sip_number) then Continue;
@@ -1573,8 +1580,8 @@ procedure TActiveSIP.updateTalkTimeAll;
           if operatorsGoHome.Count<>0 then begin
             operatorsGoHomeNow:='';
             for i:=0 to operatorsGoHome.Count-1 do begin
-              if operatorsGoHomeNow='' then operatorsGoHomeNow:=#39+getUserSIP(StrToInt(operatorsGoHome[i]))+#39
-              else operatorsGoHomeNow:=operatorsGoHomeNow+','+#39+getUserSIP(StrToInt(operatorsGoHome[i]))+#39;
+              if operatorsGoHomeNow='' then operatorsGoHomeNow:=#39+IntToStr(GetOperatorSIP(StrToInt(operatorsGoHome[i])))+#39
+              else operatorsGoHomeNow:=operatorsGoHomeNow+','+#39+IntToStr(GetOperatorSIP(StrToInt(operatorsGoHome[i])))+#39;
             end;
 
             with request do begin
@@ -1616,12 +1623,12 @@ procedure TActiveSIP.updateTalkTimeAll;
 
 
 
- function TActiveSIP.isExistOperatorInQueue(InSip:string):Boolean;
+ function TActiveSIP.isExistOperatorInQueue(_sip:Integer):Boolean;
  var
   i:Integer;
  begin
    for i:=0 to countSipOperators-1 do begin
-     if listOperators[i].sip_number = InSip then begin
+     if listOperators[i].sip_number = _sip then begin
         if listOperators[i].queue=queue_null then Result:=False
         else Result:=True;
         Break;
@@ -1637,7 +1644,7 @@ procedure TActiveSIP.updateTalkTimeAll;
    for i:=0 to countSipOperators-1 do begin
      if listOperators[i].access_dashboard then begin
         if listOperators[i].user_id = -1 then begin
-          listOperators[i].user_id:=getUserID(StrToInt(listOperators[i].sip_number));
+          listOperators[i].user_id:=GetOperatorSIP(listOperators[i].sip_number);
         end;
      end;
    end;
@@ -1645,7 +1652,7 @@ procedure TActiveSIP.updateTalkTimeAll;
 
 
 // проверка есть ли оператор в таблице active_session
- function TActiveSIP.isExistOperatorInLastActiveBD(InSip:string):Boolean;
+ function TActiveSIP.isExistOperatorInLastActiveBD(_sip:Integer):Boolean;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -1664,7 +1671,7 @@ begin
       ado.Connection:=serverConnect;
 
       SQL.Clear;
-      SQL.Add('select count(last_active) from active_session where user_id = (select user_id from operators where sip = '+#39+InSip+#39+')' );
+      SQL.Add('select count(last_active) from active_session where user_id = (select user_id from operators where sip = '+#39+IntToStr(_sip)+#39+')' );
       Active:=True;
 
       if Fields[0].Value <> 0 then Result:=True;
@@ -1679,14 +1686,14 @@ begin
 end;
 
 
-function TActiveSIP.isExistOperator(InSip:string):Boolean;
+function TActiveSIP.isExistOperator(_sip:Integer):Boolean;
  var
   i:Integer;
  begin
    Result:=False;
 
    for i:=0 to cGLOBAL_ListSIPOperators -1 do begin
-     if listOperators[i].sip_number = InSip then begin
+     if listOperators[i].sip_number = _sip then begin
         Result:=True;
         Break;
      end;
@@ -1703,7 +1710,7 @@ begin
   if m_mutex.WaitFor(INFINITE) = wrSignaled  then begin
     try
       for i:=0 to countSipOperators - 1 do begin
-        if listOperators[i].sip_number = IntToStr(_sip) then begin
+        if listOperators[i].sip_number = _sip then begin
           Result:=i;
           Break;
         end;
@@ -1736,7 +1743,7 @@ begin
   end;
 end;
 
-function TActiveSIP.GetListOperators_SipNumber(id:Integer):string;
+function TActiveSIP.GetListOperators_SipNumber(id:Integer):Integer;
 begin
   if m_mutex.WaitFor(INFINITE) = wrSignaled  then begin
     try
@@ -1917,7 +1924,7 @@ end;
 
  /////////////////////////////// МЕТОДЫ listOPerators  END ////////////////////////////////
 
-function TActiveSIP.IsTalkOperator(_sip:string):enumStatus;
+function TActiveSIP.IsTalkOperator(_sip:Integer):enumStatus;
 var
  i:Integer;
 begin

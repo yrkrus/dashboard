@@ -32,8 +32,8 @@ type
     lblOperator: TLabel;
     Label11: TLabel;
     lblRegion: TLabel;
-    lblMessage: TLabel;
     SavePicture: TSavePictureDialog;
+    re_Message: TRichEdit;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btnSaveFirebirdSettingsClick(Sender: TObject);
@@ -101,6 +101,9 @@ begin
 
   // заполняем данными
   FillData;
+
+  // фокус на кнопку
+  btnSaveFirebirdSettings.SetFocus;
 end;
 
 procedure TFormStatusSendingSMS.btnSaveFirebirdSettingsClick(Sender: TObject);
@@ -147,7 +150,7 @@ begin
   lblRegion.Caption:='';
   lblFIO.Caption:='';
 
-  lblMessage.Caption:='';
+  re_Message.Clear;
 
   lblCode.Caption:='';
   lblTimeStatus.Caption:='';
@@ -223,7 +226,7 @@ begin
   lblPhone.Caption:=m_smsInfo.Phone;
 
   // сообщение
-  lblMessage.Caption:=m_smsInfo.MessageSMS[m_idStruct];
+  re_Message.Lines.Add(m_smsInfo.MessageSMS[m_idStruct]);
 
   // оператор
   lblOperator.Caption:='в разработке';

@@ -149,6 +149,30 @@ object FormSettingsGlobal_addIVR: TFormSettingsGlobal_addIVR
       Font.Style = [fsBold]
       ParentFont = False
     end
+    object lbl_checkbox_MyTime: TLabel
+      Left = 140
+      Top = 101
+      Width = 67
+      Height = 16
+      Caption = #1089#1074#1086#1077' '#1074#1088#1077#1084#1103
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      OnClick = lbl_checkbox_MyTimeClick
+    end
+    object img_MyTime: TImage
+      Left = 118
+      Top = 102
+      Width = 16
+      Height = 16
+      ParentShowHint = False
+      ShowHint = False
+      Transparent = True
+      OnClick = img_MyTimeClick
+    end
     object edt5000: TEdit
       Left = 308
       Top = 10
@@ -184,21 +208,6 @@ object FormSettingsGlobal_addIVR: TFormSettingsGlobal_addIVR
       Caption = #1089#1077#1082
       Enabled = False
       TabOrder = 3
-    end
-    object chkboxMyTime: TCheckBox
-      Left = 122
-      Top = 101
-      Width = 88
-      Height = 17
-      Caption = #1089#1074#1086#1077' '#1074#1088#1077#1084#1103
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -13
-      Font.Name = 'Tahoma'
-      Font.Style = []
-      ParentFont = False
-      TabOrder = 8
-      OnClick = chkboxMyTimeClick
     end
     object DateQueue: TDateTimePicker
       Left = 214

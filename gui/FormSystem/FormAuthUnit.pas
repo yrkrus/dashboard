@@ -6,7 +6,15 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ComCtrls,
   Vcl.ExtCtrls, Vcl.Grids,Data.Win.ADODB, Data.DB, IdException, Vcl.Imaging.jpeg,TUserUnit,
-  Vcl.WinXCtrls, Vcl.Imaging.pngimage, System.ImageList, Vcl.ImgList,TCustomTypeUnit;
+  Vcl.WinXCtrls, Vcl.Imaging.pngimage, System.ImageList, Vcl.ImgList,TCustomTypeUnit,
+  Vcl.AppEvnts;
+
+ type  // для понимания какая раскладка клавы сейчас активна
+  TCMInputLangChange = record
+    Msg: TMessage;
+    NewLayout: HKL;
+    Result: LRESULT;
+  end;
 
 type
   TFormAuth = class(TForm)
@@ -14,7 +22,6 @@ type
     Пользователь: TLabel;
     Label1: TLabel;
     Image1: TImage;
-    lblVersion: TLabel;
     edtPassword: TEdit;
     comboxUser: TComboBox;
     Button1: TButton;
@@ -25,12 +32,12 @@ type
     ImageLogo: TImage;
     ImgNewYear: TImage;
     lblInfoError: TLabel;
-    lblInfoUpdateService: TLabel;
     lblDEBUG: TLabel;
     ImageListIcon: TImageList;
     lblUserAuth: TLabel;
-    lblChangeUser: TLabel;
-    TimerNotRunUpdate: TTimer;
+    lblRskladka: TLabel;
+    lblCaps: TLabel;
+    img_change: TImage;
     procedure btnCloseClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnAuthClick(Sender: TObject);
@@ -45,13 +52,16 @@ type
     procedure edtPasswordChange(Sender: TObject);
     procedure comboxUserDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
-    procedure lblChangeUserClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure TimerNotRunUpdateTimer(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure img_changeClick(Sender: TObject);
 
 
   private
     { Private declarations }
+
+
    usersListAdminRole:TStringList; // список с пользаками которые имеют админ права
    countErrorAuth:Word; // кол-во попыток ввода пароля
    isAutoUpdateNotRunning:Boolean; // не запушено автоматическое обновление
@@ -63,12 +73,18 @@ type
    procedure LoadIconListBox;    // загрузка иконок в лист бокс для последующего отображения в combobox
 
 
+   procedure CMInputLangChange(var Msg: TCMInputLangChange); message CM_INPUTLANGCHANGE; // активная раскладка клавиатуры
+   procedure WndProc(var Message: TMessage); override;
+   procedure OnCapsToggled;
 
   public
     { Public declarations }
   end;
 
 
+
+//const
+//  WM_INPUTLANGCHANGEREQUEST = $0050;
 
 
 var
@@ -78,10 +94,49 @@ implementation
 
 uses
   FunctionUnit, FormHome, FormWaitUnit, TTranslirtUnit,
-  GlobalVariables, GlobalVariablesLinkDLL, GlobalImageDestination;
+  GlobalVariables, GlobalVariablesLinkDLL, GlobalImageDestination, TLdapUnit;
 
 {$R *.dfm}
 
+function LangIDToName(L: LANGID): string;
+begin
+  case L of
+    $0409: Result := '[EN]';
+    $0419: Result := '[RU]';
+  else
+    Result := Format('[Unknown] $%.4x', [L]);
+  end;
+end;
+
+function IsCapsLockOn: Boolean;
+begin
+  // у VK_CAPITAL низший бит = 1, когда клавиша в положении «включено»
+  Result := (GetKeyState(VK_CAPITAL) and 1) <> 0;
+end;
+
+
+procedure TFormAuth.CMInputLangChange(var Msg: TCMInputLangChange);
+var
+  LangID: Word;
+begin
+  LangID := LoWord(Msg.NewLayout);
+  lblRskladka.Caption := LangIDToName(LangID);
+  Msg.Result := 0;
+end;
+
+procedure TFormAuth.WndProc(var Message: TMessage);
+begin
+  inherited;
+  if Message.Msg = WM_KEYDOWN then
+    if Message.WParam = VK_CAPITAL then
+      OnCapsToggled;
+end;
+
+procedure TFormAuth.OnCapsToggled;
+begin
+  if IsCapsLockOn then lblCaps.Visible:=True
+  else  lblCaps.Visible:=False;
+end;
 
 
 function TFormAuth.GetRoleUser(InIDCombBox:Integer):enumRole;
@@ -135,8 +190,7 @@ end;
 
 procedure TFormAuth.TimerNotRunUpdateTimer(Sender: TObject);
 begin
-   if not lblInfoUpdateService.Visible then lblInfoUpdateService.Visible:=True
-   else lblInfoUpdateService.Visible:=False;
+
 end;
 
 // загрузка иконок в лист бокс для последующего отображения в combobox
@@ -249,6 +303,10 @@ end;
 
 
 procedure TFormAuth.btnAuthClick(Sender: TObject);
+const
+ cAuthLocalErr:string = 'Ошибка авторизации, не верный пароль';
+ cAuthLdapErr:string  = 'Ошибка авторизации, не верный пароль'+#13+'[пароль должен быть от входа на ПК]';
+
 var
  i:Integer;
  current_user:string;
@@ -261,23 +319,22 @@ var
  activeSession:string;
  error:string;
 begin
-
   successEnter:=False;
 
-    begin
-      if comboxUser.ItemIndex = -1 then begin
-        FormSizeWithError('Не выбран пользователь');
-        Exit;
-      end;
-      current_user:=comboxUser.Items[comboxUser.ItemIndex];
-      current_user:=Copy(current_user,2, Length(current_user)); // т.к. в combox заносится пробел+ФИО (для удобной визуализации сделано)
-
-      current_pwd:=edtPassword.Text;
-      if current_pwd = '' then begin
-        FormSizeWithError('Пустой пароль');
-        Exit;
-      end;
+  begin
+    if comboxUser.ItemIndex = -1 then begin
+      FormSizeWithError('Не выбран пользователь');
+      Exit;
     end;
+    current_user:=comboxUser.Items[comboxUser.ItemIndex];
+    current_user:=Copy(current_user,2, Length(current_user)); // т.к. в combox заносится пробел+ФИО (для удобной визуализации сделано)
+
+    current_pwd:=edtPassword.Text;
+    if current_pwd = '' then begin
+      FormSizeWithError('Пустой пароль');
+      Exit;
+    end;
+  end;
 
    Screen.Cursor:=crHourGlass;
 
@@ -289,19 +346,12 @@ begin
 
   // проверим есть ли уже активная сессия
   if not DEBUG then begin
-    if GetExistActiveSession(getUserID(user_name,user_familiya),activeSession) then begin
+    if GetExistActiveSession(GetUserID(user_name,user_familiya),activeSession) then begin
       Screen.Cursor:=crDefault;
       FormSizeWithError('Активна другая сессия '+#13+activeSession);
       Exit;
     end;
   end;
-
-
-  pwd:=getHashPwd(current_pwd);
-  user_pwd:=getUserPwd(getUserID(user_name,user_familiya));
-
-  if user_pwd = pwd then successEnter:=True
-  else successEnter:=False;
 
   // глобальные параретры пользака
    begin
@@ -309,13 +359,14 @@ begin
      with currentUser do begin
       m_name          := user_name;
       m_familiya      := user_familiya;
-      m_id            := getUserID(user_name,user_familiya);
+      m_id            := GetUserID(user_name,user_familiya);
       m_login         := getUserLogin(m_id);
       m_group_role    := StringToEnumRole(getUserRoleSTR(m_id));
       m_re_password   := getUserRePassword(m_id);
       m_ip            := getLocalIP;
       m_pc            := getComputerPCName;
       m_user_login_pc := GetCurrentUserNamePC;
+      m_auth          := GetUserAuth(m_id);
      end;
 
      SharedCurrentUserLogon.UpdateParams(currentUser);
@@ -331,11 +382,24 @@ begin
    end;
 
 
+   // выбор типа авторизации
+  case SharedCurrentUserLogon.Auth of
+    eAuthLocal:begin
+      pwd:=getHashPwd(current_pwd);
+      user_pwd:=getUserPwd(GetUserID(user_name,user_familiya));
+
+      if user_pwd = pwd then successEnter:=True
+      else successEnter:=False;
+    end;
+    eAuthLdap:begin
+     successEnter:=LdapAuth(getUserLogin(SharedCurrentUserLogon.ID),current_pwd);
+    end;
+  end;
 
   if successEnter then begin
     if not DEBUG then begin
       if isAutoUpdateNotRunning then begin
-       MessageBox(HomeForm.Handle,PChar('Служба автоматического обновления не работает'+#13#13+'Обратитесь в отдел ИТ если данное сообщение будет повторяться'),PChar('Информация'),MB_OK+MB_ICONINFORMATION);
+       MessageBox(HomeForm.Handle,PChar('Служба автоматического обновления не запущена'+#13#13+'Обратитесь в отдел ИТ если данное сообщение будет повторяться'),PChar('Информация'),MB_OK+MB_ICONINFORMATION);
       end;
     end;
 
@@ -350,14 +414,18 @@ begin
    LoggingRemote(eLog_auth_error,SharedCurrentUserLogon.ID);
    Screen.Cursor:=crDefault;
 
-   FormSizeWithError('Ошибка авторизации, не верный пароль');
+   // надпись по ошибке
+   case SharedCurrentUserLogon.Auth of
+    eAuthLocal: FormSizeWithError(cAuthLocalErr);
+    eAuthLdap:  FormSizeWithError(cAuthLdapErr);
+   end;
+
    Inc(countErrorAuth);
 
    if countErrorAuth >= 4 then begin
     error:='Превышено максимальное кол-во попыток входа';
     ShowFormErrorMessage(error,SharedMainLog,'THomeForm.TFormAuth');
    end;
-
    Exit;
   end;
 
@@ -549,12 +617,17 @@ end;
 procedure TFormAuth.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   if Assigned(usersListAdminRole) then FreeAndNil(usersListAdminRole);
-  if TimerNotRunUpdate.Enabled then TimerNotRunUpdate.Enabled:=False;
 end;
 
 procedure TFormAuth.FormCreate(Sender: TObject);
 begin
    SetWindowLong(Handle, GWL_EXSTYLE, GetWindowLong(Handle, GWL_EXSTYLE) or WS_EX_APPWINDOW);
+end;
+
+procedure TFormAuth.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+ if Key = VK_CAPITAL then OnCapsToggled;
 end;
 
 procedure TFormAuth.FormShow(Sender: TObject);
@@ -571,7 +644,6 @@ begin
   // проверка запущена ли служба обновления
    if not DEBUG  then begin
      if not GetStatusUpdateService then begin
-       TimerNotRunUpdate.Enabled:=True;
        isAutoUpdateNotRunning:=True;
      end else isAutoUpdateNotRunning:=False;
    end;
@@ -599,15 +671,25 @@ begin
     lblUserAuth.Visible:=True;
     lblUserAuth.Top:=99;
 
-    lblChangeUser.Visible:=True;
+    img_change.Visible:=True;
     //lblChangeUser.Top:=100;
   end;
 
-  // версия
-  lblVersion.Caption:=GetVersion(GUID_VERSION,eGUI);
-
   // пасхалки
   Egg;
+
+  // раскладка клавиатуры
+  lblRskladka.Caption:=LangIDToName(LoWord(GetKeyboardLayout(0)));
+end;
+
+procedure TFormAuth.img_changeClick(Sender: TObject);
+begin
+   edtPassword.Text:='';
+
+  lblUserAuth.Visible:=False;
+  img_change.Visible:=False;
+
+  comboxUser.Visible:=True;
 end;
 
 procedure TFormAuth.img_eay_closeClick(Sender: TObject);
@@ -627,14 +709,6 @@ begin
 end;
 
 
-procedure TFormAuth.lblChangeUserClick(Sender: TObject);
-begin
-  edtPassword.Text:='';
 
-  lblUserAuth.Visible:=False;
-  lblChangeUser.Visible:=False;
-
-  comboxUser.Visible:=True;
-end;
 
 end.

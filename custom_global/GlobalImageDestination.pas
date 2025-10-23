@@ -59,7 +59,13 @@ var
   //исконка вкл\выкл
   ICON_GUI_ON                   :string;
   ICON_GUI_OFF                  :string;
-
+  // иконка auth
+  ICON_GUI_AUTH_LOCAL           :string;
+  ICON_GUI_AUTH_LDAP            :string;
+  // иконка группы доступа
+  ICON_GUI_GROUP                :string;
+  // sip (трубка)
+  ICON_GUI_SIP                  :string;
 
 
 implementation
@@ -92,4 +98,9 @@ initialization
   ICON_SMS_BASE_CHOISE          := FOLDER_ICON_SMS              + 'base_icon.png';
   ICON_GUI_ON                   := FOLDER_ICON_GUI              + 'switch_on.png';
   ICON_GUI_OFF                  := FOLDER_ICON_GUI              + 'switch_off.png';
+  ICON_GUI_AUTH_LOCAL           := FOLDER_ICON_GUI              + 'auth_local.png';
+  ICON_GUI_AUTH_LDAP            := FOLDER_ICON_GUI              + 'auth_ldap.png';
+  ICON_GUI_GROUP                := FOLDER_ICON_GUI              + 'group_access.png';
+  ICON_GUI_SIP                  := FOLDER_ICON_GUI              + 'sip.png';
+
 end.

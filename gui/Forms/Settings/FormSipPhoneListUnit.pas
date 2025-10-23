@@ -20,6 +20,8 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btnDeleteClick(Sender: TObject);
+    procedure list_sipCustomDrawItem(Sender: TCustomListView; Item: TListItem;
+      State: TCustomDrawState; var DefaultDraw: Boolean);
   private
     { Private declarations }
   m_sipList:  TSipPhoneList;
@@ -42,7 +44,7 @@ var
 implementation
 
 uses
-  FormSipPhoneListAddUnit;
+  FormSipPhoneListAddUnit, TCustomTypeUnit, GlobalVariables;
 
 
 {$R *.dfm}
@@ -83,8 +85,15 @@ begin
   if Assigned(SelectedItemPopMenu) then
   begin
     sip:=SelectedItemPopMenu.SubItems[0];
+
     resultatDel:=MessageBox(Handle,PChar('Точно удалить SIP '+sip+'?'),PChar('Уточнение'),MB_YESNO+MB_ICONWARNING);
     if resultatDel=mrNo then Exit;
+
+    // проверим что sip пустой
+    if m_sipList.IsUsed[sip] then begin
+     MessageBox(Handle,PChar('SIP '+sip+' закреплен за оператором'+#13+'Перед удаленем необходимо сначало открепить'),PChar('Ошибка'),MB_OK+MB_ICONSTOP);
+     Exit;
+    end;
 
     if not m_sipList.Delete(sip,error) then MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR)
     else begin
@@ -169,6 +178,32 @@ begin
   ShowData;
 
   Screen.Cursor:=crDefault;
+end;
+
+procedure TFormSipPhoneList.list_sipCustomDrawItem(Sender: TCustomListView;
+  Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
+begin
+   if not Assigned(Item) then Exit;
+
+  try
+    if Item.SubItems.Count = 2 then // Проверяем, что есть достаточно SubItems
+    begin
+
+      if Item.SubItems.Strings[1] = 'свободный' then
+      begin
+        Sender.Canvas.Font.Color := EnumColorStatusToTColor(color_Good);
+        Exit;
+      end;
+
+    end;
+
+   Sender.Canvas.Font.Color := EnumColorStatusToTColor(color_Default);
+  except
+    on E:Exception do
+    begin
+     SharedMainLog.Save('TFormSipPhoneList.list_sipCustomDrawItem. '+e.ClassName+': '+e.Message, IS_ERROR);
+    end;
+  end;
 end;
 
 procedure TFormSipPhoneList.list_sipMouseDown(Sender: TObject;

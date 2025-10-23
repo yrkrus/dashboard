@@ -39,12 +39,12 @@ object FormMyTemplate: TFormMyTemplate
     Top = 40
     Width = 800
     Height = 393
-    ActivePage = sheet_GlobalTemplate
+    ActivePage = sheet_MyTemplate
     Align = alCustom
     Images = ImageList1
-    TabOrder = 2
+    TabOrder = 0
     object sheet_MyTemplate: TTabSheet
-      Caption = #1052#1086#1080' '#1089#1086#1093#1088#1072#1085#1077#1085#1085#1099#1077' '#1096#1072#1073#1083#1086#1085#1099
+      Caption = #1057#1086#1093#1088#1072#1085#1077#1085#1085#1099#1077' '#1096#1072#1073#1083#1086#1085#1099
       object list_MyTemplate: TListView
         Left = 0
         Top = 0
@@ -134,29 +134,6 @@ object FormMyTemplate: TFormMyTemplate
         TabOrder = 1
       end
     end
-  end
-  object editFindMessage: TEdit
-    Left = 581
-    Top = 34
-    Width = 223
-    Height = 24
-    Enabled = False
-    TabOrder = 0
-  end
-  object st_FindMessage: TStaticText
-    Left = 689
-    Top = 38
-    Width = 113
-    Height = 17
-    Caption = #1055#1086#1080#1089#1082' ('#1074' '#1088#1072#1079#1088#1072#1073#1086#1090#1082#1077')'
-    Enabled = False
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 1
   end
   object PopupMenu: TPopupMenu
     Left = 704
@@ -313,7 +290,7 @@ object FormMyTemplate: TFormMyTemplate
     Left = 704
     Top = 152
     Bitmap = {
-      494C0101020054008C0020002000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010102005400900020002000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000800000002000000001002000000000000040
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

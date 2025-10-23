@@ -5,7 +5,7 @@ object FormPhoneList: TFormPhoneList
   BorderStyle = bsSingle
   Caption = #1055#1088#1080#1074#1103#1079#1082#1072' IP '#1090#1077#1083#1077#1092#1086#1085#1086#1074
   ClientHeight = 654
-  ClientWidth = 550
+  ClientWidth = 461
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,9 +18,9 @@ object FormPhoneList: TFormPhoneList
   PixelsPerInch = 96
   TextHeight = 16
   object btnAdd: TBitBtn
-    Left = 7
+    Left = 4
     Top = 604
-    Width = 156
+    Width = 148
     Height = 42
     Caption = '&'#1044#1086#1073#1072#1074#1080#1090#1100
     Font.Charset = RUSSIAN_CHARSET
@@ -103,9 +103,9 @@ object FormPhoneList: TFormPhoneList
     OnClick = btnAddClick
   end
   object btnDelete: TBitBtn
-    Left = 384
+    Left = 308
     Top = 604
-    Width = 156
+    Width = 148
     Height = 42
     Caption = '&'#1059#1076#1072#1083#1080#1090#1100
     Enabled = False
@@ -191,7 +191,7 @@ object FormPhoneList: TFormPhoneList
   object panel_phone: TPanel
     Left = 4
     Top = 7
-    Width = 540
+    Width = 450
     Height = 591
     BevelInner = bvLowered
     ShowCaption = False
@@ -199,7 +199,7 @@ object FormPhoneList: TFormPhoneList
     object list_phone: TListView
       Left = 2
       Top = 2
-      Width = 536
+      Width = 446
       Height = 587
       Align = alClient
       BorderStyle = bsNone
@@ -223,7 +223,7 @@ object FormPhoneList: TFormPhoneList
     object st_NoPhone: TStaticText
       Left = 7
       Top = 311
-      Width = 525
+      Width = 439
       Height = 20
       Alignment = taCenter
       AutoSize = False
@@ -239,9 +239,9 @@ object FormPhoneList: TFormPhoneList
     end
   end
   object btnEdit: TBitBtn
-    Left = 199
+    Left = 155
     Top = 604
-    Width = 156
+    Width = 148
     Height = 42
     Caption = '&'#1056#1077#1076#1072#1082#1090#1080#1088#1086#1074#1072#1090#1100
     Enabled = False

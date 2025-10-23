@@ -4,7 +4,7 @@ object FormPhoneListAdd: TFormPhoneListAdd
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = #1044#1086#1073#1072#1074#1083#1077#1085#1080#1077' '#1085#1086#1074#1086#1075#1086' '#1090#1077#1083#1077#1092#1086#1085#1072
-  ClientHeight = 190
+  ClientHeight = 160
   ClientWidth = 266
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
@@ -20,7 +20,7 @@ object FormPhoneListAdd: TFormPhoneListAdd
   TextHeight = 16
   object btnAdd: TBitBtn
     Left = 50
-    Top = 138
+    Top = 108
     Width = 156
     Height = 42
     Caption = '&'#1044#1086#1073#1072#1074#1080#1090#1100
@@ -190,7 +190,7 @@ object FormPhoneListAdd: TFormPhoneListAdd
   end
   object chkboxCloseForm: TCheckBox
     Left = 10
-    Top = 111
+    Top = 81
     Width = 245
     Height = 17
     Caption = #1079#1072#1082#1088#1099#1090#1100' '#1086#1082#1085#1086' '#1087#1086#1089#1083#1077' '#1076#1086#1073#1072#1074#1083#1077#1085#1080#1103
@@ -200,7 +200,7 @@ object FormPhoneListAdd: TFormPhoneListAdd
     Left = 5
     Top = 4
     Width = 252
-    Height = 102
+    Height = 71
     BevelInner = bvLowered
     TabOrder = 0
     object Label1: TLabel
@@ -229,32 +229,12 @@ object FormPhoneListAdd: TFormPhoneListAdd
       Font.Style = [fsBold]
       ParentFont = False
     end
-    object Label3: TLabel
-      Left = 57
-      Top = 72
-      Width = 35
-      Height = 16
-      Caption = 'IP '#1055#1050
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -13
-      Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
     object edtNamePC: TEdit
       Left = 101
       Top = 9
       Width = 145
       Height = 24
       TabOrder = 0
-    end
-    object edtPCIP: TEdit
-      Left = 101
-      Top = 69
-      Width = 145
-      Height = 24
-      TabOrder = 2
     end
     object edtPhoneIP: TEdit
       Left = 101

@@ -47,9 +47,8 @@ object FormSipPhoneList: TFormSipPhoneList
       ParentFont = False
       TabOrder = 0
       ViewStyle = vsReport
+      OnCustomDrawItem = list_sipCustomDrawItem
       OnMouseDown = list_sipMouseDown
-      ExplicitWidth = 1057
-      ExplicitHeight = 255
     end
     object st_NoSip: TStaticText
       Left = 4

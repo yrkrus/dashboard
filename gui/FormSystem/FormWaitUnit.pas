@@ -41,7 +41,7 @@ begin
   if not indicator.Animate then indicator.Animate:=True;
 
   SetRandomFontColor(Label1);
-  Application.ProcessMessages;
+  //Application.ProcessMessages;
 end;
 
 end.

@@ -13,10 +13,8 @@ type
     btnEdit: TBitBtn;
     Label1: TLabel;
     Label2: TLabel;
-    Label3: TLabel;
     edtNamePC: TEdit;
     edtPhoneIP: TEdit;
-    edtPCIP: TEdit;
     chkboxCloseForm: TCheckBox;
     panel: TPanel;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -57,7 +55,7 @@ uses
 procedure TFormPhoneListAdd.LoadFormCaption(_is_edit:Boolean);
 const
  cButtonLeft:Word = 50;
- cButtonTop:Word = 138;
+ cButtonTop:Word = 108;
 begin
   case _is_edit of
     false: begin   // добавление нового номера
@@ -109,11 +107,6 @@ begin
      Exit;
    end;
 
-   if edtPCIP.Text='' then begin
-     _errorDescription:='ОШИБКА! Не заполнено поле "IP ПК"';
-     Exit;
-   end;
-
    Result:=True;
 end;
 
@@ -125,9 +118,8 @@ begin
 
   namePC:=edtNamePC.Text;
   IPPhone:=edtPhoneIP.Text;
-  IPpc:=edtPCIP.Text;
 
-  if not m_phoneList.Insert(namePC,IPPhone,IPpc,_errorDescription) then Exit;
+  if not m_phoneList.Insert(namePC,IPPhone,_errorDescription) then Exit;
 
   Result:=True;
 end;
@@ -140,9 +132,8 @@ begin
 
   namePC:=edtNamePC.Text;
   IPPhone:=edtPhoneIP.Text;
-  IPpc:=edtPCIP.Text;
 
-  if not m_phoneList.Update(m_id_edit, namePC,IPPhone,IPpc,_errorDescription) then Exit;
+  if not m_phoneList.Update(m_id_edit, namePC,IPPhone,_errorDescription) then Exit;
 
   Result:=True;
 end;
@@ -195,7 +186,6 @@ procedure TFormPhoneListAdd.Clear;
 begin
   edtNamePC.Text:='';
   edtPhoneIP.Text:='';
-  edtPCIP.Text:='';
 
   chkboxCloseForm.Checked:=False;
   chkboxCloseForm.Enabled:=True;
@@ -219,7 +209,6 @@ begin
   if is_edit then begin
     edtNamePC.Text:=m_phoneList.ItemsData[m_id_edit].m_namePC;
     edtPhoneIP.Text:=m_phoneList.ItemsData[m_id_edit].m_phoneIP;
-    edtPCIP.Text:=m_phoneList.ItemsData[m_id_edit].m_pcIP;
   end;
 
 end;

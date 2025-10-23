@@ -17,6 +17,31 @@ uses  System.Classes, Data.Win.ADODB, Data.DB,System.SysUtils,
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
+  // class TUserCommonQueue
+  type
+    TUserCommonQueue = class // какие очереди может видеть пользователь
+    private
+    m_userID  :Integer;
+    m_count   :Integer;
+    m_list    :TList<enumQueue>;
+
+    function GetQueue:string;
+    function IsExist(_queue:enumQueue):Boolean;
+
+    procedure LoadData;
+
+    public
+    constructor Create(_userID:Integer);                     overload;
+
+    property Count:Integer read m_count;
+    property ActiveQueueSTR:string read GetQueue;
+    property IsExistQueue[_queue:enumQueue]:Boolean read IsExist; default;
+
+    end;
+   // class TUserCommonQueue END
+
+
+
    // class TUserData
   type
       TUserData = class
@@ -57,13 +82,14 @@ uses  System.Classes, Data.Win.ADODB, Data.DB,System.SysUtils,
       m_externalAccessEXE                     : TDictionary<enumExternalAccessEXE, Boolean>;  // подобие std::map c++
       m_disabled                              : Boolean;   // статус (отключенный или нет)
       m_lastActive                            : TDateTime;  // время когда был активен последний раз
-
+      m_commonQueue                           : TUserCommonQueue;  // какие очереди пользователь может видеть\учавствовать
 
       procedure _Init;                                     // инициализация
 
       function GetID                          :Integer;    // получить текущий id
       function GetName                        :string;     // получить текущий Name
       function GetFamiliya                    :string;     // получить текущий familiya
+      function GetLogin                       :string;     // получить текущий m_login
       function GetIP                          :string;     // получить текущий ip
       function GetUserLoginPC                 :string;     // получить текущий user_login_pc
       function GetPC                          :string;     // получить текущий pc
@@ -74,16 +100,20 @@ uses  System.Classes, Data.Win.ADODB, Data.DB,System.SysUtils,
       function GetIsAccessReports             :Boolean;    // текущий пользователь есть доступ к отчетам
       function GetIsAccessSMS                 :Boolean;    // текущий пользователь есть доступ к sms рассылке
       function GetIsAccessService             :Boolean;    // текущий пользователь есть доступ услугам
+      function GetIsAccessCalls               :Boolean;    // текущий пользователь есть доступ звонкам
       function GetAccess(Menu:enumAccessList):enumAccessStatus; // получение данных о том какие параметры могут быть открыты на доступе у пользователя
       function GetRoleIsOperator(InRole:enumRole)     :Boolean;   // проверка роль пользователя это операторская роль
       function GetAccessLocalChat(InUserID:integer)   :Boolean;   // проверка есть ли доступ к локальному чату
       function GetAccessReports(InUserID:integer)     :Boolean;   // проверка есть ли доступ к отчетам
       function GetAccessSMS(InUserID:integer)         :Boolean;   // проверка есть ли доступ к SMS рассылке
       function GetAccessService                       :Boolean;   // проверка есть ли доступ к услугам
+      function GetAccessCalls(InUserID:integer)       :Boolean;   // проверка есть ли доступ к зовнкам
       function GetRole                        :enumRole;
-
       function AccountStatus(_userId:Integer):Boolean;   // статус аккаунта (отключенный или нет)
       function LastActiveAccount(_userId:Integer):TDateTime; // время когда последний раз заходил в программу
+      function GetCommonQueue:string;                           //какие очереди доступны для просмотра\взаиможействия
+      function GetExistQueue(_queue:enumQueue):Boolean;   // входит ли пользак в очередь
+      function GetExternalAccess(_access:enumExternalAccessEXE):Boolean;   // какие доступы есть к внешним программам
 
       public
 
@@ -99,6 +129,7 @@ uses  System.Classes, Data.Win.ADODB, Data.DB,System.SysUtils,
       property ID:Integer read GetID;
       property Name:string read GetName;
       property Familiya:string read GetFamiliya;
+      property Login:string read GetLogin;
       property IP:string read GetIP;
       property UserLoginPC:string read GetUserLoginPC;
       property PC:string read GetPC;
@@ -109,8 +140,14 @@ uses  System.Classes, Data.Win.ADODB, Data.DB,System.SysUtils,
       property IsAccessReports:Boolean read GetIsAccessReports;
       property IsAccessSMS:Boolean read GetIsAccessSMS;
       property IsAccessService:Boolean read GetIsAccessService;
+      property IsAccessCalls:Boolean read GetIsAccessCalls;
       property Access[_menu:enumAccessList]:enumAccessStatus read GetAccess; default;
       property Role:enumRole read GetRole;
+      property IsNotActiveAccount:Boolean read m_disabled;
+      property LastActive:TDateTime read m_lastActive;
+      property CommonQueueSTR:string read GetCommonQueue;
+      property Queue[_queue:enumQueue]:Boolean read GetExistQueue;
+      property ExternalAccess[_access:enumExternalAccessEXE]:Boolean read GetExternalAccess;
 
       end;
  // class TUser END
@@ -121,6 +158,121 @@ implementation
 
 uses
   FunctionUnit, GlobalVariables, GlobalVariablesLinkDLL;
+
+// class TUserCommonQueue START
+constructor TUserCommonQueue.Create(_userID:Integer);
+begin
+  m_count:=0;
+  m_list:=TList<enumQueue>.Create;
+  m_userID:=_userID;
+
+  LoadData;
+end;
+
+
+// прогрузка данных
+procedure TUserCommonQueue.LoadData;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ countQueue:Integer;
+ request:TStringBuilder;
+ i:Integer;
+begin
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+
+      request:=TStringBuilder.Create;
+      with request do begin
+        Clear;
+        Append('select count(id)');
+        Append(' from users_common_queue where user_id = '+#39+IntToStr(m_userID)+#39);
+      end;
+
+      SQL.Add(request.ToString);
+      Active:=True;
+
+      if Fields[0].Value = null then Exit;
+
+      countQueue:=StrToInt(VarToStr(Fields[0].Value));
+      if countQueue = 0 then Exit;
+
+      with request do begin
+        Clear;
+        Append('select queue');
+        Append(' from users_common_queue where user_id = '+#39+IntToStr(m_userID)+#39);
+      end;
+
+      SQL.Clear;
+      SQl.Add(request.ToString);
+      Active:=True;
+
+      // выделям память
+      m_count:=countQueue;
+
+      for i:=0 to countQueue-1 do begin
+        m_list.Add(StringToEnumQueue(VarToStr(Fields[0].Value)));
+        ado.Next;
+      end;
+
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+      FreeAndNil(request);
+    end;
+  end;
+end;
+
+
+function TUserCommonQueue.GetQueue:string;
+var
+ i:Integer;
+ str:string;
+begin
+  str:='';
+  Result:='---';
+
+  if m_count = 0 then Exit;
+
+  for i:=0 to m_count-1 do begin
+    if str='' then str:=EnumQueueToString(m_list[i])
+    else str:=str+','+EnumQueueToString(m_list[i]);
+  end;
+
+  Result:=str;
+end;
+
+
+function TUserCommonQueue.IsExist(_queue:enumQueue):Boolean;
+var
+ i:Integer;
+begin
+  Result:=False;
+
+  for i:=0 to m_count-1 do begin
+    if m_list[i] = _queue then begin
+      Result:=True;
+      Exit;
+    end;
+  end;
+end;
+
+
+// class TUserCommonQueue END
+
 
 
 // class TUserList START
@@ -175,8 +327,8 @@ begin
       request:=TStringBuilder.Create;
       with request do begin
         Clear;
-        Append('select name,familiya,login,ldap_auth ');
-        Append('from users where id = '+#39+IntToStr(_userId)+#39);
+        Append('select name,familiya,login');
+        Append(' from users where id = '+#39+IntToStr(_userId)+#39);
       end;
 
 
@@ -190,7 +342,7 @@ begin
       Self.m_group_role          := StringToEnumRole(getUserRoleSTR(_userId));
       Self.m_login               := VarToStr(Fields[2].Value);
       Self.m_re_password         := GetUserRePassword(_userId);
-      Self.m_auth                := IntegerToEnumAuth(StrToInt(VarToStr(Fields[3].Value)));
+      Self.m_auth                := GetUserAuth(_userId);
 
     end;
   finally
@@ -219,7 +371,6 @@ begin
   m_user_login_pc    := _userData.m_user_login_pc;
   m_auth             := _userData.m_auth;
 end;
-
 
 // class TUserData END
 
@@ -262,17 +413,21 @@ begin
   // проверка есть ли досутп к услугам
   m_externalAccessEXE[eExternalAccessService]:=GetAccessService;
 
+   // проверка есть ли досутп к звонкам
+  m_externalAccessEXE[eExternalAccessCalls]:=GetAccessCalls(m_params.m_id);
+
   // время когда последний раз заходил в программу
   m_lastActive:=LastActiveAccount(m_params.m_id);
 
+  // очереди в которых учавствует пользоватлеь
+  m_commonQueue:=TUserCommonQueue.Create(m_params.m_id);
 end;
-
-
 
 
 destructor TUser.Destroy;
 begin
   // Сначала рутинговые (зависимые) объекты
+  FreeAndNil(m_commonQueue);
   FreeAndNil(m_externalAccessEXE);
   FreeAndNil(m_access);
   FreeAndNil(m_params);
@@ -293,9 +448,9 @@ begin
   end;
 
   m_disabled:=False;
-
   m_lastActive:=0;
 end;
+
 
 
 // статус аккаунта (отключенный или нет)
@@ -396,8 +551,26 @@ begin
   end;
 end;
 
+//какие очереди доступны для просмотра\взаиможействия
+function TUser.GetCommonQueue:string;
+begin
+  Result:=m_commonQueue.ActiveQueueSTR;
+end;
 
- // проверка роль пользователя это операторская роль
+// входит ли пользак в очередь
+function TUser.GetExistQueue(_queue:enumQueue):Boolean;
+begin
+  Result:=m_commonQueue.IsExistQueue[_queue];
+end;
+
+// какие доступы есть к внешним программам
+function TUser.GetExternalAccess(_access:enumExternalAccessEXE):Boolean;
+begin
+  Result:=m_externalAccessEXE[_access];
+end;
+
+
+// проверка роль пользователя это операторская роль
 function TUser.GetRoleIsOperator(InRole:enumRole):Boolean;
 var
  ado:TADOQuery;
@@ -432,7 +605,7 @@ begin
 end;
 
 
- // проверка есть ли доступ к локальному чату
+// проверка есть ли доступ к локальному чату
  function TUser.GetAccessLocalChat(InUserID:integer):Boolean;
 var
  ado:TADOQuery;
@@ -489,6 +662,43 @@ begin
       ado.Connection:=serverConnect;
       SQL.Clear;
       SQL.Add('select reports from users where id = '+#39+IntToStr(InUserId)+#39);
+
+      Active:=True;
+
+      if Fields[0].Value<>null then begin
+        if StrToInt(VarToStr(Fields[0].Value)) = 1 then Result:=True;
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+
+ // проверка есть ли доступ к звонкам
+ function TUser.GetAccessCalls(InUserID:integer):Boolean;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+   Result:=False;
+
+   ado:=TADOQuery.Create(nil);
+   serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select calls from users where id = '+#39+IntToStr(InUserId)+#39);
 
       Active:=True;
 
@@ -583,6 +793,12 @@ end;
 
    // проверка есть ли досутп к услугам
    m_externalAccessEXE[eExternalAccessService]:=GetAccessService;
+
+   // проверка есть ли досутп к звонкам
+   m_externalAccessEXE[eExternalAccessCalls]:=GetAccessCalls(InParams.m_id);
+
+   // очереди в котрых учавствет пользователь
+   m_commonQueue:=TUserCommonQueue.Create(InParams.m_id);
  end;
 
  function TUser.GetID:Integer;
@@ -598,6 +814,11 @@ end;
  function TUser.GetFamiliya:string;
  begin
   Result:=m_params.m_familiya;
+ end;
+
+ function TUser.GetLogin:string;
+ begin
+  Result:=m_params.m_login;
  end;
 
  function TUser.GetIP:string;
@@ -652,7 +873,12 @@ end;
 
 function TUser.GetIsAccessService:Boolean;
  begin
-  Result:=m_externalAccessEXE[eExternalAccessService];;
+  Result:=m_externalAccessEXE[eExternalAccessService];
+ end;
+
+function TUser.GetIsAccessCalls :Boolean;
+ begin
+  Result:=m_externalAccessEXE[eExternalAccessCalls];
  end;
 
 

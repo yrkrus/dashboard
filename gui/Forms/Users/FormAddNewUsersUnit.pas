@@ -5,93 +5,291 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Data.Win.ADODB, Data.DB, IdException,
-  Vcl.Buttons, TCustomTypeUnit, Vcl.ExtCtrls;
+  Vcl.Buttons, TCustomTypeUnit, Vcl.ExtCtrls, System.ImageList, Vcl.ImgList, Vcl.Imaging.pngimage,
+  Vcl.CheckLst, TCheckBoxUIUnit, TSipPhoneListUnit, System.Generics.Collections, TUserUnit;
+
+ type
+  enumAction = (action_add,action_edit);
 
 type
   TFormAddNewUsers = class(TForm)
-    Label6: TLabel;
-    comboxUserGroup: TComboBox;
-    lblPwd_show: TLabel;
-    edtPwdNew: TEdit;
-    lblInfoNewPwd: TLabel;
-    chkboxmyPwd: TCheckBox;
-    lblPwd2_show: TLabel;
-    edtPwd2New: TEdit;
-    lblLogin: TLabel;
-    edtNewLogin: TEdit;
     btnAddNewUser: TBitBtn;
-    chkboxAllowLocalChat: TCheckBox;
-    PanelOperators: TPanel;
-    lblOperatorSetting_SIP_show: TLabel;
-    edtOperatorSetting_SIP_show: TEdit;
-    lblOperatorSetting_Tel_show: TLabel;
-    edtOperatorSetting_Tel_show: TEdit;
-    chkboxZoiper: TCheckBox;
-    chkboxAllowReports: TCheckBox;
-    chkboxAllowSMS: TCheckBox;
     GroupBox1: TGroupBox;
     Label8: TLabel;
     edtNewFamiliya: TEdit;
     Label1: TLabel;
     edtNewName: TEdit;
     Label2: TLabel;
-    ComboBox1: TComboBox;
+    combox_Auth: TComboBox;
+    lblLogin: TLabel;
+    edtLogin: TEdit;
+    lblLdapInfo: TLabel;
+    group_localPassword: TGroupBox;
+    lblInfoNewPwd: TLabel;
+    Label4: TLabel;
+    edtPwdNew: TEdit;
+    edtPwd2New: TEdit;
+    st_edtPwd: TStaticText;
+    st_edtPwd2: TStaticText;
+    lblLdapInfoPassword: TLabel;
+    Label5: TLabel;
+    lblPassInfo: TLabel;
+    lbl_checkbox_NewPassword: TLabel;
+    img_NewPassword: TImage;
     GroupBox2: TGroupBox;
-    Label3: TLabel;
-    Edit1: TEdit;
-    chkboxManualLogin: TCheckBox;
-    procedure chkboxmyPwdClick(Sender: TObject);
+    img_CommonQueue5000: TImage;
+    lbl_checkbox_CommonQueue5000: TLabel;
+    img_CommonQueue5050: TImage;
+    lbl_checkbox_CommonQueue5050: TLabel;
+    img_CommonQueue5911: TImage;
+    lbl_checkbox_CommonQueue5911: TLabel;
+    Label6: TLabel;
+    combox_AccessGroups: TComboBox;
+    GroupBox3: TGroupBox;
+    img_ExternalReport: TImage;
+    lbl_checkbox_ExternalReport: TLabel;
+    img_ExternalChat: TImage;
+    lbl_checkbox_ExternalChat: TLabel;
+    img_ExternalSms: TImage;
+    lbl_checkbox_ExternalSms: TLabel;
+    img_ExternalCalls: TImage;
+    lbl_checkbox_ExternalCalls: TLabel;
+    Label12: TLabel;
+    lblSip: TLabel;
+    combox_Sip: TComboBox;
+    lblNoSip: TLabel;
+    lblLoginInfo: TLabel;
+    lblSwapSip: TLabel;
+    btnEdit: TBitBtn;
     procedure comboxUserGroupChange(Sender: TObject);
     procedure btnAddNewUserClick(Sender: TObject);
     procedure chkboxZoiperClick(Sender: TObject);
     procedure edtNewFamiliyaChange(Sender: TObject);
-    procedure chkboxManualLoginClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure edtNewLoginChange(Sender: TObject);
     procedure edtOperatorSetting_SIP_showChange(Sender: TObject);
+    procedure combox_AuthDrawItem(Control: TWinControl; Index: Integer;
+      Rect: TRect; State: TOwnerDrawState);
+    procedure combox_AuthChange(Sender: TObject);
+    procedure combox_AccessGroupsDrawItem(Control: TWinControl; Index: Integer;
+      Rect: TRect; State: TOwnerDrawState);
+    procedure lbl_checkbox_NewPasswordClick(Sender: TObject);
+    procedure img_NewPasswordClick(Sender: TObject);
+    procedure edtPwdNewClick(Sender: TObject);
+    procedure edtPwd2NewClick(Sender: TObject);
+    procedure lbl_checkbox_CommonQueue5000Click(Sender: TObject);
+    procedure img_CommonQueue5000Click(Sender: TObject);
+    procedure img_CommonQueue5050Click(Sender: TObject);
+    procedure lbl_checkbox_CommonQueue5050Click(Sender: TObject);
+    procedure img_CommonQueue5911Click(Sender: TObject);
+    procedure lbl_checkbox_CommonQueue5911Click(Sender: TObject);
+    procedure img_ExternalReportClick(Sender: TObject);
+    procedure lbl_checkbox_ExternalReportClick(Sender: TObject);
+    procedure img_ExternalChatClick(Sender: TObject);
+    procedure lbl_checkbox_ExternalChatClick(Sender: TObject);
+    procedure img_ExternalSmsClick(Sender: TObject);
+    procedure lbl_checkbox_ExternalSmsClick(Sender: TObject);
+    procedure img_ExternalCallsClick(Sender: TObject);
+    procedure lbl_checkbox_ExternalCallsClick(Sender: TObject);
+    procedure combox_AccessGroupsChange(Sender: TObject);
+    procedure combox_SipDrawItem(Control: TWinControl; Index: Integer;
+      Rect: TRect; State: TOwnerDrawState);
+    procedure ButtonAction(Sender: TObject);
   private
     { Private declarations }
-  userEditFields_login:Boolean;       // пользователь отредактировал поле login, надо проверить
-  userEditFields_loginDefault:string; // значение которое было изначально в поле логин
-  UserEditFileds_sip:Boolean;         // пользователь отредактировал поле sip, надо проверить
-  UserEditFields_sipDefault:string;   // значение которое было изначально в поле логин
+  m_checkBoxUI              :TCheckBoxUI;   // красивенькие чек боксы
+  m_imagelistAuth           :TImageList;
+  m_imagelistGroupAccess    :TImageList;
+  m_imagelistSip            :TImageList;
+  m_sipList                 :TSipPhoneList;
+
+  m_IsEditUser              :Boolean;
+  m_editUserId              :Integer;       // default = 0
+  m_editUser                :TUser;
+
+  procedure InitForm;     // инициализация формы
+  procedure CloseClear;   //очистка после закрытия
 
   function GetCheckEditNewOperator(InUserID:Integer):Boolean;
 
-  public
-   currentEditUsers:Boolean;
-   currentEditUsersID:UInt32;
+
+  procedure LoadIconListAuth;         // прогрузка иконок
+  procedure LoadIconListAccessGroup;  // прогрузка иконок
+  procedure LoadIconListSip;          // прогрузка иконок
+
+  procedure Loading;
+  procedure LoadingEditUser;          // прогрузка данных по редактируемому пользователю
+  procedure InitComboxAuth;
+  procedure InitDefaultPasswordNewUser;
+  procedure InitCheckboxUI;
+  procedure InitComboxAccessGroup;
+  procedure InitComboxSip;
+
+  procedure ChangeChoisAuth;  // выбор типа авторизации
+  procedure ChangeFamiliya;   // изменение фамилии
+
+  procedure ShowAccessGroup(_role:enumRole);  // отображение групп доступа
+
+  procedure ChangeChoisNewPassword; // выбор смены пароля
+  procedure ChangeChoisAccessGroup; // выбор групп доступа
+
+  function CheckFields(var _errorDescription:string):Boolean; // проверка полей
+  function CheckLogin(_login:string):Boolean;  // существует ли login пользвоателчя
+
+  function ExecuteResponce(_action:enumAction; var _errorDescription:string):Boolean;
+
+  public   { Public declarations }
+
+  property IsEdit:Boolean read m_IsEditUser write m_IsEditUser;   // редактируется запись пользователя
+  property IsEditID:Integer write m_editUserId;                   // user_id записи редактируемой
 
 
-
-    { Public declarations }
-
-  // isUserEdit:Boolean;           // редактируется пользователь true - редактируется
   end;
 
 var
   FormAddNewUsers: TFormAddNewUsers;
 
-
-
-
 const
  cDefaultUserPass:string = '1';
-
- type                                    // тип запроса
-   TAction_User = (user_add,
-                   user_update
-                    );
 
 
 implementation
 
 uses
-  FunctionUnit, FormUsersUnit, GlobalVariables, GlobalVariablesLinkDLL;
+  FunctionUnit, FormUsersUnit, GlobalVariables, GlobalVariablesLinkDLL, GlobalImageDestination, TLdapUnit;
 
 {$R *.dfm}
 
+
+// прогрузка иконок
+procedure TFormAddNewUsers.LoadIconListAuth;
+const
+ SIZE_ICON:Word=16;
+var
+ i:Integer;
+ pngbmpLocal,pngbmpLdap: TPngImage;
+ bmpLocal,bmpLdap: TBitmap;
+begin
+  if not FileExists(ICON_GUI_AUTH_LOCAL) then Exit;
+  if not FileExists(ICON_GUI_AUTH_LDAP) then Exit;
+  if not Assigned(m_imagelistAuth) then m_imagelistAuth:=TImageList.Create(nil);
+
+  m_imagelistAuth.SetSize(SIZE_ICON,SIZE_ICON);
+  m_imagelistAuth.ColorDepth:=cd32bit;
+
+  begin
+   // LOCAL
+   pngbmpLocal:=TPngImage.Create;
+   bmpLocal:=TBitmap.Create;
+
+   pngbmpLocal.LoadFromFile(ICON_GUI_AUTH_LOCAL);
+
+    // сжимаем иконку до размера 16х16
+    with bmpLocal do begin
+     Height:=SIZE_ICON;
+     Width:=SIZE_ICON;
+     Canvas.StretchDraw(Rect(0, 0, Width, Height), pngbmpLocal);
+    end;
+
+   // LDAP
+   pngbmpLdap:=TPngImage.Create;
+   bmpLdap:=TBitmap.Create;
+
+   pngbmpLdap.LoadFromFile(ICON_GUI_AUTH_LDAP);
+
+    // сжимаем иконку до размера 16х16
+    with bmpLdap do begin
+     Height:=SIZE_ICON;
+     Width:=SIZE_ICON;
+     Canvas.StretchDraw(Rect(0, 0, Width, Height), pngbmpLdap);
+    end;
+
+  end;
+
+  m_imagelistAuth.Add(bmpLocal, nil);    // index = 0
+  m_imagelistAuth.Add(bmpLdap, nil);     // index = 1
+
+
+  if pngbmpLocal<>nil then pngbmpLocal.Free;
+  if bmpLocal<>nil then bmpLocal.Free;
+  if pngbmpLdap<>nil then pngbmpLdap.Free;
+  if bmpLdap<>nil then bmpLdap.Free;
+end;
+
+
+procedure TFormAddNewUsers.LoadIconListAccessGroup;
+const
+ SIZE_ICON:Word=16;
+var
+ i:Integer;
+ pngbmpLocal: TPngImage;
+ bmpLocal: TBitmap;
+begin
+  if not FileExists(ICON_GUI_GROUP) then Exit;
+  if not Assigned(m_imagelistGroupAccess) then m_imagelistGroupAccess:=TImageList.Create(nil);
+
+  m_imagelistGroupAccess.SetSize(SIZE_ICON,SIZE_ICON);
+  m_imagelistGroupAccess.ColorDepth:=cd32bit;
+
+  begin
+   // LOCAL
+   pngbmpLocal:=TPngImage.Create;
+   bmpLocal:=TBitmap.Create;
+
+   pngbmpLocal.LoadFromFile(ICON_GUI_GROUP);
+
+    // сжимаем иконку до размера 16х16
+    with bmpLocal do begin
+     Height:=SIZE_ICON;
+     Width:=SIZE_ICON;
+     Canvas.StretchDraw(Rect(0, 0, Width, Height), pngbmpLocal);
+    end;
+  end;
+
+  m_imagelistGroupAccess.Add(bmpLocal, nil);    // index = 0
+
+
+  if pngbmpLocal<>nil then pngbmpLocal.Free;
+  if bmpLocal<>nil then bmpLocal.Free;
+end;
+
+ // прогрузка иконок
+procedure TFormAddNewUsers.LoadIconListSip;
+const
+ SIZE_ICON:Word=16;
+var
+ i:Integer;
+ pngbmpLocal: TPngImage;
+ bmpLocal: TBitmap;
+begin
+  if not FileExists(ICON_GUI_SIP) then Exit;
+  if not Assigned(m_imagelistSip) then m_imagelistSip:=TImageList.Create(nil);
+
+  m_imagelistSip.SetSize(SIZE_ICON,SIZE_ICON);
+  m_imagelistSip.ColorDepth:=cd32bit;
+
+  begin
+   // LOCAL
+   pngbmpLocal:=TPngImage.Create;
+   bmpLocal:=TBitmap.Create;
+
+   pngbmpLocal.LoadFromFile(ICON_GUI_SIP);
+
+    // сжимаем иконку до размера 16х16
+    with bmpLocal do begin
+     Height:=SIZE_ICON;
+     Width:=SIZE_ICON;
+     Canvas.StretchDraw(Rect(0, 0, Width, Height), pngbmpLocal);
+    end;
+  end;
+
+  m_imagelistSip.Add(bmpLocal, nil);    // index = 0
+
+
+  if pngbmpLocal<>nil then pngbmpLocal.Free;
+  if bmpLocal<>nil then bmpLocal.Free;
+end;
 
 
 // сравнение строк
@@ -116,6 +314,88 @@ begin
   Result := ChangesCount > (LengthToCompare div 2);
 end;
 
+// инициализация формы
+procedure TFormAddNewUsers.InitForm;
+const
+ cButtonTop:Word = 225;
+begin
+  case m_IsEditUser of
+    false:begin   // добавление нового пользователя
+      btnAddNewUser.Top:=cButtonTop;
+      btnAddNewUser.Visible:=True;
+
+      Caption:='Добавление нового пользователя';
+
+      btnEdit.Visible:=False;
+    end;
+    True:begin   // редактирование пользователя
+     btnEdit.Top:=cButtonTop;
+     btnEdit.Visible:=True;
+
+     Caption:='Редактирование ['+GetUserNameFIO(m_editUserId)+']';
+     btnAddNewUser.Visible:=False;
+
+     // достаем данные по пользователю
+     m_editUser:=TUser.Create(m_editUserId);
+    end;
+  end;
+end;
+
+
+//очистка после закрытия
+procedure TFormAddNewUsers.CloseClear;
+begin
+ // левая сторона
+ begin
+   combox_Auth.ItemIndex:=-1;
+
+   lblPassInfo.Visible:=True;
+
+   edtNewFamiliya.Text:='';
+   edtNewName.Text:='';
+
+   edtLogin.Text:='';
+   edtLogin.ShowHint:=False;
+   edtLogin.Visible:=False;
+   lblLogin.Enabled:=True;
+   lblLoginInfo.Visible:=True;
+
+   lblLdapInfoPassword.Visible:=False;
+   lblLdapInfo.Visible:=False;
+   group_localPassword.Visible:=False;
+   m_checkBoxUI.ChangeStatusCheckBox('NewPassword', paramStatus_DISABLED);
+ end;
+
+ // правая сторона
+ begin
+  // видимые группы
+  m_checkBoxUI.ChangeStatusCheckBox('CommonQueue5000', paramStatus_DISABLED);
+  m_checkBoxUI.ChangeStatusCheckBox('CommonQueue5050', paramStatus_DISABLED);
+  m_checkBoxUI.ChangeStatusCheckBox('CommonQueue5911', paramStatus_DISABLED);
+
+  // модули
+  m_checkBoxUI.ChangeStatusCheckBox('ExternalReport', paramStatus_DISABLED);
+  m_checkBoxUI.ChangeStatusCheckBox('ExternalChat', paramStatus_DISABLED);
+  m_checkBoxUI.ChangeStatusCheckBox('ExternalSms', paramStatus_DISABLED);
+  m_checkBoxUI.ChangeStatusCheckBox('ExternalCalls', paramStatus_DISABLED);
+
+  // группа доступа
+  combox_AccessGroups.ItemIndex:=-1;
+
+  // sip
+  lblSip.Visible:=False;
+  combox_Sip.Visible:=False;
+  lblNoSip.Visible:=False;
+  lblSwapSip.Visible:=False;
+ end;
+
+ // private
+ m_IsEditUser:=False;
+ m_editUserId:=0;
+ if Assigned(m_editUser) then FreeAndNil(m_editUser);
+
+end;
+
 
 // проверка текущего оператора решили отредактировать или полностью заменить редактированием
 function TFormAddNewUsers.GetCheckEditNewOperator(InUserID:Integer):Boolean;
@@ -133,30 +413,72 @@ begin
 end;
 
 
-function getResponseBD(InTypeAction:TAction_User; var _errorDescription:string):Boolean;
+procedure TFormAddNewUsers.img_CommonQueue5000Click(Sender: TObject);
+begin
+  m_checkBoxUI.ChangeStatusCheckBox('CommonQueue5000');
+end;
+
+procedure TFormAddNewUsers.img_CommonQueue5050Click(Sender: TObject);
+begin
+ m_checkBoxUI.ChangeStatusCheckBox('CommonQueue5050');
+end;
+
+procedure TFormAddNewUsers.img_CommonQueue5911Click(Sender: TObject);
+begin
+ m_checkBoxUI.ChangeStatusCheckBox('CommonQueue5911');
+end;
+
+procedure TFormAddNewUsers.img_ExternalCallsClick(Sender: TObject);
+begin
+ m_checkBoxUI.ChangeStatusCheckBox('ExternalCalls');
+end;
+
+procedure TFormAddNewUsers.img_ExternalChatClick(Sender: TObject);
+begin
+  m_checkBoxUI.ChangeStatusCheckBox('ExternalChat');
+end;
+
+procedure TFormAddNewUsers.img_ExternalReportClick(Sender: TObject);
+begin
+  m_checkBoxUI.ChangeStatusCheckBox('ExternalReport');
+end;
+
+procedure TFormAddNewUsers.img_ExternalSmsClick(Sender: TObject);
+begin
+  m_checkBoxUI.ChangeStatusCheckBox('ExternalSms');
+end;
+
+procedure TFormAddNewUsers.img_NewPasswordClick(Sender: TObject);
+begin
+ m_checkBoxUI.ChangeStatusCheckBox('NewPassword');
+ ChangeChoisNewPassword;
+end;
+
+function TFormAddNewUsers.ExecuteResponce(_action:enumAction; var _errorDescription:string):Boolean;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
- CodOshibki:string;
 
- user_familiya,
- user_name,
- user_login,
- user_pwd,
- user_group,
- user_sip,
- user_sip_phone,
- user_chat,
- user_reports,
- user_sms:string;
+ user_auth:enumAuth;
+
+ user_familiya, user_name, user_login,
+ user_pwd, user_group, user_sip:string;
+
+ access_chat, access_reports,
+ access_sms, access_calls:enumParamStatus;
 
  u_role:string;
 
- isNewUserOperator:Boolean;  // добавляется новый оператор
- isNeedResetPwd:Word;        // надо ли сменить свой пароль при входе
+ NewUserIsOperator:Boolean;         // добавляется новый оператор
+ isNeedResetPwd:enumParamStatus;    // надо ли сменить свой пароль при входе
 
  userID:string;
 
+ userQueue:TList<enumQueue>;
+ i:Integer;
+
+ request:TStringBuilder;
+   t:string;
 begin
   Result:=False;
   _errorDescription:='';
@@ -168,125 +490,161 @@ begin
     FreeAndNil(ado);
     Screen.Cursor:=crDefault;
     _errorDescription:='Не удалось соединиться с сервером';
-     Exit;
+    Exit;
   end;
 
-  isNewUserOperator:=False;
-
   try
-     with ado do begin
-      ado.Connection:=serverConnect;
-      SQL.Clear;
+    with ado do begin
+     ado.Connection:=serverConnect;
+     SQL.Clear;
 
-      with FormAddNewUsers do begin
-       user_familiya:=edtNewFamiliya.Text;
-       if InTypeAction=user_add then user_familiya:=StringReplace(user_familiya,' ','',[rfReplaceAll]);
+     ////////////////////////// левая сторона //////////////////////////
 
-       user_name:=edtNewName.Text;
-       if InTypeAction=user_add then user_name:=StringReplace(user_name,' ','',[rfReplaceAll]);
+     user_auth:=IntegerToEnumAuth(combox_Auth.ItemIndex);
 
-       // логин с маленькой буквы
-       user_login:=edtNewLogin.Text;
-       user_login:=AnsiLowerCase(user_login);
-       if InTypeAction=user_add then user_login:=StringReplace(user_login,' ','',[rfReplaceAll]);
+     user_familiya:=edtNewFamiliya.Text;
+     user_familiya:=StringReplace(user_familiya,' ','',[rfReplaceAll]);
 
-       // пароль
-       if chkboxmyPwd.Checked then begin
-        user_pwd:=IntToStr(getHashPwd(edtPwdNew.Text));
-        isNeedResetPwd:=0; // запрос на смену пароля при входе
-       end
-       else begin
-         // запрос на смену пароля нужно только для новых сотрудников
-         if InTypeAction=user_add then begin
-           isNeedResetPwd:=1;  // запрос на смену пароля при входе
-           user_pwd:=IntToStr(getHashPwd(cDefaultUserPass));
+     user_name:=edtNewName.Text;
+     user_name:=StringReplace(user_name,' ','',[rfReplaceAll]);
+
+     // логин с маленькой буквы
+     user_login:=edtLogin.Text;
+     user_login:=AnsiLowerCase(user_login);
+     user_login:=StringReplace(user_login,' ','',[rfReplaceAll]);
+
+     // пароль
+     case user_auth of
+      eAuthLocal:begin
+         case m_IsEditUser of
+           false:begin   // добавление нового пользователя
+
+             case m_checkBoxUI.Checked['NewPassword'] of
+              false:begin  // пароль по default
+               user_pwd:=IntToStr(getHashPwd(cDefaultUserPass));
+              end;
+              true:begin
+               user_pwd:=IntToStr(getHashPwd(edtPwdNew.Text));
+              end;
+             end;
+
+             isNeedResetPwd:=paramStatus_ENABLED;
+           end;
+           true:begin    // редактирование пользователя
+            user_pwd:=IntToStr(getHashPwd(edtPwdNew.Text));
+            isNeedResetPwd:=paramStatus_DISABLED;
+           end;
          end;
-       end;
-
-       // оператор\старший оператор
-       user_group:=comboxUserGroup.Items[comboxUserGroup.ItemIndex];
-       u_role:= IntToStr(getUserGroupID(user_group));
-
-       if (AnsiPos('Оператор',user_group) <> 0) or
-          (AnsiPos('оператор',user_group)<> 0) then begin
-
-         user_sip:=edtOperatorSetting_SIP_show.Text;
-         user_sip_phone:=edtOperatorSetting_Tel_show.Text;
-
-         // проверяем используется sip телефон или zoiper
-         if user_sip_phone='' then begin
-          // проверяем вдруг zoiper указан
-          if chkboxZoiper.Checked then user_sip_phone:='zoiper'
-          else user_sip_phone:='null';
-         end;
-
-         // если не редактируеся сейчас, то это не новый оператор
-         if not currentEditUsers then isNewUserOperator:=True;
-       end;
-
-        // доступ к чату
-        if chkboxAllowLocalChat.Checked then user_chat:='1'
-        else user_chat:='0';
-
-        // доступ к отчетам
-        if chkboxAllowReports.Checked then user_reports:='1'
-        else user_reports:='0';
-
-        //доступ к SMS отправке
-        if chkboxAllowSMS.Checked then user_sms:='1'
-        else user_sms:='0';
-
-
       end;
+      eAuthLdap:begin
+         case m_IsEditUser of
+           False:begin
+             user_pwd:=IntToStr(getHashPwd(cDefaultUserPass)); // заглушка для локального входа
+             isNeedResetPwd:=paramStatus_ENABLED;              // заглушка для локального входа
+           end;
+           True:begin
+             if m_checkBoxUI.Checked['NewPassword'] then begin
+              user_pwd:=IntToStr(getHashPwd(cDefaultUserPass));
+              isNeedResetPwd:=paramStatus_ENABLED;
+             end;
+           end;
+         end;
+      end;
+     end;
 
 
-      case InTypeAction of
-        user_add:begin
-          SQL.Add('insert into users (name,familiya,role,login,pass,is_need_reset_pwd,chat,reports,sms) values ('+#39+user_name+#39+','
-                                                                                                             +#39+user_familiya+#39+','
-                                                                                                             +#39+u_role+#39+','
-                                                                                                             +#39+user_login+#39+','
-                                                                                                             +#39+user_pwd+#39+','
-                                                                                                             +#39+IntToStr(isNeedResetPwd)+#39+','
-                                                                                                             +#39+user_chat+#39+','
-                                                                                                             +#39+user_reports+#39+','
-                                                                                                             +#39+user_sms+#39+')');
-        end;
-        user_update:begin
+     ////////////////////////// правая сторона //////////////////////////
+     // очереди
+     userQueue:=TList<enumQueue>.Create;
+     if m_checkBoxUI.Checked['CommonQueue5000'] then userQueue.Add(queue_5000);
+     if m_checkBoxUI.Checked['CommonQueue5050'] then userQueue.Add(queue_5050);
+     if m_checkBoxUI.Checked['CommonQueue5911'] then userQueue.Add(queue_5911);
 
-          if FormAddNewUsers.chkboxmyPwd.Checked then begin // надо поменять пароль
+     // доступы
+     if m_checkBoxUI.Checked['ExternalReport'] then access_reports:=paramStatus_ENABLED
+     else access_reports:=paramStatus_DISABLED;
+     if m_checkBoxUI.Checked['ExternalChat'] then access_chat:=paramStatus_ENABLED
+     else access_chat:=paramStatus_DISABLED;
+     if m_checkBoxUI.Checked['ExternalSms'] then access_sms:=paramStatus_ENABLED
+     else access_sms:=paramStatus_DISABLED;
+     if m_checkBoxUI.Checked['ExternalCalls'] then access_calls:=paramStatus_ENABLED
+     else access_calls:=paramStatus_DISABLED;
 
-            SQL.Add('update users set name = '+#39+user_name+#39
-                                              +', familiya = '+#39+user_familiya+#39
-                                              +', role = '    +#39+u_role+#39
-                                              +', login = '   +#39+user_login+#39
-                                              +', pass = '    +#39+user_pwd+#39
-                                              +', chat = '    +#39+user_chat+#39
-                                              +', reports = ' +#39+user_reports+#39
-                                              +', sms = '     +#39+user_sms+#39
-                                              +' where id = ' +#39+IntToStr(FormAddNewUsers.currentEditUsersID)+#39);
-             //,,,login,pass,
-          end
-          else begin                                        // пароль не надо менять
-           SQL.Add('update users set name = '+#39+user_name+#39
-                                              +', familiya = '+#39+user_familiya+#39
-                                              +', role = '    +#39+u_role+#39
-                                              +', login = '   +#39+user_login+#39
-                                              +', chat = '    +#39+user_chat+#39
-                                              +', reports = ' +#39+user_reports+#39
-                                              +', sms = '     +#39+user_sms+#39
-                                              +' where id = ' +#39+IntToStr(FormAddNewUsers.currentEditUsersID)+#39);
+     // группа
+      user_group:=combox_AccessGroups.Items[combox_AccessGroups.ItemIndex];
+      System.Delete(user_group,1,1);  // убираем первую строку она всегада  ' '
+      u_role:=IntToStr(getUserGroupID(user_group));
+
+       if RoleIsOperator(StringToEnumRole(user_group)) then begin
+         // новое добавление пользователя
+         if not m_IsEditUser then begin
+           if combox_Sip.Items.Count = 0 then begin
+            _errorDescription:='При добавлении нового оператора обязательно нужно выбрать SIP номер';
+            Screen.Cursor:=crDefault;
+            Exit;
+           end;
+
+           user_sip:=combox_Sip.Items[combox_Sip.ItemIndex];
+           System.Delete(user_sip,1,1);   // убираем первую строку она всегада  ' '
+
+           NewUserIsOperator:=True;   // новый пользователь это операторская учетка
+         end;
+       end;
+
+      request:=TStringBuilder.Create;
+
+      case _action of
+        action_add:begin
+          with request do begin
+           Clear;
+           Append('insert into users');
+           Append(' (name,familiya,role,login,pass,is_need_reset_pwd,chat,reports,sms,calls,ldap_auth)');
+           Append(' values (');
+           Append(#39+user_name+#39+','+#39+user_familiya+#39+','+#39+u_role+#39+','+#39+user_login+#39);
+           Append(','+#39+user_pwd+#39+','+#39+IntToStr(SettingParamsStatusToInteger(isNeedResetPwd))+#39);
+           Append(','+#39+IntToStr(SettingParamsStatusToInteger(access_chat))+#39);
+           Append(','+#39+IntToStr(SettingParamsStatusToInteger(access_reports))+#39);
+           Append(','+#39+IntToStr(SettingParamsStatusToInteger(access_sms))+#39);
+           Append(','+#39+IntToStr(SettingParamsStatusToInteger(access_calls))+#39);
+           Append(','+#39+IntToStr(EnumAuthToInteger(user_auth))+#39);
+           Append(')');
           end;
+
+        end;
+        action_edit:begin
+          with request do begin
+           Clear;
+           Append('update users set ');
+           Append('name='+#39+user_name+#39+',');
+           Append('familiya='+#39+user_familiya+#39+',');
+           Append('role='+#39+u_role+#39+',');
+           Append('login='+#39+user_login+#39+',');
+
+           if m_checkBoxUI.Checked['NewPassword'] then begin  // меняем пароль если надо
+            Append('pass='+#39+user_pwd+#39+',');
+            Append('is_need_reset_pwd='+#39+IntToStr(SettingParamsStatusToInteger(isNeedResetPwd))+#39+',');
+           end;
+
+           Append('chat='+#39+IntToStr(SettingParamsStatusToInteger(access_chat))+#39+',');
+           Append('reports='+#39+IntToStr(SettingParamsStatusToInteger(access_reports))+#39+',');
+           Append('sms='+#39+IntToStr(SettingParamsStatusToInteger(access_sms))+#39+',');
+           Append('calls='+#39+IntToStr(SettingParamsStatusToInteger(access_calls))+#39+',');
+           Append('ldap_auth='+#39+IntToStr(EnumAuthToInteger(user_auth))+#39);
+           Append(' where id = '+#39+IntToStr(m_editUserId)+#39);
+          end;
+
+          t:=request.ToString;
+
         end;
       end;
 
       try
+          SQL.Add(request.ToString);
           ExecSQL;
       except
           on E:EIdException do begin
              Screen.Cursor:=crDefault;
-             CodOshibki:=e.Message;
-             _errorDescription:=CodOshibki;
+             _errorDescription:=e.Message;
 
             FreeAndNil(ado);
             if Assigned(serverConnect) then begin
@@ -299,32 +657,76 @@ begin
       end;
 
       // id пользователя
-      userID:=IntToStr(getUserID(user_login));
+      case m_IsEditUser of
+        false: userID:=IntToStr(GetUserID(user_login));  // добавляеся новый пользователь
+        true:  userID:=IntToStr(m_editUserId);           // редактируется пользователь
+      end;
+
+
+      // внутреннние очереди
+      begin
+        if userQueue.Count <> 0 then begin
+          case _action of
+            action_add:begin  // добавление нового пользователя
+              AddUserCommonQueue(StrToInt(userID),userQueue);
+            end;
+            action_edit:begin // редактирование пользователя
+              DeleteUserCommonQueue(StrToInt(userID));
+              AddUserCommonQueue(StrToInt(userID),userQueue);
+            end;
+          end;
+        end;
+      end;
 
 
       // таблица операторы
-      if isNewUserOperator then begin
-         SQL.Clear;
-         SQL.Add('insert into operators (sip,user_id,sip_phone) values ('+#39+user_sip+#39+','
-                                                                         +#39+userID+#39+','
-                                                                         +#39+user_sip_phone+#39+')');
+      begin
+        if not m_IsEditUser then begin
+          if NewUserIsOperator then begin
+
+             SQL.Clear;
+             SQL.Add('insert into operators (sip,user_id) values ('+#39+user_sip+#39+','
+                                                                   +#39+userID+#39+')');
+            try
+                ExecSQL;
+            except
+                on E:EIdException do begin
+                   Screen.Cursor:=crDefault;
+                   _errorDescription:=e.Message;
+                    FreeAndNil(ado);
+                    if Assigned(serverConnect) then begin
+                      serverConnect.Close;
+                      FreeAndNil(serverConnect);
+                    end;
+                   Exit;
+                end;
+            end;
+          end;
+        end;
+      end;
+
+
+      // таблица settings_sip (толькол для операторов)
+      if RoleIsOperator(StringToEnumRole(user_group)) then begin
+        SQL.Clear;
+         SQL.Add('update settings_sip set user_id = '+#39+userID+#39
+                                                     +' where sip = ' +#39+user_sip+#39);
         try
             ExecSQL;
         except
             on E:EIdException do begin
                Screen.Cursor:=crDefault;
-               CodOshibki:=e.Message;
-               _errorDescription:=CodOshibki;
+               _errorDescription:=e.Message;
                 FreeAndNil(ado);
                 if Assigned(serverConnect) then begin
                   serverConnect.Close;
                   FreeAndNil(serverConnect);
                 end;
-
                Exit;
             end;
         end;
       end;
+
 
     end;
   finally
@@ -341,77 +743,8 @@ begin
 end;
 
 
-// отображение sip+телефон оператора + локальный чат
-procedure showSettingOperatorSIP(IsVisible:Boolean);
-const
- //cLeft:Word                 = 286;
- cTopPanelOperators:Word    = 54;
- cTopChatReportsDefault:Word       = 191;
-begin
-  with FormAddNewUsers do begin
-     if IsVisible then begin  // для операторских групп
-
-       // панель оператора
-       PanelOperators.Visible:=True;
-       PanelOperators.Top:=cTopPanelOperators;
-
-       chkboxZoiper.Checked:=False;
-
-        // локальный чат
-        chkboxAllowLocalChat.Top:=cTopChatReportsDefault;
-
-        // отчеты
-        chkboxAllowReports.Top:=cTopChatReportsDefault;
-
-        // sms отправка
-        chkboxAllowSMS.Top:=cTopChatReportsDefault;
-
-        if comboxUserGroup.Text='Оператор (без дашборда)' then begin
-          lblOperatorSetting_Tel_show.Enabled:=False;
-
-          edtOperatorSetting_Tel_show.Enabled:=False;
-          edtOperatorSetting_Tel_show.Color:=cl3DLight;
-
-          chkboxZoiper.Enabled:=False;
-
-          chkboxAllowLocalChat.Enabled:=False;
-          chkboxAllowReports.Enabled:=False;
-          chkboxAllowSMS.Enabled:=False;
-        end
-        else begin
-          lblOperatorSetting_Tel_show.Enabled:=True;
-
-          edtOperatorSetting_Tel_show.Enabled:=True;
-          edtOperatorSetting_Tel_show.Color:=clWindow;
-
-          chkboxZoiper.Enabled:=True;
-
-          chkboxAllowLocalChat.Enabled:=True;
-          chkboxAllowReports.Enabled:=True;
-          chkboxAllowSMS.Enabled:=True;
-        end;
-
-        if not currentEditUsers then edtOperatorSetting_SIP_show.Text:='';
-
-     end
-     else begin  // для всех остальных групп, кроме операторских
-      PanelOperators.Visible:=False;
-
-      chkboxAllowLocalChat.Top:=cTopPanelOperators;
-      chkboxAllowReports.Top:=cTopPanelOperators;
-      chkboxAllowSMS.Top:=cTopPanelOperators;
-
-      edtOperatorSetting_SIP_show.Text:='';
-      edtOperatorSetting_Tel_show.Text:='';
-
-      chkboxZoiper.Checked:=False;
-     end;
-
-  end;
-end;
-
 // отображение групп доступа
-procedure showGroup(InUserRole:enumRole; allUsers:Boolean = True);
+procedure TFormAddNewUsers.ShowAccessGroup(_role:enumRole);
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -430,36 +763,30 @@ begin
       ado.Connection:=serverConnect;
       SQL.Clear;
 
-      if InUserRole = role_administrator then begin
-        if allUsers then SQL.Add('select count(id) from role where id <> ''-1'' ')
-        else SQL.Add('select count(id) from role where id <> ''-1'' and only_operators= ''1'' ');
-      end
-      else   SQL.Add('select count(id) from role where id <> ''-1'' and only_operators= ''1'' ');
+      if _role = role_administrator then SQL.Add('select count(id) from role where id <> ''-1'' ')
+      else  SQL.Add('select count(id) from role where id <> ''-1'' and only_operators= ''1'' ');
 
       Active:=True;
-      countGroup:=Fields[0].Value;
+      countGroup:=StrToInt(VarToStr(Fields[0].Value));
     end;
 
-    with FormAddNewUsers.comboxUserGroup do begin
+    with combox_AccessGroups do begin
       Clear;
 
       with ado do begin
         SQL.Clear;
 
-        if InUserRole = role_administrator then begin
-         if allUsers then SQL.Add('select id from role where id <> ''-1''')
-         else SQL.Add('select id from role where id <> ''-1'' and only_operators= ''1'' ');
-        end
+        if _role = role_administrator then SQL.Add('select id from role where id <> ''-1''')
         else  SQL.Add('select id from role where id <> ''-1'' and only_operators= ''1'' ');
 
         Active:=True;
 
          for i:=0 to countGroup-1 do begin
-           Items.Add(getUserGroupSTR(Fields[0].Value));
+           Items.Add(' '+getUserGroupSTR(Fields[0].Value));
            ado.Next;
          end;
-      end;
 
+      end;
       ItemIndex:= -1;
     end;
   finally
@@ -471,419 +798,785 @@ begin
   end;
 end;
 
- procedure showPwdEdit;
- const
-  cLeft:Word  = 15;
-  cTop:Word   = 125;
- begin
-   with FormAddNewUsers do begin
-     if chkboxmyPwd.Checked then begin
-       lblInfoNewPwd.Visible:=False;
-       chkboxmyPwd.Visible:=False;
 
-       lblPwd_show.Visible:=True;
-       lblPwd_show.Left:=cLeft;
-       lblPwd_show.Top:=cTop;
-
-       edtPwdNew.Visible:=True;
-       edtPwdNew.Left:=cLeft;
-       edtPwdNew.Top:=cTop+18;
-
-       lblPwd2_show.Visible:=True;
-       lblPwd2_show.Left:=cLeft;
-       lblPwd2_show.Top:=cTop+40;
-
-       edtPwd2New.Visible:=True;
-       edtPwd2New.Left:=cLeft;
-       edtPwd2New.Top:=cTop+58;
-     end
-     else begin
-       lblInfoNewPwd.Visible:=True;
-       chkboxmyPwd.Visible:=True;
-
-
-      lblPwd_show.Visible:=False;
-      edtPwdNew.Visible:=False;
-      edtPwdNew.Text:='';
-
-      lblPwd2_show.Visible:=False;
-      edtPwd2New.Visible:=False;
-      edtPwdNew.Text:='';
-     end;
-
-   end;
- end;
-
-
- // проверка корреткрности заполнения полей
- function getCheckFields(var _errorDescription:string):Boolean;
- const
-  cMAX_COUNT_FIO_LENGHT:Word = 35;
- var
- currentGroup:string;
- begin
-   Result:=False;
-   _errorDescription:='';
-
-   with FormAddNewUsers do begin
-      if edtNewFamiliya.Text='' then begin
-       _errorDescription:='Не заполнено поле "Фамилия"';
-        Exit;
-      end;
-
-      if edtNewName.Text='' then begin
-       _errorDescription:='Не заполнено поле "Имя"';
-        Exit;
-      end;
-
-      // длина Имя+Фамилия
-      if Length(edtNewFamiliya.Text)+Length(edtNewName.Text)+1>cMAX_COUNT_FIO_LENGHT then begin
-       _errorDescription:='Общее максимальное кол-во символов в полях Фамилия+Имя не может быть больше '+ IntToStr(cMAX_COUNT_FIO_LENGHT)+' символов' +#13+#13
-                          +'Сейчас:'+#13+'Фамилия - '+IntToStr(Length(edtNewFamiliya.Text))+' символов'+#13
-                          +'Имя - '+IntToStr(Length(edtNewName.Text))+' символов';
-       Exit;
-      end;
-
-
-      if edtNewLogin.Text='' then begin
-       _errorDescription:='Не заполнено поле "Логин"';
-       Exit;
-      end;
-
-      // проверка логина
-      if currentEditUsers then begin // редактируется пользователь
-        if userEditFields_login then begin
-          if userEditFields_loginDefault<>edtNewLogin.Text then begin
-            if getCheckLogin(edtNewLogin.Text) then begin
-             _errorDescription:='Логин '+edtNewLogin.Text+' уже существует';
-             Exit;
-            end;
-          end;
-        end;
-      end
-      else begin
-        if getCheckLogin(edtNewLogin.Text) then begin
-         _errorDescription:='Логин '+edtNewLogin.Text+' уже существует';
-         Exit;
-        end;
-
-      end;
-
-
-      // пароль
-      if chkboxmyPwd.Checked then begin
-        if edtPwdNew.Text='' then begin
-         _errorDescription:='Не заполнено поле "Пароль"';
-         Exit;
-        end;
-
-        if edtPwd2New.Text='' then begin
-         _errorDescription:='Не заполнено поле "Подтверждение"';
-         Exit;
-        end;
-
-        if edtPwdNew.Text <> edtPwd2New.Text then begin
-         _errorDescription:='Пароли не совпадают';
-         Exit;
-        end;
-      end;
-
-
-      // группы доступа
-      begin
-        if comboxUserGroup.ItemIndex= -1 then begin
-           _errorDescription:='Не выбрана "Группа доступа"';
-           Exit;
-        end;
-
-        currentGroup:=comboxUserGroup.Items[comboxUserGroup.ItemIndex];
-
-        // отоюражение нужных полей в зависимости от прав доступа
-        if (AnsiPos('Оператор',currentGroup) <> 0) or
-           (AnsiPos('оператор',currentGroup)<> 0) then begin
-
-          // проверяем вдруг решили нового оператора просто отредактировать и старого не отключить
-          if currentEditUsers then begin
-            if GetCheckEditNewOperator(currentEditUsersID) then begin
-             _errorDescription:='Текущего пользователя нельзя заменить новым'+#13#13+
-                                'Для заведения нового пользователя, текущего необходимо отключить';
-             Exit;
-            end;
-          end;
-
-
-          if edtOperatorSetting_SIP_show.Text='' then begin
-            _errorDescription:='Не заполнено поле "SIP номер"';
-            Exit;
-          end;
-
-          // проверка есть ли такой уже номер на активном операторе
-          if currentEditUsers then begin
-            if UserEditFileds_sip then begin
-              if UserEditFields_sipDefault <> edtOperatorSetting_SIP_show.Text then begin
-                if isExistSipActiveOperator(edtOperatorSetting_SIP_show.Text) then begin
-                  _errorDescription:='SIP номер '+edtOperatorSetting_SIP_show.Text+' уже существует'+#13#13+
-                                     'для добавления такого SIP необходимо сначало отключить пользователя '+GetUserNameOperators(edtOperatorSetting_SIP_show.Text);
-                  Exit;
-                end;
-              end;
-            end;
-          end
-          else begin
-
-            if isExistSipActiveOperator(edtOperatorSetting_SIP_show.Text) then begin
-              _errorDescription:='SIP номер '+edtOperatorSetting_SIP_show.Text+' уже существует'+#13#13+
-                                 'для добавления такого SIP необходимо сначало отключить пользователя '+GetUserNameOperators(edtOperatorSetting_SIP_show.Text);
-              Exit;
-            end;
-          end;
-
-          if edtOperatorSetting_Tel_show.Text<>'' then begin
-             // проверка на корректность ip телефонии
-            if AnsiPos('10.34.200.',edtOperatorSetting_Tel_show.Text)=0 then begin
-              _errorDescription:='Некорректный формат "IP телефона"'+#13#13+'Телефон должен иметь формать "10.34.200.XXX"';
-              Exit;
-            end;
-          end;
-
-        end;
-      end;
-       Result:=True;
-   end;
- end;
-
-
-
-procedure show_form(InUserRole:enumRole; isEditUser:Boolean = False);
-var
- id_role:Integer;
- role:string;
- i:Integer;
-begin
-  FormAddNewUsers.chkboxmyPwd.Checked:=False;
-  showPwdEdit;
-
-  // отображаем группы доступа (в зависимости от того какая панель сейчас выбрана)
-  if FormUsers.PageControl.ActivePage.Caption = 'Все пользователи' then showGroup(InUserRole)
-  else showGroup(InUserRole,False);
-
-
-  with FormAddNewUsers do begin
-
-    if not currentEditUsers then begin
-      Caption:='Добавление нового пользователя';
-
-      edtNewFamiliya.Text:='';
-      edtNewName.Text:='';
-      edtNewLogin.Text:='';
-
-      chkboxManualLogin.Checked:=False;
-
-      edtOperatorSetting_SIP_show.Text:='';
-      edtOperatorSetting_Tel_show.Text:='';
-      edtPwdNew.Text:='';
-      edtPwd2New.Text:='';
-
-      showSettingOperatorSIP(False);
-
-      chkboxZoiper.Checked:=False;
-
-      btnAddNewUser.Caption:='   Добавить';
-    end
-    else begin
-      Caption:='Редактирование: '+getUserNameFIO(currentEditUsersID);
-
-      edtNewFamiliya.Text:=getUserFamiliya(currentEditUsersID);
-      edtNewName.Text:=getUserNameBD(currentEditUsersID);
-      edtNewLogin.Text:=getUserLogin(currentEditUsersID);
-
-      // группа доступа
-       role:=getUserRoleSTR(currentEditUsersID);
-      for i:=0 to comboxUserGroup.Items.Count-1 do begin
-        if comboxUserGroup.Items[i] = role  then begin
-           comboxUserGroup.ItemIndex:=i;
-           Break;
-        end;
-      end;
-
-      // локальный чат
-      chkboxAllowLocalChat.Checked:=GetUserAccessLocalChat(currentEditUsersID);
-
-     // отчеты
-      chkboxAllowReports.Checked:=GetUserAccessReports(currentEditUsersID);
-
-      // SMS отправка
-      chkboxAllowSMS.Checked:=GetUserAccessSMS(currentEditUsersID);
-
-       // отобразим скрвтые поля
-       comboxUserGroup.OnChange(comboxUserGroup);
-
-       if (AnsiPos('Оператор',role)<>0) or
-          (AnsiPos('оператор',role)<>0) then begin
-          // sip номер
-          edtOperatorSetting_SIP_show.Text:=getUserSIP(currentEditUsersID);
-       end;
-
-       // сброс параметров которые буду проверяться
-       userEditFields_login:=False;
-       userEditFields_loginDefault:=edtNewLogin.Text;
-
-       UserEditFileds_sip:=False;
-       UserEditFields_sipDefault:=edtOperatorSetting_SIP_show.Text;
-
-       btnAddNewUser.Caption:='   Сохранить';
-    end;
-  end;
-
-end;
-
-
-procedure TFormAddNewUsers.btnAddNewUserClick(Sender: TObject);
+procedure TFormAddNewUsers.ButtonAction(Sender: TObject);
 var
  error:string;
- ado:TADOQuery;
+ action:enumAction;
 begin
-
-  if not getCheckFields(error) then begin
+   if not CheckFields(error) then begin
     MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
   end;
 
   // добавляем нового пользака
-  if not currentEditUsers then begin
-    if not getResponseBD(user_add, error) then begin
-      MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-      Exit;
+  case m_IsEditUser of
+    false:begin   // добавление нового пользователя
+      action:=action_add;
     end;
-  end
-  else begin
-    if not getResponseBD(user_update,error) then begin
-      MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-      Exit;
+    True:begin    // редактирование пользователя
+      action:=action_edit;
     end;
   end;
 
+  showWait(show_open);
 
-  // обновление данных
-   show_form(SharedCurrentUserLogon.Role);
-
-   // прогрузка списка пользователей (False - не показывать отключенных пользователей)
- //  loadPanel_Users(SharedCurrentUserLogon.Role);
-
-   // прогрузка списка пользователей (операторы) (False - не показывать отключенных пользователей)
-   loadPanel_Operators;
-
-  if not currentEditUsers then begin
-   LoggingRemote(eLog_create_new_user, SharedCurrentUserLogon.ID);
-   MessageBox(Handle,PChar('Новый пользователь добавлен'),PChar('Успех'),MB_OK+MB_ICONINFORMATION)
-  end
-  else begin
-   LoggingRemote(eLog_edit_user,SharedCurrentUserLogon.ID);
-   MessageBox(Handle,PChar('Пользователь отредактирован'),PChar('Успех'),MB_OK+MB_ICONINFORMATION)
+  if not ExecuteResponce(action, error) then begin
+    showWait(show_close);
+    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    Exit;
   end;
 
-end;
+  // обновим данные
+  FormUsers.UpdateUsersAfterAddOrEdit;
 
-procedure TFormAddNewUsers.chkboxManualLoginClick(Sender: TObject);
-begin
-   if chkboxManualLogin.Checked then begin
-    lblLogin.Enabled:=True;
-    edtNewLogin.Enabled:=True;
-    edtNewLogin.Color:=clWindow;
+  showWait(show_close);
 
-    if edtNewLogin.Text<>'' then begin
-      if not currentEditUsers then edtNewLogin.Text:='';
+  case m_IsEditUser of
+    false:begin   // добавление нового пользователя
+      MessageBox(Handle,PChar('Новый пользователь добавлен'),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
     end;
+    True:begin    // редактирование пользователя
+      MessageBox(Handle,PChar('Пользователь отредактирован'),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
+    end;
+  end;
 
-   end
-   else begin
-    lblLogin.Enabled:=False;
-    edtNewLogin.Enabled:=False;
-    edtNewLogin.Color:=cl3DLight;
-   end;
-
+  CloseClear;
 end;
 
-procedure TFormAddNewUsers.chkboxmyPwdClick(Sender: TObject);
+procedure TFormAddNewUsers.btnAddNewUserClick(Sender: TObject);
 begin
-  showPwdEdit;
+  ButtonAction(Sender);
 end;
+
 
 procedure TFormAddNewUsers.chkboxZoiperClick(Sender: TObject);
 begin
-  if chkboxZoiper.Checked then begin
-    lblOperatorSetting_Tel_show.Enabled:=False;
-    edtOperatorSetting_Tel_show.Enabled:=False;
-    edtOperatorSetting_Tel_show.Text:='';
-    edtOperatorSetting_Tel_show.Color:=cl3DLight;
-
-  end
-  else begin
-   lblOperatorSetting_Tel_show.Enabled:=True;
-   edtOperatorSetting_Tel_show.Enabled:=True;
-   edtOperatorSetting_Tel_show.Text:='';
-   edtOperatorSetting_Tel_show.Color:=clWindow;
-  end;
+//  if chkboxZoiper.Checked then begin
+//    lblOperatorSetting_Tel_show.Enabled:=False;
+//    edtOperatorSetting_Tel_show.Enabled:=False;
+//    edtOperatorSetting_Tel_show.Text:='';
+//    edtOperatorSetting_Tel_show.Color:=cl3DLight;
+//
+//  end
+//  else begin
+//   lblOperatorSetting_Tel_show.Enabled:=True;
+//   edtOperatorSetting_Tel_show.Enabled:=True;
+//   edtOperatorSetting_Tel_show.Text:='';
+//   edtOperatorSetting_Tel_show.Color:=clWindow;
+//  end;
 end;
 
 procedure TFormAddNewUsers.comboxUserGroupChange(Sender: TObject);
 var
  currentGroup:string;
 begin
-  currentGroup:=comboxUserGroup.Items[comboxUserGroup.ItemIndex];
+ // currentGroup:=comboxUserGroup.Items[comboxUserGroup.ItemIndex];
 
   // отоюражение нужных полей в зависимости от прав доступа
-  if  (AnsiPos('Оператор',currentGroup)<>0) or
-      (AnsiPos('оператор',currentGroup)<>0)  then showSettingOperatorSIP(True)
-  else showSettingOperatorSIP(False);
+//  if  (AnsiPos('Оператор',currentGroup)<>0) or
+//      (AnsiPos('оператор',currentGroup)<>0)  then showSettingOperatorSIP(True)
+//  else showSettingOperatorSIP(False);
 
 end;
 
 
+procedure TFormAddNewUsers.combox_AccessGroupsChange(Sender: TObject);
+begin
+ ChangeChoisAccessGroup;
+end;
+
+procedure TFormAddNewUsers.combox_AccessGroupsDrawItem(Control: TWinControl;
+  Index: Integer; Rect: TRect; State: TOwnerDrawState);
+var
+ ComboBox: TComboBox;
+ bitmap: TBitmap;
+ IconIndex:Integer;
+begin
+  if m_imagelistGroupAccess.Count = 0 then  Exit;
+
+  IconIndex:=0;
+  ComboBox:=(Control as TComboBox);
+  Bitmap:= TBitmap.Create;
+  try
+    m_imagelistGroupAccess.GetBitmap(IconIndex, Bitmap);
+    with ComboBox.Canvas do
+    begin
+      FillRect(Rect);
+      if Bitmap.Handle <> 0 then
+        Draw(Rect.Left + 2, Rect.Top, Bitmap);
+      Rect := Bounds(
+        Rect.Left + ComboBox.ItemHeight + 3,
+        Rect.Top,
+        Rect.Right - Rect.Left,
+        Rect.Bottom - Rect.Top
+      );
+      DrawText(
+        handle,
+        PChar(ComboBox.Items[Index]),
+        length(ComboBox.Items[index]),
+        Rect,
+        DT_VCENTER + DT_SINGLELINE
+      );
+    end;
+  finally
+    Bitmap.Free;
+  end;
+end;
+
+procedure TFormAddNewUsers.combox_AuthChange(Sender: TObject);
+begin
+ ChangeChoisAuth;
+end;
+
+procedure TFormAddNewUsers.combox_AuthDrawItem(Control: TWinControl;
+  Index: Integer; Rect: TRect; State: TOwnerDrawState);
+var
+ ComboBox: TComboBox;
+ bitmap: TBitmap;
+ IconIndex:Integer;
+begin
+  if m_imagelistAuth.Count = 0 then  Exit;
+
+  IconIndex:=Index;
+  ComboBox:=(Control as TComboBox);
+  Bitmap:= TBitmap.Create;
+  try
+    m_imagelistAuth.GetBitmap(IconIndex, Bitmap);
+    with ComboBox.Canvas do
+    begin
+      FillRect(Rect);
+      if Bitmap.Handle <> 0 then
+        Draw(Rect.Left + 2, Rect.Top, Bitmap);
+      Rect := Bounds(
+        Rect.Left + ComboBox.ItemHeight + 3,
+        Rect.Top,
+        Rect.Right - Rect.Left,
+        Rect.Bottom - Rect.Top
+      );
+      DrawText(
+        handle,
+        PChar(ComboBox.Items[Index]),
+        length(ComboBox.Items[index]),
+        Rect,
+        DT_VCENTER + DT_SINGLELINE
+      );
+    end;
+  finally
+    Bitmap.Free;
+  end;
+end;
+
+procedure TFormAddNewUsers.combox_SipDrawItem(Control: TWinControl;
+  Index: Integer; Rect: TRect; State: TOwnerDrawState);
+var
+ ComboBox: TComboBox;
+ bitmap: TBitmap;
+ IconIndex:Integer;
+begin
+  if m_imagelistSip.Count = 0 then  Exit;
+
+  IconIndex:=0;
+  ComboBox:=(Control as TComboBox);
+  Bitmap:= TBitmap.Create;
+  try
+    m_imagelistSip.GetBitmap(IconIndex, Bitmap);
+    with ComboBox.Canvas do
+    begin
+      FillRect(Rect);
+      if Bitmap.Handle <> 0 then
+        Draw(Rect.Left + 2, Rect.Top, Bitmap);
+      Rect := Bounds(
+        Rect.Left + ComboBox.ItemHeight + 3,
+        Rect.Top,
+        Rect.Right - Rect.Left,
+        Rect.Bottom - Rect.Top
+      );
+      DrawText(
+        handle,
+        PChar(ComboBox.Items[Index]),
+        length(ComboBox.Items[index]),
+        Rect,
+        DT_VCENTER + DT_SINGLELINE
+      );
+    end;
+  finally
+    Bitmap.Free;
+  end;
+end;
+
 procedure TFormAddNewUsers.edtNewFamiliyaChange(Sender: TObject);
 begin
-  if not currentEditUsers then begin
-    if edtNewFamiliya.Text<>'' then begin
-      edtNewLogin.Text:=getTranslate(edtNewFamiliya.Text);
-    end
-    else edtNewLogin.Text:='';
-  end;
+  ChangeFamiliya;
 end;
 
 
 procedure TFormAddNewUsers.edtNewLoginChange(Sender: TObject);
 begin
   // чтобы потом проверить измелись ли данные по логину
-  if currentEditUsers then userEditFields_login:=True;
+ // if currentEditUsers then userEditFields_login:=True;
 end;
 
 procedure TFormAddNewUsers.edtOperatorSetting_SIP_showChange(Sender: TObject);
 begin
   // чтобы потом проверить измелись ли данные по sip
-  if currentEditUsers then UserEditFileds_sip:=True;
+ // if currentEditUsers then UserEditFileds_sip:=True;
+end;
+
+procedure TFormAddNewUsers.edtPwd2NewClick(Sender: TObject);
+begin
+ st_edtPwd2.Visible:=False;
+end;
+
+procedure TFormAddNewUsers.edtPwdNewClick(Sender: TObject);
+begin
+  st_edtPwd.Visible:=False;
 end;
 
 procedure TFormAddNewUsers.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  // обновляем окно с группами
-  showSettingOperatorSIP(False);
 
-  chkboxAllowLocalChat.Checked:=False;
-  chkboxAllowReports.Checked:=False;
-  chkboxAllowSMS.Checked:=False;
-
-  // на всякий случай что уже не редактируется ничего
-  currentEditUsers:=False;
-  currentEditUsersID:=0;
+  CloseClear;
+//  // обновляем окно с группами
+//  showSettingOperatorSIP(False);
+//
+//  chkboxAllowLocalChat.Checked:=False;
+//  chkboxAllowReports.Checked:=False;
+//  chkboxAllowSMS.Checked:=False;
+//
+//  // на всякий случай что уже не редактируется ничего
+//  currentEditUsers:=False;
+//  currentEditUsersID:=0;
 
 end;
 
-procedure TFormAddNewUsers.FormShow(Sender: TObject);
+procedure TFormAddNewUsers.InitComboxAuth;
+var
+ ldap:TLdap;
+begin
+  combox_Auth.Clear;
+  combox_Auth.Items.Add(' '+EnumAuthToString(eAuthLocal));
+
+  // включен ли доступ по ldap
+  ldap:=TLdap.Create;
+  if ldap.GetStatusLdap then combox_Auth.Items.Add(' '+EnumAuthToString(eAuthLdap));
+
+  // прогружаем иконки
+  LoadIconListAuth;
+end;
+
+
+procedure TFormAddNewUsers.InitComboxAccessGroup;
+begin
+  ShowAccessGroup(SharedCurrentUserLogon.Role);
+
+  // прогружаем иконки
+  LoadIconListAccessGroup;
+end;
+
+
+procedure TFormAddNewUsers.InitComboxSip;
+var
+ i:Integer;
+begin
+  combox_Sip.Clear;
+
+  for i:=0 to m_sipList.Count-1 do begin
+    if m_sipList.Items[i].m_userId = -1 then begin
+      combox_Sip.Items.Add(' '+IntToStr(m_sipList.Items[i].m_sip));
+    end;
+  end;
+
+  // прогружаем иконки
+  LoadIconListSip;
+end;
+
+
+procedure TFormAddNewUsers.InitDefaultPasswordNewUser;
+begin
+ lblInfoNewPwd.Caption:='По умолчанию для новых пользователей пароль "'+cDefaultUserPass+'"';
+end;
+
+
+procedure TFormAddNewUsers.lbl_checkbox_CommonQueue5000Click(Sender: TObject);
+begin
+  m_checkBoxUI.ChangeStatusCheckBox('CommonQueue5000');
+end;
+
+procedure TFormAddNewUsers.lbl_checkbox_CommonQueue5050Click(Sender: TObject);
+begin
+ m_checkBoxUI.ChangeStatusCheckBox('CommonQueue5050');
+end;
+
+procedure TFormAddNewUsers.lbl_checkbox_CommonQueue5911Click(Sender: TObject);
+begin
+  m_checkBoxUI.ChangeStatusCheckBox('CommonQueue5911');
+end;
+
+procedure TFormAddNewUsers.lbl_checkbox_ExternalCallsClick(Sender: TObject);
+begin
+  m_checkBoxUI.ChangeStatusCheckBox('ExternalCalls');
+end;
+
+procedure TFormAddNewUsers.lbl_checkbox_ExternalChatClick(Sender: TObject);
+begin
+  m_checkBoxUI.ChangeStatusCheckBox('ExternalChat');
+end;
+
+procedure TFormAddNewUsers.lbl_checkbox_ExternalReportClick(Sender: TObject);
+begin
+  m_checkBoxUI.ChangeStatusCheckBox('ExternalReport');
+end;
+
+procedure TFormAddNewUsers.lbl_checkbox_ExternalSmsClick(Sender: TObject);
+begin
+  m_checkBoxUI.ChangeStatusCheckBox('ExternalSms');
+end;
+
+procedure TFormAddNewUsers.lbl_checkbox_NewPasswordClick(Sender: TObject);
+begin
+ m_checkBoxUI.ChangeStatusCheckBox('NewPassword');
+ ChangeChoisNewPassword;
+end;
+
+procedure TFormAddNewUsers.InitCheckboxUI;
+begin
+  if not Assigned(m_checkBoxUI) then m_checkBoxUI:=TCheckBoxUI.Create;
+
+  // установка своего пароля
+  m_checkBoxUI.Add('NewPassword',lbl_checkbox_NewPassword,img_NewPassword, paramStatus_DISABLED);
+
+  // видимые группы
+  m_checkBoxUI.Add('CommonQueue5000',lbl_checkbox_CommonQueue5000,img_CommonQueue5000, paramStatus_DISABLED);
+  m_checkBoxUI.Add('CommonQueue5050',lbl_checkbox_CommonQueue5050,img_CommonQueue5050, paramStatus_DISABLED);
+  m_checkBoxUI.Add('CommonQueue5911',lbl_checkbox_CommonQueue5911,img_CommonQueue5911, paramStatus_DISABLED);
+
+  // модули
+  m_checkBoxUI.Add('ExternalReport',lbl_checkbox_ExternalReport,img_ExternalReport, paramStatus_DISABLED);
+  m_checkBoxUI.Add('ExternalChat',lbl_checkbox_ExternalChat,img_ExternalChat, paramStatus_DISABLED);
+  m_checkBoxUI.Add('ExternalSms',lbl_checkbox_ExternalSms,img_ExternalSms, paramStatus_DISABLED);
+  m_checkBoxUI.Add('ExternalCalls',lbl_checkbox_ExternalCalls,img_ExternalCalls, paramStatus_DISABLED);
+
+end;
+
+// выбор типа авторизации
+procedure TFormAddNewUsers.ChangeChoisAuth;
+const
+ cPassInfoTOP:Word = 144;
+ cPassInfoLEFT:Word = 126;
+
+ cPassGroupTOP:Word = 136;
+ cPassGroupLEFT:Word = 120;
+ cPassGroupWIDTH:Word = 170;
+begin
+  lblPassInfo.Visible:=False;
+  m_checkBoxUI.ChangeStatusCheckBox('NewPassword', paramStatus_DISABLED);
+  ChangeChoisNewPassword;
+
+  if combox_Auth.ItemIndex = 1 then
+  begin  // ldap
+    lblLdapInfo.Visible:=True;
+    edtLogin.ShowHint:=True;
+    edtLogin.Enabled:=True;
+    lblLogin.Enabled:=True;
+
+    // пароль ldap
+    lblLdapInfoPassword.Visible:=True;
+    lblLdapInfoPassword.Top:=cPassInfoTOP;
+    lblLdapInfoPassword.Left:=cPassInfoLEFT;
+
+    // установка локального пароля
+    group_localPassword.Visible:=False;
+
+
+  end
+  else begin  // local
+   lblLdapInfo.Visible:=False;
+   edtLogin.ShowHint:=False;
+   edtLogin.Enabled:=False;
+   lblLogin.Enabled:=False;
+
+    // пароль ldap
+   lblLdapInfoPassword.Visible:=False;
+
+   // установка локального пароля
+   group_localPassword.Visible:=True;
+   group_localPassword.Top:=cPassGroupTOP;
+   group_localPassword.Left:=cPassGroupLEFT;
+   group_localPassword.Width:=cPassGroupWIDTH;
+  end;
+end;
+
+// изменение фамилии
+procedure TFormAddNewUsers.ChangeFamiliya;
 begin
 
-  if not currentEditUsers then show_form(SharedCurrentUserLogon.Role)   // не редактируется
-  else show_form(SharedCurrentUserLogon.Role,True);                    // редактируется
+  case m_IsEditUser of
+   false:begin  // добавление  нового пользователя
+      if edtNewFamiliya.Text<>'' then begin
+       // делаем для локального входа
+        lblLoginInfo.Visible:=False;
+        edtLogin.Visible:=True;
 
+       if combox_Auth.ItemIndex = 0 then begin  // локальный вход
+         lblLogin.Enabled:=False;
+         edtLogin.Text:=getTranslate(edtNewFamiliya.Text);
+       end;
+      end;
+   end;
+   true:begin   // пользователь редактируется
+     lblLoginInfo.Visible:=False;
+      edtLogin.Visible:=True;
+   end;
+  end;
+
+end;
+
+
+// выбор смены пароля
+procedure TFormAddNewUsers.ChangeChoisNewPassword;
+const
+ cEdtLEFT:Word = 5;
+ cSTPwdLEFT:Word = 120;
+ cSTPwd2LEFT:Word = 73;
+begin
+  edtPwdNew.Text:='';
+  edtPwd2New.Text:='';
+
+  if m_checkBoxUI.Checked['NewPassword'] then begin
+    edtPwdNew.Left:=cEdtLEFT;
+    st_edtPwd.Left:=cSTPwdLEFT;
+
+    edtPwd2New.Left:=cEdtLEFT;
+    st_edtPwd2.Left:=cSTPwd2LEFT;
+
+    edtPwdNew.Visible:=True;
+    edtPwd2New.Visible:=True;
+    st_edtPwd.Visible:=True;
+    st_edtPwd2.Visible:=True;
+
+
+    lblInfoNewPwd.Visible:=False;
+    img_NewPassword.Visible:=False;
+    lbl_checkbox_NewPassword.Visible:=False;
+  end
+  else begin
+   edtPwdNew.Visible:=False;
+   edtPwd2New.Visible:=False;
+   st_edtPwd.Visible:=False;
+   st_edtPwd2.Visible:=False;
+
+
+   lblInfoNewPwd.Visible:=True;
+   img_NewPassword.Visible:=True;
+   lbl_checkbox_NewPassword.Visible:=True;
+  end;
+end;
+
+
+// существует ли login пользвоателчя
+function TFormAddNewUsers.CheckLogin(_login:string):Boolean;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ error:string;
+begin
+  Result:=True; // default
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+
+      SQL.Clear;
+      SQL.Add('select count(id) from users where login = '+#39+_login+#39);
+      Active:=True;
+
+      if Fields[0].Value<>null then begin
+        if Fields[0].Value <> 0 then Result:=True
+        else Result:=False;
+      end
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+
+// проверка полей
+function TFormAddNewUsers.CheckFields(var _errorDescription:string):Boolean;
+ var
+ currentGroup:string;
+begin
+   Result:=False;
+   _errorDescription:='';
+
+///////////////////////////////// левая сторона /////////////////////////////////
+
+  if combox_Auth.ItemIndex = -1 then begin
+   _errorDescription:='Не выбран "Тип авторизации"';
+   Exit;
+  end;
+
+
+  if edtNewFamiliya.Text='' then begin
+   _errorDescription:='Не заполнено поле "Фамилия"';
+    Exit;
+  end;
+
+  if AnsiPos(' ',edtNewFamiliya.Text)<>0 then begin
+   _errorDescription:='В поле "Фамилия" присутствует пробел';
+    Exit;
+  end;
+
+  if edtNewName.Text='' then begin
+   _errorDescription:='Не заполнено поле "Имя"';
+    Exit;
+  end;
+
+
+  if edtLogin.Text='' then begin
+   _errorDescription:='Не заполнено поле "Логин"';
+   Exit;
+  end;
+
+  // проверка логина
+  if m_IsEditUser then begin // редактируется пользователь
+   // проверим если изменялся логин
+    if m_editUser.Login <> edtLogin.Text then begin
+      if CheckLogin(edtLogin.Text) then begin
+         _errorDescription:='Логин '+edtLogin.Text+' уже существует';
+         Exit;
+      end;
+    end;
+  end
+  else begin
+    if CheckLogin(edtLogin.Text) then begin
+     _errorDescription:='Логин '+edtLogin.Text+' уже существует';
+     Exit;
+    end;
+  end;
+
+  // пароль
+  if combox_Auth.ItemIndex = 0 then begin
+    if m_checkBoxUI.Checked['NewPassword'] then begin
+      if edtPwdNew.Text='' then begin
+       _errorDescription:='Не заполнено поле "Пароль"';
+       Exit;
+      end;
+
+      if edtPwd2New.Text='' then begin
+       _errorDescription:='Не заполнено поле "Подтверждение"';
+       Exit;
+      end;
+
+      if edtPwdNew.Text <> edtPwd2New.Text then begin
+       _errorDescription:='Пароли не совпадают';
+       Exit;
+      end;
+    end;
+  end;
+
+///////////////////////////////// правая сторона /////////////////////////////////
+
+  // очереди
+  if not (m_checkBoxUI.Checked['CommonQueue5000']
+      or m_checkBoxUI.Checked['CommonQueue5050']
+      or m_checkBoxUI.Checked['CommonQueue5911'] ) then
+  begin
+    _errorDescription:='Не выбрана ни одна из очередей';
+    Exit;
+  end;
+
+  // доступы (могут быть и не выбраны)
+
+  // группа доступа
+  begin
+    if combox_AccessGroups.ItemIndex= -1 then begin
+      _errorDescription:='Не выбрана "Группа"';
+      Exit;
+    end;
+
+    currentGroup:=combox_AccessGroups.Items[combox_AccessGroups.ItemIndex];
+
+   // отоюражение нужных полей в зависимости от прав доступа
+      if (AnsiPos('Оператор',currentGroup) <> 0) or
+         (AnsiPos('оператор',currentGroup)<> 0) then begin
+
+        // проверяем вдруг решили нового оператора просто отредактировать и старого не отключить
+        if m_IsEditUser then begin
+          if GetCheckEditNewOperator(m_editUserId) then begin
+           _errorDescription:='Пользователя нельзя заменить новым'+#13#13+
+                              'Для заведения нового пользователя, текущего необходимо удалить';
+           Exit;
+          end;
+        end;
+      end;
+  end;
+
+  Result:=True;
+end;
+
+
+procedure TFormAddNewUsers.ChangeChoisAccessGroup;
+const
+ cNoSIPLEFT:Word = 390;
+ cNoSIPTOP:Word = 143;
+var
+ user_group:string;
+begin
+ user_group:=combox_AccessGroups.Items[combox_AccessGroups.ItemIndex];
+ // убираем первую строку она всегада  ' '
+ System.Delete(user_group,1,1);
+
+ if RoleIsOperator(StringToEnumRole(user_group)) then begin
+
+  case m_IsEditUser of
+    false:begin   // не редактируется пользователь
+       lblSip.Visible:=True;
+
+       // есть ли свободные sip
+       if m_sipList.IsExistFree then begin
+         // есть свободные номера
+         lblNoSip.Visible:=False;
+
+         combox_Sip.Visible:=True;
+
+       end
+       else begin
+         // нет номеров
+         combox_Sip.Visible:=False;
+
+
+         lblNoSip.Visible:=True;
+         lblNoSip.Left:=cNoSIPLEFT;
+         lblNoSip.Top:=cNoSIPTOP;
+       end;
+    end;
+    True:begin   // редактируется пользователь
+      if m_editUser.IsOperator then begin
+        if GetOperatorSIP(m_editUserId)<> -1 then begin
+          lblSip.Visible:=True;
+          lblSwapSip.Visible:=True;
+          lblSwapSip.Left:=cNoSIPLEFT;
+          lblSwapSip.Top:=cNoSIPTOP;
+        end;
+      end;
+    end;
+  end;
+
+
+ end
+ else begin
+    lblSip.Visible:=False;
+    lblNoSip.Visible:=False;
+    lblSwapSip.Visible:=False;
+    combox_Sip.Visible:=False;
+ end;
+
+end;
+
+
+procedure TFormAddNewUsers.Loading;
+begin
+  // выбор типа авторизации
+  InitComboxAuth;
+
+  // пароль для новых учеток
+  InitDefaultPasswordNewUser;
+
+  // создание красивых чек боксов
+  InitCheckboxUI;
+
+  // группа доступа
+  InitComboxAccessGroup;
+
+  // список со свободными sip номерами
+  if not Assigned(m_sipList) then m_sipList:=TSipPhoneList.Create
+  else m_sipList.UpdateData;
+
+  // прогрузка свободных sip
+  InitComboxSip;
+
+end;
+
+
+// прогрузка данных по редактируемому пользователю
+procedure TFormAddNewUsers.LoadingEditUser;
+const
+ cSwapSIPLEFT:Word = 390;
+ cSwapSIPTOP:Word = 143;
+begin
+  // на всякий случай
+  if not Assigned(m_editUser) then m_editUser:=TUser.Create(m_editUserId);
+
+  ///////////////////////////////// левая сторона /////////////////////////////////
+
+  // тип авторизации
+  combox_Auth.ItemIndex:=(EnumAuthToInteger(m_editUser.Auth));
+  ChangeChoisAuth;
+
+  // фамилия
+  edtNewFamiliya.Text:=m_editUser.Familiya;
+  ChangeFamiliya;
+
+  // имя
+  edtNewName.Text:=m_editUser.Name;
+
+  // логин
+  edtLogin.Text:=m_editUser.Login;
+
+///////////////////////////////// правая сторона /////////////////////////////////
+
+  // очереди
+  m_checkBoxUI.Checked['CommonQueue5000'] :=m_editUser.Queue[queue_5000];
+  m_checkBoxUI.Checked['CommonQueue5050'] :=m_editUser.Queue[queue_5050];
+  m_checkBoxUI.Checked['CommonQueue5911'] :=m_editUser.Queue[queue_5911];
+
+ // доступы
+  m_checkBoxUI.Checked['ExternalReport']  :=m_editUser.ExternalAccess[eExternalAccessReports];
+  m_checkBoxUI.Checked['ExternalChat']    :=m_editUser.ExternalAccess[eExternalAccessLocalChat];
+  m_checkBoxUI.Checked['ExternalSms']     :=m_editUser.ExternalAccess[eExternalAccessSMS];
+  m_checkBoxUI.Checked['ExternalCalls']   :=m_editUser.ExternalAccess[eExternalAccessCalls];
+
+  // группа доступа
+  combox_AccessGroups.ItemIndex:=combox_AccessGroups.Items.IndexOf(' '+EnumRoleToString(m_editUser.Role));
+
+  // sip
+  if m_editUser.IsOperator then begin
+    if GetOperatorSIP(m_editUserId)<> -1 then begin
+      lblSip.Visible:=True;
+      lblSwapSip.Visible:=True;
+      lblSwapSip.Left:=cSwapSIPLEFT;
+      lblSwapSip.Top:=cSwapSIPTOP;
+    end;
+  end;
+end;
+
+
+procedure TFormAddNewUsers.FormShow(Sender: TObject);
+begin
+  showWait(show_open);
+
+  InitForm;
+
+  Loading;
+
+  // редактируется пользователь
+  if m_IsEditUser then LoadingEditUser;
+
+  showWait(show_close);
 end;
 
 end.

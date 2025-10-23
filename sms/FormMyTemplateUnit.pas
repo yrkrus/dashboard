@@ -22,8 +22,6 @@ type
     st_NoMessage_GlobalTemplate: TStaticText;
     list_MyTemplate: TListView;
     list_GlobalTemplate: TListView;
-    editFindMessage: TEdit;
-    st_FindMessage: TStaticText;
     ImageList1: TImageList;
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);

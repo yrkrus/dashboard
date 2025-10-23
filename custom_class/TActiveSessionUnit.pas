@@ -601,7 +601,7 @@ begin
            m_listActiveSession[i].isOperator:=True;
 
            // проверка в очереди или нет находится оператор
-           if getCurrentQueueOperator(getUserSIP(m_listActiveSession[i].m_userID)) = queue_null then m_listActiveSession[i].isOperatorInQueue:=False
+           if GetCurrentQueueOperator(GetOperatorSIP(m_listActiveSession[i].m_userID)) = queue_null then m_listActiveSession[i].isOperatorInQueue:=False
            else m_listActiveSession[i].isOperatorInQueue:=True;
         end
         else begin  // не операторская учетка

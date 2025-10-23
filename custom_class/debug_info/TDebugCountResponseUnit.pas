@@ -273,10 +273,10 @@ const
   cTOPSTART=6;
   cSTEP:Word = 20;
   var
- lblNameThread          :array of TLabel;
- lblCurrent             :array of TLabel;
- lblAverage             :array of TLabel;
- lblMax                 :array of TLabel;
+ lblNameThread          :TArray<TLabel>;
+ lblCurrent             :TArray<TLabel>;
+ lblAverage             :TArray<TLabel>;
+ lblMax                 :TArray<TLabel>;
 
  i:Integer;
  nameThread:string;

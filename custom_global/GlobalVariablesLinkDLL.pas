@@ -3,7 +3,7 @@ unit GlobalVariablesLinkDLL;
 interface
 
 uses
-  TCustomTypeUnit;
+  TCustomTypeUnit, System.Classes;
 
  // загрузка DLL
   // --- core.dll ---
@@ -51,6 +51,7 @@ uses
   function GetCodeStatusSms(_idSMS:Integer; _table:enumReportTableSMSStatus):enumStatusCodeSms; stdcall;  external 'core.dll';      // нахождение статуса SMS сообщения
   function GetStatusSms(_code:enumStatusCodeSms):Pchar;                 stdcall;  external 'core.dll';      // нахождение статуса сообщения
   function GetCountSmsSendingMessageInPhone(_phone:string):Integer;     stdcall;  external 'core.dll';      // кол-во отправленных SMS сообщений на номере
+  function _dll_GetAllowCommonQueueList:TStringList;                    stdcall;  external 'core.dll';      // список разрешенных очередей
 
   // --- connect_to_server.dll ---  (по сути этот тут не нужно, но пусть будет)
  function GetServerAddress:string;      stdcall;   external 'connect_to_server.dll'; // адрес сервера

@@ -25,7 +25,7 @@ uses
       public
       m_id      :Integer;  // id по БД
       m_sip     :Integer;  // sip
-      m_userId  :Integer;  // за кем закреплен
+      m_userId  :Integer;  // за кем закреплен   default = -1 ни за кем
       m_fio     :string;  // ФИО
 
       constructor Create;               overload;
@@ -48,6 +48,8 @@ uses
       function GetItems(_id:Integer):TSipList;
       function IsExistSip(_sip:string):Boolean; // есть ли уже такой sip в БД
       function IsActiveSip(_sip:string; var _fioOperator:string):Boolean; // проверка что sip не используется у оператора никакого
+      function GetFree:Boolean;   // есть ли свободные номера
+      function GerUsed(_sip:string):Boolean; // используется ли sip сейчас
 
       public
       constructor Create;                   overload;
@@ -61,6 +63,8 @@ uses
 
       property Count:Integer read m_count;
       property Items[_id:Integer]:TSipList read GetItems; default;
+      property IsExistFree:Boolean read GetFree;
+      property IsUsed[sip:string]:Boolean read GerUsed;
 
       end;
  // class TSipPhoneList END
@@ -274,6 +278,37 @@ begin
  end;
 end;
 
+// есть ли свободные номера
+function TSipPhoneList.GetFree:Boolean;
+var
+ i:Integer;
+begin
+  Result:=False;
+
+  for i:=0 to m_count-1 do begin
+    if m_list[i].m_userId = -1 then begin
+      Result:=True;
+      Break;
+    end;
+  end;
+end;
+
+ // используется ли sip сейчас
+function TSipPhoneList.GerUsed(_sip:string):Boolean;
+var
+ i:Integer;
+begin
+  Result:=False;
+
+  for i:=0 to m_count-1 do begin
+    if m_list[i].m_sip = StrToInt(_sip) then begin
+      if m_list[i].m_userId <> -1 then begin
+        Result:=True;
+        Break;
+      end;
+    end;
+  end;
+end;
 
 
 procedure TSipPhoneList.Clear;

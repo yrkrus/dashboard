@@ -342,7 +342,7 @@ uses
     GlobalVariables, FormUsersUnit, FormServersIKUnit, FormSettingsGlobalUnit,
     FormTrunkUnit, TFTPUnit, TForecastCallsUnit, FormStatusInfoUnit,
     FormHistoryCallOperatorUnit, TDebugStructUnit, FormHistoryStatusOperatorUnit,
-    GlobalVariablesLinkDLL, TStatusUnit, FormTrunkSipUnit, TLdapUnit;
+    GlobalVariablesLinkDLL, TStatusUnit, FormTrunkSipUnit, TLdapUnit, FormHomeInit;
 
 
 {$R *.dfm}
@@ -420,7 +420,7 @@ begin
    PanelStatusIN.Height:=cPanelStatusHeight_showqueue;
 
     // проверяем в какой очереди находится оператор
-    curr_queue:=getCurrentQueueOperator(getUserSIP(SharedCurrentUserLogon.ID));
+    curr_queue:=getCurrentQueueOperator(GetOperatorSIP(SharedCurrentUserLogon.ID));
 
     case curr_queue of
       queue_5000:begin
@@ -487,11 +487,11 @@ end;
 
 procedure THomeForm.btnStatus_del_queue_allClick(Sender: TObject);
 var
- sip:string;
+ sip:Integer;
  delay:enumStatus;
 begin
   // проверим разговариавет ли оператор
-  sip:=getUserSIP(SharedCurrentUserLogon.ID);
+  sip:=GetOperatorSIP(SharedCurrentUserLogon.ID);
   if SharedActiveSipOperators.IsTalkOperator(sip) = eYES then begin
     MessageBox(Handle,PChar('При разговоре выходить из очереди нельзя'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
@@ -789,45 +789,8 @@ var
  error:string;
 begin
  try
-  // остаток свободного места на диске
-  if not isExistFreeSpaceDrive(error) then begin
-    ShowFormErrorMessage(error,SharedMainLog,'THomeForm.FormShow');
-  end;
-
-  // проверка установлен ли MySQL Connector
-  if not isExistMySQLConnector then begin
-    error:='Не установлен MySQL Connector';
-    ShowFormErrorMessage(error,SharedMainLog,'THomeForm.FormShow');
-  end;
-
-   // доступно ли ядро (в дебаг не проверяем)
-   if not DEBUG then begin
-     if not GetAliveCoreDashboard then begin
-      error:='Критическая ошибка! Недоступен TCP сервер'+#13+
-                                  '('+GetTCPServerAddress+' : '+IntToStr(GetTCPServerPort)+')'+#13#13+
-                                  'Свяжитесь с отделом ИТ';
-      ShowFormErrorMessage(error,SharedMainLog,'THomeForm.FormShow');
-     end;
-   end;
-
-  // отображение текущей версии
-  if DEBUG then Caption:='    ===== DEBUG | (base:'+GetDefaultDataBase+') =====    ' + Caption+' '+GetVersion(GUID_VERSION,eGUI) + ' | '+'('+GUID_VERSION+')'
-  else Caption:=Caption+' '+GetVersion(GUID_VERSION,eGUI) + ' | '+'('+GUID_VERSION+')';
-
-  // проверка на ткущую версию
-  CheckCurrentVersion;
-
-  // очистка от временных файлов после автообновления
-  ClearAfterUpdate;
-
-   // проверка на 2ую копию дошборда
-  if GetCloneRun(PChar(DASHBOARD_EXE)) then begin
-    MessageBox(HomeForm.Handle,PChar('Обнаружен запуск 2ой копии программы'+#13#13+
-                                     'Для продолжения закройте предыдущую копию'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
-    KillProcess;
-  end;
-
-   Screen.Cursor:=crHourGlass;
+  FormHomeInit._CHECK;
+  Screen.Cursor:=crHourGlass;
 
    // текущий залогиненый пользователь
   SharedCurrentUserLogon:=TUser.Create;
@@ -837,54 +800,18 @@ begin
   // авторизация
   FormAuth.ShowModal;
 
-  // нужно ли сменить пароль
-  if SharedCurrentUserLogon.RePassword = eYES  then begin
-    Screen.Cursor:=crDefault;
-    FormRePassword.ShowModal;
+  // нужно ли сменить пароль (если локальной вход)
+  if SharedCurrentUserLogon.Auth = eAuthLocal then begin
+    if SharedCurrentUserLogon.RePassword = eYES  then begin
+      Screen.Cursor:=crDefault;
+      FormRePassword.ShowModal;
+    end;
   end;
   ////////////////////////////////
 
   Screen.Cursor:=crHourGlass;
 
-   // стататус бар
-   with StatusBar do begin
-    Panels[2].Text:=SharedCurrentUserLogon.Familiya+' '+SharedCurrentUserLogon.Name;
-    Panels[3].Text:=getUserRoleSTR(SharedCurrentUserLogon.ID);
-    Panels[4].Text:=GetCopyright;
-   end;
-
-   // заведение данных о текущей сесии
-   CreateCurrentActiveSession(SharedCurrentUserLogon.ID);
-
-
-  // создание списка серверов для проверки доступности
-  createCheckServersInfoclinika;
-  // создание списка sip trunk для проверки
-  CreateCheckSipTrunk;
-
-  // прогрузка индивидуальных настроек пользователя
-  LoadIndividualSettingUser(SharedCurrentUserLogon.ID);
-
-  // выставление прав доступа
-  accessRights(SharedCurrentUserLogon);
-
-  // прогрузка красивых чекбоксов на форме
-  AddCustomCheckBoxUI;
-
-  // пасхалки
-  Egg;
-
-  // линковка окна формы debug info в класс для подсчета статистики работы потоков
-  SharedCountResponseThread.SetAddForm(FormDEBUG);
-
-  // очищаем все лист боксы
-  clearAllLists;
-
-  // дата+время старта
-  PROGRAM_STARTED:=Now;
-
-  // размер главной офрмы экрана
-  WindowStateInit;
+  FormHomeInit._INIT;
 
   m_init:=True;  // иницилизировали главную форму
   Screen.Cursor:=crDefault;
@@ -1050,13 +977,13 @@ begin
   id_sip:=StrToInt(SelectedItemPopMenu.Caption);
 
   // в очереди ли находится оператор
-  if not SharedActiveSipOperators.isExistOperatorInQueue(IntToStr(id_sip)) then begin
+  if not SharedActiveSipOperators.isExistOperatorInQueue(id_sip) then begin
     MessageBox(Handle,PChar('Оператор не в очереди'),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
     Exit;
   end;
 
   // найдем id и передадим его дальше
-  user_id:=getUserID(id_sip);
+  user_id:=GetUserID(id_sip);
 
   resultat:=MessageBox(0,PChar('Точно удалить из очереди?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
   if resultat=mrNo then begin
@@ -1079,7 +1006,7 @@ begin
     id_sip:=StrToInt(SelectedItemPopMenu.Caption);
 
     // найдем id и передадим его дальше
-    user_id:=getUserID(id_sip);
+    user_id:=GetUserID(id_sip);
     FormHistoryCallOperator.SetID(user_id);
     FormHistoryCallOperator.SetSip(id_sip);
 
@@ -1103,7 +1030,7 @@ begin
     id_sip:=StrToInt(SelectedItemPopMenu.Caption);
 
     // найдем id и передадим его дальше
-    user_id:=getUserID(id_sip);
+    user_id:=GetUserID(id_sip);
     FormHistoryStatusOperator.SetID(user_id);
     FormHistoryStatusOperator.SetSip(id_sip);
 
@@ -1554,7 +1481,7 @@ var
  delay:enumStatus;
 begin
   // найдем id
-  user_id:=getUserID(_userSip);
+  user_id:=GetUserID(_userSip);
 
   status:=TStatus.Create(user_id,SharedCurrentUserLogon.GetUserData, True);
   delay:=eNO;

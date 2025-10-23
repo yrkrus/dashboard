@@ -1,0 +1,109 @@
+unit FormHomeInit;
+
+interface
+  uses System.SysUtils, Winapi.Windows;
+
+
+procedure _INIT;    // инициализация формы
+procedure _CHECK;   // проверки перед запуском
+
+
+implementation
+
+uses
+  FormHome, GlobalVariables, FunctionUnit, GlobalVariablesLinkDLL, FormDEBUGUnit, TCustomTypeUnit;
+
+
+
+procedure _CHECK;
+var
+ errorDescription:string;
+begin
+    // остаток свободного места на диске
+  if not isExistFreeSpaceDrive(errorDescription) then begin
+    ShowFormErrorMessage(errorDescription,SharedMainLog,'THomeForm.FormShow');
+  end;
+
+  // проверка установлен ли MySQL Connector
+  if not isExistMySQLConnector then begin
+    errorDescription:='Не установлен MySQL Connector';
+    ShowFormErrorMessage(errorDescription,SharedMainLog,'THomeForm.FormShow');
+  end;
+
+   // доступно ли ядро (в дебаг не проверяем)
+   if not DEBUG then begin
+     if not GetAliveCoreDashboard then begin
+      errorDescription:='Критическая ошибка! Недоступен TCP сервер'+#13+
+                                  '('+GetTCPServerAddress+' : '+IntToStr(GetTCPServerPort)+')'+#13#13+
+                                  'Свяжитесь с отделом ИТ';
+      ShowFormErrorMessage(errorDescription,SharedMainLog,'THomeForm.FormShow');
+     end;
+   end;
+
+  // отображение текущей версии
+  with HomeForm do begin
+   if DEBUG then Caption:='    ===== DEBUG | (base:'+GetDefaultDataBase+') =====    ' + Caption+' '+GetVersion(GUID_VERSION,eGUI) + ' | '+'('+GUID_VERSION+')'
+   else Caption:=Caption+' '+GetVersion(GUID_VERSION,eGUI) + ' | '+'('+GUID_VERSION+')';
+  end;
+
+
+  // проверка на ткущую версию
+  CheckCurrentVersion;
+
+  // очистка от временных файлов после автообновления
+  ClearAfterUpdate;
+
+   // проверка на 2ую копию дошборда
+  if GetCloneRun(PChar(DASHBOARD_EXE)) then begin
+    MessageBox(HomeForm.Handle,PChar('Обнаружен запуск 2ой копии программы'+#13#13+
+                                     'Для продолжения закройте предыдущую копию'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
+    KillProcess;
+  end;
+
+end;
+
+
+procedure _INIT;
+begin
+      // стататус бар
+   with HomeForm.StatusBar do begin
+    Panels[2].Text:=SharedCurrentUserLogon.Familiya+' '+SharedCurrentUserLogon.Name;
+    Panels[3].Text:=GetUserRoleSTR(SharedCurrentUserLogon.ID);
+    Panels[4].Text:=GetCopyright;
+   end;
+
+   // заведение данных о текущей сесии
+   CreateCurrentActiveSession(SharedCurrentUserLogon.ID);
+
+  // создание списка серверов для проверки доступности
+  createCheckServersInfoclinika;
+  // создание списка sip trunk для проверки
+  CreateCheckSipTrunk;
+
+  // прогрузка индивидуальных настроек пользователя
+  LoadIndividualSettingUser(SharedCurrentUserLogon.ID);
+
+  // выставление прав доступа
+  AccessRights(SharedCurrentUserLogon);
+
+  // прогрузка красивых чекбоксов на форме
+  AddCustomCheckBoxUI;
+
+  // пасхалки
+  Egg;
+
+  // линковка окна формы debug info в класс для подсчета статистики работы потоков
+  SharedCountResponseThread.SetAddForm(FormDEBUG);
+
+  // очищаем все лист боксы
+  clearAllLists;
+
+  // дата+время старта
+  PROGRAM_STARTED:=Now;
+
+  // размер главной офрмы экрана
+  WindowStateInit;
+end;
+
+
+end.

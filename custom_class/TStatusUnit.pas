@@ -154,7 +154,7 @@ begin
 
 
   if _delay = eNO then begin
-    response:='insert into remote_commands (sip,command,ip,user_id,user_login_pc,pc) values ('+#39+getUserSIP(m_userID) +#39+','
+    response:='insert into remote_commands (sip,command,ip,user_id,user_login_pc,pc) values ('+#39+IntToStr(GetOperatorSIP(m_userID)) +#39+','
                                                                                             +#39+IntToStr(EnumLoggingToInteger(_command))+#39+','
                                                                                             +#39+m_user.m_ip+#39+','
                                                                                             +#39+IntToStr(m_user.m_id)+#39+','
@@ -163,7 +163,7 @@ begin
 
   end
   else begin
-    response:='insert into remote_commands (sip,command,ip,user_id,user_login_pc,pc,delay) values ('+#39+getUserSIP(m_userID) +#39+','
+    response:='insert into remote_commands (sip,command,ip,user_id,user_login_pc,pc,delay) values ('+#39+IntToStr(GetOperatorSIP(m_userID)) +#39+','
                                                                                             +#39+IntToStr(EnumLoggingToInteger(_command))+#39+','
                                                                                             +#39+m_user.m_ip+#39+','
                                                                                             +#39+IntToStr(m_user.m_id)+#39+','
@@ -203,7 +203,7 @@ begin
 
 
     // пробуем удалить команду
-       response:='delete from remote_commands where sip ='+#39+getUserSIP(m_userID)+#39+
+       response:='delete from remote_commands where sip ='+#39+IntToStr(GetOperatorSIP(m_userID))+#39+
                                                          ' and command ='+#39+IntToStr(EnumLoggingToInteger(_command))+#39;
 
     if not Responce(response,_errorDescriptions) then begin

@@ -437,7 +437,8 @@ interface
    enumExternalAccessEXE = (  eExternalAccessLocalChat,   // есть ли доступ в локальному чату
                               eExternalAccessReports,     // есть ли доступ к отчетам
                               eExternalAccessSMS,         // есть ли доступ к sms рассылке
-                              eExternalAccessService      // есть ли доступ к услугам
+                              eExternalAccessService,     // есть ли доступ к услугам
+                              eExternalAccessCalls        // есть ли доступ к звонкам
                             );
 
    type // тип авторизации
@@ -511,7 +512,8 @@ interface
  function EnumStatusCodeSmsToString(_code:enumStatusCodeSms):string;                  // EnumStatusCodeSms -> String
  function EnumReportTableOperatorStatusToString(_table:enumReportTableOperatorStatus):string; //EnumReportTableOperatorStatus -> String
  function IntegerToEnumAuth(_value:Integer):enumAuth;                                 // Integer --> enumAuth
-
+ function EnumAuthToString(_auth:enumAuth):string;                                    // EnumAuth --> string
+ function EnumAuthToInteger(_auth:enumAuth):integer;                                  // EnumAuth --> integer
 
  // =================== ѕ–ќ≈ќЅ–ј«ќ¬јЌ»я ===================
  implementation
@@ -1499,6 +1501,24 @@ begin
    0:  Result:=eAuthLocal;
    1:  Result:=eAuthLdap;
   end;
+end;
+
+// EnumAuth --> string
+function EnumAuthToString(_auth:enumAuth):string;
+begin
+  case _auth of
+   eAuthLocal: Result:='Ћокальна€';
+   eAuthLdap:  Result:='ƒоменна€';
+  end;
+end;
+
+// EnumAuth --> integer
+function EnumAuthToInteger(_auth:enumAuth):integer;
+begin
+ case _auth of
+   eAuthLocal: Result:=0;
+   eAuthLdap:  Result:=1;
+ end;
 end;
 
 end.

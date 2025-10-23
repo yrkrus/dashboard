@@ -86,7 +86,8 @@ uses
   FormPhoneListAddUnit in 'Forms\Settings\FormPhoneListAddUnit.pas' {FormPhoneListAdd},
   TIVRTimeUnit in '..\custom_class\TIVRTimeUnit.pas',
   TCheckBoxUIUnit in '..\custom_class\TCheckBoxUIUnit.pas',
-  TUsersAllUnit in '..\custom_class\TUsersAllUnit.pas';
+  TUsersAllUnit in '..\custom_class\TUsersAllUnit.pas',
+  FormHomeInit in 'FormHomeInit.pas';
 
 {$R *.res}
 
@@ -136,4 +137,4 @@ begin
   Application.CreateForm(TFormPhoneListAdd, FormPhoneListAdd);
   Application.Run;
 end.
-end.
+

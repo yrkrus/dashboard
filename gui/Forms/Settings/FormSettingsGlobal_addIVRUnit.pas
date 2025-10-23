@@ -18,24 +18,28 @@ type
     StaticText2: TStaticText;
     edt5050: TEdit;
     Label4: TLabel;
-    chkboxMyTime: TCheckBox;
     DateQueue: TDateTimePicker;
     TimeQueue: TDateTimePicker;
     Label1: TLabel;
     edt5911: TEdit;
     StaticText3: TStaticText;
+    lbl_checkbox_MyTime: TLabel;
+    img_MyTime: TImage;
     procedure btnAddClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure edt5000KeyPress(Sender: TObject; var Key: Char);
     procedure edt5050KeyPress(Sender: TObject; var Key: Char);
-    procedure chkboxMyTimeClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure edt5911KeyPress(Sender: TObject; var Key: Char);
+    procedure lbl_checkbox_MyTimeClick(Sender: TObject);
+    procedure img_MyTimeClick(Sender: TObject);
   private
     { Private declarations }
   m_ivrTime:TIVRTime;
   function GetCheckFields(var _errorDescription:string):Boolean;
   function Insert(_anyTime:Boolean; var _errorDescription:string):Boolean;
+
+  procedure ChangeMyTime;
 
   public
     { Public declarations }
@@ -89,7 +93,7 @@ begin
   end;
 
   // проверка даты
-  if chkboxMyTime.Checked then begin
+  if SharedCheckBoxUI.Checked['MyTime'] then begin
     combined := Trunc(DateQueue.DateTime)        // только «дата» в виде целого
               + Frac(TimeQueue.DateTime);        // только время в виде дробной части
 
@@ -103,6 +107,25 @@ begin
   end;
 
   Result:=True;
+end;
+
+procedure TFormSettingsGlobal_addIVR.img_MyTimeClick(Sender: TObject);
+begin
+  ChangeMyTime;
+end;
+
+procedure TFormSettingsGlobal_addIVR.ChangeMyTime;
+begin
+ SharedCheckBoxUI.ChangeStatusCheckBox('MyTime');
+
+ if SharedCheckBoxUI.Checked['MyTime'] then begin
+  DateQueue.Enabled:=True;
+  TimeQueue.Enabled:=True;
+ end
+ else begin
+  DateQueue.Enabled:=False;
+  TimeQueue.Enabled:=False;
+ end;
 end;
 
 
@@ -126,6 +149,11 @@ begin
 end;
 
 
+procedure TFormSettingsGlobal_addIVR.lbl_checkbox_MyTimeClick(Sender: TObject);
+begin
+  ChangeMyTime;
+end;
+
 procedure TFormSettingsGlobal_addIVR.btnAddClick(Sender: TObject);
 var
   error:string;
@@ -137,7 +165,7 @@ begin
    end;
 
    // добавляем
-  anyTime:=chkboxMyTime.Checked;
+  anyTime:=SharedCheckBoxUI.Checked['MyTime'];
 
   if not (Insert(anyTime,error)) then begin
     // не удалось добавить
@@ -151,18 +179,7 @@ begin
   Close;
 end;
 
-procedure TFormSettingsGlobal_addIVR.chkboxMyTimeClick(Sender: TObject);
-begin
- if chkboxMyTime.Checked then begin
-  DateQueue.Enabled:=True;
-  TimeQueue.Enabled:=True;
- end
- else begin
-  DateQueue.Enabled:=False;
-  TimeQueue.Enabled:=False;
- end;
 
-end;
 
 procedure TFormSettingsGlobal_addIVR.edt5000KeyPress(Sender: TObject;
   var Key: Char);
@@ -185,7 +202,7 @@ end;
 procedure TFormSettingsGlobal_addIVR.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
- chkboxMyTime.Checked:=False;
+ SharedCheckBoxUI.Checked['MyTime']:=False;
  DateQueue.Enabled:=False;
  TimeQueue.Enabled:=False;
 end;

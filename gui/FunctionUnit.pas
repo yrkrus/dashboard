@@ -9,7 +9,7 @@ interface
     IdAttachmentFile, FormHome, Data.Win.ADODB, Data.DB, IdIcmpClient, IdException, System.DateUtils,
     FIBDatabase, pFIBDatabase, TCustomTypeUnit, TUserUnit, Vcl.Menus, GlobalVariables, GlobalVariablesLinkDLL,
     TActiveSIPUnit, System.IOUtils, TLogFileUnit, Vcl.Buttons, IdGlobal, System.ImageList,
-    Vcl.ImgList,Vcl.Imaging.pngimage;
+    Vcl.ImgList,Vcl.Imaging.pngimage, System.Generics.Collections;
 
 
 procedure KillProcess;                                                               // принудительное завершение работы
@@ -28,13 +28,11 @@ procedure CreateCheckSipTrunk;                                                  
 function GetUserGroupSTR(InGroup:Integer):string;                                    // отображение роли пользвоателя
 function getHashPwd(inPwd: String):Integer;                                          // хэширование пароля
 function GetUserGroupID(InGroup:string):Integer;                                     // отображение ID роли пользвоателя
-function getUserID(InLogin:string):Integer; overload;                                // отображение ID пользвоателя
-function getUserID(InUserName,InUserFamiliya:string):Integer; overload;              // полчуение userID из ФИО
-function getUserID(InSIPNumber:integer):Integer; overload;                           // полчуение userID из SIP номера
-procedure LoadPanel_Operators;                                                       // прогрузка спика пользвоателей (операторы)
-function GetCheckLogin(inLogin:string):Boolean;                                      // существует ли login пользвоателчя
+function GetUserID(InLogin:string):Integer; overload;                                // отображение ID пользвоателя
+function GetUserID(InUserName,InUserFamiliya:string):Integer; overload;              // полчуение userID из ФИО
+function GetUserID(InSIPNumber:integer):Integer; overload;                           // полчуение userID из SIP номера
 function DisableUser(InUserID:Integer; var _errorDescription:string):Boolean;        // отключение пользователя
-procedure DeleteOperator(InUserID:Integer);                                          // удаление пользователя из таблицы operators
+procedure DeleteOperator(_userID:Integer; _sip:Integer);                             // удаление пользователя из таблицы operators
 function getUserPwd(InUserID:Integer):Integer;                                       // полчуение userPwd из userID
 function getUserLogin(InUserID:Integer):string;                                      // полчуение userLogin из userID
 function GetUserRoleSTR(InUserID:Integer):string;                                    // отображение роли пользвоателя
@@ -48,26 +46,25 @@ procedure CreateCurrentActiveSession(InUserID:Integer);                         
 function isExistCurrentActiveSession(InUserID:Integer):Boolean;                      // сущуствует ли акивная сессия
 procedure DeleteActiveSession(InSessionID:Integer);                                  // удаление активной сессии
 function GetActiveSessionUser(InUserID:Integer):Integer;                             // доставание ID активной сессии пользователя
-function isExistSipActiveOperator(InSip:string):Boolean;                             // проверка заведен ли уже ранее оператор под таким sip номером и он активен
-procedure accessRights(var p_TUser: TUser);                                          // права доступа
+procedure AccessRights(var p_TUser: TUser);                                          // права доступа
 function getComputerPCName: string;                                                  // функция получения имени ПК
 function GetForceActiveSessionClosed(InUserID:Integer):Boolean;                      // проверка нужно ли закрыть активную сессию
 function GetSelectResponse(InStroka:string):Integer;                                 // запрос по статичтике данных
 procedure LoggingRemote(InLoggingID:enumLogging;_userID:Integer);                    // логирование действий
 function GetUserFamiliyaName_LastSuccessEnter(InUser_login_pc,
                                               InUser_pc:string):string;              // нахождение userID после успешного входа на пк
-function GetCountAnsweredCall(InSipOperator:string):Integer;                         // кол-во отвеченных звонков оператором
+function GetCountAnsweredCall(_sip:Integer):Integer;                         // кол-во отвеченных звонков оператором
 function GetCountAnsweredCallAll:Integer;                                            // кол-во отвеченных звонков всех операторов
-function CreateListAnsweredCall(InSipOperator:string):TStringList;                   // создвание списка со всем отвеченными звонками  sip оператора
+function CreateListAnsweredCall(_sip:Integer):TStringList;                   // создвание списка со всем отвеченными звонками  sip оператора
 //function remoteCommand_addQueue(_command:enumLogging;
 //                                _userID:Integer;
 //                                var _errorDescriptions:string):Boolean;              // удаленная команда (добавление в очередь)
 procedure showWait(Status:enumShow_wait);                                            // отображение\сркытие окна запроса на сервер
 function remoteCommand_Responce(InStroka:string; var _errorDescriptions:string):boolean;  // отправка запроса на добавление удаленной команды
-function getUserSIP(InIDUser:integer):string;                                        // отображение SIP пользвоателя
+function GetOperatorSIP(_userId:integer):integer;                                       // отображение SIP пользвоателя
 //function isExistRemoteCommand(command:enumLogging;_userID:Integer):Boolean;         // проверка есть ли уже такая удаленная команда на сервера
 function getStatus(InStatus:enumStatusOperators):string;                             // полчуение имени status оператора
-function getCurrentQueueOperator(InSipNumber:string):enumQueue;               // в какой очереди сейчас находится оператор
+function getCurrentQueueOperator(InSipNumber:integer):enumQueue;               // в какой очереди сейчас находится оператор
 procedure UpdateOperatorStatus(_status:enumStatusOperators;_userID:Integer);         // очитска текущего статуса оператора
 procedure checkCurrentStatusOperator(InOperatorStatus:enumStatusOperators);              // проверка и отображение кнопок статусов оператора
 procedure ShowStatusOperator(InShow:Boolean = True);                                 // отобрадение панели статусы операторов
@@ -81,7 +78,7 @@ function getTranslate(Stroka: string):string;                                   
 function getUserFamiliya(InUserID:Integer):string;                                   // полчуение фамилии пользователя из его UserID
 function getUserNameBD(InUserID:Integer):string;                                     // полчуение имени пользователя из его UserID
 function IsUserOperator(InUserID:Integer):Boolean;                                   // проверка userID принадлежит оператору или нет TRUE - оператор
-procedure disableOperator(InUserId:Integer);                                         // отключение оператора и перенос его в таблицу operators_disable
+procedure DisableOperator(_userID:Integer);                                          // отключение оператора и перенос его в таблицу operators_disable
 function EnableUser(InUserID:Integer; var _errorDescription:string):Boolean;             // включение пользователя
 function GetOperatorAccessDashboard(InSip:string):Boolean;                           // нахождение статуса доступен ли дашбор орератору или нет
 function isExistSettingUsers(InUserID:Integer):Boolean;                              // проверка существу.т ли индивидуальные настрокий пользователч true - существуют настроки
@@ -154,6 +151,11 @@ procedure SetLinkColor(var _label:TLabel);                                      
 procedure ResetPanelStatusOperator;                                                 // сброс панели статусы оператора на дефолтные значения
 procedure ForceExitOperatorAllQueue(_userID:Integer);                               // принудительный выход из всех очередей оператора
 procedure AddCustomCheckBoxUI;                                                      // подгрузка своих красивых чекбоксов
+function GetUserAuth(_userId:Integer):enumAuth;                                     // тип авторизации пользователя
+function RoleIsOperator(InRole:enumRole):Boolean;                                   // проверка роль пользователя это операторская роль
+function CheckAnsweredSecondsToString(const _time:string):Boolean;                  // проверка корреткности перевода времени из int -> 00:00:00 формат
+procedure DeleteUserCommonQueue(_userID:Integer);                                   // удаление пользователя из таблицы users_common_queue
+procedure AddUserCommonQueue(_userID:Integer; var _list:TList<enumQueue>);              // добавление пользователя в таблицу users_common_queue
 
 
 implementation
@@ -165,7 +167,7 @@ uses
   FormUsersUnit, TTranslirtUnit, Thread_ACTIVESIP_updatetalkUnit, Thread_ACTIVESIP_updatePhoneTalkUnit,
   Thread_ACTIVESIP_countTalkUnit, Thread_ACTIVESIP_QueueUnit, FormActiveSessionUnit, TIVRUnit,
   TXmlUnit, TOnlineChat, Thread_ChatUnit, Thread_ForecastUnit,
-  Thread_InternalProcessUnit, TActiveSessionUnit, FormTrunkSipUnit, Thread_CheckTrunkUnit, TStatusUnit, GlobalImageDestination, DMUnit, FormSettingsGlobalUnit, FormHistoryStatusOperatorUnit;
+  Thread_InternalProcessUnit, TActiveSessionUnit, FormTrunkSipUnit, Thread_CheckTrunkUnit, TStatusUnit, GlobalImageDestination, DMUnit, FormSettingsGlobalUnit, FormHistoryStatusOperatorUnit, FormSettingsGlobal_addIVRUnit;
 
  // логирование действий
 procedure LoggingRemote(InLoggingID:enumLogging; _userID:Integer);
@@ -640,7 +642,7 @@ begin
 
       Sleep(10);
 
-      FORECAST_thread.Start;
+     // FORECAST_thread.Start;
 
       Sleep(10);
       CHECKSERVERS_thread.Start; // TODO тут не делаем проверку т.к. этот поток уедет в core
@@ -1133,7 +1135,7 @@ begin
 end;
 
 // кол-во отвеченных звонков оператором
- function GetCountAnsweredCall(InSipOperator:string):Integer;
+ function GetCountAnsweredCall(_sip:Integer):Integer;
 var
   ado:TADOQuery;
   serverConnect:TADOConnection;
@@ -1149,7 +1151,7 @@ begin
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
-      SQL.Add('select count(phone) from queue where date_time > '+#39+GetNowDateTime+#39+' and sip = '+#39+InSipOperator+#39+' and answered = ''1'' and fail = ''0'' and hash is not null' );
+      SQL.Add('select count(phone) from queue where date_time > '+#39+GetNowDateTime+#39+' and sip = '+#39+IntToStr(_sip)+#39+' and answered = ''1'' and fail = ''0'' and hash is not null' );
       Active:=True;
 
       if Fields[0].Value<>null then Result:=Fields[0].Value
@@ -1202,7 +1204,7 @@ end;
 
 
 // создвание списка со всем отвеченными звонками  sip оператора
-function CreateListAnsweredCall(InSipOperator:string):TStringList;
+function CreateListAnsweredCall(_sip:Integer):TStringList;
 var
   ado:TADOQuery;
   serverConnect:TADOConnection;
@@ -1219,13 +1221,13 @@ begin
     end;
 
     // кол-во звонков
-    countTalk:=GetCountAnsweredCall(InSipOperator);
+    countTalk:=GetCountAnsweredCall(_sip);
 
   try
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
-      SQL.Add('select talk_time from queue where date_time > '+#39+GetNowDateTime+#39+' and sip = '+#39+InSipOperator+#39+' and answered = ''1'' and fail = ''0''and hash is not null' );
+      SQL.Add('select talk_time from queue where date_time > '+#39+GetNowDateTime+#39+' and sip = '+#39+IntToStr(_sip)+#39+' and answered = ''1'' and fail = ''0''and hash is not null' );
       Active:=True;
 
       for i:=0 to countTalk-1 do begin
@@ -1908,6 +1910,45 @@ begin
 end;
 
 
+// тип авторизации пользователя
+function GetUserAuth(_userId:Integer):enumAuth;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ error:string;
+begin
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnectWithError(error);
+
+  if not Assigned(serverConnect) then begin
+     ShowFormErrorMessage(error,SharedMainLog,'GetUserAuth');
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+
+      SQL.Clear;
+      SQL.Add('select ldap_auth from users where id = '+#39+IntToStr(_userId)+#39);
+      Active:=True;
+
+      if Fields[0].Value=0 then Result:=eAuthLocal
+      else Result:=eAuthLdap;
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+
 // отображение ID роли пользвоателя
 function GetUserGroupID(InGroup:string):Integer;
 var
@@ -1948,7 +1989,7 @@ end;
 
 
 // отображение ID пользвоателя
-function getUserID(InLogin:string):Integer; overload;
+function GetUserID(InLogin:string):Integer; overload;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -1983,12 +2024,12 @@ end;
 
 
 // отображение SIP пользвоателя
-function getUserSIP(InIDUser:integer):string;
+function GetOperatorSIP(_userId:integer):integer;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
 begin
-  Result:='null';
+  Result:=-1;
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
@@ -2002,119 +2043,10 @@ begin
       ado.Connection:=serverConnect;
 
       SQL.Clear;
-      SQL.Add('select sip from operators where user_id = '+#39+IntToStr(InIDUser)+#39);
+      SQL.Add('select sip from operators where user_id = '+#39+IntToStr(_userId)+#39);
       Active:=True;
 
-      if Fields[0].Value<>null then Result:=VarToStr(Fields[0].Value);
-    end;
-  finally
-    FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
-  end;
-end;
-
-
-// прогрузка спика пользвоателей (операторы)
-procedure LoadPanel_Operators;
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
- countUsers,i:Integer;
- error:string;
-begin
-  Screen.Cursor:=crHourGlass;
-
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnectWithError(error);
-
-  if not Assigned(serverConnect) then begin
-     ShowFormErrorMessage(error,SharedMainLog,'LoadPanel_Operators');
-     FreeAndNil(ado);
-     Exit;
-  end;
-
-
-  try
-    with ado do begin
-      ado.Connection:=serverConnect;
-
-      SQL.Clear;
-      SQL.Add('select count(id) from operators ');
-
-      Active:=True;
-
-      countUsers:=Fields[0].Value;
-    end;
-
-    with FormUsers.listSG_Operators do begin
-     RowCount:=1;      // типа очистка текущего списка
-     RowCount:=countUsers;
-
-      with ado do begin
-
-        SQL.Clear;
-        SQL.Add('select id,sip,user_id,sip_phone from operators order by sip asc ');
-
-        Active:=True;
-
-         for i:=0 to countUsers-1 do begin
-
-           Cells[0,i]:=Fields[0].Value;                           // id
-           Cells[1,i]:=GetUserNameOperators(Fields[1].Value);     // Фамилия Имя
-           Cells[2,i]:=Fields[1].Value;                           // Sip
-           if Fields[3].Value<>null then Cells[3,i]:=Fields[3].Value
-           else Cells[3,i]:='null';
-           Cells[4,i]:=getUserRoleSTR( StrToInt(Fields[2].Value) );  // Группа прав
-
-           ado.Next;
-         end;
-      end;
-    end;
-  finally
-    FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
-   Screen.Cursor:=crDefault;
-  end;
-end;
-
-
-// существует ли login пользвоателчя
-function GetCheckLogin(inLogin:string):Boolean;
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
- error:string;
-begin
-
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnectWithError(error);
-
-  if not Assigned(serverConnect) then begin
-     ShowFormErrorMessage(error, SharedMainLog, 'GetCheckLogin');
-     FreeAndNil(ado);
-     Exit;
-  end;
-
-
-  try
-    with ado do begin
-      ado.Connection:=serverConnect;
-
-      SQL.Clear;
-      SQL.Add('select count(id) from users where login = '+#39+InLogin+#39);
-      Active:=True;
-
-      if Fields[0].Value<>null then begin
-        if Fields[0].Value <> 0 then Result:=True
-        else Result:=False;
-      end
-      else Result:= True;
+      if Fields[0].Value<>null then Result:= StrToInt(VarToStr(Fields[0].Value));
     end;
   finally
     FreeAndNil(ado);
@@ -2127,7 +2059,7 @@ end;
 
 
 // полчуение userID из ФИО
-function getUserID(InUserName,InUserFamiliya:string):Integer; overload;
+function GetUserID(InUserName,InUserFamiliya:string):Integer; overload;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -2165,7 +2097,7 @@ end;
 
 
 // полчуение userID из SIP номера
-function getUserID(InSIPNumber:integer):Integer; overload;
+function GetUserID(InSIPNumber:integer):Integer; overload;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -2323,6 +2255,7 @@ var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  error:string;
+ operatorSip:Integer;
 begin
   Result:=False;
   _errorDescription:='';
@@ -2332,7 +2265,6 @@ begin
 
   if not Assigned(serverConnect) then begin
      _errorDescription:=error;
-     ShowFormErrorMessage(error, SharedMainLog, 'DisableUser');
      FreeAndNil(ado);
      Exit;
   end;
@@ -2360,10 +2292,15 @@ begin
           end;
       end;
 
+      // удаляем из внутренних очередей
+      DeleteUserCommonQueue(InUserID);
+
       // проверим пользователь принадлежит группе операторов
       if IsUserOperator(InUserID) then begin
-        disableOperator(InUserID);
-        deleteOperator(InUserID);
+        operatorSip:=GetOperatorSIP(InUserID);
+
+        DisableOperator(InUserID);
+        DeleteOperator(InUserID, operatorSip);
       end;
     end;
   finally
@@ -2377,6 +2314,34 @@ begin
   Result:=True;
 end;
 
+{
+
+
+
+
+
+      // таблица settings_sip (толькол для операторов)
+      if RoleIsOperator(StringToEnumRole(user_group)) then begin
+        SQL.Clear;
+         SQL.Add('update settings_sip set user_id = '+#39+userID+#39
+                                                     +' where sip = ' +#39+user_sip+#39);
+        try
+            ExecSQL;
+        except
+            on E:EIdException do begin
+               Screen.Cursor:=crDefault;
+               _errorDescription:=e.Message;
+                FreeAndNil(ado);
+                if Assigned(serverConnect) then begin
+                  serverConnect.Close;
+                  FreeAndNil(serverConnect);
+                end;
+               Exit;
+            end;
+        end;
+      end;
+
+}
 
 // включение пользователя
 function EnableUser(InUserID:Integer; var _errorDescription:string):Boolean;
@@ -2435,18 +2400,16 @@ end;
 
 
 // удаление пользователя из таблицы operators
-procedure DeleteOperator(InUserID:Integer);
+procedure DeleteOperator(_userID:Integer; _sip:Integer);
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  CodOshibki:string;
- error:string;
 begin
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnectWithError(error);
+  serverConnect:=createServerConnect;
 
   if not Assigned(serverConnect) then begin
-     ShowFormErrorMessage(error, SharedMainLog, 'DeleteOperator');
      FreeAndNil(ado);
      Exit;
   end;
@@ -2457,7 +2420,7 @@ begin
       ado.Connection:=serverConnect;
       SQL.Clear;
 
-      SQL.Add('delete from operators where user_id = '+#39+IntToStr(InUserID)+#39);
+      SQL.Add('delete from operators where user_id = '+#39+IntToStr(_userID)+#39);
 
       try
           ExecSQL;
@@ -2471,6 +2434,131 @@ begin
             end;
 
              Exit;
+          end;
+      end;
+
+      // удаление из settings_sip
+      begin
+        SQL.Clear;
+        SQL.Add('update settings_sip set user_id = ''-1'' where sip = ' +#39+IntToStr(_sip)+#39);
+        try
+            ExecSQL;
+        except
+            on E:EIdException do begin
+                FreeAndNil(ado);
+                if Assigned(serverConnect) then begin
+                  serverConnect.Close;
+                  FreeAndNil(serverConnect);
+                end;
+               Exit;
+            end;
+        end;
+      end;
+
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+
+// удаление пользователя из таблицы users_common_queue
+procedure DeleteUserCommonQueue(_userID:Integer);
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ CodOshibki:string;
+begin
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+
+      SQL.Add('delete from users_common_queue where user_id = '+#39+IntToStr(_userID)+#39);
+
+      try
+          ExecSQL;
+      except
+          on E:EIdException do begin
+             CodOshibki:=e.Message;
+             FreeAndNil(ado);
+            if Assigned(serverConnect) then begin
+              serverConnect.Close;
+              FreeAndNil(serverConnect);
+            end;
+
+             Exit;
+          end;
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+
+// добавление пользователя в таблицу users_common_queue
+procedure AddUserCommonQueue(_userID:Integer; var _list:TList<enumQueue>);
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ i:Integer;
+begin
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+
+      try
+         for i:=0 to _list.Count-1 do begin
+          SQL.Clear;
+          SQL.Add('insert into users_common_queue (user_id,queue) values ('+#39+IntToStr(_userID)+#39+','
+                                                                           +#39+EnumQueueToString(_list[i])+#39+')');
+          try
+              ExecSQL;
+          except
+              on E:EIdException do begin
+                  FreeAndNil(ado);
+                  if Assigned(serverConnect) then begin
+                    serverConnect.Close;
+                    FreeAndNil(serverConnect);
+                  end;
+                 Exit;
+              end;
+          end;
+        end;
+      except
+          on E:EIdException do begin
+             FreeAndNil(ado);
+            if Assigned(serverConnect) then begin
+              serverConnect.Close;
+              FreeAndNil(serverConnect);
+            end;
+            Exit;
           end;
       end;
     end;
@@ -2791,48 +2879,6 @@ begin
 end;
 
 
-// проверка заведен ли уже ранее оператор под таким sip номером и он активен
-function isExistSipActiveOperator(InSip:string):Boolean;
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
- error:string;
-begin
-
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnectWithError(error);
-
-  if not Assigned(serverConnect) then begin
-     ShowFormErrorMessage(error, SharedMainLog, 'isExistSipActiveOperator');
-     FreeAndNil(ado);
-     Exit;
-  end;
-
-
-  try
-    with ado do begin
-     ado.Connection:=serverConnect;
-
-      SQL.Clear;
-      SQL.Add('select disabled from users where id = ( select user_id from operators where sip = '+#39+InSip+#39+')');
-
-      Active:=True;
-
-      if Fields[0].Value<>null then begin
-        if VarToStr(Fields[0].Value) = '0' then Result:=True
-        else Result:=False;
-      end;
-    end;
-  finally
-    FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
-  end;
-end;
-
-
 // полчуение фамилии пользователя из его UserID
 function getUserFamiliya(InUserID:Integer):string;
 var
@@ -2997,7 +3043,7 @@ end;
 
 
 // права доступа
-procedure accessRights(var p_TUser: TUser);
+procedure AccessRights(var p_TUser: TUser);
  var
   i:Integer;
   Access:enumAccessList;
@@ -3236,7 +3282,7 @@ end;
 
 
 // в какой очереди сейчас находится оператор
-function getCurrentQueueOperator(InSipNumber:string):enumQueue;
+function GetCurrentQueueOperator(InSipNumber:integer):enumQueue;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -3255,7 +3301,7 @@ begin
       ado.Connection:=serverConnect;
 
       SQL.Clear;
-      SQL.Add('select count(queue) from operators_queue where sip = '+#39+InSipNumber+#39);
+      SQL.Add('select count(queue) from operators_queue where sip = '+#39+IntToStr(InSipNumber)+#39);
       Active:=True;
 
       countQueue:=Fields[0].Value;
@@ -3269,7 +3315,7 @@ begin
         end;
         1: begin             // либо в 5000 либо в 5050 (надо понять в какой)
           SQL.Clear;
-          SQL.Add('select queue from operators_queue where sip = '+#39+InSipNumber+#39);
+          SQL.Add('select queue from operators_queue where sip = '+#39+IntToStr(InSipNumber)+#39);
           Active:=True;
 
           if Fields[0].Value<>null then begin
@@ -3317,7 +3363,7 @@ begin
       ado.Connection:=serverConnect;
       SQL.Clear;
       SQL.Add('update operators set status = '+#39+IntToStr(EnumStatusOperatorsToInteger(_status))+#39+
-                                             ' where sip = '+#39+getUserSIP(_userID)+#39);
+                                             ' where sip = '+#39+IntToStr(GetOperatorSIP(_userID))+#39);
 
       try
           ExecSQL;
@@ -3809,7 +3855,7 @@ begin
    role_lead_operator,role_senior_operator,role_operator:begin
 
      // проверяемв друг еще в очереди находится оператор
-     if SharedActiveSipOperators.isExistOperatorInQueue(getUserSIP(InUserID)) then Result:=True
+     if SharedActiveSipOperators.isExistOperatorInQueue(GetOperatorSIP(InUserID)) then Result:=True
      else Result:=False;
 
    end
@@ -3879,7 +3925,7 @@ end;
 
 
 // отключение оператора и перенос его в таблицу operators_disable
-procedure disableOperator(InUserId:Integer);
+procedure DisableOperator(_userID:Integer);
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -3887,7 +3933,6 @@ var
  // данные оператора из таблиц operators
  date_time_create,
  sip:string;
-
 begin
  ado:=TADOQuery.Create(nil);
  serverConnect:=createServerConnect;
@@ -3901,7 +3946,7 @@ begin
       ado.Connection:=serverConnect;
 
       SQL.Clear;
-      SQL.Add('select date_time,sip from operators where user_id = '+#39+IntToStr(InUserID)+#39);
+      SQL.Add('select date_time,sip from operators where user_id = '+#39+IntToStr(_userID)+#39);
       Active:=True;
 
       if Fields[0].Value<>null then begin
@@ -3921,7 +3966,7 @@ begin
       SQL.Clear;
       SQL.Add('insert into operators_disabled (date_time_create,sip,user_id) values ('+#39+date_time_create+#39+','
                                                                                       +#39+sip+#39+','
-                                                                                      +#39+IntToStr(InUserID)+#39+')');
+                                                                                      +#39+IntToStr(_userID)+#39+')');
 
         try
             ExecSQL;
@@ -4599,7 +4644,7 @@ end;
 // открытые exe Звонилки
 procedure OpenOutgoing;
 begin
-  if not SharedCurrentUserLogon.IsAccessService then begin
+  if not SharedCurrentUserLogon.IsAccessCalls then begin
     MessageBox(HomeForm.Handle,PChar('Отсутствует доступ к звонкам'),PChar('Отсутствует доступ'),MB_OK+MB_ICONINFORMATION);
     Exit;
   end;
@@ -5239,27 +5284,19 @@ end;
 
 // нужно ли делать задержку при смене статуса оператора
 function SendCommandStatusDelay(_userID:Integer):enumStatus;
-var
- sip:string;
 begin
   // проверим разговариавет ли оператор
-  sip:=getUserSIP(_userID);
-
-  Result:=SharedActiveSipOperators.IsTalkOperator(sip);
+  Result:=SharedActiveSipOperators.IsTalkOperator(GetOperatorSIP(_userID));
 end;
 
 // можно ли сменить оператору статус (вдруг стоит отложенный статус)
 function IsAllowChangeStatusOperators(_userID:Integer; var _errorDescription:string):Boolean;
 var
- sip:Integer;
  id:Integer;
 begin
   Result:=True;
 
-  // проверим разговариавет ли оператор
-  sip:=StrToInt(getUserSIP(_userID));
-
-  id:=SharedActiveSipOperators.GetListOperators_ID(sip);
+  id:=SharedActiveSipOperators.GetListOperators_ID(GetOperatorSIP(_userID));
   if SharedActiveSipOperators.GetListOperators_StatusDelay(id) <> eUnknown  then
   begin
     _errorDescription:='Смена статуса невозможна, не выполнена предыдущая команда';
@@ -5277,7 +5314,7 @@ end;
 procedure ResetPanelStatusOperator;
 var
  XML:TXML;
- id_sip:string;
+ id_sip:Integer;
 begin
 
   try
@@ -5287,7 +5324,7 @@ begin
    XML.Free;
   end;
 
-  id_sip:=getUserSIP(SharedCurrentUserLogon.ID);
+  id_sip:=GetOperatorSIP(SharedCurrentUserLogon.ID);
 
   // в очереди ли находится оператор
   if SharedActiveSipOperators.isExistOperatorInQueue(id_sip) then begin
@@ -5335,6 +5372,61 @@ begin
     SharedCheckBoxUI.Add('anyDay', chkbox_anyDay, img_anyDay, paramStatus_DISABLED);
   end;
 
+  with FormUsers do begin
+    // показать только отключенных(users_ShowDisabled)
+    SharedCheckBoxUI.Add('users_ShowDisabled', chkbox_users_ShowDisabled, img_users_ShowDisabled, paramStatus_DISABLED);
+
+    // скрыть тех, кто ни разу не входил(users_NoEnterProgramm)
+    SharedCheckBoxUI.Add('users_NoEnterProgramm', chkbox_users_NoEnterProgramm, img_users_NoEnterProgramm, paramStatus_DISABLED);
+  end;
+
+  with FormSettingsGlobal_addIVR do begin
+    // свое время (MyTime)
+    SharedCheckBoxUI.Add('MyTime', lbl_checkbox_MyTime, img_MyTime, paramStatus_DISABLED);
+  end;
+end;
+
+
+// проверка роль пользователя это операторская роль
+function RoleIsOperator(InRole:enumRole):Boolean;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+  Result:=False;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select only_operators from role where id = '+#39+IntToStr(GetRoleID(EnumRoleToString(InRole)))+#39);
+
+      Active:=True;
+
+      if VarToStr(Fields[0].Value) = '1' then Result:=True;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+
+// проверка корреткности перевода времени из int -> 00:00:00 формат
+function CheckAnsweredSecondsToString(const _time:string):Boolean;
+begin
+  if AnsiPos(':',_time)<>0 then Result:=True
+  else Result:=False;
 end;
 
 
