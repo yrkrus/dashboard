@@ -13,8 +13,8 @@ uses
 // ======== ÑÌÅÍÀ ÀÄĞÅÑÀ ÁÀÇÛ ÄÀÍÍÛÕ =========
 function _DefaultDataBase:string;
 begin
-  Result:=GetServerName;
- //  Result:=GetServerNameTest;
+ // Result:=GetServerName;
+   Result:=GetServerNameTest;
 end;
 // ======== ÑÌÅÍÀ ÀÄĞÅÑÀ ÁÀÇÛ ÄÀÍÍÛÕ =========
 
@@ -642,6 +642,7 @@ function StringToTQueue(InQueueSTR:string):enumQueue; stdcall;export;
 begin
   if InQueueSTR = '5000' then Result:=queue_5000;
   if InQueueSTR = '5050' then Result:=queue_5050;
+  if InQueueSTR = '5911' then Result:=queue_5911;
 end;
 
 // êîíâåğòåğ èç TQueue â string
@@ -650,6 +651,7 @@ begin
   case InQueueSTR of
     queue_5000: Result:=PChar('5000');
     queue_5050: Result:=PChar('5050');
+    queue_5911: Result:=PChar('5911');
   end;
 end;
 

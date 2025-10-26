@@ -16,7 +16,7 @@ uses
     System.Classes, Data.Win.ADODB, Data.DB,
     System.SysUtils, Variants, Graphics,
     System.SyncObjs, IdException,
-    TCustomTypeUnit, TThreadDispatcherUnit, System.DateUtils;
+    TCustomTypeUnit, TThreadDispatcherUnit, System.DateUtils, System.Generics.Collections;
 
 
 
@@ -36,6 +36,8 @@ uses
 
       isOperator                :Boolean;   // операторская учетка
       isOperatorInQueue         :Boolean;   // оператор находится в очереди
+      m_operatorQueueList       :TList<enumQueue>;  // список в каких очередях находится оператор
+
 
       m_online                  :enumOnlineStatus;   // текущий статус ONLINE\OFFLINE
       constructor Create;               overload;
@@ -139,7 +141,12 @@ constructor TActiveStruct.Create;
    isOperator         :=False;
    isOperatorInQueue  :=False;
 
+   if not Assigned(m_operatorQueueList) then m_operatorQueueList:=TList<enumQueue>.Create
+   else m_operatorQueueList.Clear;
+
    m_online           :=eOffline;
+
+
  end;
 
 // class TActiveStruct  END
@@ -601,8 +608,10 @@ begin
            m_listActiveSession[i].isOperator:=True;
 
            // проверка в очереди или нет находится оператор
-           if GetCurrentQueueOperator(GetOperatorSIP(m_listActiveSession[i].m_userID)) = queue_null then m_listActiveSession[i].isOperatorInQueue:=False
+           m_listActiveSession[i].m_operatorQueueList:=GetCurrentQueueOperator(m_listActiveSession[i].m_userID);
+           if m_listActiveSession[i].m_operatorQueueList.Count = 0 then m_listActiveSession[i].isOperatorInQueue:=False
            else m_listActiveSession[i].isOperatorInQueue:=True;
+
         end
         else begin  // не операторская учетка
          m_listActiveSession[i].isOperator:=False;

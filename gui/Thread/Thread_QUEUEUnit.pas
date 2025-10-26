@@ -68,7 +68,7 @@ var
 begin
   with HomeForm do begin
 
-    countQueue:=p_listQueue.Count;
+    countQueue:=p_listQueue.CountQueueList[SharedCurrentUserLogon.QueueList];
 
      if countQueue=0 then begin
        lblCount_QUEUE.Caption:='Очередь';
@@ -84,9 +84,12 @@ begin
       // Проходим по всем элементам списка
       for i:=0 to countQueue-1 do
       begin
-        if Length(p_listQueue.listActiveQueue[i].waiting_time_start) <> 8 then begin
-          Continue;
-        end;
+//        if Length(p_listQueue.listActiveQueue[i].waiting_time_start) <> 8 then begin
+//          Continue;
+//        end;
+
+        // не показываем номера если нет доступа к очереди
+        if not p_listQueue.IsExistShowAccess[i,SharedCurrentUserLogon.QueueList] then Continue;
 
         idToFind := p_listQueue.listActiveQueue[i].id; // Получаем номер телефона
         existingItem := nil;
@@ -110,20 +113,30 @@ begin
           ListItem.SubItems.Add(p_listQueue.listActiveQueue[i].phone); // номер телефона
 
           // корректировака времени чтобы не брать время из IVR
-          if CorrectTimeQueue(StringToTQueue(p_listQueue.listActiveQueue[i].waiting_time_start),p_listQueue.listActiveQueue[i].waiting_time_start,
+          if CorrectTimeQueue(p_listQueue.listActiveQueue[i].m_queue,p_listQueue.listActiveQueue[i].waiting_time_start,
                               correct_time) then begin
+            correct_time:=Copy(correct_time, 4, 5);
+
             ListItem.SubItems.Add(correct_time); // Время ожидания
           end;
 
-          ListItem.SubItems.Add(p_listQueue.listActiveQueue[i].queue); // очередь
+          ListItem.SubItems.Add(EnumQueueToString(p_listQueue.listActiveQueue[i].m_queue)); // очередь
 
-          if p_listQueue.listActiveQueue[i].trunk = 'LISA' then ListItem.SubItems.Add('lisa')
-          else ListItem.SubItems.Add('ivr'); // транк
+          // для очереди ИК всегда из ivr
+          if p_listQueue.listActiveQueue[i].m_queue = queue_5911 then begin
+             ListItem.SubItems.Add('ivr');
+          end
+          else begin
+            if p_listQueue.listActiveQueue[i].trunk = 'LISA' then ListItem.SubItems.Add('lisa')
+            else ListItem.SubItems.Add('ivr'); // транк
+          end;
+
         end
         else
         begin
-          if CorrectTimeQueue(StringToTQueue(p_listQueue.listActiveQueue[i].waiting_time_start),p_listQueue.listActiveQueue[i].waiting_time_start,
+          if CorrectTimeQueue(p_listQueue.listActiveQueue[i].m_queue,p_listQueue.listActiveQueue[i].waiting_time_start,
                                               correct_time) then begin
+            correct_time:=Copy(correct_time, 4, 5);
             existingItem.SubItems[1] := correct_time; // Время ожидания
           end;
         end;

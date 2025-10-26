@@ -146,7 +146,7 @@ begin
          else begin // доступа к дашборду нет значит это  тип "операторы (доступ без дашборда)"
 
             // находится ли в очереди
-            if p_ActiveSipOperators.GetListOperators_Queue(i) <> queue_null then begin
+            if p_ActiveSipOperators.QueueList[i].Count > 0 then begin
                if p_ActiveSipOperators.GetListOperators_TalkTime(i,True) <> '' then begin
 
                  // отложенная команда на смену статуса
@@ -172,7 +172,7 @@ begin
 
           // изменяем статус на "разговор", если доступен и разговаривают
           if (p_ActiveSipOperators.GetListOperators_Status(i) = eAvailable) and
-             (p_ActiveSipOperators.GetListOperators_Queue(i) <> queue_null) and
+             (p_ActiveSipOperators.QueueList[i].Count > 0) and
              ((p_ActiveSipOperators.GetListOperators_Phone(i) <> ''){ and (listOperators[i].talk_time<>'')} ) then begin
 
             // проверим вдруг оператор в состоянии onHold
@@ -272,8 +272,8 @@ begin
 
     // ===== ОЧЕРЕДЬ =====
     begin
-     if p_ActiveSipOperators.GetListOperators_Queue(i) = queue_null then ListItem.SubItems.Add('---')
-     else ListItem.SubItems.Add(EnumQueueToString(p_ActiveSipOperators.GetListOperators_Queue(i)));
+     if p_ActiveSipOperators.QueueList[i].Count = 0 then ListItem.SubItems.Add('---')
+     else ListItem.SubItems.Add(p_ActiveSipOperators.QueueListSTR[i]);
     end;
 
     // ===== ОБЩЕЕ ВРЕМЯ РАЗГОВОРА =====
@@ -338,7 +338,7 @@ begin
            else begin // доступа к дашборду нет значит это  тип "операторы (доступ без дашборда)"
 
               // находится ли в очереди
-              if p_ActiveSipOperators.GetListOperators_Queue(i) <> queue_null then begin
+              if p_ActiveSipOperators.QueueList[i].Count > 0 then begin
                  if p_ActiveSipOperators.GetListOperators_TalkTime(i,True) <>'' then begin
 
                    // отложенная команда на смену статуса
@@ -365,7 +365,7 @@ begin
 
             // изменяем статус на "разговор", если доступен и разговаривают
             if (p_ActiveSipOperators.GetListOperators_Status(i) = eAvailable) and
-               (p_ActiveSipOperators.GetListOperators_Queue(i) <> queue_null) and
+               (p_ActiveSipOperators.QueueList[i].Count > 0) and
                ((p_ActiveSipOperators.GetListOperators_Phone(i) <> ''){ and (listOperators[i].talk_time<>'')} ) then begin
 
               // проверим вдруг оператор в состоянии onHold
@@ -466,8 +466,8 @@ begin
 
       // ===== ОЧЕРЕДЬ =====
       begin
-       if p_ActiveSipOperators.GetListOperators_Queue(i) = queue_null then ListItem.SubItems[6]:='---'
-       else ListItem.SubItems[6]:=EnumQueueToString(p_ActiveSipOperators.GetListOperators_Queue(i));
+       if p_ActiveSipOperators.QueueList[i].Count = 0 then ListItem.SubItems[6]:='---'
+       else ListItem.SubItems[6]:=p_ActiveSipOperators.QueueListSTR[i];
       end;
 
       // ===== ОБЩЕЕ ВРЕМЯ РАЗГОВОРА =====
@@ -611,6 +611,9 @@ begin
 
   // добавляем ссылку на Log в класс
   SharedActiveSipOperators.AddLinkLogFile(Log);
+
+  // добавляем список очередей которые выидит пользователь
+  SharedActiveSipOperators.AddCommonQueue(SharedCurrentUserLogon.QueueList);
 
   // default при первом запуске
   isCheckThreadSipOperators:=True;

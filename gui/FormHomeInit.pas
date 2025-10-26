@@ -72,8 +72,8 @@ begin
     Panels[4].Text:=GetCopyright;
    end;
 
-   // заведение данных о текущей сесии
-   CreateCurrentActiveSession(SharedCurrentUserLogon.ID);
+  // заведение данных о текущей сесии
+  CreateCurrentActiveSession(SharedCurrentUserLogon.ID);
 
   // создание списка серверов для проверки доступности
   createCheckServersInfoclinika;
@@ -97,6 +97,13 @@ begin
 
   // очищаем все лист боксы
   clearAllLists;
+
+  // footer_menu (смена своего пароля)
+  if SharedCurrentUserLogon.Auth = eAuthLdap then HomeForm.menu_ChangePassword.Visible:=False;
+
+  // отображение только нужных очередей
+  AccessUsersCommonQueue(SharedCurrentUserLogon.QueueList);
+
 
   // дата+время старта
   PROGRAM_STARTED:=Now;

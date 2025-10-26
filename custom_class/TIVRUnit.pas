@@ -12,7 +12,7 @@ interface
 
 uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
       Graphics, System.SyncObjs, IdException, System.DateUtils, Vcl.ComCtrls,
-      TLogFileUnit;
+      TLogFileUnit, TCustomTypeUnit, System.Generics.Collections;
 
   // class TIVRStruct
  type
@@ -23,6 +23,7 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
       m_waiting_time_start                   : Integer;  // стартовое значение времени ожидание
       m_trunk                                : string;  // откуда пришел звонок
       m_countNoChange                        : Integer; // кол-во раз сколько не изменилось значение ожидания во времени
+      m_queue                                : enumQueue; // очередь в которую пойдет звонок
 
       constructor Create;                  overload;
       procedure Clear;                     virtual;
@@ -41,19 +42,6 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
       cGLOBAL_ListIVR                      : Word = 100; // длинна массива
       cGLOBAL_DropPhone                    : Word = 3; // кол-во сбросов при котором считается что номер ушел из IVR не дождавшись
 
-      public
-      listActiveIVR                        : array of TIVRStruct;
-
-      constructor Create;                   overload;
-      destructor Destroy;                   override;
-            function Count                      : Integer;
-
-      procedure UpdateData;                             // обновление данных в массиве listActiveIVR
-      function isExistActive(id:Integer)   :Boolean;   // проверка существует ли такой номер в отображении
-      function isExistDropPhone(id:Integer): Boolean;  // проверка есть ли номер который сбросился из IVR
-      procedure SaveToFile(p_ListView: TListView; path: string);                // сохранение в файл для отладки
-
-
       private
       m_mutex                               : TMutex;
 
@@ -64,6 +52,28 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
       function GetStructIVRID(In_m_ID:Integer):Integer; // нахождение номера TIVRStruct по его m_id
       function isExistIDIVRtoBD(In_m_id:Integer):Boolean;  // проверка есть ли еще звонок в IVR по БД
       procedure CheckToQueuePhone;                      // проверка ушел ли у нас в очередь звонок
+
+      function GetCountQueueList(const _queueList:TList<enumQueue>)       : Integer;   // кол-во звонков с учетом доступа к очередям
+      function GetCount                                             : Integer;
+      function GetExistShowAccess(_id:Integer; _queueList:TList<enumQueue>)      : Boolean;  // есть ли доступ на просмотр звонка в зависимости от прав доступа очереди
+
+      public
+      listActiveIVR                        : TArray<TIVRStruct>;
+
+      constructor Create;                   overload;
+      destructor Destroy;                   override;
+
+
+      procedure UpdateData;                             // обновление данных в массиве listActiveIVR
+      function isExistActive(id:Integer)   :Boolean;   // проверка существует ли такой номер в отображении
+      function isExistDropPhone(id:Integer): Boolean;  // проверка есть ли номер который сбросился из IVR
+      procedure SaveToFile(p_ListView: TListView; path: string);                // сохранение в файл для отладки
+
+
+      property CountQueueList[const _queueList:TList<enumQueue>]:Integer read GetCountQueueList;
+      property Count:Integer read GetCount;
+      property IsExistShowAccess[_id:Integer;_queueList:TList<enumQueue>]:Boolean read GetExistShowAccess;
+
 
       end;
    // class TIVR END
@@ -86,11 +96,12 @@ constructor TIVRStruct.Create;
 
  procedure TIVRStruct.Clear;
  begin
-   Self.m_id:=0;
-   Self.m_phone:='';
-   Self.m_waiting_time_start:=0;
-   Self.m_trunk:='';
-   Self.m_countNoChange:=0;
+   m_id:=0;
+   m_phone:='';
+   m_waiting_time_start:=0;
+   m_trunk:='';
+   m_countNoChange:=0;
+   m_queue:=queue_null;
  end;
 
 
@@ -118,11 +129,43 @@ begin
 end;
 
 
- function TIVR.Count;
+function TIVR.GetCountQueueList(const _queueList:TList<enumQueue>):Integer;
  var
   i:Integer;
   count:Integer;
+  j:Integer;
  begin
+  if m_mutex.WaitFor(INFINITE)=wrSignaled then
+  try
+    count:=0;
+     for i := Low(listActiveIVR) to High(listActiveIVR) do begin
+        if listActiveIVR[i].m_id<>0 then begin
+         // дополнительная проверка чтобы не учитывались звонки которые сбросились
+         if listActiveIVR[i].m_countNoChange <= cGLOBAL_DropPhone then begin
+
+           // подсчет только если у пользака есть на это права
+           for j:=0 to _queueList.Count-1 do begin
+             if listActiveIVR[i].m_queue = _queueList[j] then begin
+               Inc(count);
+               Break;
+             end;
+           end;
+         end;
+      end;
+     end;
+
+    Result:=count;
+  finally
+    m_mutex.Release;
+  end;
+ end;
+
+
+function TIVR.GetCount:Integer;
+var
+  i:Integer;
+  count:Integer;
+begin
   if m_mutex.WaitFor(INFINITE)=wrSignaled then
   try
     count:=0;
@@ -137,8 +180,29 @@ end;
   finally
     m_mutex.Release;
   end;
- end;
+end;
 
+
+// есть ли доступ на просмотр звонка в зависимости от прав доступа очереди
+function TIVR.GetExistShowAccess(_id:Integer; _queueList:TList<enumQueue>):Boolean;
+var
+ i:Integer;
+begin
+  Result:=False; //default
+
+  if m_mutex.WaitFor(INFINITE)=wrSignaled then
+  try
+    for i:=0 to _queueList.Count-1 do begin
+      if listActiveIVR[_id].m_queue = _queueList[i] then begin
+        Result:=True;
+        Break;
+      end;
+    end;
+  finally
+    m_mutex.Release;
+  end;
+
+end;
 
 
 procedure TIVR.ClearActiveAll;
@@ -388,7 +452,7 @@ end;
        if countIVR>=1 then begin
 
           SQL.Clear;
-          SQL.Add('select id,phone,call_time,trunk from ivr where to_queue=''0'' and date_time > '+#39+GetNowDateTimeDec(cTimeResponse)+#39);
+          SQL.Add('select id,phone,call_time,trunk,number_queue from ivr where to_queue=''0'' and date_time > '+#39+GetNowDateTimeDec(cTimeResponse)+#39);
 
           Active:=True;
 
@@ -398,7 +462,8 @@ end;
               if (Fields[0].Value = null) or
                  (Fields[1].Value = null) or
                  (Fields[2].Value = null) or
-                 (Fields[3].Value = null)
+                 (Fields[3].Value = null) or
+                 (Fields[4].Value = null)
               then begin
                ado.Next;
                Continue;
@@ -433,6 +498,7 @@ end;
                   listActiveIVR[freeIDStructIVR].m_phone:=VarToStr(Fields[1].Value);
                   listActiveIVR[freeIDStructIVR].m_waiting_time_start:=StrToInt(VarToStr(Fields[2].Value));
                   listActiveIVR[freeIDStructIVR].m_trunk:=VarToStr(Fields[3].Value);
+                  listActiveIVR[freeIDStructIVR].m_queue:=StringToEnumQueue(VarToStr(Fields[4].Value));
                  end;
               end;
 

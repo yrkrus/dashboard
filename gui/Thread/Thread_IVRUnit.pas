@@ -18,7 +18,7 @@ type
     procedure CriticalError;
  private
    m_initThread: TEvent;  // событие что поток успешно стартовал
-  Log:TLoggingFile;
+   Log:TLoggingFile;
 
  public
   constructor Create;
@@ -75,7 +75,7 @@ var
 begin
   with HomeForm do begin
 
-    countIVR:=p_SharedIVR.Count;
+    countIVR:=p_SharedIVR.CountQueueList[SharedCurrentUserLogon.QueueList];
 
      if countIVR=0 then begin
        lblCount_IVR.Caption:='IVR';
@@ -91,6 +91,9 @@ begin
       for i:=Low(p_SharedIVR.listActiveIVR) to High(p_SharedIVR.listActiveIVR) do begin
         begin
           if p_SharedIVR.listActiveIVR[i].m_id=0 then Continue;
+
+          // не показываем номера если нет доступа к очереди
+          if not p_SharedIVR.IsExistShowAccess[i,SharedCurrentUserLogon.QueueList] then Continue;
 
           // не показываем номера те которые сбросились
           if p_SharedIVR.listActiveIVR[i].m_countNoChange >= TIVR.cGLOBAL_DropPhone then Continue;
@@ -120,7 +123,7 @@ begin
           else
           begin
             // Элемент найден, обновляем его данные
-            existingItem.SubItems[1] := Copy(GetTimeAnsweredSecondsToString(p_SharedIVR.listActiveIVR[i].m_waiting_time_start), 4, 5); ; // Время ожидания
+            existingItem.SubItems[1] := Copy(GetTimeAnsweredSecondsToString(p_SharedIVR.listActiveIVR[i].m_waiting_time_start), 4, 5); // Время ожидания
            end;
         end;
       end;

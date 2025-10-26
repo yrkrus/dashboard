@@ -12,7 +12,7 @@ interface
 
 uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
      Variants, Graphics, System.SyncObjs, IdException, TUserUnit,
-     TCustomTypeUnit, TLogFileUnit;
+     TCustomTypeUnit, TLogFileUnit, System.Generics.Collections;
 
   // class TOnline
 
@@ -46,7 +46,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       trunk                                  : string;        // транк с которого пришел звонок
       phone                                  : string;        // номер телефона
       talk_time                              : string;        // время разговора
-      queue                                  : enumQueue;    // какая очередь
+      m_queueList                            : TList<enumQueue>;    // очереди в которых сидит оператор
       status                                 : enumStatusOperators;       // текущий статус оператора
       status_delay                           : enumStatusOperators; // отложенный статус (когда оператор в разговоре)
       access_dashboard                       : Boolean;       // есть ли доступ к дашборду
@@ -84,19 +84,24 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       countSipOperators                      : Word;
       countSIpOperatorsHide                  : Word;
 
-      listOperators                          : array of TStructSIP;   // список с операторами
+      listOperators                          : TArray<TStructSIP>;   // список с операторами
       countAllTalkCalls                      : Integer; // общее кол-во отвеченных звонков
       m_logging                              : TLoggingFile;
 
+      m_commonQueue                          : TList<enumQueue>; // список с очередями которые видит пользователь
 
       procedure Clear;                       // очистка от всех значений
       function GetListOperatorsGoHome:TStringList;    // список операторов которые ушли домой
       function GetListOperatorsGoHomeNotCloseDashboard:TStringList; // список операторов которые ушли домой но забыли закрыть дашборб
       function GetListOperatorsGoHomeClosedActiveSession:TStringList; // список операторов которые ушли через закрытие активной сессии
 
+      function GetListOperators_QueueListExist(id:Integer; queue:enumQueue):Boolean;    // есть ли очередь уже
+      
       function GetListOperators_TalkTimeAll(id:Integer):Integer;        // listOperators.list_talk_time_all
       function GetListOperators_TalkTimeAvg(id:Integer):Integer;        // listOperators.list_talk_time_avf
-
+      function GetListOperators_QueueList(id:Integer):TList<enumQueue>;     // listOperators.m_queueList
+      function GetListOperators_QueueListSTR(id:Integer):string;     // listOperators.m_queueList
+      
       public
       countActiveCalls                       :Integer; // кол-во активных звонков
       countFreeOperators                     :Integer; // кол-во свободных операторов
@@ -106,6 +111,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
 
 
       procedure AddLinkLogFile(var p_Log:TLoggingFile);   // данный метод исключительно только 1 раз нужен чтобы добавить в класс ссылку на лог и вызывать его потом корреткно для других функций
+      procedure AddCommonQueue(_queueList:TList<enumQueue>); // добавление списка с очередями которые может видеть пользователь
       procedure showActiveAndFreeOperatorsForm;           // показ на главной форме сколько сейчас есть активных и
       procedure showHideOperatorsForm;                    // показ на главной форме сколько сейчас скрытых операторов по статусу "ушли домой"
 
@@ -113,7 +119,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       function  getCountSipOperatorsHide      : Word;     // кол-во операторов (скрытых)
 
 
-      procedure generateSipOperators(isReBuild:Boolean; isNotViewGoHome:Boolean = False);        // получить список с текущими операторами  isReBuild = true - пересоздать операторов
+      procedure GenerateSipOperators(isReBuild:Boolean; isNotViewGoHome:Boolean = False);        // получить список с текущими операторами  isReBuild = true - пересоздать операторов
       procedure updateListTalkTimeAll;                          // обновление списка с длительностями разговора
 
       procedure updateCountTalk;                        // обновление кол-ва отвеченных вызовов
@@ -146,7 +152,6 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       function GetListOperators_Status(id:Integer):enumStatusOperators; // listOperators.status
       function GetListOperators_StatusDelay(id:Integer):enumStatusOperators; // listOperators.status_delay
       function GetListOperators_AccessDashboad(id:Integer):Boolean;     // listOperators.access_dashboard
-      function GetListOperators_Queue(id:Integer):enumQueue;     // listOperators.queue
       function GetListOperators_TalkTime(id:Integer; isReducedTime:Boolean):string;            // listOperators.talk_time
       function GetListOperators_Trunk(id:Integer):string;               // listOperators.trunk
       function GetListOperators_Phone(id:Integer):string;               // listOperators.phone
@@ -163,7 +168,10 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       // ================ property ================
       property TalkTimeAll[_id:Integer]:Integer read GetListOperators_TalkTimeAll;
       property TalkTimeAvg[_id:Integer]:Integer read GetListOperators_TalkTimeAvg;
-
+      property QueueList[_id:Integer]:TList<enumQueue> read GetListOperators_QueueList;
+      property QueueListSTR[_id:Integer]:string read GetListOperators_QueueListSTR;
+      property QueueListExist[_id:Integer; _queue:enumQueue]:Boolean read GetListOperators_QueueListExist; 
+      
       // ================ property END ================
 
 
@@ -206,6 +214,8 @@ uses
    Self.status_delay:=eUnknown;
    Self.access_dashboard:=False;
    Self.online:=TOnline.Create;
+   Self.m_queueList:=TList<enumQueue>.Create;
+   
    //id:=0;
    user_id:= -1;
  end;
@@ -225,7 +235,7 @@ uses
    Self.trunk:='';
    Self.phone:='';
    Self.talk_time:='';
-   Self.queue:=queue_null;
+   Self.m_queueList.Clear;
    Self.status:=eUnknown;
    Self.status_delay:=eUnknown;
    Self.access_dashboard:=False;
@@ -343,6 +353,7 @@ var
  operatorExit,operatorGoHome:Boolean;
  GoHomeNotCloseDashboad:TStringList;
  ClosedWidthActiveSession:TStringList;
+ queueList:TList<enumQueue>;
 begin
   Result:=TStringList.Create;
   Result.Sorted:=True;
@@ -460,7 +471,9 @@ begin
          Active:=True;
 
          for i:=0 to countStatus-1 do begin
-           if GetCurrentQueueOperator(StrToInt(VarToStr(Fields[0].Value))) = queue_null then Result.Add(IntToStr(getUserID(StrToInt(VarToStr(Fields[0].Value)))));
+           queueList:=GetCurrentQueueOperator(StrToInt(VarToStr(Fields[0].Value)));
+           if queueList.Count = 0 then  Result.Add(IntToStr(getUserID(StrToInt(VarToStr(Fields[0].Value)))));
+
            ado.Next;
          end;
        end;
@@ -628,6 +641,12 @@ end;
    Self.m_logging:=p_Log;
  end;
 
+ // добавление списка с очередями которые может видеть пользователь
+ procedure TActiveSIP.AddCommonQueue(_queueList:TList<enumQueue>);
+ begin 
+   Self.m_commonQueue:=_queueList;
+ end;
+
  procedure TActiveSIP.showActiveAndFreeOperatorsForm;
  var
   freeOperator:string;
@@ -726,7 +745,7 @@ end;
  end;
 
 
- procedure TActiveSIP.generateSipOperators(isReBuild:Boolean; isNotViewGoHome:Boolean = False);
+ procedure TActiveSIP.GenerateSipOperators(isReBuild:Boolean; isNotViewGoHome:Boolean = False);
  var
   count_sip:Integer;
   i,j:Integer;
@@ -736,13 +755,15 @@ end;
   operatorsGoHome:TStringList;
   operatorsGoHomeNow:string;
   request:TStringBuilder;
-  t:string;
+  commonQueueSTR:string;  // список с очередями которые видит пользователь
  begin
    ado:=TADOQuery.Create(nil);
    serverConnect:=createServerConnect;
    count_sip:=0;
    request:=TStringBuilder.Create;
+   commonQueueSTR:='';
 
+   
   if not Assigned(serverConnect) then begin
      FreeAndNil(ado);
      Exit;
@@ -755,6 +776,12 @@ end;
           Self.Clear;
        end;
 
+      for i:=0 to m_commonQueue.Count-1 do begin
+       if commonQueueSTR='' then commonQueueSTR:=#39+EnumQueueToString(m_commonQueue[i])+#39
+       else commonQueueSTR:=commonQueueSTR+','+#39+EnumQueueToString(m_commonQueue[i])+#39;   
+     end;
+
+       
       try
 
          if isNotViewGoHome = False then begin  // показываем всех операторов
@@ -772,12 +799,15 @@ end;
                   Append(' from queue');
                   Append(' where date_time > '+#39+GetNowDateTime+#39);
                   Append(' and sip <> ''-1''');
+                  Append(' and number_queue in ('+commonQueueSTR+')');
                   Append(' union');
                   Append(' select sip');
                   Append(' from operators_queue');
+                  Append(' where queue in ('+commonQueueSTR+')');
                   Append(') as t');
-                end;
+                end;                  
 
+                
                 SQL.Add(request.ToString);
                 Active:=True;
                 if Fields[0].Value<>null then count_sip:=Fields[0].Value;
@@ -792,13 +822,16 @@ end;
                       Append('select sip');
                       Append(' from queue');
                       Append(' where date_time > '+#39+GetNowDateTime+#39);
+                      Append(' and number_queue in ('+commonQueueSTR+')');
                       Append(' and sip <> ''-1''');
                       Append(' union');
                       Append(' select sip');
                       Append(' from operators_queue');
+                      Append(' where queue in ('+commonQueueSTR+')');
                       Append(') as t');
-                    end;
+                    end;                       
 
+                    
                     SQL.Add(request.ToString);
                     Active:=True;
 
@@ -847,7 +880,7 @@ end;
 
              // нет того кто ушел домой, и мы уже сделали rebuild,
              // теперь тогла вызываем простой generate
-             generateSipOperators(False);
+             GenerateSipOperators(False);
              Exit;
             end;
 
@@ -870,12 +903,14 @@ end;
                 Append(' from queue');
                 Append(' where date_time > '+#39+GetNowDateTime+#39);
                 Append(' and sip not IN ('+operatorsGoHomeNow+') and sip <> ''-1''');
+                Append(' and number_queue in ('+commonQueueSTR+')');
                 Append(' union');
                 Append(' select sip');
                 Append(' from operators_queue');
+                Append(' where queue in ('+commonQueueSTR+')');
                 Append(') as t');
-              end;
-
+              end; 
+              
               SQL.Add(request.ToString);
 
               Active:=True;
@@ -892,12 +927,15 @@ end;
                     Append(' from queue');
                     Append(' where date_time > '+#39+GetNowDateTime+#39);
                     Append(' and sip not IN ('+operatorsGoHomeNow+') and sip <> ''-1''');
+                    Append(' and number_queue in ('+commonQueueSTR+')');
                     Append(' union');
                     Append(' select sip');
                     Append(' from operators_queue');
+                    Append(' where queue in ('+commonQueueSTR+')');
                     Append(') as t');
-                  end;
-
+                  end;                   
+               
+                  
                   SQL.Add(request.ToString);
 
                   Active:=True;
@@ -1108,67 +1146,29 @@ end;
 
  procedure TActiveSIP.updateQueue;
   var
-  i,countQueue:Integer;
-  ado:TADOQuery;
-  serverConnect:TADOConnection;
-  tempQueue:enumQueue;
-  oldQueue:enumQueue;
+  i:Integer;  
+  tempQueue,newQueue:TList<enumQueue>;  
  begin
-   if getCountSipOperators=0 then Exit;
+   if getCountSipOperators=0 then Exit; 
+   
+   for i:=0 to Length(listOperators)-1 do begin
+     if listOperators[i].sip_number = -1 then Continue;
 
-   ado:=TADOQuery.Create(nil);
-   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
-  end;
-
-  try
-    with ado do begin
-      ado.Connection:=serverConnect;
-
-       for i:=0 to Length(listOperators)-1 do begin
-         tempQueue:=queue_null;
-
-          if Active then Active:=False;
-
-          if listOperators[i].sip_number <> -1 then begin
-            oldQueue:=listOperators[i].queue;
-
-            SQL.Clear;
-            SQL.Add('select count(id) from operators_queue where sip = '+#39+IntToStr(listOperators[i].sip_number)+#39);
-            Active:=True;
-
-            countQueue:=Fields[0].Value;
-
-            if countQueue=0 then begin
-              listOperators[i].queue:=queue_null;
-              Continue;
-            end;
-
-            // найдем все очереди
-            SQL.Clear;
-            SQL.Add('select queue from operators_queue where sip = '+#39+IntToStr(listOperators[i].sip_number)+#39);
-            Active:=True;
-
-            if Fields[0].Value <> null then begin
-              if countQueue = 1 then begin
-                 tempQueue:=StringToEnumQueue(VarToStr(Fields[0].Value));
-              end
-              else tempQueue:=queue_5000_5050;
-            end;
-
-            if oldQueue<>tempQueue then listOperators[i].queue:=tempQueue;
-          end;
+     tempQueue:=listOperators[i].m_queueList; 
+     newQueue:=GetCurrentQueueOperator(listOperators[i].sip_number);
+        
+     // равны ли пары очередей
+     case EqualCurrentQueue(tempQueue,newQueue) of
+       False:begin // пары не равны, обновляем данные
+         listOperators[i].m_queueList.Clear;
+         listOperators[i].m_queueList:=newQueue;  
        end;
-    end;
-  finally
-    FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
-  end;
+       True:begin  // пары равны пропускаем
+         Continue;
+       end;
+     end;          
+   end;    
+  
  end;
 
 
@@ -1508,18 +1508,20 @@ procedure TActiveSIP.updateTalkTimeAll;
   operatorsGoHomeNow:string;
   i:Integer;
   request:TStringBuilder;
+  commonQueueSTR:string;  // список с очередями которые видит пользователь
  begin
 
    // проверяем нужно ли не показывать ушедших домой
     if HomeForm.chkboxGoHome.Checked then notViewGoHome:=True
     else notViewGoHome:=False;
 
-     count_sip:=0; //default
-
+    count_sip:=0; //default
+    commonQueueSTR:='';
+    
     // проверим первый запуск или нет
     if isDashStarted then begin
-      if notViewGoHome=False then generateSipOperators(True) // обновить список с активными операторами
-      else generateSipOperators(True,True);                  // обновить список с активными операторами + не п
+      if notViewGoHome=False then GenerateSipOperators(True) // обновить список с активными операторами
+      else GenerateSipOperators(True,True);                  // обновить список с активными операторами + не п
       Exit;
     end;
 
@@ -1534,6 +1536,11 @@ procedure TActiveSIP.updateTalkTimeAll;
 
    request:=TStringBuilder.Create;
 
+   for i:=0 to m_commonQueue.Count-1 do begin
+     if commonQueueSTR='' then commonQueueSTR:=#39+EnumQueueToString(m_commonQueue[i])+#39
+     else commonQueueSTR:=commonQueueSTR+','+#39+EnumQueueToString(m_commonQueue[i])+#39;   
+   end;
+   
    try
      with ado do begin
         ado.Connection:=serverConnect;
@@ -1549,9 +1556,11 @@ procedure TActiveSIP.updateTalkTimeAll;
             Append(' from queue');
             Append(' where date_time > '+#39+GetNowDateTime+#39);
             Append(' and sip <> ''-1''');
+            Append(' and number_queue in ('+commonQueueSTR+')');
             Append(' union');
             Append(' select sip');
             Append(' from operators_queue');
+            Append(' where queue in ('+commonQueueSTR+')');
             Append(') as t');
           end;
 
@@ -1571,8 +1580,8 @@ procedure TActiveSIP.updateTalkTimeAll;
             end;
 
            // TODO попробуем вот так, т.к. ничего не хочет искать
-          // if SharedActiveSipOperators.GetCountSipOperators = 0 then generateSipOperators(True,True);
-           if SharedActiveSipOperators.GetCountSipOperators < 4 then generateSipOperators(True,True);
+          // if SharedActiveSipOperators.GetCountSipOperators = 0 then GenerateSipOperators(True,True);
+           if SharedActiveSipOperators.GetCountSipOperators < 4 then GenerateSipOperators(True,True);
 
            Exit;
          end;
@@ -1616,8 +1625,8 @@ procedure TActiveSIP.updateTalkTimeAll;
    end;
 
    if count_sip <> getCountSipOperators then begin
-     if notViewGoHome=False then generateSipOperators(True) // обновить список с активными операторами
-     else generateSipOperators(True,True);                  // обновить список с активными операторами + не показывать ушедших домой
+     if notViewGoHome=False then GenerateSipOperators(True) // обновить список с активными операторами
+     else GenerateSipOperators(True,True);                  // обновить список с активными операторами + не показывать ушедших домой
    end;
  end;
 
@@ -1629,7 +1638,7 @@ procedure TActiveSIP.updateTalkTimeAll;
  begin
    for i:=0 to countSipOperators-1 do begin
      if listOperators[i].sip_number = _sip then begin
-        if listOperators[i].queue=queue_null then Result:=False
+        if listOperators[i].m_queueList.Count = 0 then Result:=False
         else Result:=True;
         Break;
      end;
@@ -1790,16 +1799,50 @@ begin
 end;
 
 
-function TActiveSIP.GetListOperators_Queue(id:Integer):enumQueue;
+function TActiveSIP.GetListOperators_QueueList(id:Integer):TList<enumQueue>;
 begin
   if m_mutex.WaitFor(INFINITE) = wrSignaled  then begin
     try
-      Result:=Self.listOperators[id].queue;
+      Result:=Self.listOperators[id].m_queueList;
     finally
       m_mutex.Release;
     end;
   end;
 end;
+
+function TActiveSIP.GetListOperators_QueueListSTR(id:Integer):string;
+var
+ i:Integer;
+begin
+  if m_mutex.WaitFor(INFINITE) = wrSignaled  then begin
+    try
+      Result:='';
+
+      for i:=0 to listOperators[id].m_queueList.Count-1 do begin
+        if Result='' then Result:=EnumQueueToString(listOperators[id].m_queueList[i])
+        else  Result:=Result +' и '+ EnumQueueToString(listOperators[id].m_queueList[i]);     
+      end; 
+        
+    finally
+      m_mutex.Release;
+    end;
+  end;
+end;
+
+
+
+ // есть ли очередь уже
+function TActiveSIP.GetListOperators_QueueListExist(id:Integer; queue:enumQueue):Boolean; 
+begin  
+ if m_mutex.WaitFor(INFINITE) = wrSignaled  then begin
+    try
+      Result:=Self.listOperators[id].m_queueList.Contains(queue);
+    finally
+      m_mutex.Release;
+    end;
+  end;
+end;
+
 
 function TActiveSIP.GetListOperators_TalkTime(id:Integer; isReducedTime:Boolean):string;
 begin

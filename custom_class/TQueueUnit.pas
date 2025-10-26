@@ -11,7 +11,8 @@ unit TQueueUnit;
 interface
 
 uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
-      Graphics, System.SyncObjs, IdException,  GlobalVariablesLinkDLL;
+      Graphics, System.SyncObjs, IdException,  GlobalVariablesLinkDLL, TCustomTypeUnit,
+      System.Generics.Collections;
 
   // class TQueueStruct
  type
@@ -20,7 +21,7 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
       id                    : Integer;  // id по БД
       phone                 : string;   // номер телефона
       waiting_time_start    : string;   // стартовое значение времени ожидание
-      queue                 : string;   // номер очереди
+      m_queue               : enumQueue;   // номер очереди
       trunk                 : string;   // транкс с которого звонок
 
       constructor Create;                  overload;
@@ -41,7 +42,8 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
       m_count                             : Integer;
       m_mutex                             : TMutex;
 
-
+      function GetCountQueueList(const _queueList:TList<enumQueue>)         : Integer;
+      function GetExistShowAccess(_id:Integer; _queueList:TList<enumQueue>) : Boolean;  // есть ли доступ на просмотр звонка в зависимости от прав доступа очереди
 
       public
       listActiveQueue                     : TArray<TQueueStruct>;
@@ -55,6 +57,11 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
 
       property Count:Integer read m_count;
 
+
+      property CountQueueList[const _queueList:TList<enumQueue>]:Integer read GetCountQueueList;
+      property IsExistShowAccess[_id:Integer;_queueList:TList<enumQueue>]:Boolean read GetExistShowAccess;
+
+
       end;
    // class TQueue END
 
@@ -62,7 +69,7 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
 implementation
 
 uses
-  FunctionUnit, GlobalVariables, TCustomTypeUnit;
+  FunctionUnit, GlobalVariables;
 
 
 
@@ -75,11 +82,11 @@ constructor TQueueStruct.Create;
 
  procedure TQueueStruct.Clear;
  begin
-   Self.id:=0;
-   Self.phone:='';
-   Self.waiting_time_start:='';
-   Self.queue:='';
-   Self.trunk:='';
+   id:=0;
+   phone:='';
+   waiting_time_start:='';
+   m_queue:=queue_null;
+   trunk:='';
  end;
 
 constructor TQueue.Create;
@@ -135,6 +142,58 @@ begin
     end;
   end;
 end;
+
+
+function TQueue.GetCountQueueList(const _queueList:TList<enumQueue>):Integer;
+ var
+  i:Integer;
+  count:Integer;
+  j:Integer;
+ begin
+  if m_mutex.WaitFor(INFINITE)=wrSignaled then
+  try
+    count:=0;
+     for i := Low(listActiveQueue) to High(listActiveQueue) do begin
+      if listActiveQueue[i].id<>0 then begin
+
+         // подсчет только если у пользака есть на это права
+         for j:=0 to _queueList.Count-1 do begin
+           if listActiveQueue[i].m_queue = _queueList[j] then begin
+             Inc(count);
+             Break;
+           end;
+         end;
+      end;
+     end;
+
+    Result:=count;
+  finally
+    m_mutex.Release;
+  end;
+ end;
+
+
+// есть ли доступ на просмотр звонка в зависимости от прав доступа очереди
+function TQueue.GetExistShowAccess(_id:Integer; _queueList:TList<enumQueue>):Boolean;
+var
+ i:Integer;
+begin
+  Result:=False; //default
+
+  if m_mutex.WaitFor(INFINITE)=wrSignaled then
+  try
+    for i:=0 to _queueList.Count-1 do begin
+      if listActiveQueue[_id].m_queue = _queueList[i] then begin
+        Result:=True;
+        Break;
+      end;
+    end;
+  finally
+    m_mutex.Release;
+  end;
+
+end;
+
 
  procedure TQueue.UpdateData;
  const
@@ -202,7 +261,7 @@ end;
                 listActiveQueue[i].id:=StrToInt(VarToStr(Fields[0].Value));
                 listActiveQueue[i].phone:=VarToStr(Fields[1].Value);
                 listActiveQueue[i].waiting_time_start:=VarToStr(Fields[2].Value);
-                listActiveQueue[i].queue:=VarToStr(Fields[3].Value);
+                listActiveQueue[i].m_queue:= StringToEnumQueue(VarToStr(Fields[3].Value));
                 try
                   listActiveQueue[i].trunk:=GetPhoneTrunkQueue(eTableIVR,listActiveQueue[i].phone,GetNowDateTimeDec(cTimeResponse));
                 except

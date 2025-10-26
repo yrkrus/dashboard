@@ -114,6 +114,7 @@ uses  System.Classes, Data.Win.ADODB, Data.DB,System.SysUtils,
       function GetCommonQueue:string;                           //какие очереди доступны для просмотра\взаиможействия
       function GetExistQueue(_queue:enumQueue):Boolean;   // входит ли пользак в очередь
       function GetExternalAccess(_access:enumExternalAccessEXE):Boolean;   // какие доступы есть к внешним программам
+      function GetQueueList:TList<enumQueue>;   // отображение очередей в которых учавствует пользователь
 
       public
 
@@ -148,6 +149,7 @@ uses  System.Classes, Data.Win.ADODB, Data.DB,System.SysUtils,
       property CommonQueueSTR:string read GetCommonQueue;
       property Queue[_queue:enumQueue]:Boolean read GetExistQueue;
       property ExternalAccess[_access:enumExternalAccessEXE]:Boolean read GetExternalAccess;
+      property QueueList:TList<enumQueue> read GetQueueList;
 
       end;
  // class TUser END
@@ -567,6 +569,13 @@ end;
 function TUser.GetExternalAccess(_access:enumExternalAccessEXE):Boolean;
 begin
   Result:=m_externalAccessEXE[_access];
+end;
+
+
+// отображение очередей в которых учавствует пользователь
+function TUser.GetQueueList:TList<enumQueue>;
+begin
+  Result:=m_commonQueue.m_list;
 end;
 
 

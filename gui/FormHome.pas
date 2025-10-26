@@ -11,7 +11,8 @@ uses
   Thread_ACTIVESIPUnit, Thread_StatisticsUnit,Thread_IVRUnit,Thread_AnsweredQueueUnit,
   Thread_QUEUEUnit, Thread_ACTIVESIP_QueueUnit, Thread_ACTIVESIP_updatetalkUnit,
   Thread_ACTIVESIP_updatePhoneTalkUnit, Thread_ACTIVESIP_countTalkUnit,
-  Thread_CheckTrunkUnit, Thread_InternalProcessUnit, TThreadDispatcherUnit,TXmlUnit;
+  Thread_CheckTrunkUnit, Thread_InternalProcessUnit, TThreadDispatcherUnit,TXmlUnit,
+  System.Generics.Collections;
 
 
 type
@@ -135,7 +136,7 @@ type
     N4: TMenuItem;
     popMenu_ActionOperators_DelQueue: TMenuItem;
     popMenu_ActionOperators_AddQueue5050: TMenuItem;
-    popMenu_ActionOperators_AddQueue5000_5050: TMenuItem;
+    popMenu_ActionOperators_AddQueue5911: TMenuItem;
     popMenu_ActionOperators_AddQueue5000: TMenuItem;
     btnStatus_available: TBitBtn;
     btnStatus_exodus: TBitBtn;
@@ -151,10 +152,11 @@ type
     btnStatus_home: TBitBtn;
     btnStatus_add_queue5000: TBitBtn;
     btnStatus_add_queue5050: TBitBtn;
-    btnStatus_add_queue5000_5050: TBitBtn;
+    btnStatus_add_queue5911: TBitBtn;
     btnStatus_del_queue_all: TBitBtn;
     menu_clear_status_operator: TMenuItem;
     ST_AR: TStaticText;
+    menu_UserSettings: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure menu_missed_callsClick(Sender: TObject);
@@ -164,7 +166,7 @@ type
     procedure btnStatus_availableClick(Sender: TObject);
     procedure btnStatus_add_queue5000Click(Sender: TObject);
     procedure btnStatus_add_queue5050Click(Sender: TObject);
-    procedure btnStatus_add_queue5000_5050Click(Sender: TObject);
+    procedure btnStatus_add_queue5911Click(Sender: TObject);
     procedure btnStatus_del_queue_allClick(Sender: TObject);
     procedure btnStatus_exodusClick(Sender: TObject);
     procedure btnStatus_breakClick(Sender: TObject);
@@ -243,7 +245,7 @@ type
     procedure popMenu_ActionOperators_DelQueueClick(Sender: TObject);
     procedure popMenu_ActionOperators_AddQueue5000Click(Sender: TObject);
     procedure popMenu_ActionOperators_AddQueue5050Click(Sender: TObject);
-    procedure popMenu_ActionOperators_AddQueue5000_5050Click(Sender: TObject);
+    procedure popMenu_ActionOperators_AddQueue5911Click(Sender: TObject);
     procedure lblCheckSipTrunkAliveMouseLeave(Sender: TObject);
     procedure lblCheckSipTrunkAliveMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
@@ -385,14 +387,14 @@ begin
  SendCommand(eLog_add_queue_5000, delay);
 end;
 
-procedure THomeForm.btnStatus_add_queue5000_5050Click(Sender: TObject);
+procedure THomeForm.btnStatus_add_queue5911Click(Sender: TObject);
 var
  delay:enumStatus;
 begin
   delay:=eNO;
 
- // добавление в очередь 5000 и 5050
-  SendCommand(eLog_add_queue_5000_5050, delay);
+ // добавление в очередь 5911
+  SendCommand(eLog_add_queue_5911, delay);
 end;
 
 procedure THomeForm.btnStatus_add_queue5050Click(Sender: TObject);
@@ -408,6 +410,8 @@ end;
 procedure THomeForm.btnStatus_availableClick(Sender: TObject);
 var
  curr_queue:enumQueue;
+ queueList:TList<enumQueue>;
+ i:Integer;
 begin
 
    if PanelStatusIN.Height=cPanelStatusHeight_showqueue then begin
@@ -420,34 +424,32 @@ begin
    PanelStatusIN.Height:=cPanelStatusHeight_showqueue;
 
     // проверяем в какой очереди находится оператор
-    curr_queue:=getCurrentQueueOperator(GetOperatorSIP(SharedCurrentUserLogon.ID));
+   queueList:=GetCurrentQueueOperator(GetOperatorSIP(SharedCurrentUserLogon.ID));
 
-    case curr_queue of
-      queue_5000:begin
-        btnStatus_add_queue5000.Enabled:=False;
-        btnStatus_add_queue5050.Enabled:=True;
-        btnStatus_add_queue5000_5050.Enabled:=False;
+   if queueList.Count > 0 then begin
+     for i:=0 to queueList.Count-1 do begin
+        case queueList[i] of
+          queue_5000:begin
+            btnStatus_add_queue5000.Enabled:=False;
+          end;
+          queue_5050:begin
+            btnStatus_add_queue5050.Enabled:=False;
+          end;
+          queue_5911:begin
+            btnStatus_add_queue5911.Enabled:=False;
+          end;
+        end;
+
         btnStatus_del_queue_all.Enabled:=True;
-      end;
-      queue_5050:begin
-        btnStatus_add_queue5000.Enabled:=True;
-        btnStatus_add_queue5050.Enabled:=False;
-        btnStatus_add_queue5000_5050.Enabled:=False;
-        btnStatus_del_queue_all.Enabled:=True;
-      end;
-      queue_5000_5050:begin
-        btnStatus_add_queue5000.Enabled:=False;
-        btnStatus_add_queue5050.Enabled:=False;
-        btnStatus_add_queue5000_5050.Enabled:=False;
-        btnStatus_del_queue_all.Enabled:=True;
-      end;
-      queue_null:begin
-        btnStatus_add_queue5000.Enabled:=True;
-        btnStatus_add_queue5050.Enabled:=True;
-        btnStatus_add_queue5000_5050.Enabled:=True;
-        btnStatus_del_queue_all.Enabled:=False;
-      end;
-    end;
+     end;
+   end
+   else begin
+     // значит не в очереди находится
+     btnStatus_add_queue5000.Enabled:=True;
+     btnStatus_add_queue5050.Enabled:=True;
+     btnStatus_add_queue5911.Enabled:=True;
+     btnStatus_del_queue_all.Enabled:=False;
+   end;
 
   Screen.Cursor:=crDefault;
 end;
@@ -898,7 +900,7 @@ begin
   // в очереди ли находится оператор
   id:=SharedActiveSipOperators.GetListOperators_ID(id_sip);
 
-  if SharedActiveSipOperators.GetListOperators_Queue(id) = queue_5000 then begin
+  if SharedActiveSipOperators.QueueListExist[id, queue_5000] then begin
     MessageBox(Handle,PChar('Оператор и так в этой очереди'),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
     Exit;
   end;
@@ -908,7 +910,7 @@ begin
   AddQueuePopMenu(eLog_add_queue_5000, id_sip);
 end;
 
-procedure THomeForm.popMenu_ActionOperators_AddQueue5000_5050Click(
+procedure THomeForm.popMenu_ActionOperators_AddQueue5911Click(
   Sender: TObject);
 var
  id_sip:Integer;
@@ -925,14 +927,13 @@ begin
   // в очереди ли находится оператор
   id:=SharedActiveSipOperators.GetListOperators_ID(id_sip);
 
-  if SharedActiveSipOperators.GetListOperators_Queue(id) = queue_5000_5050 then begin
+  if SharedActiveSipOperators.QueueListExist[id, queue_5911] then begin
     MessageBox(Handle,PChar('Оператор и так в этой очереди'),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
     Exit;
   end;
 
- // user_id:=getUserID(id_sip);
 
-  AddQueuePopMenu(eLog_add_queue_5000_5050, id_sip);
+  AddQueuePopMenu(eLog_add_queue_5911, id_sip);
 end;
 
 procedure THomeForm.popMenu_ActionOperators_AddQueue5050Click(Sender: TObject);
@@ -951,7 +952,7 @@ begin
   // в очереди ли находится оператор
   id:=SharedActiveSipOperators.GetListOperators_ID(id_sip);
 
-  if SharedActiveSipOperators.GetListOperators_Queue(id) = queue_5050 then begin
+  if SharedActiveSipOperators.QueueListExist[id, queue_5050] then begin
     MessageBox(Handle,PChar('Оператор и так в этой очереди'),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
     Exit;
   end;

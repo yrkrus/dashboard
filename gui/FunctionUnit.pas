@@ -9,7 +9,7 @@ interface
     IdAttachmentFile, FormHome, Data.Win.ADODB, Data.DB, IdIcmpClient, IdException, System.DateUtils,
     FIBDatabase, pFIBDatabase, TCustomTypeUnit, TUserUnit, Vcl.Menus, GlobalVariables, GlobalVariablesLinkDLL,
     TActiveSIPUnit, System.IOUtils, TLogFileUnit, Vcl.Buttons, IdGlobal, System.ImageList,
-    Vcl.ImgList,Vcl.Imaging.pngimage, System.Generics.Collections;
+    Vcl.ImgList,Vcl.Imaging.pngimage, System.Generics.Collections,System.Generics.Defaults;
 
 
 procedure KillProcess;                                                               // принудительное завершение работы
@@ -64,7 +64,7 @@ function remoteCommand_Responce(InStroka:string; var _errorDescriptions:string):
 function GetOperatorSIP(_userId:integer):integer;                                       // отображение SIP пользвоателя
 //function isExistRemoteCommand(command:enumLogging;_userID:Integer):Boolean;         // проверка есть ли уже такая удаленная команда на сервера
 function getStatus(InStatus:enumStatusOperators):string;                             // полчуение имени status оператора
-function getCurrentQueueOperator(InSipNumber:integer):enumQueue;               // в какой очереди сейчас находится оператор
+function GetCurrentQueueOperator(_sip:integer):TList<enumQueue>;                    // в какой очереди сейчас находится оператор
 procedure UpdateOperatorStatus(_status:enumStatusOperators;_userID:Integer);         // очитска текущего статуса оператора
 procedure checkCurrentStatusOperator(InOperatorStatus:enumStatusOperators);              // проверка и отображение кнопок статусов оператора
 procedure ShowStatusOperator(InShow:Boolean = True);                                 // отобрадение панели статусы операторов
@@ -155,7 +155,11 @@ function GetUserAuth(_userId:Integer):enumAuth;                                 
 function RoleIsOperator(InRole:enumRole):Boolean;                                   // проверка роль пользователя это операторская роль
 function CheckAnsweredSecondsToString(const _time:string):Boolean;                  // проверка корреткности перевода времени из int -> 00:00:00 формат
 procedure DeleteUserCommonQueue(_userID:Integer);                                   // удаление пользователя из таблицы users_common_queue
-procedure AddUserCommonQueue(_userID:Integer; var _list:TList<enumQueue>);              // добавление пользователя в таблицу users_common_queue
+procedure AddUserCommonQueue(_userID:Integer; var _list:TList<enumQueue>);          // добавление пользователя в таблицу users_common_queue
+procedure AccessUsersCommonQueue(_queuelist:TList<enumQueue>);                      // отображение только нужных очередей и взаимодействие с нимим
+procedure ShowUsersCommonQueuePanelStatus(_queuelist:TList<enumQueue>);             // отображение кнопок входа в панель статусов
+procedure ShowUsersCommonQueuePopMenu(_queuelist:TList<enumQueue>);                 // отображение кнопок входа в popmenu
+function EqualCurrentQueue(_queueA, _queueB:TList<enumQueue>):Boolean;              // сравнение двух пар очередей
 
 
 implementation
@@ -3282,12 +3286,14 @@ end;
 
 
 // в какой очереди сейчас находится оператор
-function GetCurrentQueueOperator(InSipNumber:integer):enumQueue;
+function GetCurrentQueueOperator(_sip:integer):TList<enumQueue>;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  countQueue:Integer;
+ i:Integer;
 begin
+  Result:=TList<enumQueue>.Create;
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
@@ -3301,35 +3307,23 @@ begin
       ado.Connection:=serverConnect;
 
       SQL.Clear;
-      SQL.Add('select count(queue) from operators_queue where sip = '+#39+IntToStr(InSipNumber)+#39);
+      SQL.Add('select count(queue) from operators_queue where sip = '+#39+IntToStr(_sip)+#39);
       Active:=True;
 
       countQueue:=Fields[0].Value;
+      if countQueue=0 then Exit;
 
       if Active then Active:=False;
 
+      SQL.Clear;
+      SQL.Add('select queue from operators_queue where sip = '+#39+IntToStr(_sip)+#39);
+      Active:=True;
 
-      case countQueue of
-        0:begin              // ни в какой очереди
-          Result:=queue_null;
-        end;
-        1: begin             // либо в 5000 либо в 5050 (надо понять в какой)
-          SQL.Clear;
-          SQL.Add('select queue from operators_queue where sip = '+#39+IntToStr(InSipNumber)+#39);
-          Active:=True;
-
-          if Fields[0].Value<>null then begin
-            if (VarToStr(Fields[0].Value)='5000')       then Result:=queue_5000
-            else if (VarToStr(Fields[0].Value)='5050')  then Result:=queue_5050
-            else                                             Result:=queue_null;
-          end
-          else Result:=queue_null;
-
-        end;
-        2: begin            // в обоих очередях
-          Result:=queue_5000_5050;
-        end;
+      for i:=0 to countQueue-1 do begin
+        Result.Add(StringToEnumQueue(VarToStr(Fields[0].Value)));
+        ado.Next;
       end;
+
     end;
   finally
     FreeAndNil(ado);
@@ -3338,6 +3332,27 @@ begin
       FreeAndNil(serverConnect);
     end;
   end;
+end;
+
+
+// сравнение двух пар очередей
+function EqualCurrentQueue(_queueA, _queueB:TList<enumQueue>):Boolean;
+var
+ i:Integer;
+ equal: IEqualityComparer<enumQueue>;
+begin
+  Result:=False;
+
+  if _queueA.Count <> _queueB.Count then Exit; // сразу не равны т.к. кол-во не сходиться
+
+  equal := TEqualityComparer<enumQueue>.Default;
+
+  // поэлементно сравниваем
+  for i := 0 to _queueB.Count - 1 do begin
+    if not equal.Equals(_queueA[i], _queueB[i]) then Exit(False);
+  end;
+
+  Result := True;
 end;
 
 
@@ -5425,8 +5440,88 @@ end;
 // проверка корреткности перевода времени из int -> 00:00:00 формат
 function CheckAnsweredSecondsToString(const _time:string):Boolean;
 begin
-  if AnsiPos(':',_time)<>0 then Result:=True
+  if (AnsiPos(':',_time)<>0) and (Length(_time) = 8) then Result:=True
   else Result:=False;
+end;
+
+
+// отображение кнопок входа в панель статусов
+procedure ShowUsersCommonQueuePanelStatus(_queuelist:TList<enumQueue>);
+const
+ cSTEP:Word = 80;
+ cDefaultLeft:Word = 380; // начальное положение
+var
+ i:Integer;
+ cnt: Integer;
+ btns: TArray<TBitBtn>;
+begin
+ SetLength(btns, _queuelist.Count);
+ cnt:=0;
+
+ for i:=0 to _queuelist.Count-1 do begin
+  with HomeForm do begin
+     case _queuelist[i] of
+       queue_5000:begin
+         btnStatus_add_queue5000.Visible:=True;
+         btns[cnt] := btnStatus_add_queue5000;
+         Inc(cnt);
+       end;
+       queue_5050:begin
+         btnStatus_add_queue5050.Visible:=True;
+         btns[cnt] := btnStatus_add_queue5050;
+         Inc(cnt);
+       end;
+       queue_5911:begin
+        btnStatus_add_queue5911.Visible:=True;
+        btns[cnt] := btnStatus_add_queue5911;
+        Inc(cnt);
+       end;
+     end;
+  end;
+ end;
+
+ // поставим на нужные места пока могуть быть 3 очереди  5000,5050,5911
+ for i:= 0 to cnt - 1 do btns[i].Left := cDefaultLeft + i * cSTEP;
+end;
+
+
+// отображение кнопок входа в popmenu
+procedure ShowUsersCommonQueuePopMenu(_queuelist:TList<enumQueue>);
+var
+ i:Integer;
+begin
+ with HomeForm do begin
+   popMenu_ActionOperators_AddQueue5000.Visible:=False;
+   popMenu_ActionOperators_AddQueue5050.Visible:=False;
+   popMenu_ActionOperators_AddQueue5911.Visible:=False;
+
+   for i:=0 to _queuelist.Count-1 do begin
+     case _queuelist[i] of
+       queue_5000:begin
+        popMenu_ActionOperators_AddQueue5000.Visible:=True;
+       end;
+       queue_5050:begin
+        popMenu_ActionOperators_AddQueue5050.Visible:=True;
+       end;
+       queue_5911:begin
+        popMenu_ActionOperators_AddQueue5911.Visible:=True;
+       end;
+     end;
+   end;
+ end;
+end;
+
+
+// отображение только нужных очередей и взаимодействие с нимим
+procedure AccessUsersCommonQueue(_queuelist:TList<enumQueue>);
+begin
+  // панель статусов
+  ShowUsersCommonQueuePanelStatus(_queuelist);
+
+  // popmenu
+  ShowUsersCommonQueuePopMenu(_queuelist);
+
+
 end;
 
 

@@ -61,9 +61,7 @@ type
     lblLoginInfo: TLabel;
     lblSwapSip: TLabel;
     btnEdit: TBitBtn;
-    procedure comboxUserGroupChange(Sender: TObject);
     procedure btnAddNewUserClick(Sender: TObject);
-    procedure chkboxZoiperClick(Sender: TObject);
     procedure edtNewFamiliyaChange(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -478,7 +476,6 @@ var
  i:Integer;
 
  request:TStringBuilder;
-   t:string;
 begin
   Result:=False;
   _errorDescription:='';
@@ -632,9 +629,6 @@ begin
            Append('ldap_auth='+#39+IntToStr(EnumAuthToInteger(user_auth))+#39);
            Append(' where id = '+#39+IntToStr(m_editUserId)+#39);
           end;
-
-          t:=request.ToString;
-
         end;
       end;
 
@@ -828,7 +822,16 @@ begin
   end;
 
   // обновим данные
-  FormUsers.UpdateUsersAfterAddOrEdit;
+  begin
+     // список со свободными sip номерами
+    if not Assigned(m_sipList) then m_sipList:=TSipPhoneList.Create
+    else m_sipList.UpdateData;
+
+    // прогрузка свободных sip
+    InitComboxSip;
+
+    FormUsers.UpdateUsersAfterAddOrEdit;
+  end;
 
   showWait(show_close);
 
@@ -847,37 +850,6 @@ end;
 procedure TFormAddNewUsers.btnAddNewUserClick(Sender: TObject);
 begin
   ButtonAction(Sender);
-end;
-
-
-procedure TFormAddNewUsers.chkboxZoiperClick(Sender: TObject);
-begin
-//  if chkboxZoiper.Checked then begin
-//    lblOperatorSetting_Tel_show.Enabled:=False;
-//    edtOperatorSetting_Tel_show.Enabled:=False;
-//    edtOperatorSetting_Tel_show.Text:='';
-//    edtOperatorSetting_Tel_show.Color:=cl3DLight;
-//
-//  end
-//  else begin
-//   lblOperatorSetting_Tel_show.Enabled:=True;
-//   edtOperatorSetting_Tel_show.Enabled:=True;
-//   edtOperatorSetting_Tel_show.Text:='';
-//   edtOperatorSetting_Tel_show.Color:=clWindow;
-//  end;
-end;
-
-procedure TFormAddNewUsers.comboxUserGroupChange(Sender: TObject);
-var
- currentGroup:string;
-begin
- // currentGroup:=comboxUserGroup.Items[comboxUserGroup.ItemIndex];
-
-  // отоюражение нужных полей в зависимости от прав доступа
-//  if  (AnsiPos('Оператор',currentGroup)<>0) or
-//      (AnsiPos('оператор',currentGroup)<>0)  then showSettingOperatorSIP(True)
-//  else showSettingOperatorSIP(False);
-
 end;
 
 
