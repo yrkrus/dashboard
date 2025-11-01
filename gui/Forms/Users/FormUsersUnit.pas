@@ -42,6 +42,8 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure list_UsersMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure list_UsersCustomDrawItem(Sender: TCustomListView; Item: TListItem;
+      State: TCustomDrawState; var DefaultDraw: Boolean);
 
   private
     { Private declarations }
@@ -298,7 +300,7 @@ begin
 
   // sip
   if _user.IsOperator then begin
-   sip:=GetOperatorSIP(_user.ID);
+   sip:=_dll_GetOperatorSIP(_user.ID);
    if sip <> -1 then ListItem.SubItems.Add(IntToStr(sip))
    else  ListItem.SubItems.Add('---');
   end
@@ -515,6 +517,34 @@ begin
 end;
 
 
+
+procedure TFormUsers.list_UsersCustomDrawItem(Sender: TCustomListView;
+  Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
+var
+ time_talk:Integer;
+ test:string;
+ longtalk:string;
+begin
+  if not Assigned(Item) then Exit;
+
+  try
+    if Item.SubItems.Count = 10 then // Проверяем, что есть достаточно SubItems
+    begin
+      if Item.SubItems.Strings[0] = EnumAuthToString(eAuthLdap) then
+      begin
+        Sender.Canvas.Font.Color := EnumColorStatusToTColor(color_Good);
+        Exit;
+      end;
+    end;
+
+   Sender.Canvas.Font.Color := EnumColorStatusToTColor(color_Default);
+  except
+    on E:Exception do
+    begin
+     SharedMainLog.Save('TFormUsers.list_UsersCustomDrawItem. '+e.ClassName+': '+e.Message, IS_ERROR);
+    end;
+  end;
+end;
 
 procedure TFormUsers.list_UsersMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);

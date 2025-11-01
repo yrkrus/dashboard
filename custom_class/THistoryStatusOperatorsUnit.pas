@@ -338,6 +338,7 @@ begin
     begin
       serverConnect.Close;
       FreeAndNil(serverConnect);
+      FreeAndNil(request);
     end;
   end;
 

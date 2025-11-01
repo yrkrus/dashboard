@@ -12,7 +12,8 @@ interface
 
 uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
      Variants, Graphics, System.SyncObjs, IdException, TUserUnit,
-     TCustomTypeUnit, TLogFileUnit, System.Generics.Collections;
+     TCustomTypeUnit, TLogFileUnit, System.Generics.Collections,
+     Vcl.Dialogs;
 
   // class TOnline
 
@@ -766,6 +767,7 @@ end;
    
   if not Assigned(serverConnect) then begin
      FreeAndNil(ado);
+     FreeAndNil(request);
      Exit;
   end;
 
@@ -860,6 +862,7 @@ end;
               if Assigned(serverConnect) then begin
                 serverConnect.Close;
                 FreeAndNil(serverConnect);
+                FreeAndNil(request);
               end;
            end;
 
@@ -876,6 +879,7 @@ end;
                 if Assigned(serverConnect) then begin
                   serverConnect.Close;
                   FreeAndNil(serverConnect);
+                  FreeAndNil(request);
                 end;
 
              // нет того кто ушел домой, и мы уже сделали rebuild,
@@ -886,8 +890,8 @@ end;
 
             operatorsGoHomeNow:='';
             for i:=0 to operatorsGoHome.Count-1 do begin
-              if operatorsGoHomeNow='' then operatorsGoHomeNow:=#39+IntToStr(GetOperatorSIP(StrToInt(operatorsGoHome[i])))+#39
-              else operatorsGoHomeNow:=operatorsGoHomeNow+','+#39+IntToStr(GetOperatorSIP(StrToInt(operatorsGoHome[i])))+#39;
+              if operatorsGoHomeNow='' then operatorsGoHomeNow:=#39+IntToStr(_dll_GetOperatorSIP(StrToInt(operatorsGoHome[i])))+#39
+              else operatorsGoHomeNow:=operatorsGoHomeNow+','+#39+IntToStr(_dll_GetOperatorSIP(StrToInt(operatorsGoHome[i])))+#39;
             end;
 
           try
@@ -965,12 +969,14 @@ end;
             if Assigned(serverConnect) then begin
               serverConnect.Close;
               FreeAndNil(serverConnect);
+              FreeAndNil(request);
             end;
           end;
 
            if Assigned(operatorsGoHome) then begin
              countSIpOPeratorsHide:=operatorsGoHome.Count;  // кол-во скрытых операторов
              FreeAndNil(operatorsGoHome);
+             FreeAndNil(request);
            end;
          end;
 
@@ -1589,8 +1595,8 @@ procedure TActiveSIP.updateTalkTimeAll;
           if operatorsGoHome.Count<>0 then begin
             operatorsGoHomeNow:='';
             for i:=0 to operatorsGoHome.Count-1 do begin
-              if operatorsGoHomeNow='' then operatorsGoHomeNow:=#39+IntToStr(GetOperatorSIP(StrToInt(operatorsGoHome[i])))+#39
-              else operatorsGoHomeNow:=operatorsGoHomeNow+','+#39+IntToStr(GetOperatorSIP(StrToInt(operatorsGoHome[i])))+#39;
+              if operatorsGoHomeNow='' then operatorsGoHomeNow:=#39+IntToStr(_dll_GetOperatorSIP(StrToInt(operatorsGoHome[i])))+#39
+              else operatorsGoHomeNow:=operatorsGoHomeNow+','+#39+IntToStr(_dll_GetOperatorSIP(StrToInt(operatorsGoHome[i])))+#39;
             end;
 
             with request do begin
@@ -1621,6 +1627,7 @@ procedure TActiveSIP.updateTalkTimeAll;
     if Assigned(serverConnect) then begin
       serverConnect.Close;
       FreeAndNil(serverConnect);
+      FreeAndNil(request);
     end;
    end;
 
@@ -1636,10 +1643,15 @@ procedure TActiveSIP.updateTalkTimeAll;
  var
   i:Integer;
  begin
-   for i:=0 to countSipOperators-1 do begin
+   Result:=False;
+
+   for i:=0 to countSipOperators - 1 do begin
      if listOperators[i].sip_number = _sip then begin
-        if listOperators[i].m_queueList.Count = 0 then Result:=False
-        else Result:=True;
+         // обновим текущие очереди, вдруг не успели это еще сделать
+        listOperators[i].m_queueList.Clear;
+        listOperators[i].m_queueList:=GetCurrentQueueOperator(_sip);
+
+        if listOperators[i].m_queueList.Count > 0 then Result:=True;
         Break;
      end;
    end;
@@ -1653,7 +1665,7 @@ procedure TActiveSIP.updateTalkTimeAll;
    for i:=0 to countSipOperators-1 do begin
      if listOperators[i].access_dashboard then begin
         if listOperators[i].user_id = -1 then begin
-          listOperators[i].user_id:=GetOperatorSIP(listOperators[i].sip_number);
+          listOperators[i].user_id:=_dll_GetOperatorSIP(listOperators[i].sip_number);
         end;
      end;
    end;

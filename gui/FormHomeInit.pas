@@ -19,7 +19,14 @@ procedure _CHECK;
 var
  errorDescription:string;
 begin
-    // остаток свободного места на диске
+  // проверка на 2ую копию дошборда
+  if GetCloneRun(PChar(DASHBOARD_EXE)) then begin
+    MessageBox(HomeForm.Handle,PChar('Обнаружен запуск 2ой копии программы'+#13#13+
+                                     'Для продолжения закройте предыдущую копию'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
+    KillProcess;
+  end;
+
+  // остаток свободного места на диске
   if not isExistFreeSpaceDrive(errorDescription) then begin
     ShowFormErrorMessage(errorDescription,SharedMainLog,'THomeForm.FormShow');
   end;
@@ -42,7 +49,7 @@ begin
 
   // отображение текущей версии
   with HomeForm do begin
-   if DEBUG then Caption:='    ===== DEBUG | (base:'+GetDefaultDataBase+') =====    ' + Caption+' '+GetVersion(GUID_VERSION,eGUI) + ' | '+'('+GUID_VERSION+')'
+   if DEBUG then Caption:='    ===== DEBUG | (base:'+_dll_GetDefaultDataBase+') =====    ' + Caption+' '+GetVersion(GUID_VERSION,eGUI) + ' | '+'('+GUID_VERSION+')'
    else Caption:=Caption+' '+GetVersion(GUID_VERSION,eGUI) + ' | '+'('+GUID_VERSION+')';
   end;
 
@@ -52,14 +59,6 @@ begin
 
   // очистка от временных файлов после автообновления
   ClearAfterUpdate;
-
-   // проверка на 2ую копию дошборда
-  if GetCloneRun(PChar(DASHBOARD_EXE)) then begin
-    MessageBox(HomeForm.Handle,PChar('Обнаружен запуск 2ой копии программы'+#13#13+
-                                     'Для продолжения закройте предыдущую копию'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
-    KillProcess;
-  end;
-
 end;
 
 
@@ -67,9 +66,10 @@ procedure _INIT;
 begin
       // стататус бар
    with HomeForm.StatusBar do begin
-    Panels[2].Text:=SharedCurrentUserLogon.Familiya+' '+SharedCurrentUserLogon.Name;
-    Panels[3].Text:=GetUserRoleSTR(SharedCurrentUserLogon.ID);
-    Panels[4].Text:=GetCopyright;
+    Panels[2].Text:='Регистрация телефона(скоро)';
+    Panels[3].Text:=SharedCurrentUserLogon.Familiya+' '+SharedCurrentUserLogon.Name;
+    Panels[4].Text:=GetUserRoleSTR(SharedCurrentUserLogon.ID);
+    Panels[5].Text:=GetCopyright;
    end;
 
   // заведение данных о текущей сесии

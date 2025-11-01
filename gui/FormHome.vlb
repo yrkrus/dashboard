@@ -13,9 +13,6 @@ Coordinates=248,214,93,58
 [lblStstistisc_Day_Summa]
 Coordinates=216,486,160,58
 
-[lblStstatisc_Queue5000_Summa]
-Coordinates=583,622,201,58
-
 [STlist_IVR_NO_Rings]
 Coordinates=597,690,141,36
 
@@ -25,29 +22,17 @@ Coordinates=80,418,160,58
 [menu_Reports]
 Coordinates=1079,482,98,36
 
-[lblStstatisc_Queue5050_No_Answered]
-Coordinates=576,146,238,58
-
 [lblCount_QUEUE]
 Coordinates=837,282,114,58
 
-[Label13]
-Coordinates=343,622,60,58
-
 [N2]
 Coordinates=0,137,40,36
-
-[lblStstatisc_Queue5050_Answered]
-Coordinates=10,350,214,58
 
 [Label17]
 Coordinates=10,418,60,58
 
 [menu_activeSession]
 Coordinates=1420,309,133,36
-
-[Label4]
-Coordinates=672,214,53,58
 
 [menu_About_Debug]
 Coordinates=1420,364,132,36
@@ -61,17 +46,11 @@ Coordinates=371,418,60,58
 [Label21]
 Coordinates=441,418,60,58
 
-[lblStstatisc_Queue5000_No_Answered]
-Coordinates=137,554,238,58
-
 [panel_IVR]
 Coordinates=10,78,74,58
 
 [FooterMenu]
 Coordinates=1420,419,84,36
-
-[Label6]
-Coordinates=79,622,53,58
 
 [Label18]
 Coordinates=427,78,60,58
@@ -94,9 +73,6 @@ Coordinates=207,282,71,58
 [menu_About]
 Coordinates=1420,584,87,36
 
-[Label3]
-Coordinates=256,146,53,58
-
 [Label1]
 Coordinates=609,214,53,58
 
@@ -118,23 +94,11 @@ Coordinates=738,554,196,58
 [Label11]
 Coordinates=413,622,60,58
 
-[lblStstatisc_Queue5000_Answered]
-Coordinates=502,282,214,58
-
-[Label8]
-Coordinates=10,282,53,58
-
-[Label2]
-Coordinates=445,350,53,58
-
-[lblStstatisc_Queue5050_Summa]
-Coordinates=234,350,201,58
-
 [menu_About_Version]
 Coordinates=1281,597,138,36
 
 []
-Coordinates=910,597,99,36
+Coordinates=672,214,53,58
 Visible=True
 
 [menu]

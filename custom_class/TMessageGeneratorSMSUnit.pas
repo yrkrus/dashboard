@@ -746,6 +746,8 @@ begin
   end;
 
   m_generetedMessage:=tmp;
+
+  if Assigned(template) then FreeAndNil(template);
 end;
 
 // пример сообщения (берется из бд history_sms_sending)

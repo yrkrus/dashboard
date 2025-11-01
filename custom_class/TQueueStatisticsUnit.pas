@@ -28,6 +28,7 @@ var
    m_phone        :string;
    m_waiting      :string;
    m_trunk        :string;
+   m_queue        :enumQueue;
 
    m_addFIO       :Boolean;           // нужно ли добавлять ФИО
    m_fio          :TAutoPodborPeople;
@@ -190,7 +191,6 @@ var
       procedure SetLinkLabel(_queue:enumQueue;
                              var _label_all,_label_ansvered,_label_missed : TLabel); //линкова TLabel (только при старте нкужна)
 
-
       procedure SetLinkLabelStatDay(var _label_all,_label_ansvered,_label_missed,_label_procent : TLabel); //линкова TLabel (только при старте нкужна)
 
 
@@ -230,6 +230,7 @@ begin
    m_phone        :='';
    m_waiting      :='';
    m_trunk        :='';
+   m_queue        :=queue_null;
 
    m_addFIO:=_addFIO;
    m_fio:=nil;
@@ -245,19 +246,28 @@ end;
 function TCalls.Clone(_addFIO:Boolean): TCalls;
 var
  phone:string;
+ internalCall:Boolean;  // внутренний звонок был
 begin
   Result:=TCalls.Create(_addFIO);
+  internalCall:=False;
 
-  Result.m_id := Self.m_id;
-  Result.m_dateTime := Self.m_dateTime;
-  Result.m_phone := Self.m_phone;
-  Result.m_waiting := Self.m_waiting;
-  Result.m_trunk := Self.m_trunk;
+  Result.m_id         := Self.m_id;
+  Result.m_dateTime   := Self.m_dateTime;
+  Result.m_phone      := Self.m_phone;
+  Result.m_waiting    := Self.m_waiting;
+  Result.m_trunk      := Self.m_trunk;
+  Result.m_queue      := Self.m_queue;
 
   if _addFIO then begin
     phone:=Self.m_phone;
     phone:=StringReplace(phone,'+7','8',[rfReplaceAll]);
-    Result.m_fio:=TAutoPodborPeople.Create(phone);
+
+    // внутренний звонок был
+    if Result.m_queue = queue_5911 then begin
+     internalCall:=True;
+    end;
+
+    Result.m_fio:=TAutoPodborPeople.Create(phone,internalCall);
   end;
 end;
 
@@ -580,12 +590,15 @@ begin
   m_mutex:=TMutex.Create(nil, False, Format('Global\TQueueStatistics_%d', [m_mutexIndex]));
 
 
-   //inherited;
-  m_count:=Ord(High(enumQueue))-1;  // TODO берем только 5000 и 5050 очереди
+  //inherited;
+  m_count:=3;    // Ord(High(enumQueue))-1;  // TODO берем только 5000 и 5050 очереди
 
    // создадим массив
   SetLength(m_list,m_count);
-  for i:=0 to m_count do m_list[i]:=TStructQueueStatistics.Create(enumQueue(i));
+  m_list[0]:=TStructQueueStatistics.Create(queue_5000);
+  m_list[1]:=TStructQueueStatistics.Create(queue_5050);
+  m_list[2]:=TStructQueueStatistics.Create(queue_5911);
+ // for i:=0 to m_count do m_list[i]:=TStructQueueStatistics.Create(enumQueue(i));
 
 
   // нужно ли создавать обект для статистики за день
@@ -1068,7 +1081,7 @@ begin
 end;
 
 
-// обвнление данных по 5000 очереди
+// обвнление данных по очереди
 procedure TQueueStatistics.UpdateQueue(_queue:enumQueue);
 begin
   SetStatistics(_queue);
@@ -1102,6 +1115,7 @@ var
   i,count:Integer;
   SQL_text:string;
   correct_time:string;
+  call_id:string;
 begin
  _countCalls:=0;
  SetLength(Result,0);
@@ -1162,10 +1176,13 @@ begin
        call.m_dateTime  :=StrToDateTime(VarToStr(Fields[3].Value));
 
        try
-         call.m_trunk:=GetPhoneTrunkQueue(eTableIVR, call.m_phone, DateTimeToStr(call.m_dateTime));
+         call_id:=_dll_GetCallIDPhoneIVR(eTableIVR,call.m_phone);     // TODO тут проверить потом а то есть подозрение что не правильно высчитвается
+         call.m_trunk:=_dll_GetPhoneTrunkQueue(eTableIVR, call.m_phone, call_id);
        except
          call.m_trunk:='null';
        end;
+
+       call.m_queue:=_queue;
 
        Result[i]:=call;
        ado.Next;
@@ -1213,6 +1230,7 @@ begin
   end;
 
   // Получаем список пропущенных вызовов
+ try
   list_calls:=GetMissedCalls(_queue, _stat, count_calls);
 
   // Если есть пропущенные вызовы, добавляем их в статистику
@@ -1229,13 +1247,16 @@ begin
       end;
     end;
   end;
-
+ finally
   // Освобождаем память
-  if Length(list_calls)>0 then
-  begin
-    for i := 0 to High(list_calls) do FreeAndNil(list_calls[i]);
-    SetLength(list_calls, 0);
+  if Assigned(list_calls) then begin
+    if Length(list_calls)>0 then
+    begin
+      for i := 0 to High(list_calls) do FreeAndNil(list_calls[i]);
+      SetLength(list_calls, 0);
+    end;
   end;
+ end;
 end;
 
 
@@ -1279,7 +1300,9 @@ var
  i:Integer;
 begin
   // заносим данные в память
-  for i:=0 to m_count-1 do UpdateQueue(enumQueue(i));
+  for i:=0 to m_count-1 do begin
+    UpdateQueue(m_list[i].m_queue);
+  end;
 
   // обновление данных за текущий день
   if isExistStatDay then UpdateDay;

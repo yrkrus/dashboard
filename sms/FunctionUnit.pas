@@ -815,7 +815,6 @@ var
  Rows, Cols, i:integer;
  FData: OLEVariant;
 
-
  stopRows:string;
 
  checkRows:Boolean;
@@ -937,6 +936,7 @@ begin
      for i:=1 to Rows do
      begin
       p_Status.Caption:='Статус : Загрузка в память ['+IntToStr(progress)+'%]';
+       
 
         if checkRows=False then begin
           if (FData[i,1]='PCODE')     and
@@ -969,7 +969,17 @@ begin
            Phone:=PacientPhone;
            Familiya:=PacientFamiliya;
            IO:=PacientIO;
-           Birthday:=StrToDate(PacientBirthday);
+          try
+            // Пробуем преобразовать строку в дату
+            Birthday:=StrToDate(PacientBirthday);
+          except
+            on EConvertError do begin
+              NewPacient._errorDescriptions:='Некорректный день рождения у пациента';
+              SharedPacientsListNotSending.Add(NewPacient, True);
+              Continue;
+            end;
+          end;
+
            Pol:=PacientPol;
            DataPriema:=StrToDate(PacientDataPriema);
            TimePriema:=StrToTime(PacientTimePriema);

@@ -119,6 +119,7 @@ begin
    // линковка label при первом запуске
    SharedQueueStatistics.SetLinkLabel(queue_5000, lblStstatisc_Queue5000_Summa, lblStstatisc_Queue5000_Answered, lblStstatisc_Queue5000_No_Answered);
    SharedQueueStatistics.SetLinkLabel(queue_5050, lblStstatisc_Queue5050_Summa, lblStstatisc_Queue5050_Answered, lblStstatisc_Queue5050_No_Answered);
+   SharedQueueStatistics.SetLinkLabel(queue_5911, lblStstatisc_Queue5911_Summa, lblStstatisc_Queue5911_Answered, lblStstatisc_Queue5911_No_Answered);
 
    // + линковка для статистики за день
    if SharedQueueStatistics.ExistStatDay then begin

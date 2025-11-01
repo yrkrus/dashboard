@@ -22,10 +22,13 @@ uses
   BASE_SERVER_ALIAS:string  = 'A_MAIN_034_0030';
   BASE_SERVER:string        = '10.34.222.10';
 
+
   // class TStructPeople
   type
       TStructPeople = class
       public
+      m_internalName      :string;
+
       lastName            :string;     // фамилия
       firstName           :string;     // имя
       midName             :string;     // отчетство
@@ -36,7 +39,7 @@ uses
       constructor Create(_lastname,_firstname,_midname:string;
                          _gender:enumGender;
                          _birthday:TDate);                   overload;
-
+      constructor Create;                                    overload;
       end;
  // class TStructPeople END
 
@@ -51,6 +54,8 @@ uses
       m_listPhoneVariants    :TStringList;
 
       m_list                 :TArray<TStructPeople>;
+
+      m_internal             : Boolean; // внутренний звонок
 
       firebird_login                        :string;
       firebird_pwd                          :string;
@@ -68,17 +73,19 @@ uses
 
       procedure AddPeople(_lastname,_firstname,_midname:string;
                           _gender:Integer;
-                          _bith:TDate); // добавление в структуру
+                          _bith:TDate);   overload; // добавление в структуру
+      procedure AddPeople;                overload;// добавление в структуру
 
       procedure SetPhoneVariants;  // делаем формат тлф под базу
 
       function LastName(_id:Integer):string;
       function BirthDay(_id:Integer):string;
+      function GetInretnalName(_id:Integer):string;
 
       public
 
-      constructor Create(_phone:string);    overload;
-      constructor Create;                   overload;
+      constructor Create(_phone:string; _internalCall:Boolean);    overload;
+      constructor Create(_internalCall:Boolean);                   overload;
 
       destructor Destroy;                                  override; // Объявление деструктора
 
@@ -95,6 +102,7 @@ uses
 
 
       property Count:Integer read m_count;
+      property InretnalName[_id:Integer]:string read GetInretnalName;
 
       end;
  // class TAutoPodborPeople END
@@ -110,11 +118,17 @@ constructor TStructPeople.Create(_lastname,_firstname,_midname:string;
                                  _gender:enumGender;
                                  _birthday:TDate);
 begin
- lastName  :=_lastname;
- firstName :=_firstname;
- midName   :=_midname;
- gender    :=_gender;
- birthday  :=_birthday;
+ lastName         :=_lastname;
+ firstName        :=_firstname;
+ midName          :=_midname;
+ gender           :=_gender;
+ birthday         :=_birthday;
+ m_internalName   :='';
+end;
+
+constructor TStructPeople.Create;
+begin
+  m_internalName:='Внутренний звонок';
 end;
 
 
@@ -123,16 +137,18 @@ end;
 
 
 
-constructor TAutoPodborPeople.Create(_phone:string);
+constructor TAutoPodborPeople.Create(_phone:string; _internalCall:Boolean);
 begin
  inherited Create;
+ m_internal:=_internalCall;
  Init(_phone);
 end;
 
 
-constructor TAutoPodborPeople.Create;
+constructor TAutoPodborPeople.Create(_internalCall:Boolean);
 begin
  inherited Create;
+ m_internal:=_internalCall;
  Init('');
 end;
 
@@ -147,6 +163,7 @@ begin
  if isExistPhone then m_phone:=_phone;
 
  m_count:=0;
+
  firebirdConnect            :=  TpFIBDatabase.Create(nil);
 
  firebirdTransaction        :=  TpFIBTransaction.Create(nil); // Создание транзакции
@@ -160,8 +177,6 @@ begin
 
  SetLength(m_list,0);
 
-
-
  // находим логин\пароль от БД
  CreateAuthFirebird;
 
@@ -170,6 +185,7 @@ begin
    SetPhoneVariants;  // делаем формат тлф под базу
    Find;
  end;
+
 
  //inherited Create;
 end;
@@ -272,9 +288,21 @@ begin
  Result:=DateToStr(m_list[_id].birthday);
 end;
 
+function TAutoPodborPeople.GetInretnalName(_id:Integer):string;
+begin
+  Result:=m_list[_id].m_internalName;
+end;
+
 function TAutoPodborPeople.GetFIO(_id:Integer):string;
 begin
-  Result:=LastName(_id)+' '+FirstName(_id)+' '+MidName(_id)+' ('+BirthDay(_id)+')';
+  case m_internal of
+   false:begin
+    Result:=LastName(_id)+' '+FirstName(_id)+' '+MidName(_id)+' ('+BirthDay(_id)+')';
+   end;
+   true:begin
+     Result:=InretnalName[_id];
+   end;
+  end;
 end;
 
 // отобрадение ФИО
@@ -397,6 +425,19 @@ begin
 end;
 
 
+// добавление в структуру
+procedure TAutoPodborPeople.AddPeople;
+var
+  newPerson: TStructPeople;
+begin
+  newPerson:= TStructPeople.Create();
+
+  SetLength(m_list, Length(m_list) + 1);
+  m_list[High(m_list)] := newPerson;
+  Inc(m_count);
+end;
+
+
 // поиск в БД человека
 procedure TAutoPodborPeople.Find;
 var
@@ -409,6 +450,14 @@ var
  gender     :Integer;    // пол
  birth      :TDate;      // дата рождения
 begin
+
+  // заглушка т.к. звонок внутренний был
+  if m_internal then
+  begin
+    AddPeople();
+    Exit;
+  end;
+
   with firebirdConnect do begin
     if Connected then Close;
 

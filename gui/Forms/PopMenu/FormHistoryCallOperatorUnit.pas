@@ -436,6 +436,7 @@ var
   program_exit: TDateTime;
   id, dateTime, trunk, phone, numberQueue, talkTime, onHold:string;
   filteringCount:Integer;
+  call_id:string;
 begin
   Caption := 'История звонков: ' + GetUserNameOperators(IntToStr(m_sip));
   filteringCount:=0;
@@ -509,7 +510,8 @@ begin
         end;
 
          try
-            trunk:=GetPhoneTrunkQueue(eTableIVR,phone,dateTime);
+            call_id:=_dll_GetCallIDPhoneIVR(eTableIVR,phone);
+            trunk:=_dll_GetPhoneTrunkQueue(eTableIVR,phone,call_id);
          except
             trunk:='null';
          end;
@@ -599,7 +601,7 @@ begin
   phonePodbor:=StringReplace(phonePodbor,'+7','8',[rfReplaceAll]);
 
   showWait(show_open);
-  people:=TAutoPodborPeople.Create(phonePodbor);
+  people:=TAutoPodborPeople.Create(phonePodbor, False);
 
   FormPropushennieShowPeople.SetListPacients(people);
   showWait(show_close);

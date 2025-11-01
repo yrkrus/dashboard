@@ -862,7 +862,7 @@ begin
 
   // debug node
   if DEBUG then begin
-    Caption:='    ===== DEBUG | (base:'+GetDefaultDataBase+') =====    '+Caption;
+    Caption:='    ===== DEBUG | (base:'+_dll_GetDefaultDataBase+') =====    '+Caption;
   end
   else begin
     // по умолчанимю включим все
@@ -874,9 +874,11 @@ begin
     if not USER_ACCESS_SENDING_LIST then begin
        page_TypesSMS.Pages[1].TabVisible:=False;
        chkbox_SaveGlobalTemplate.Visible:=False;  // сохранить сообщение в глобальные шаблоны
+       img_SaveGlobalTemplate.Visible:=False;     // сохранить сообщение в глобальные шаблоны
     end
     else begin
        chkbox_SaveGlobalTemplate.Visible:=True;  // сохранить сообщение в глобальные шаблоны
+       img_SaveGlobalTemplate.Visible:=True;     // сохранить сообщение в глобальные шаблоны
     end;
   end;
 

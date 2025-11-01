@@ -41,6 +41,8 @@ uses
       function CheckExist(_namepc, _ipphone:string; var _errorDescription:string):Boolean;  // чекалка проверки есть ли уже данные
       function IsExistPCName(_namepc:string; var _errorDescription:string):Boolean;
       function IsExistIpPhone(_ipphone:string; var _errorDescription:string):Boolean;
+      function GetIPPhoneWithNamePC(_namePC:string):string;  // получение ip адрес из имени пк
+      function GetIPPhoneWithSip(_sip:Integer):string;        // получение ip адрес из sip
 
       public
       constructor Create;                   overload;
@@ -56,6 +58,8 @@ uses
       property Count:Integer read m_count;
       property Items[_id:Integer]:TPhone read GetItems; default;
       property ItemsData[_id_base:Integer]:TPhone read GetItemsData;  // получение данных по id которое из БД
+      property IPPhoneWithNamePC[_namePC:string]:string read GetIPPhoneWithNamePC;  // получение ip адрес из имени пк
+      property IPPhoneWithSip[_sip:Integer]:string read GetIPPhoneWithSip;          // получение ip адрес из имени пк
 
       end;
  // class TSipPhoneList END
@@ -163,6 +167,7 @@ begin
    if Assigned(serverConnect) then begin
      serverConnect.Close;
      FreeAndNil(serverConnect);
+     FreeAndNil(request);
    end;
  end;
 end;
@@ -258,6 +263,7 @@ begin
      if Assigned(serverConnect) then begin
        serverConnect.Close;
        FreeAndNil(serverConnect);
+       FreeAndNil(request);
      end;
    end;
 end;
@@ -305,10 +311,38 @@ begin
      if Assigned(serverConnect) then begin
        serverConnect.Close;
        FreeAndNil(serverConnect);
+       FreeAndNil(request);
      end;
    end;
 end;
 
+
+// получение ip адрес из имени пк
+function TPhoneList.GetIPPhoneWithNamePC(_namePC:string):string;
+var
+ i:Integer;
+begin
+   for i:=0 to m_count-1 do begin
+     if m_list[i].m_namePC = _namePC then begin
+       Result:=m_list[i].m_phoneIP;
+       Exit;
+     end;
+   end;
+end;
+
+
+// получение ip адрес из sip
+function TPhoneList.GetIPPhoneWithSip(_sip:Integer):string;
+var
+ i:Integer;
+begin
+   for i:=0 to m_count-1 do begin
+     if m_list[i].m_sip = _sip then begin
+       Result:=m_list[i].m_phoneIP;
+       Exit;
+     end;
+   end;
+end;
 
 // добавление нового
 function TPhoneList.Insert(_namepc, _ipphone:string; var _errorDescription:string):Boolean;

@@ -2,7 +2,7 @@ object HomeForm: THomeForm
   Left = 0
   Top = 0
   Caption = #1044#1072#1096#1073#1086#1088#1076' '#1050#1086#1083#1083#1062#1077#1085#1090#1088#1072
-  ClientHeight = 818
+  ClientHeight = 894
   ClientWidth = 1454
   Color = clWindow
   DefaultMonitor = dmDesktop
@@ -20,7 +20,7 @@ object HomeForm: THomeForm
   OnShow = FormShow
   DesignSize = (
     1454
-    818)
+    894)
   PixelsPerInch = 96
   TextHeight = 15
   object Label5: TLabel
@@ -203,218 +203,6 @@ object HomeForm: THomeForm
     Transparent = False
     Layout = tlCenter
   end
-  object Label2: TLabel
-    Left = 9
-    Top = 717
-    Width = 74
-    Height = 22
-    Alignment = taCenter
-    AutoSize = False
-    Caption = #1086#1095#1077#1088#1077#1076#1100
-    Font.Charset = RUSSIAN_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-    Layout = tlCenter
-  end
-  object Label6: TLabel
-    Left = 91
-    Top = 717
-    Width = 75
-    Height = 22
-    Alignment = taCenter
-    AutoSize = False
-    Caption = #1079#1074#1086#1085#1082#1086#1074
-    Font.Charset = RUSSIAN_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-    Layout = tlCenter
-  end
-  object Label3: TLabel
-    Left = 178
-    Top = 717
-    Width = 75
-    Height = 22
-    Alignment = taCenter
-    AutoSize = False
-    Caption = #1086#1090#1074#1077#1095#1077#1085#1086
-    Font.Charset = RUSSIAN_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-    Layout = tlCenter
-  end
-  object Label4: TLabel
-    Left = 264
-    Top = 717
-    Width = 80
-    Height = 22
-    Alignment = taCenter
-    AutoSize = False
-    Caption = #1087#1088#1086#1087#1091#1097#1077#1085#1086
-    Font.Charset = RUSSIAN_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold]
-    ParentFont = False
-    Layout = tlCenter
-  end
-  object lblStstatisc_Queue5000_No_Answered: TLabel
-    Left = 264
-    Top = 741
-    Width = 80
-    Height = 17
-    Cursor = crHandPoint
-    Hint = 
-      #1042#1089#1077#1075#1086' '#1087#1088#1086#1087#1091#1097#1077#1085#1085#1099#1077' ('#1087#1088#1086#1087#1091#1097#1077#1085#1085#1099#1077' '#1080' '#1085#1077' '#1087#1077#1088#1077#1079#1074#1086#1085#1080#1074#1096#1080#1077')'#13#10#13#10'('#1085#1072#1078#1072#1090#1100' '#1076#1083 +
-      #1103' '#1086#1090#1082#1088#1099#1090#1080#1103' '#1086#1082#1085#1072' '#1089' '#1087#1088#1086#1087#1091#1097#1077#1085#1085#1099#1084#1080' '#1079#1074#1086#1085#1082#1072#1084#1080')'
-    Alignment = taCenter
-    AutoSize = False
-    Caption = '0'
-    Font.Charset = RUSSIAN_CHARSET
-    Font.Color = clMaroon
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-    ParentShowHint = False
-    ShowHint = True
-    Layout = tlCenter
-    WordWrap = True
-    OnClick = lblStstatisc_Queue5000_No_AnsweredClick
-    OnMouseMove = lblStstatisc_Queue5000_No_AnsweredMouseMove
-    OnMouseLeave = lblStstatisc_Queue5000_No_AnsweredMouseLeave
-  end
-  object lblStstatisc_Queue5000_Answered: TLabel
-    Left = 178
-    Top = 741
-    Width = 75
-    Height = 17
-    Alignment = taCenter
-    AutoSize = False
-    Caption = '0'
-    Font.Charset = RUSSIAN_CHARSET
-    Font.Color = clGreen
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-    Layout = tlCenter
-  end
-  object lblStstatisc_Queue5000_Summa: TLabel
-    Left = 91
-    Top = 741
-    Width = 75
-    Height = 17
-    Alignment = taCenter
-    AutoSize = False
-    Caption = '0'
-    Font.Charset = RUSSIAN_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-    Layout = tlCenter
-  end
-  object Label8: TLabel
-    Left = 8
-    Top = 741
-    Width = 75
-    Height = 17
-    Alignment = taCenter
-    AutoSize = False
-    Caption = '5000'
-    Font.Charset = RUSSIAN_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-    Layout = tlCenter
-  end
-  object Label13: TLabel
-    Left = 8
-    Top = 760
-    Width = 75
-    Height = 17
-    Alignment = taCenter
-    AutoSize = False
-    Caption = '5050'
-    Font.Charset = RUSSIAN_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-    Layout = tlCenter
-  end
-  object lblStstatisc_Queue5050_Summa: TLabel
-    Left = 91
-    Top = 760
-    Width = 75
-    Height = 17
-    Alignment = taCenter
-    AutoSize = False
-    Caption = '0'
-    Font.Charset = RUSSIAN_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-    Layout = tlCenter
-  end
-  object lblStstatisc_Queue5050_Answered: TLabel
-    Left = 178
-    Top = 760
-    Width = 75
-    Height = 17
-    Alignment = taCenter
-    AutoSize = False
-    Caption = '0'
-    Font.Charset = RUSSIAN_CHARSET
-    Font.Color = clGreen
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-    Layout = tlCenter
-  end
-  object lblStstatisc_Queue5050_No_Answered: TLabel
-    Left = 264
-    Top = 760
-    Width = 80
-    Height = 17
-    Cursor = crHandPoint
-    Hint = 
-      #1042#1089#1077#1075#1086' '#1087#1088#1086#1087#1091#1097#1077#1085#1085#1099#1077' ('#1087#1088#1086#1087#1091#1097#1077#1085#1085#1099#1077' '#1080' '#1085#1077' '#1087#1077#1088#1077#1079#1074#1086#1085#1080#1074#1096#1080#1077')'#13#10#13#10'('#1085#1072#1078#1072#1090#1100' '#1076#1083 +
-      #1103' '#1086#1090#1082#1088#1099#1090#1080#1103' '#1086#1082#1085#1072' '#1089' '#1087#1088#1086#1087#1091#1097#1077#1085#1085#1099#1084#1080' '#1079#1074#1086#1085#1082#1072#1084#1080')'
-    Alignment = taCenter
-    AutoSize = False
-    Caption = '0'
-    Font.Charset = RUSSIAN_CHARSET
-    Font.Color = clMaroon
-    Font.Height = -13
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-    ParentShowHint = False
-    ShowHint = True
-    Layout = tlCenter
-    WordWrap = True
-    OnClick = lblStstatisc_Queue5050_No_AnsweredClick
-    OnMouseMove = lblStstatisc_Queue5050_No_AnsweredMouseMove
-    OnMouseLeave = lblStstatisc_Queue5050_No_AnsweredMouseLeave
-  end
   object Label9: TLabel
     Left = 10
     Top = 22
@@ -542,7 +330,7 @@ object HomeForm: THomeForm
   end
   object lblNewMessageLocalChat: TLabel
     Left = 1202
-    Top = 777
+    Top = 853
     Width = 243
     Height = 16
     Cursor = crHandPoint
@@ -695,7 +483,7 @@ object HomeForm: THomeForm
   end
   object Img8Mart: TImage
     Left = 1374
-    Top = 746
+    Top = 822
     Width = 79
     Height = 50
     Anchors = [akRight, akBottom]
@@ -822,7 +610,7 @@ object HomeForm: THomeForm
   end
   object ImageLogo: TImage
     Left = 1277
-    Top = 738
+    Top = 814
     Width = 157
     Height = 37
     Anchors = [akRight, akBottom]
@@ -989,7 +777,7 @@ object HomeForm: THomeForm
   end
   object ImgNewYear: TImage
     Left = 1389
-    Top = 718
+    Top = 794
     Width = 55
     Height = 55
     Anchors = [akRight, akBottom]
@@ -6445,7 +6233,7 @@ object HomeForm: THomeForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 797
+    Top = 873
     Width = 1454
     Height = 21
     Panels = <
@@ -6458,6 +6246,11 @@ object HomeForm: THomeForm
         Alignment = taCenter
         Text = #1057#1083#1091#1078#1073#1072' '#1086#1073#1085#1086#1074#1083#1077#1085#1080#1103': null'
         Width = 200
+      end
+      item
+        Alignment = taCenter
+        Text = #1056#1077#1075#1080#1089#1090#1088#1072#1094#1080#1103' '#1090#1077#1083#1077#1092#1086#1085#1072
+        Width = 250
       end
       item
         Alignment = taCenter
@@ -6476,7 +6269,6 @@ object HomeForm: THomeForm
         Text = 'developer by     '
         Width = 150
       end>
-    ExplicitTop = 739
   end
   object Panel_SIP: TPanel
     Left = 356
@@ -6807,7 +6599,7 @@ object HomeForm: THomeForm
     Left = 359
     Top = 643
     Width = 1054
-    Height = 120
+    Height = 400
     BevelOuter = bvNone
     TabOrder = 9
     object PanelStatusIN: TPanel
@@ -7666,6 +7458,93 @@ object HomeForm: THomeForm
       OnMouseLeave = ST_HelpStatusInfoMouseLeave
       OnMouseMove = ST_HelpStatusInfoMouseMove
     end
+    object panel_RegisterPhone: TPanel
+      Left = 0
+      Top = 130
+      Width = 1049
+      Height = 72
+      BevelInner = bvLowered
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 3
+      object Label8: TLabel
+        Left = 249
+        Top = 23
+        Width = 263
+        Height = 32
+        Align = alCustom
+        Alignment = taRightJustify
+        Caption = 
+          #1063#1090#1086#1073#1099' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1100#1089#1103' '#1089#1090#1072#1090#1091#1089#1072#1084#1080' '#1085#1077#1086#1073#1093#1086#1076#1080#1084#1086' '#1079#1072#1088#1077#1075#1080#1089#1090#1088#1080#1088#1086#1074#1072#1090#1100#1089#1103' '#1074' '#1090#1077#1083 +
+          #1077#1092#1086#1085#1077
+        WordWrap = True
+      end
+      object btnRegPhone: TBitBtn
+        Left = 556
+        Top = 22
+        Width = 200
+        Height = 37
+        Caption = '&'#1047#1072#1088#1077#1075#1080#1089#1090#1088#1080#1088#1086#1074#1072#1090#1100#1089#1103
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        Glyph.Data = {
+          36050000424D3605000000000000360400002800000010000000100000000100
+          0800000000000001000074120000741200000001000000000000000000000000
+          80000080000000808000800000008000800080800000C0C0C000C0DCC000F0CA
+          A6000020400000206000002080000020A0000020C0000020E000004000000040
+          20000040400000406000004080000040A0000040C0000040E000006000000060
+          20000060400000606000006080000060A0000060C0000060E000008000000080
+          20000080400000806000008080000080A0000080C0000080E00000A0000000A0
+          200000A0400000A0600000A0800000A0A00000A0C00000A0E00000C0000000C0
+          200000C0400000C0600000C0800000C0A00000C0C00000C0E00000E0000000E0
+          200000E0400000E0600000E0800000E0A00000E0C00000E0E000400000004000
+          20004000400040006000400080004000A0004000C0004000E000402000004020
+          20004020400040206000402080004020A0004020C0004020E000404000004040
+          20004040400040406000404080004040A0004040C0004040E000406000004060
+          20004060400040606000406080004060A0004060C0004060E000408000004080
+          20004080400040806000408080004080A0004080C0004080E00040A0000040A0
+          200040A0400040A0600040A0800040A0A00040A0C00040A0E00040C0000040C0
+          200040C0400040C0600040C0800040C0A00040C0C00040C0E00040E0000040E0
+          200040E0400040E0600040E0800040E0A00040E0C00040E0E000800000008000
+          20008000400080006000800080008000A0008000C0008000E000802000008020
+          20008020400080206000802080008020A0008020C0008020E000804000008040
+          20008040400080406000804080008040A0008040C0008040E000806000008060
+          20008060400080606000806080008060A0008060C0008060E000808000008080
+          20008080400080806000808080008080A0008080C0008080E00080A0000080A0
+          200080A0400080A0600080A0800080A0A00080A0C00080A0E00080C0000080C0
+          200080C0400080C0600080C0800080C0A00080C0C00080C0E00080E0000080E0
+          200080E0400080E0600080E0800080E0A00080E0C00080E0E000C0000000C000
+          2000C0004000C0006000C0008000C000A000C000C000C000E000C0200000C020
+          2000C0204000C0206000C0208000C020A000C020C000C020E000C0400000C040
+          2000C0404000C0406000C0408000C040A000C040C000C040E000C0600000C060
+          2000C0604000C0606000C0608000C060A000C060C000C060E000C0800000C080
+          2000C0804000C0806000C0808000C080A000C080C000C080E000C0A00000C0A0
+          2000C0A04000C0A06000C0A08000C0A0A000C0A0C000C0A0E000C0C00000C0C0
+          2000C0C04000C0C06000C0C08000C0C0A000F0FBFF00A4A0A000808080000000
+          FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00FFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF9B0000F7FFFFFFFFFFFFFFFF
+          FFFF070000000000F7FFFFFFFFFFFFFFFF5200000000000000FFFFFFFFFFFFFF
+          4900000000000000A4FFFFFFFFFFFF00000000A4000000F6FFFFFFFFFFFF4900
+          000008FFFFA4FFFFFFFFFFFFFF5200000008FFFFFFFFFFFFFFFFFFFFF7000000
+          08FFFFFFFFFFFFFFFFFFFFFF000000A4FFFFFFFFFFFFFFFFFFFFFF9B00000000
+          FFFFFFFFFFFFFFFFFFFFFF0000000000A4FFFFFFFFFFFFFFFFFFFF0000000000
+          FFFFFFFFFFFFFFFFFFFFFFF7000000F6FFFFFFFFFFFFFFFFFFFFFFFFF700A4FF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+        ParentFont = False
+        ParentShowHint = False
+        ShowHint = False
+        TabOrder = 0
+        WordWrap = True
+        OnClick = btnRegPhoneClick
+      end
+    end
   end
   object chkboxGoHome: TCheckBox
     Left = 1472
@@ -8040,7 +7919,6 @@ object HomeForm: THomeForm
     Caption = 'Button1'
     TabOrder = 1
     Visible = False
-    OnClick = Button1Click
   end
   object ST_SL: TStaticText
     Left = 1308
@@ -8087,6 +7965,312 @@ object HomeForm: THomeForm
     ShowHint = True
     TabOrder = 3
     Transparent = False
+  end
+  object panel_QueueStatistics: TPanel
+    Left = 9
+    Top = 717
+    Width = 335
+    Height = 65
+    BevelOuter = bvNone
+    TabOrder = 13
+    object lblStatistics_Queue5000: TLabel
+      Left = -1
+      Top = 18
+      Width = 75
+      Height = 17
+      Alignment = taCenter
+      AutoSize = False
+      Caption = '5000'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      Layout = tlCenter
+      Visible = False
+    end
+    object lblStatistics_Queue5050: TLabel
+      Left = -1
+      Top = 33
+      Width = 75
+      Height = 17
+      Alignment = taCenter
+      AutoSize = False
+      Caption = '5050'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      Layout = tlCenter
+      Visible = False
+    end
+    object lblStatistics_Queue5911: TLabel
+      Left = -1
+      Top = 48
+      Width = 75
+      Height = 17
+      Alignment = taCenter
+      AutoSize = False
+      Caption = '5911'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      Layout = tlCenter
+      Visible = False
+    end
+    object lblStstatisc_Queue5000_Summa: TLabel
+      Left = 82
+      Top = 18
+      Width = 75
+      Height = 17
+      Alignment = taCenter
+      AutoSize = False
+      Caption = '0'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      Layout = tlCenter
+      Visible = False
+    end
+    object lblStstatisc_Queue5050_Summa: TLabel
+      Left = 82
+      Top = 33
+      Width = 75
+      Height = 17
+      Alignment = taCenter
+      AutoSize = False
+      Caption = '0'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      Layout = tlCenter
+      Visible = False
+    end
+    object lblStstatisc_Queue5911_Summa: TLabel
+      Left = 82
+      Top = 48
+      Width = 75
+      Height = 17
+      Alignment = taCenter
+      AutoSize = False
+      Caption = '0'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      Layout = tlCenter
+      Visible = False
+    end
+    object lblStstatisc_Queue5000_Answered: TLabel
+      Left = 169
+      Top = 18
+      Width = 75
+      Height = 17
+      Alignment = taCenter
+      AutoSize = False
+      Caption = '0'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clGreen
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      Layout = tlCenter
+      Visible = False
+    end
+    object lblStstatisc_Queue5050_Answered: TLabel
+      Left = 169
+      Top = 33
+      Width = 75
+      Height = 17
+      Alignment = taCenter
+      AutoSize = False
+      Caption = '0'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clGreen
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      Layout = tlCenter
+      Visible = False
+    end
+    object lblStstatisc_Queue5911_Answered: TLabel
+      Left = 169
+      Top = 48
+      Width = 75
+      Height = 17
+      Alignment = taCenter
+      AutoSize = False
+      Caption = '0'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clGreen
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      Layout = tlCenter
+      Visible = False
+    end
+    object lblStstatisc_Queue5000_No_Answered: TLabel
+      Left = 255
+      Top = 18
+      Width = 80
+      Height = 17
+      Cursor = crHandPoint
+      Hint = 
+        #1042#1089#1077#1075#1086' '#1087#1088#1086#1087#1091#1097#1077#1085#1085#1099#1077' ('#1087#1088#1086#1087#1091#1097#1077#1085#1085#1099#1077' '#1080' '#1085#1077' '#1087#1077#1088#1077#1079#1074#1086#1085#1080#1074#1096#1080#1077')'#13#10#13#10'('#1085#1072#1078#1072#1090#1100' '#1076#1083 +
+        #1103' '#1086#1090#1082#1088#1099#1090#1080#1103' '#1086#1082#1085#1072' '#1089' '#1087#1088#1086#1087#1091#1097#1077#1085#1085#1099#1084#1080' '#1079#1074#1086#1085#1082#1072#1084#1080')'
+      Alignment = taCenter
+      AutoSize = False
+      Caption = '0'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clMaroon
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
+      Layout = tlCenter
+      Visible = False
+      WordWrap = True
+      OnClick = lblStstatisc_Queue5000_No_AnsweredClick
+      OnMouseMove = lblStstatisc_Queue5000_No_AnsweredMouseMove
+      OnMouseLeave = lblStstatisc_Queue5000_No_AnsweredMouseLeave
+    end
+    object lblStstatisc_Queue5050_No_Answered: TLabel
+      Left = 255
+      Top = 33
+      Width = 80
+      Height = 17
+      Cursor = crHandPoint
+      Hint = 
+        #1042#1089#1077#1075#1086' '#1087#1088#1086#1087#1091#1097#1077#1085#1085#1099#1077' ('#1087#1088#1086#1087#1091#1097#1077#1085#1085#1099#1077' '#1080' '#1085#1077' '#1087#1077#1088#1077#1079#1074#1086#1085#1080#1074#1096#1080#1077')'#13#10#13#10'('#1085#1072#1078#1072#1090#1100' '#1076#1083 +
+        #1103' '#1086#1090#1082#1088#1099#1090#1080#1103' '#1086#1082#1085#1072' '#1089' '#1087#1088#1086#1087#1091#1097#1077#1085#1085#1099#1084#1080' '#1079#1074#1086#1085#1082#1072#1084#1080')'
+      Alignment = taCenter
+      AutoSize = False
+      Caption = '0'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clMaroon
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
+      Layout = tlCenter
+      Visible = False
+      WordWrap = True
+      OnClick = lblStstatisc_Queue5050_No_AnsweredClick
+      OnMouseMove = lblStstatisc_Queue5050_No_AnsweredMouseMove
+      OnMouseLeave = lblStstatisc_Queue5050_No_AnsweredMouseLeave
+    end
+    object lblStstatisc_Queue5911_No_Answered: TLabel
+      Left = 255
+      Top = 48
+      Width = 80
+      Height = 17
+      Cursor = crHandPoint
+      Hint = 
+        #1042#1089#1077#1075#1086' '#1087#1088#1086#1087#1091#1097#1077#1085#1085#1099#1077' ('#1087#1088#1086#1087#1091#1097#1077#1085#1085#1099#1077' '#1080' '#1085#1077' '#1087#1077#1088#1077#1079#1074#1086#1085#1080#1074#1096#1080#1077')'#13#10#13#10'('#1085#1072#1078#1072#1090#1100' '#1076#1083 +
+        #1103' '#1086#1090#1082#1088#1099#1090#1080#1103' '#1086#1082#1085#1072' '#1089' '#1087#1088#1086#1087#1091#1097#1077#1085#1085#1099#1084#1080' '#1079#1074#1086#1085#1082#1072#1084#1080')'
+      Alignment = taCenter
+      AutoSize = False
+      Caption = '0'
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clMaroon
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
+      Layout = tlCenter
+      Visible = False
+      WordWrap = True
+      OnClick = lblStstatisc_Queue5911_No_AnsweredClick
+      OnMouseMove = lblStstatisc_Queue5911_No_AnsweredMouseMove
+      OnMouseLeave = lblStstatisc_Queue5911_No_AnsweredMouseLeave
+    end
+    object Label2: TLabel
+      Left = 0
+      Top = -2
+      Width = 74
+      Height = 22
+      Alignment = taCenter
+      AutoSize = False
+      Caption = #1086#1095#1077#1088#1077#1076#1100
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+      Layout = tlCenter
+    end
+    object Label6: TLabel
+      Left = 82
+      Top = -2
+      Width = 75
+      Height = 22
+      Alignment = taCenter
+      AutoSize = False
+      Caption = #1079#1074#1086#1085#1082#1086#1074
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+      Layout = tlCenter
+    end
+    object Label3: TLabel
+      Left = 169
+      Top = -2
+      Width = 75
+      Height = 22
+      Alignment = taCenter
+      AutoSize = False
+      Caption = #1086#1090#1074#1077#1095#1077#1085#1086
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+      Layout = tlCenter
+    end
+    object Label4: TLabel
+      Left = 255
+      Top = -2
+      Width = 80
+      Height = 22
+      Alignment = taCenter
+      AutoSize = False
+      Caption = #1087#1088#1086#1087#1091#1097#1077#1085#1086
+      Font.Charset = RUSSIAN_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+      Layout = tlCenter
+    end
   end
   object FooterMenu: TMainMenu
     OwnerDraw = True

@@ -137,6 +137,10 @@ type
 
   function ExecuteResponce(_action:enumAction; var _errorDescription:string):Boolean;
 
+  protected
+  procedure CreateParams(var Params: TCreateParams); override;
+  procedure WMSysCommand(var Msg: TWMSysCommand); message WM_SYSCOMMAND;
+
   public   { Public declarations }
 
   property IsEdit:Boolean read m_IsEditUser write m_IsEditUser;   // редактируется запись пользователя
@@ -158,6 +162,27 @@ uses
   FunctionUnit, FormUsersUnit, GlobalVariables, GlobalVariablesLinkDLL, GlobalImageDestination, TLdapUnit;
 
 {$R *.dfm}
+
+
+procedure TFormAddNewUsers.CreateParams(var Params: TCreateParams);
+begin
+  inherited;
+  // 1) заново добавляем WS_EX_APPWINDOW
+  Params.ExStyle := Params.ExStyle or WS_EX_APPWINDOW;
+  // 2) снимаем Owner/Parent у окна, приклеив к десктопу
+  Params.WndParent := HWND_DESKTOP;
+end;
+//
+procedure TFormAddNewUsers.WMSysCommand(var Msg: TWMSysCommand);
+begin
+  if (Msg.CmdType and $FFF0) = SC_MINIMIZE then
+  begin
+    ShowWindow(Self.Handle, SW_MINIMIZE);
+    // и НЕ вызываем inherited, чтобы не прокатилось на всё приложение
+  end
+  else
+  inherited;
+end;
 
 
 // прогрузка иконок
@@ -644,6 +669,7 @@ begin
             if Assigned(serverConnect) then begin
               serverConnect.Close;
               FreeAndNil(serverConnect);
+              FreeAndNil(request);
             end;
 
              Exit;
@@ -691,6 +717,7 @@ begin
                     if Assigned(serverConnect) then begin
                       serverConnect.Close;
                       FreeAndNil(serverConnect);
+                      FreeAndNil(request);
                     end;
                    Exit;
                 end;
@@ -715,6 +742,7 @@ begin
                 if Assigned(serverConnect) then begin
                   serverConnect.Close;
                   FreeAndNil(serverConnect);
+                  FreeAndNil(request);
                 end;
                Exit;
             end;
@@ -728,6 +756,7 @@ begin
     if Assigned(serverConnect) then begin
       serverConnect.Close;
       FreeAndNil(serverConnect);
+      FreeAndNil(request);
     end;
   end;
 
@@ -823,7 +852,7 @@ begin
 
   // обновим данные
   begin
-     // список со свободными sip номерами
+    // список со свободными sip номерами
     if not Assigned(m_sipList) then m_sipList:=TSipPhoneList.Create
     else m_sipList.UpdateData;
 
@@ -1438,7 +1467,7 @@ begin
     end;
     True:begin   // редактируется пользователь
       if m_editUser.IsOperator then begin
-        if GetOperatorSIP(m_editUserId)<> -1 then begin
+        if _dll_GetOperatorSIP(m_editUserId)<> -1 then begin
           lblSip.Visible:=True;
           lblSwapSip.Visible:=True;
           lblSwapSip.Left:=cNoSIPLEFT;
@@ -1527,7 +1556,7 @@ begin
 
   // sip
   if m_editUser.IsOperator then begin
-    if GetOperatorSIP(m_editUserId)<> -1 then begin
+    if _dll_GetOperatorSIP(m_editUserId)<> -1 then begin
       lblSip.Visible:=True;
       lblSwapSip.Visible:=True;
       lblSwapSip.Left:=cSwapSIPLEFT;

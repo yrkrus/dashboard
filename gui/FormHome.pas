@@ -18,16 +18,7 @@ uses
 type
   THomeForm = class(TForm)
     Label1: TLabel;
-    Label2: TLabel;
-    Label3: TLabel;
-    Label4: TLabel;
     Label5: TLabel;
-    Label8: TLabel;
-    lblStstatisc_Queue5000_Answered: TLabel;
-    lblStstatisc_Queue5000_No_Answered: TLabel;
-    Label13: TLabel;
-    lblStstatisc_Queue5050_Answered: TLabel;
-    lblStstatisc_Queue5050_No_Answered: TLabel;
     Label18: TLabel;
     Label21: TLabel;
     lblCount_QUEUE: TLabel;
@@ -45,9 +36,6 @@ type
     menu: TMenuItem;
     menu_missed_calls: TMenuItem;
     menu_About: TMenuItem;
-    Label6: TLabel;
-    lblStstatisc_Queue5000_Summa: TLabel;
-    lblStstatisc_Queue5050_Summa: TLabel;
     Label7: TLabel;
     lblStstistisc_Day_Summa: TLabel;
     Label9: TLabel;
@@ -157,6 +145,26 @@ type
     menu_clear_status_operator: TMenuItem;
     ST_AR: TStaticText;
     menu_UserSettings: TMenuItem;
+    panel_QueueStatistics: TPanel;
+    lblStatistics_Queue5000: TLabel;
+    lblStatistics_Queue5050: TLabel;
+    lblStatistics_Queue5911: TLabel;
+    lblStstatisc_Queue5000_Summa: TLabel;
+    lblStstatisc_Queue5050_Summa: TLabel;
+    lblStstatisc_Queue5911_Summa: TLabel;
+    lblStstatisc_Queue5000_Answered: TLabel;
+    lblStstatisc_Queue5050_Answered: TLabel;
+    lblStstatisc_Queue5911_Answered: TLabel;
+    lblStstatisc_Queue5000_No_Answered: TLabel;
+    lblStstatisc_Queue5050_No_Answered: TLabel;
+    lblStstatisc_Queue5911_No_Answered: TLabel;
+    Label2: TLabel;
+    Label6: TLabel;
+    Label3: TLabel;
+    Label4: TLabel;
+    panel_RegisterPhone: TPanel;
+    btnRegPhone: TBitBtn;
+    Label8: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure menu_missed_callsClick(Sender: TObject);
@@ -221,7 +229,6 @@ type
     procedure img_DownFont_IVRClick(Sender: TObject);
     procedure img_UpFont_QueueClick(Sender: TObject);
     procedure img_DownFont_QueueClick(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
     procedure PanelStatusINMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure PanelStatusINMouseMove(Sender: TObject; Shift: TShiftState; X,
@@ -252,6 +259,11 @@ type
     procedure lblCheckSipTrunkAliveClick(Sender: TObject);
     procedure menu_clear_status_operatorClick(Sender: TObject);
     procedure menu_OutgoingClick(Sender: TObject);
+    procedure lblStstatisc_Queue5911_No_AnsweredClick(Sender: TObject);
+    procedure lblStstatisc_Queue5911_No_AnsweredMouseLeave(Sender: TObject);
+    procedure lblStstatisc_Queue5911_No_AnsweredMouseMove(Sender: TObject;
+      Shift: TShiftState; X, Y: Integer);
+    procedure btnRegPhoneClick(Sender: TObject);
 
   private
     { Private declarations }
@@ -377,6 +389,11 @@ begin
 end;
 
 
+procedure THomeForm.btnRegPhoneClick(Sender: TObject);
+begin
+  OpenRegPhone;
+end;
+
 procedure THomeForm.btnStatus_add_queue5000Click(Sender: TObject);
 var
  delay:enumStatus;
@@ -424,7 +441,7 @@ begin
    PanelStatusIN.Height:=cPanelStatusHeight_showqueue;
 
     // проверяем в какой очереди находится оператор
-   queueList:=GetCurrentQueueOperator(GetOperatorSIP(SharedCurrentUserLogon.ID));
+   queueList:=GetCurrentQueueOperator(_dll_GetOperatorSIP(SharedCurrentUserLogon.ID));
 
    if queueList.Count > 0 then begin
      for i:=0 to queueList.Count-1 do begin
@@ -493,7 +510,7 @@ var
  delay:enumStatus;
 begin
   // проверим разговариавет ли оператор
-  sip:=GetOperatorSIP(SharedCurrentUserLogon.ID);
+  sip:=_dll_GetOperatorSIP(SharedCurrentUserLogon.ID);
   if SharedActiveSipOperators.IsTalkOperator(sip) = eYES then begin
     MessageBox(Handle,PChar('При разговоре выходить из очереди нельзя'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
@@ -642,18 +659,6 @@ begin
  SendCommand(eLog_transfer,delay);
 end;
 
-procedure THomeForm.Button1Click(Sender: TObject);
-var
- ldap:TLdap;
- nameUser:string;
-begin
- ldap:=TLdap.Create;
- ldap.GetUserFullName('petrov_yu',nameUser);
-
- ShowMessage(nameUser);
-end;
-
-
 procedure THomeForm.ST_HelpStatusInfoClick(Sender: TObject);
 begin
  FormStatusInfo.Show;
@@ -678,60 +683,65 @@ var
 begin
   if DEBUG then KillProcess;
 
-  // проверка вдруг роль оператора и он не вышел из линии
-  if getIsExitOperatorCurrentQueue(SharedCurrentUserLogon.Role, SharedCurrentUserLogon.ID) then begin
-    CanClose:= Application.MessageBox(PChar('Вы забыли выйти из очереди'), 'Ошибка при выходе', MB_OK + MB_ICONERROR) = IDNO;
-  end
-  else begin
+  if SharedCurrentUserLogon.IsOperator then begin
+
+    // проверяемв друг еще в очереди находится оператор
+     if SharedActiveSipOperators.isExistOperatorInQueue(_dll_GetOperatorSIP(SharedCurrentUserLogon.ID)) then begin
+       CanClose:= Application.MessageBox(PChar('Вы забыли выйти из очереди'), 'Ошибка при выходе', MB_OK + MB_ICONERROR) = IDNO;
+       Exit;
+     end;
+
     // проверяем правильно ли оператор вышел через команду
     if getIsExitOperatorCurrentGoHome(SharedCurrentUserLogon.Role, SharedCurrentUserLogon.ID) then begin
       CanClose:= Application.MessageBox(PChar('Прежде чем закрыть, необходимо выбрать статус "Домой"'), 'Ошибка при выходе', MB_OK + MB_ICONERROR) = IDNO;
+      Exit;
     end
-    else begin
-      if getStatusIndividualSettingsUser(SharedCurrentUserLogon.ID,settingUsers_noConfirmExit) = paramStatus_DISABLED then begin
+  end;
 
-        AMsgDialog := CreateMessageDialog('Вы действительно хотите завершить работу?', mtConfirmation, [mbYes, mbNo]);
-        ACheckBox := TCheckBox.Create(AMsgDialog);
+  if getStatusIndividualSettingsUser(SharedCurrentUserLogon.ID,settingUsers_noConfirmExit) = paramStatus_DISABLED then begin
 
-        with AMsgDialog do
-        try
-          Caption:= 'Уточнение выхода';
-          Height:= 150;
-          (FindComponent('Yes') as TButton).Caption := 'Да';
-          (FindComponent('No')  as TButton).Caption := 'Нет';
+    AMsgDialog := CreateMessageDialog('Вы действительно хотите завершить работу?', mtConfirmation, [mbYes, mbNo]);
+    ACheckBox := TCheckBox.Create(AMsgDialog);
 
-          with ACheckBox do begin
-            Parent:= AMsgDialog;
-            Caption:= 'Не показывать больше это сообщение';
-            Top:= 100;
-            Left:= 8;
-            Width:= AMsgDialog.Width;
-          end;
+    with AMsgDialog do
+    try
+      Caption:= 'Уточнение выхода';
+      Height:= 150;
+      (FindComponent('Yes') as TButton).Caption := 'Да';
+      (FindComponent('No')  as TButton).Caption := 'Нет';
 
-          DialogResult:= ShowModal; // Сохраняем результат в переменной
-
-          if DialogResult = ID_YES then
-          begin
-            if ACheckBox.Checked then begin
-              // созраняем параметр чтобы больше не показывать это окно
-              saveIndividualSettingUser(SharedCurrentUserLogon.ID,settingUsers_noConfirmExit,paramStatus_ENABLED);
-            end;
-
-            KillProcess;
-          end
-          else if DialogResult = ID_NO then
-          begin
-            Abort; // Отмена выхода
-          end else Abort;
-
-        finally
-          FreeAndNil(ACheckBox);
-          Free;
-        end;
+      with ACheckBox do begin
+        Parent:= AMsgDialog;
+        Caption:= 'Не показывать больше это сообщение';
+        Top:= 100;
+        Left:= 8;
+        Width:= AMsgDialog.Width;
       end;
-       KillProcess;
+
+      DialogResult:= ShowModal; // Сохраняем результат в переменной
+
+      if DialogResult = ID_YES then
+      begin
+        if ACheckBox.Checked then begin
+          // созраняем параметр чтобы больше не показывать это окно
+          saveIndividualSettingUser(SharedCurrentUserLogon.ID,settingUsers_noConfirmExit,paramStatus_ENABLED);
+        end;
+
+        KillProcess;
+      end
+      else if DialogResult = ID_NO then
+      begin
+        Abort; // Отмена выхода
+      end else Abort;
+
+    finally
+      FreeAndNil(ACheckBox);
+      Free;
     end;
   end;
+
+  KillProcess;
+
 end;
 
 procedure THomeForm.FormCreate(Sender: TObject);
@@ -1233,6 +1243,35 @@ procedure THomeForm.lblStstatisc_Queue5050_No_AnsweredMouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
 begin
   ViewLabel(False,True, lblStstatisc_Queue5050_No_Answered);
+end;
+
+procedure THomeForm.lblStstatisc_Queue5911_No_AnsweredClick(Sender: TObject);
+var
+ error:string;
+begin
+ // есть ли доступ к пропущенным
+  if not OpenMissedCalls(error, queue_5911, eMissed_no_return) then begin
+    MessageBox(HomeForm.Handle,PChar(error),PChar('Отсутствует доступ'),MB_OK+MB_ICONINFORMATION);
+    Exit;
+  end;
+
+  with FormPropushennie do begin
+    // берем по всем
+   SetManualShow(true);
+   ShowModal;
+  end;
+end;
+
+procedure THomeForm.lblStstatisc_Queue5911_No_AnsweredMouseLeave(
+  Sender: TObject);
+begin
+  ViewLabel(False,False, lblStstatisc_Queue5911_No_Answered);
+end;
+
+procedure THomeForm.lblStstatisc_Queue5911_No_AnsweredMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  ViewLabel(False,True, lblStstatisc_Queue5911_No_Answered);
 end;
 
 procedure THomeForm.ListViewSIPCustomDrawItem(Sender: TCustomListView;

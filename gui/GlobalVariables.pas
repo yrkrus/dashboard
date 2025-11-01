@@ -36,7 +36,7 @@ var
   FOLDERUPDATE      :string;
 
   // Текущая версия GUID   ctrl+shift+G (GUID)
-  GUID_VERSION      :string = '49FC718A';
+  GUID_VERSION      :string = 'A427F0B5';
 
   // exe родителя
   DASHBOARD_EXE     :string = 'dashboard.exe';
@@ -50,6 +50,7 @@ var
   SMS_EXE           :string = 'sms.exe';          // sms
   SERVICE_EXE       :string = 'service.exe';      // редактор услуг
   OUTGOING_EXE      :string = 'outgoing.exe';     // звонилка
+  REG_PHONE_EXE     :string = 'reg_phone.exe';    // регистрация телефона
   ///////////////////// MODULE /////////////////////
 
   USER_ID_PARAM     :string = '--USER_ID';
@@ -122,7 +123,7 @@ initialization  // Инициализация
   SharedStatus              := TStatus.Create(True);
   SharedCheckBoxUI          := TCheckBoxUI.Create;
 
-  if not DEBUG then begin
+  begin
     GlobalExceptions        := TGlobalExeption.Create;
     GlobalExceptions.Setup;
   end;

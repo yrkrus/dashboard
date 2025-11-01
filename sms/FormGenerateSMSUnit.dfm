@@ -492,8 +492,8 @@ object FormGenerateSMS: TFormGenerateSMS
     object lbl9: TLabel
       Left = 2
       Top = 18
-      Width = 713
-      Height = 247
+      Width = 512
+      Height = 48
       Align = alClient
       Alignment = taCenter
       Caption = 
@@ -507,8 +507,6 @@ object FormGenerateSMS: TFormGenerateSMS
       Font.Style = [fsBold]
       ParentFont = False
       Layout = tlCenter
-      ExplicitWidth = 512
-      ExplicitHeight = 48
     end
   end
   object btnPrimer: TBitBtn

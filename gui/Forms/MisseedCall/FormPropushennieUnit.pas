@@ -523,7 +523,7 @@ begin
      end;
 
      showWait(show_open);
-     people:=TAutoPodborPeople.Create(phonePodbor);
+     people:=TAutoPodborPeople.Create(phonePodbor, False);
 
      FormPropushennieShowPeople.SetListPacients(people);
      showWait(show_close);
@@ -553,13 +553,15 @@ end;
 
 // создвание листа с выбором фильтра по очередям
 procedure TFormPropushennie.CreateComboxChoiseQueue;
+var
+ i:Integer;
 begin
   combox_QueueFilter.Clear;
 
-  // TODO в зависимости от того к акаим очередям есть доступ у пользака их и показывать (это на будущее)
-  combox_QueueFilter.Items.Add(EnumQueueToString(queue_5000));
-  combox_QueueFilter.Items.Add(EnumQueueToString(queue_5050));
-  combox_QueueFilter.Items.Add(EnumQueueToString(queue_5911));
+  // в зависимости от того к акаим очередям есть доступ у пользака их и показывать
+  for i:=0 to SharedCurrentUserLogon.QueueList.Count-1 do begin
+   combox_QueueFilter.Items.Add(EnumQueueToString(SharedCurrentUserLogon.QueueList[i]));
+  end;
 
   combox_QueueFilter.ItemIndex:=EnumQueueCurrentToInteger(m_queueStart);
 end;

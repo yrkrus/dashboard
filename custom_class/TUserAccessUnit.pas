@@ -111,6 +111,7 @@ begin
    if Assigned(serverConnect) then begin
      serverConnect.Close;
      FreeAndNil(serverConnect);
+     FreeAndNil(request);
    end;
  end;
 end;

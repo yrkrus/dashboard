@@ -5,384 +5,509 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, IdHTTP,IdSSL,
-  IdIOHandlerStack, IdSSLOpenSSL;
+  IdIOHandlerStack, IdSSLOpenSSL, Vcl.Imaging.jpeg, Vcl.ExtCtrls, Vcl.Buttons,
+  TSipPhoneListUnit, System.ImageList, Vcl.ImgList, Vcl.Imaging.pngimage,TPhoneListUnit;
 
 type
   TFormHome = class(TForm)
+    group_register_auto: TGroupBox;
+    ImgNewYear: TImage;
+    Label3: TLabel;
+    lbl_operators_AutoRegisterPhone: TLabel;
+    img_operators_AutoRegisterPhone: TImage;
+    btnRegister: TBitBtn;
+    btnNo: TBitBtn;
+    group_register_manual: TGroupBox;
+    lblPCName: TLabel;
+    combox_SIP: TComboBox;
+    Image1: TImage;
+    Label4: TLabel;
+    btnRegisterManual: TBitBtn;
+    btnDeRegisterManual: TBitBtn;
+    imgClosed: TImage;
+    lblIP: TLabel;
     Label1: TLabel;
-    Label2: TLabel;
-    chkboxRegister: TCheckBox;
-    chkboxUnRegister: TCheckBox;
-    edtSIP: TEdit;
-    edtPhone: TEdit;
-    btnActive: TButton;
-    Button1: TButton;
-    Button2: TButton;
-    Button3: TButton;
-    Button4: TButton;
-    procedure chkboxRegisterClick(Sender: TObject);
-    procedure chkboxUnRegisterClick(Sender: TObject);
-    procedure btnActiveClick(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
-    procedure Button3Click(Sender: TObject);
-    procedure Button4Click(Sender: TObject);
+    combox_NamePC: TComboBox;
+    procedure ProcessCommandLineParams(DEBUG:Boolean = False);
     procedure FormShow(Sender: TObject);
+    procedure btnNoClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure img_operators_AutoRegisterPhoneClick(Sender: TObject);
+    procedure lbl_operators_AutoRegisterPhoneClick(Sender: TObject);
+    procedure btnRegisterClick(Sender: TObject);
+    procedure btnRegisterManualClick(Sender: TObject);
+    procedure btnDeRegisterManualClick(Sender: TObject);
+    procedure imgClosedClick(Sender: TObject);
+    procedure combox_SIPDrawItem(Control: TWinControl; Index: Integer;
+      Rect: TRect; State: TOwnerDrawState);
+    procedure combox_NamePCChange(Sender: TObject);
+    procedure combox_NamePCDrawItem(Control: TWinControl; Index: Integer;
+      Rect: TRect; State: TOwnerDrawState);
   private
     { Private declarations }
-  public
-    { Public declarations }
+  m_imagelistSip  :TImageList;
+  m_imagelistPC   :TImageList;
+  m_phoneList     :TPhoneList;
+  m_sip           :TSipPhoneList;
+
+  procedure _INIT;
+  procedure LoadIconListSip;      // прогружаем иконки
+  procedure LoadIconListPC;      // прогружаем иконки
+  procedure FindIPForChangeSip; // поиск ip телефона в зависимости от sip
+
+  function CheckChoise(var _errorDescription:string):Boolean;
+
+  public    { Public declarations }
+  procedure InitComboxSip; // создание выбора спсика с sip
+  procedure InitComboxPC; // создание выбора спсика с PC
+
   end;
-
-  type   // тип решистрации
-   TRegStatus = (Registration,
-                 UnRegistration,
-                 test,
-                 test2,
-                 hold,
-                 status_tel);
-
 
 
 var
   FormHome: TFormHome;
   isERROR:Boolean;
-  sendStatus:TRegStatus;
-
- const
-  CustomHeaders0='Connection:Keep-alive';
-  CustomUserAgent='Mozilla/5.0 (Windows NT 10.0; WOW64; rv:56.0) Gecko/20100101 Firefox/56.0';
-  CustomHeaders2='Content-Type:application/x-www-form-urlencoded';
-  CustomHeaders3='Accept-Charset:utf-8';
-  CustomHeaders4='Accept:application/json, text/javascript, */*; q=0.01';
-  version:string = '2.0';
-
 
 
 implementation
 
+uses
+  GlobalVariablesLinkDLL, GlobalVariables, FunctionUnit, TRegisterPhoneUnit, GlobalImageDestination;
+
 {$R *.dfm}
 
-function checkFirmwareVersion(response:string):Boolean;
-begin
- { if AnsiPos('_RES_INFO_',otvetFirst)<>0 then begin
-    MessageBox(FormHome.Handle,PChar('Что то пошло не так!'+#13#13
-                                    +'Не удалось авторизоваться в телефоне'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
 
-    isERROR:=True;
-    Exit;
-  end; }
-
-
-
-  if AnsiPos('FirmwareVersion=53.84.14.7',response)<>0 then Result:=True
-  else Result:=False;
-end;
-
-
-procedure ShowMessageConnections(status:TRegStatus; otvetFirst:string; isCheckResponse:Boolean);
-begin
- Screen.Cursor:=crDefault;
-
-  if isCheckResponse = False then begin
-     if (AnsiPos('Connection',otvetFirst)<>0) or
-        (AnsiPos('not found',otvetFirst)<>0)
-      then begin
-      MessageBox(FormHome.Handle,PChar('Не удается связаться с телефоном'+#13
-                                      +'проверьте подключение'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-
-      isERROR:=True;
-      Exit;
-     end;
-
-     if AnsiPos('Forbidden',otvetFirst)<>0 then begin
-      MessageBox(FormHome.Handle,PChar('В телефоне выключен удаленный доступ'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-
-      isERROR:=True;
-      Exit;
-     end;
-  end;
-
-
-   // в зависимости от того что сделали находим
-   //все ок тут прошли проверки, отправляем на проверку статуса
-
-   { if not checkFirmwareVersion(otvetFirst) then begin
-       MessageBox(FormHome.Handle,PChar('Прошивка телефона не подходящая'+#13#13
-                                       +'Нужна 53.84.14.7'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-
-       Exit;
-    end; }
-  if isCheckResponse then begin
-     case sendStatus of
-       Registration: begin
-
-         if AnsiPos('Enabled',otvetFirst)<>0 then begin
-          MessageBox(FormHome.Handle,PChar('Успешная регистрация'),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
-         end
-         else begin
-          MessageBox(FormHome.Handle,PChar('Не удалось зарегистрироваться'+#13#13
-                                            +'Response:'+#13
-                                            +otvetFirst),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-         end;
-
-         Exit;
-       end;
-       UnRegistration: begin
-        if AnsiPos('Disabled',otvetFirst)<>0 then begin
-          MessageBox(FormHome.Handle,PChar('Успешная разрегистрация'),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
-        end
-        else begin
-          MessageBox(FormHome.Handle,PChar('Не удалось разрегистироваться'+#13#13
-                                            +'Response:'+#13
-                                            +otvetFirst),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-        end;
-
-         Exit;
-       end;
-       else begin
-        MessageBox(FormHome.Handle,PChar('Эта надпись никогда не должна была показаться, но на случай если она покажется то:'+#13#13
-                                          +'Response:'+#13
-                                          + otvetFirst),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-       end;
-     end;
-  end;
-end;
-
-
-procedure ViewInfoButton(status:TRegStatus);
-begin
-  with FormHome do begin
-    case status of
-      Registration:begin
-        btnActive.Caption:='Регистрация';
-      end;
-      UnRegistration:begin
-        btnActive.Caption:='Разрегистрация';
-      end;
-    end;
-  end;
-
-end;
-
-
-// действие
-procedure getActionReg(status:TRegStatus; sip:string; phone:string; isCheckResponse:Boolean);
+// создание выбора спсика с sip
+procedure TFormHome.InitComboxSip;
 var
- http:TIdHTTP;
- ssl:TIdSSLIOHandlerSocketOpenSSL;
- ServerOtvet:string;
- HTTPGet,HTTPGet2:string;
-begin
-
-  {
-  https://admin:asz741@10.34.42.47/servlet?phonecfg=set[&account.1.label=64197][&account.1.display_name=64197][&account.1.auth_name=64197][&account.1.user_name=64197][&account.1.password=1240]
-
- https://admin:5000@10.34.43.89/servlet?phonecfg=set&RemoteControl.Enable=1
- https://admin:5000@10.34.43.89/servlet?phonecfg=set&SIP.RemoteControl.Enable=1&SIP.RemoteControl.ACL.Enable=1&SIP.RemoteControl.ACL.PermitIP[1]=0.0.0.0/0
-
-
-    https://admin:5000@10.34.43.89/servlet?key=OK
-
-   https://admin:5000@10.34.43.89/screencapture
-    https://admin:5000@10.34.43.89/servlet?phonecfg=get[&accounts=1]
-
-
-   https://admin:5000@10.34.43.89/servlet?m=mod_action&command=get_reg
-
-
-   https://admin:5000@10.34.200.10/servlet?m=mod_action&command=get_reg
-   https://admin:5000@10.34.200.10/screencapture
-
-   Лейбл     = &account.1.label=XXX
-   Отображаемое имя = &account.1.display_name=XXX
-   Имя регистрации  = &account.1.auth_name=XXX
-   Имя пользователя = &account.1.user_name=XXX
-   Пароль     = &account.1.password=XXX
-
-   052 - регистрация в ояереди 5000
-   050 - выход из очереди 5000
-
-   055 - регистрация в ояереди 5050
-
-
-     	53.84.14.7 - работающая прошивка
-
-   045 - 5050 очередь
-  }
-
-   case status of
-      Registration:begin
-        HTTPGet:='https://'+phone+'/servlet?phonecfg=set[&account.1.enable=1][&account.1.label='+sip+'][&account.1.display_name='+sip+'][&account.1.auth_name='+sip+'][&account.1.user_name='+sip+'][&account.1.password=159753]';
-
-       // HTTPGet:='https://'+phone+'/servlet?m=mod_action&command=screenshot';
-
-
-      end;
-      UnRegistration:begin
-        HTTPGet:='https://'+phone+'/servlet?phonecfg=set[&account.1.enable=0][&account.1.label=''][&account.1.display_name=''][&account.1.auth_name=''][&account.1.user_name=''][&account.1.password='']';
-      end;
-      test: begin
-        HTTPGet:='https://'+phone+'/servlet?key=number=055';
-
-        //HTTPGet:='https://'+phone+'/servlet?key=number=*455050';
-
-      end;
-      test2: begin
-        HTTPGet:='https://'+phone+'/servlet?key=number=050';
-
-      end;
-      hold:begin
-       HTTPGet:='https://'+phone+'/servlet?key=reboot';
-      end;
-      status_tel:begin
-       HTTPGet:='https://'+phone+'/servlet?phonecfg=get[&accounts=1]';
-      end;
-
-          // https://admin:5000@10.34.43.89/servlet?m=mod_action&command=screenshot
-    end;
-
-
-  http:=TIdHTTP.Create(nil);
-
-  begin
-   ssl:=TIdSSLIOHandlerSocketOpenSSL.Create(http);
-   ssl.SSLOptions.Method:=sslvTLSv1_2;
-   ssl.SSLOptions.SSLVersions:=[sslvTLSv1_2];
-  end;
-
-  with http do begin
-    IOHandler:=ssl;
-    Request.CustomHeaders.Add(CustomHeaders0);
-    Request.UserAgent:=CustomUserAgent;
-    Request.CustomHeaders.Add(CustomHeaders2);
-    Request.CustomHeaders.Add(CustomHeaders3);
-    Request.CustomHeaders.Add(CustomHeaders4);
-    Request.Username:='admin';
-    Request.Password:='5000';
-     // Request.Password:='asz741';
-    Request.BasicAuthentication:=True;
-
-     try
-      ServerOtvet:=Get(HTTPGet);
-      ShowMessageConnections(status,ServerOtvet,isCheckResponse);
-     except on E:Exception do
-        begin
-         ShowMessageConnections(status, e.Message,isCheckResponse);
-         //ShowMessage('ОШИБКА! '+e.Message+' / '+e.ErrorMessage);
-         if ssl<>nil then FreeAndNil(ssl);
-         if http<>nil then FreeAndNil(http);
-         Exit;
-        end;
-     end;
-  end;
-end;
-
-
-procedure TFormHome.btnActiveClick(Sender: TObject);
-var
- stat:Boolean;
- RegStatus:TRegStatus;
-begin
-  // проверки
-  begin
-
-    //поля
-    if edtSIP.Text='' then begin
-      MessageBox(Handle,PChar('Не заполнено поле SIP номер'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-      Exit;
-
-    end;
-
-    if edtPhone.Text='' then begin
-      MessageBox(Handle,PChar('Не заполнено поле IP\DNS телефона'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-      Exit;
-
-    end;
-
-    // действие
-    if (chkboxRegister.Checked=False) and (chkboxUnRegister.Checked=False) then begin
-      MessageBox(Handle,PChar('Не выбрано действие:'+#13+'Регистрация или разрегистрация'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-      Exit;
-    end;
-
-    if chkboxRegister.Checked then RegStatus:=Registration;
-    if chkboxUnRegister.Checked then RegStatus:=UnRegistration;
-
-  end;
-   Screen.Cursor:=crHourGlass;
-   getActionReg(RegStatus,edtSIP.Text,edtPhone.Text, False);
-
-
-   if not isERROR then begin
-    sendStatus:=RegStatus;
-    Screen.Cursor:=crHourGlass;
-    getActionReg(status_tel,edtSIP.Text,edtPhone.Text, True);
-   end;
-
-end;
-
-procedure TFormHome.Button1Click(Sender: TObject);
-begin
-  //getActionReg(test,edtSIP.Text,edtPhone.Text, False);
-end;
-
-procedure TFormHome.Button2Click(Sender: TObject);
-begin
-  //getActionReg(test2,edtSIP.Text,edtPhone.Text);
-end;
-
-procedure TFormHome.Button3Click(Sender: TObject);
-var
- SLlist:TStringList;
  i:Integer;
 begin
- { SLlist:=TStringList.Create;
-  SLlist.LoadFromFile('1.txt');
+  if not Assigned(m_sip) then m_sip:=TSipPhoneList.Create;
 
-  for i:=0 to SLlist.Count-1 do begin
-    Application.ProcessMessages;
-    Label3.Caption:='reboot '+SLlist[i];
-    try
-       getActionReg(reboot,'',SLlist[i]);
-    finally
-       Sleep(5000);
+  combox_SIP.Clear;
+
+  for i:=0 to m_sip.Count-1 do begin
+    if m_sip[i].m_sip <> -1 then combox_SIP.Items.Add(' '+IntToStr(m_sip.Items[i].m_sip));
+  end;
+
+  // прогружаем иконки
+  LoadIconListSip;
+end;
+
+
+// создание выбора спсика с PC
+procedure TFormHome.InitComboxPC;
+var
+ i:Integer;
+begin
+  if not Assigned(m_phoneList) then m_phoneList:=TPhoneList.Create;
+
+  combox_NamePC.Clear;
+
+  for i:=0 to m_phoneList.Count-1 do begin
+    if m_phoneList[i].m_sip = -1 then combox_NamePC.Items.Add(' '+m_phoneList.Items[i].m_namePC);
+  end;
+
+  // прогружаем иконки
+  LoadIconListPC;
+end;
+
+// прогружаем иконки
+procedure TFormHome.LoadIconListSip;
+const
+ SIZE_ICON:Word=16;
+var
+ i:Integer;
+ pngbmpLocal: TPngImage;
+ bmpLocal: TBitmap;
+begin
+  if not FileExists(ICON_GUI_SIP) then Exit;
+  if not Assigned(m_imagelistSip) then m_imagelistSip:=TImageList.Create(nil);
+
+  m_imagelistSip.SetSize(SIZE_ICON,SIZE_ICON);
+  m_imagelistSip.ColorDepth:=cd32bit;
+
+  begin
+   // LOCAL
+   pngbmpLocal:=TPngImage.Create;
+   bmpLocal:=TBitmap.Create;
+
+   pngbmpLocal.LoadFromFile(ICON_GUI_SIP);
+
+    // сжимаем иконку до размера 16х16
+    with bmpLocal do begin
+     Height:=SIZE_ICON;
+     Width:=SIZE_ICON;
+     Canvas.StretchDraw(Rect(0, 0, Width, Height), pngbmpLocal);
     end;
-  end;  }
+  end;
 
+  m_imagelistSip.Add(bmpLocal, nil);    // index = 0
 
- // getActionReg(hold,'',edtPhone.Text);
-
+  if pngbmpLocal<>nil then pngbmpLocal.Free;
+  if bmpLocal<>nil then bmpLocal.Free;
 end;
 
-procedure TFormHome.Button4Click(Sender: TObject);
+
+procedure TFormHome.LoadIconListPC;      // прогружаем иконки
+const
+ SIZE_ICON:Word=16;
+var
+ i:Integer;
+ pngbmpLocal: TPngImage;
+ bmpLocal: TBitmap;
 begin
- //getActionReg(status_tel,edtSIP.Text,edtPhone.Text);
+  if not FileExists(ICON_GUI_PC) then Exit;
+  if not Assigned(m_imagelistPC) then m_imagelistPC:=TImageList.Create(nil);
+
+  m_imagelistPC.SetSize(SIZE_ICON,SIZE_ICON);
+  m_imagelistPC.ColorDepth:=cd32bit;
+
+  begin
+   // LOCAL
+   pngbmpLocal:=TPngImage.Create;
+   bmpLocal:=TBitmap.Create;
+
+   pngbmpLocal.LoadFromFile(ICON_GUI_PC);
+
+    // сжимаем иконку до размера 16х16
+    with bmpLocal do begin
+     Height:=SIZE_ICON;
+     Width:=SIZE_ICON;
+     Canvas.StretchDraw(Rect(0, 0, Width, Height), pngbmpLocal);
+    end;
+  end;
+
+  m_imagelistPC.Add(bmpLocal, nil);    // index = 0
+
+  if pngbmpLocal<>nil then pngbmpLocal.Free;
+  if bmpLocal<>nil then bmpLocal.Free;
 end;
 
-procedure TFormHome.chkboxRegisterClick(Sender: TObject);
+// поиск ip телефона в зависимости от sip
+procedure TFormHome.FindIPForChangeSip;
+var
+ sip:string;
 begin
-   if chkboxRegister.Checked then begin
-      chkboxUnRegister.Checked:=False;
-      ViewInfoButton(Registration);
+  if not Assigned(m_phoneList) then begin
+    m_phoneList:=TPhoneList.Create;
+  end;
+
+  sip:=combox_NamePC.Items[combox_NamePC.ItemIndex];
+  System.Delete(sip,1,1);   // убираем первую строку она всегада  ' '
+
+  lblIP.Caption:=m_phoneList.IPPhoneWithNamePC[sip];
+end;
+
+
+// проверка выбора
+function TFormHome.CheckChoise(var _errorDescription:string):Boolean;
+begin
+  Result:=False;
+  _errorDescription:='';
+
+  if combox_SIP.ItemIndex=-1 then begin
+    _errorDescription:='Не выбран SIP';
+    Exit;
+  end;
+
+  if combox_NamePC.ItemIndex=-1 then begin
+    _errorDescription:='Не выбрано имя ПК';
+    Exit;
+  end;
+
+  Result:=True;
+end;
+
+
+
+procedure TFormHome.ProcessCommandLineParams(DEBUG:Boolean);
+var
+  i: Integer;
+begin
+//  if DEBUG then begin
+//   USER_STARTED_REG_PHONE_ID:=94; // тестовый оператор2 64153
+//   USER_STARTED_PC_NAME:='DEV';
+//   Exit;
+//  end;
+
+  if ParamCount = 0 then begin
+   MANUAL_STARTED:=True;
+   Exit;
+  end;
+
+  for i:= 1 to ParamCount do
+  begin
+    if ParamStr(i) = '--USER_ID' then
+    begin
+      if (i + 1 <= ParamCount) then
+      begin
+       USER_STARTED_REG_PHONE_ID:= StrToInt(ParamStr(i + 1));
+       //if DEBUG then ShowMessage('Value for --USER_ID: ' + ParamStr(i + 1));
+
+      end
+      else
+      begin
+        MessageBox(Handle,PChar('Слишком много параметров'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
+        KillProcessNow;
+      end;
+    end;
+
+    if ParamStr(i) = '--ACCESS' then
+    begin
+      if (i + 1 <= ParamCount) then
+      begin
+        USER_STARTED_PC_NAME:= ParamStr(i + 1);
+       // if DEBUG then ShowMessage('Value for --ACCESS: ' + ParamStr(i + 1));
+
+      end
+      else
+      begin
+        MessageBox(Handle,PChar('Слишком много параметров'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
+        KillProcessNow;
+      end;
+    end;
+  end;
+end;
+
+
+procedure TFormHome.btnDeRegisterManualClick(Sender: TObject);
+var
+ errorDescription:string;
+ sip:string;
+ userID:Integer;
+ userPC:string;
+begin
+  if not CheckChoise(errorDescription) then begin
+   MessageBox(Handle,PChar(errorDescription),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+   Exit;
+  end;
+
+  Screen.Cursor:=crHourGlass;
+
+  sip:=combox_SIP.Items[combox_SIP.ItemIndex];
+  System.Delete(sip,1,1);   // убираем первую строку она всегада  ' '
+  userID:=GetUserID(StrToInt(sip));
+
+  userPC:=combox_NamePC.Items[combox_NamePC.ItemIndex];
+  System.Delete(userPC,1,1);   // убираем первую строку она всегада  ' '
+
+
+  if not DeRegisterPhoneManual(userID, userPC, errorDescription) then begin
+    Screen.Cursor:=crDefault;
+    MessageBox(Handle,PChar(errorDescription),PChar('Ошибка при разрегистрации'),MB_OK+MB_ICONERROR);
+    Exit;
+  end;
+
+  MessageBox(Handle,PChar('Успешная разрегистрация'),PChar(''),MB_OK+MB_ICONINFORMATION);
+  Screen.Cursor:=crDefault;
+end;
+
+procedure TFormHome.btnNoClick(Sender: TObject);
+begin
+ KillProcessNow;
+end;
+
+procedure TFormHome.btnRegisterClick(Sender: TObject);
+var
+ errorDescription:string;
+begin
+  Screen.Cursor:=crHourGlass;
+
+  if not RegisterPhoneAuto(errorDescription) then begin
+    Screen.Cursor:=crDefault;
+    MessageBox(Handle,PChar(errorDescription),PChar('Ошибка при регистрации'),MB_OK+MB_ICONERROR);
+  end;
+
+
+  if not DeRegisterPhoneAuto(errorDescription) then begin
+    Screen.Cursor:=crDefault;
+    MessageBox(Handle,PChar(errorDescription),PChar('Ошибка при регистрации'),MB_OK+MB_ICONERROR);
+  end;
+
+
+  Screen.Cursor:=crDefault;
+ // KillProcessNow;
+
+  // TODO тут чтото должно тоже быть типа закрытия автоматического
+end;
+
+procedure TFormHome.btnRegisterManualClick(Sender: TObject);
+var
+ errorDescription:string;
+ sip:string;
+ userID:Integer;
+ userPC:string;
+begin
+
+  if not CheckChoise(errorDescription) then begin
+   MessageBox(Handle,PChar(errorDescription),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+   Exit;
+  end;
+
+  Screen.Cursor:=crHourGlass;
+
+  sip:=combox_SIP.Items[combox_SIP.ItemIndex];
+  System.Delete(sip,1,1);   // убираем первую строку она всегада  ' '
+  userID:=GetUserID(StrToInt(sip));
+
+  userPC:=combox_NamePC.Items[combox_NamePC.ItemIndex];
+  System.Delete(userPC,1,1);   // убираем первую строку она всегада  ' '
+
+
+  if not RegisterPhoneManual(userID, userPC, errorDescription) then begin
+    Screen.Cursor:=crDefault;
+    MessageBox(Handle,PChar(errorDescription),PChar('Ошибка при регистрации'),MB_OK+MB_ICONERROR);
+    Exit;
+  end;
+
+  MessageBox(Handle,PChar('Успешная регистрация'),PChar(''),MB_OK+MB_ICONINFORMATION);
+  Screen.Cursor:=crDefault;
+end;
+
+
+
+procedure TFormHome.combox_NamePCChange(Sender: TObject);
+begin
+  FindIPForChangeSip;
+end;
+
+procedure TFormHome.combox_NamePCDrawItem(Control: TWinControl; Index: Integer;
+  Rect: TRect; State: TOwnerDrawState);
+var
+ ComboBox: TComboBox;
+ bitmap: TBitmap;
+ IconIndex:Integer;
+begin
+  if m_imagelistPC.Count = 0 then  Exit;
+
+  IconIndex:=0;
+  ComboBox:=(Control as TComboBox);
+  Bitmap:= TBitmap.Create;
+  try
+    m_imagelistPC.GetBitmap(IconIndex, Bitmap);
+    with ComboBox.Canvas do
+    begin
+      FillRect(Rect);
+      if Bitmap.Handle <> 0 then
+        Draw(Rect.Left + 2, Rect.Top, Bitmap);
+      Rect := Bounds(
+        Rect.Left + ComboBox.ItemHeight + 3,
+        Rect.Top,
+        Rect.Right - Rect.Left,
+        Rect.Bottom - Rect.Top
+      );
+      DrawText(
+        handle,
+        PChar(ComboBox.Items[Index]),
+        length(ComboBox.Items[index]),
+        Rect,
+        DT_VCENTER + DT_SINGLELINE
+      );
+    end;
+  finally
+    Bitmap.Free;
+  end;
+end;
+
+procedure TFormHome.combox_SIPDrawItem(Control: TWinControl; Index: Integer;
+  Rect: TRect; State: TOwnerDrawState);
+var
+ ComboBox: TComboBox;
+ bitmap: TBitmap;
+ IconIndex:Integer;
+begin
+  if m_imagelistSip.Count = 0 then  Exit;
+
+  IconIndex:=0;
+  ComboBox:=(Control as TComboBox);
+  Bitmap:= TBitmap.Create;
+  try
+    m_imagelistSip.GetBitmap(IconIndex, Bitmap);
+    with ComboBox.Canvas do
+    begin
+      FillRect(Rect);
+      if Bitmap.Handle <> 0 then
+        Draw(Rect.Left + 2, Rect.Top, Bitmap);
+      Rect := Bounds(
+        Rect.Left + ComboBox.ItemHeight + 3,
+        Rect.Top,
+        Rect.Right - Rect.Left,
+        Rect.Bottom - Rect.Top
+      );
+      DrawText(
+        handle,
+        PChar(ComboBox.Items[Index]),
+        length(ComboBox.Items[index]),
+        Rect,
+        DT_VCENTER + DT_SINGLELINE
+      );
+    end;
+  finally
+    Bitmap.Free;
+  end;
+end;
+
+procedure TFormHome.FormCreate(Sender: TObject);
+begin
+  // проверка на запуска 2ой копи
+  if GetCloneRun(Pchar(REG_PHONE_EXE)) then begin
+    MessageBox(Handle,PChar('Обнаружен запуск 2ой копии регистрации телефона'+#13#13+
+                            'Для продолжения закройте предыдущую копию'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
+   KillProcessNow;
+  end;
+
+  ProcessCommandLineParams(DEBUG);
+end;
+
+
+procedure TFormHome._INIT;
+begin
+ isERROR:=False;
+
+ // размер формы
+ CreateDefaultFormSize;
+
+ case MANUAL_STARTED of
+   True:begin       // вручную запустили
+    InitManual;
    end;
+   False:begin      // атоматически запустили из дашборда
+
+    InitAuto;
+
+    // проверим нужно ли автоматически регистрироваться
+    // TODO сделать
+    // AUTO_REGISTER
+
+   end;
+ end;
+
 
 end;
 
-procedure TFormHome.chkboxUnRegisterClick(Sender: TObject);
-begin
-    if chkboxUnRegister.Checked then begin
-      chkboxRegister.Checked:=False;
-      ViewInfoButton(UnRegistration);
-    end;
-
-end;
 
 procedure TFormHome.FormShow(Sender: TObject);
 begin
- Caption:=Caption+' ('+version+')';
+  // подгузим все данные
+  _INIT;
+end;
 
- isERROR:=False;
+
+
+procedure TFormHome.imgClosedClick(Sender: TObject);
+begin
+ KillProcessNow;
+end;
+
+procedure TFormHome.img_operators_AutoRegisterPhoneClick(Sender: TObject);
+begin
+   SharedCheckBoxUI.ChangeStatusCheckBox('AutoRegisterPhone');
+end;
+
+procedure TFormHome.lbl_operators_AutoRegisterPhoneClick(Sender: TObject);
+begin
+ SharedCheckBoxUI.ChangeStatusCheckBox('AutoRegisterPhone');
 end;
 
 end.

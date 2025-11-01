@@ -41,6 +41,7 @@ uses
 
       m_online                  :enumOnlineStatus;   // текущий статус ONLINE\OFFLINE
       constructor Create;               overload;
+      destructor Destroy; override;
 
       procedure Clear;
 
@@ -126,6 +127,12 @@ constructor TActiveStruct.Create;
    inherited;
    Clear;
  end;
+
+destructor TActiveStruct.Destroy;
+begin
+  m_operatorQueueList.Free;
+  inherited;
+end;
 
  procedure TActiveStruct.Clear;
  begin
@@ -608,7 +615,8 @@ begin
            m_listActiveSession[i].isOperator:=True;
 
            // проверка в очереди или нет находится оператор
-           m_listActiveSession[i].m_operatorQueueList:=GetCurrentQueueOperator(m_listActiveSession[i].m_userID);
+           m_listActiveSession[i].m_operatorQueueList.Clear;
+           m_listActiveSession[i].m_operatorQueueList:=GetCurrentQueueOperator(_dll_GetOperatorSIP(m_listActiveSession[i].m_userID));
            if m_listActiveSession[i].m_operatorQueueList.Count = 0 then m_listActiveSession[i].isOperatorInQueue:=False
            else m_listActiveSession[i].isOperatorInQueue:=True;
 
@@ -649,17 +657,29 @@ end;
 
 // обнуление массива
 procedure TActiveSession.Clear;
+//var
+// i:Integer;
+//begin
+// if m_mutex.WaitFor(INFINITE)=wrSignaled then
+//  try
+//    for i:=0 to m_count -1 do begin
+//      m_listActiveSession[i].Clear;
+//    end;
+//
+//    m_count:=0;
+//    SetLength(m_listActiveSession,m_count);
+//  finally
+//    m_mutex.Release;
+//  end;
+//end;
 var
- i:Integer;
+  i: Integer;
 begin
- if m_mutex.WaitFor(INFINITE)=wrSignaled then
+  if m_mutex.WaitFor(INFINITE)=wrSignaled then
   try
-    for i:=0 to m_count -1 do begin
-      m_listActiveSession[i].Clear;
-    end;
-
-    m_count:=0;
-    SetLength(m_listActiveSession,m_count);
+    for i := 0 to m_count - 1 do  m_listActiveSession[i].Free;  // а не .Clear
+    m_count := 0;
+    SetLength(m_listActiveSession, 0);
   finally
     m_mutex.Release;
   end;

@@ -1051,7 +1051,7 @@ begin
 
   Screen.Cursor:=crHourGlass;
 
-  people:=TAutoPodborPeople.Create(phonePodbor);
+  people:=TAutoPodborPeople.Create(phonePodbor, false);
   if people.Count = 0 then begin
     showWait(show_close);
     Screen.Cursor:=crDefault;

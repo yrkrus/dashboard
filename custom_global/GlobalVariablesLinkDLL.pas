@@ -11,7 +11,7 @@ uses
   p_TADOConnection = Pointer; // Указатель на TADOConnection
   function createServerConnect: p_TADOConnection; overload;             stdcall;  external 'core.dll';       // Создание подключения к серверу
   function createServerConnectWithError(var _errorDescriptions: string): p_TADOConnection; overload;             stdcall;  external 'core.dll';       // Создание подключения к серверу
-  function GetDefaultDataBase:PChar;                                    stdcall;  external 'core.dll';       // текущий адрес базы данных к которому идет подключений
+  function _dll_GetDefaultDataBase:PChar;                               stdcall;  external 'core.dll';       // текущий адрес базы данных к которому идет подключений
   function GetCopyright:Pchar;                                          stdcall;  external 'core.dll';       // copyright
   function GetUserNameFIO(InUserID:Integer):PChar;                      stdcall;  external 'core.dll';       // полчуение имени пользователя из его UserID
   function GetRoleID(InRole:string):Integer;                            stdcall;  external 'core.dll';       // получение ID TRole
@@ -45,13 +45,15 @@ uses
   function IsServerIkExistWorkingTime(_id:Integer):Boolean;             stdcall;  external 'core.dll';      // настроен ли время работы в сервере ИК
   function GetClinicId(_nameClinic:string):Integer;                     stdcall;  external 'core.dll';      // id клиники
   function GetAliveCoreDashboard:Boolean;                               stdcall;  external 'core.dll';      // есть ли подключение к ядро дашборда по tcp:12345 порту
-  function GetPhoneTrunkQueue(_table:enumReportTableIVR; _phone:string;_call_id:string):PChar; stdcall;  external 'core.dll';   // нахождение на какой транк звонил номер который ушел в очередь
+  function _dll_GetCallIDPhoneIVR(_table:enumReportTableIVR; _phone:string):PChar; stdcall;  external 'core.dll'; // нахождение _callID звонка
+  function _dll_GetPhoneTrunkQueue(_table:enumReportTableIVR; _phone:string;_call_id:string):PChar; stdcall;  external 'core.dll';   // нахождение на какой транк звонил номер который ушел в очередь
   function GetPhoneOperatorQueue(_table:enumReportTableIVR; _phone:string;_timecall:string):PChar; stdcall;  external 'core.dll'; // нахождение у какого оператора зарегистрирован телефон
   function GetPhoneRegionQueue(_table:enumReportTableIVR; _phone:string;_timecall:string):PChar; stdcall;  external 'core.dll'; // нахождение у в каком регионе зарегистрирован телефон
   function GetCodeStatusSms(_idSMS:Integer; _table:enumReportTableSMSStatus):enumStatusCodeSms; stdcall;  external 'core.dll';      // нахождение статуса SMS сообщения
   function GetStatusSms(_code:enumStatusCodeSms):Pchar;                 stdcall;  external 'core.dll';      // нахождение статуса сообщения
   function GetCountSmsSendingMessageInPhone(_phone:string):Integer;     stdcall;  external 'core.dll';      // кол-во отправленных SMS сообщений на номере
   function _dll_GetAllowCommonQueueList:TStringList;                    stdcall;  external 'core.dll';      // список разрешенных очередей
+  function _dll_GetOperatorSIP(_userId:integer):integer;                stdcall;  external 'core.dll';      // отображение SIP пользвоателя
 
   // --- connect_to_server.dll ---  (по сути этот тут не нужно, но пусть будет)
  function GetServerAddress:string;      stdcall;   external 'connect_to_server.dll'; // адрес сервера

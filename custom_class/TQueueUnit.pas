@@ -46,7 +46,7 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils, Variants,
       function GetExistShowAccess(_id:Integer; _queueList:TList<enumQueue>) : Boolean;  // есть ли доступ на просмотр звонка в зависимости от прав доступа очереди
 
       public
-      listActiveQueue                     : TArray<TQueueStruct>;
+      m_list                     : TArray<TQueueStruct>;
 
       constructor Create;                  overload;
       destructor Destroy;                  override;
@@ -97,8 +97,8 @@ constructor TQueue.Create;
     m_mutex:=TMutex.Create(nil, False, 'Global\TQueue');
     m_count:=0;
 
-   SetLength(listActiveQueue,cGLOBAL_ListQueue);
-   for i:=0 to cGLOBAL_ListQueue-1 do listActiveQueue[i]:=TQueueStruct.Create;
+   SetLength(m_list,cGLOBAL_ListQueue);
+   for i:=0 to cGLOBAL_ListQueue-1 do m_list[i]:=TQueueStruct.Create;
 
    // получим данные
    UpdateData;
@@ -108,7 +108,7 @@ destructor TQueue.Destroy;
 var
  i: Integer;
 begin
-  for i:=Low(listActiveQueue) to High(listActiveQueue) do FreeAndNil(listActiveQueue[i]);
+  for i:=Low(m_list) to High(m_list) do FreeAndNil(m_list[i]);
   m_mutex.Free;
 
   inherited;
@@ -121,7 +121,7 @@ end;
  begin
   if m_mutex.WaitFor(INFINITE)=wrSignaled then
   try
-    for i:=Low(listActiveQueue) to High(listActiveQueue) do listActiveQueue[i].Clear;
+    for i:=Low(m_list) to High(m_list) do m_list[i].Clear;
   finally
     m_mutex.Release;
   end;
@@ -135,7 +135,7 @@ begin
   Result:=False;
   for i:= 0 to Count - 1 do
   begin
-    if listActiveQueue[i].id = id then
+    if m_list[i].id = id then
     begin
       Result:=True;
       Break;
@@ -153,12 +153,12 @@ function TQueue.GetCountQueueList(const _queueList:TList<enumQueue>):Integer;
   if m_mutex.WaitFor(INFINITE)=wrSignaled then
   try
     count:=0;
-     for i := Low(listActiveQueue) to High(listActiveQueue) do begin
-      if listActiveQueue[i].id<>0 then begin
+     for i := Low(m_list) to High(m_list) do begin
+      if m_list[i].id<>0 then begin
 
          // подсчет только если у пользака есть на это права
          for j:=0 to _queueList.Count-1 do begin
-           if listActiveQueue[i].m_queue = _queueList[j] then begin
+           if m_list[i].m_queue = _queueList[j] then begin
              Inc(count);
              Break;
            end;
@@ -183,7 +183,7 @@ begin
   if m_mutex.WaitFor(INFINITE)=wrSignaled then
   try
     for i:=0 to _queueList.Count-1 do begin
-      if listActiveQueue[_id].m_queue = _queueList[i] then begin
+      if m_list[_id].m_queue = _queueList[i] then begin
         Result:=True;
         Break;
       end;
@@ -191,7 +191,6 @@ begin
   finally
     m_mutex.Release;
   end;
-
 end;
 
 
@@ -203,6 +202,8 @@ end;
  ado:TADOQuery;
  serverConnect:TADOConnection;
  countQueue:Integer;
+ request:TStringBuilder;
+ call_id:string;
  begin
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
@@ -211,11 +212,22 @@ end;
      Exit;
   end;
 
+  request:=TStringBuilder.Create;
+
   try
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
-      SQL.Add('select count(phone) from queue where date_time > '+#39+GetNowDateTimeDec(cTimeResponse)+#39+' and fail = ''0'' and sip = ''-1'' and hash is NULL');
+
+      with request do begin
+        Clear;
+        Append('select count(phone) from queue ');
+       // Append(' where date_time > '+#39+GetNowDateTimeDec(cTimeResponse)+#39);
+       // Append(' and fail = ''0'' and sip = ''-1'' and hash is NULL');
+        Append(' where fail = ''0'' and sip = ''-1'' and hash is NULL');
+      end;
+
+      SQL.Add(request.ToString);
 
       Active:=True;
       if Fields[0].Value<>null then countQueue:=Fields[0].Value;
@@ -228,6 +240,7 @@ end;
             if Assigned(serverConnect) then begin
               serverConnect.Close;
               FreeAndNil(serverConnect);
+              FreeAndNil(request);
             end;
             Exit;
           end;
@@ -247,7 +260,15 @@ end;
        if countQueue<>0 then begin
 
           SQL.Clear;
-          SQL.Add('select id,phone,waiting_time,number_queue from queue where date_time > '+#39+GetNowDateTimeDec(cTimeResponse)+#39+' and fail = ''0'' and sip = ''-1'' and hash is NULL');
+          with request do begin
+            Clear;
+            Append('select id,phone,waiting_time,number_queue from queue ');
+//            Append(' where date_time > '+#39+GetNowDateTimeDec(cTimeResponse)+#39);
+//            Append(' and fail = ''0'' and sip = ''-1'' and hash is NULL');
+            Append(' where fail = ''0'' and sip = ''-1'' and hash is NULL');
+          end;
+
+          SQL.Add(request.ToString);
 
           Active:=True;
 
@@ -258,14 +279,15 @@ end;
                  (Fields[2].Value <> null) and
                  (Fields[3].Value <> null)
                 then begin
-                listActiveQueue[i].id:=StrToInt(VarToStr(Fields[0].Value));
-                listActiveQueue[i].phone:=VarToStr(Fields[1].Value);
-                listActiveQueue[i].waiting_time_start:=VarToStr(Fields[2].Value);
-                listActiveQueue[i].m_queue:= StringToEnumQueue(VarToStr(Fields[3].Value));
+                m_list[i].id:=StrToInt(VarToStr(Fields[0].Value));
+                m_list[i].phone:=VarToStr(Fields[1].Value);
+                m_list[i].waiting_time_start:=VarToStr(Fields[2].Value);
+                m_list[i].m_queue:= StringToEnumQueue(VarToStr(Fields[3].Value));
                 try
-                  listActiveQueue[i].trunk:=GetPhoneTrunkQueue(eTableIVR,listActiveQueue[i].phone,GetNowDateTimeDec(cTimeResponse));
+                  call_id:=_dll_GetCallIDPhoneIVR(eTableIVR,m_list[i].phone);
+                  m_list[i].trunk:=_dll_GetPhoneTrunkQueue(eTableIVR,m_list[i].phone,call_id);
                 except
-                  listActiveQueue[i].trunk:='null';
+                  m_list[i].trunk:='null';
                 end;
               end;
             finally
@@ -281,6 +303,7 @@ end;
     if Assigned(serverConnect) then begin
       serverConnect.Close;
       FreeAndNil(serverConnect);
+      FreeAndNil(request);
     end;
   end;
  end;

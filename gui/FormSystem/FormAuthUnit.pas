@@ -638,7 +638,7 @@ begin
  begin
   if DEBUG then begin
     lblDEBUG.Visible:=True;
-    lblDEBUG.Caption:=lblDEBUG.Caption+#13+GetDefaultDataBase;
+    lblDEBUG.Caption:=lblDEBUG.Caption+#13+_dll_GetDefaultDataBase;
   end;
 
   // проверка запущена ли служба обновления

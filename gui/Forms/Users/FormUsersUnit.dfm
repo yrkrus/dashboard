@@ -348,6 +348,7 @@ object FormUsers: TFormUsers
       ParentFont = False
       TabOrder = 0
       ViewStyle = vsReport
+      OnCustomDrawItem = list_UsersCustomDrawItem
       OnMouseDown = list_UsersMouseDown
     end
   end

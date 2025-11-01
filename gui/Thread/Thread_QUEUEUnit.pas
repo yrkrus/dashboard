@@ -91,7 +91,7 @@ begin
         // не показываем номера если нет доступа к очереди
         if not p_listQueue.IsExistShowAccess[i,SharedCurrentUserLogon.QueueList] then Continue;
 
-        idToFind := p_listQueue.listActiveQueue[i].id; // Получаем номер телефона
+        idToFind := p_listQueue.m_list[i].id; // Получаем номер телефона
         existingItem := nil;
 
         // Поиск существующего элемента по номеру телефона
@@ -108,33 +108,33 @@ begin
         begin
           // Элемент не найден, добавляем новый
           ListItem := ListViewQueue.Items.Add;
-          ListItem.Caption := IntToStr(p_listQueue.listActiveQueue[i].id); // id
+          ListItem.Caption := IntToStr(p_listQueue.m_list[i].id); // id
 
-          ListItem.SubItems.Add(p_listQueue.listActiveQueue[i].phone); // номер телефона
+          ListItem.SubItems.Add(p_listQueue.m_list[i].phone); // номер телефона
 
           // корректировака времени чтобы не брать время из IVR
-          if CorrectTimeQueue(p_listQueue.listActiveQueue[i].m_queue,p_listQueue.listActiveQueue[i].waiting_time_start,
+          if CorrectTimeQueue(p_listQueue.m_list[i].m_queue,p_listQueue.m_list[i].waiting_time_start,
                               correct_time) then begin
             correct_time:=Copy(correct_time, 4, 5);
 
             ListItem.SubItems.Add(correct_time); // Время ожидания
           end;
 
-          ListItem.SubItems.Add(EnumQueueToString(p_listQueue.listActiveQueue[i].m_queue)); // очередь
+          ListItem.SubItems.Add(EnumQueueToString(p_listQueue.m_list[i].m_queue)); // очередь
 
           // для очереди ИК всегда из ivr
-          if p_listQueue.listActiveQueue[i].m_queue = queue_5911 then begin
+          if p_listQueue.m_list[i].m_queue = queue_5911 then begin
              ListItem.SubItems.Add('ivr');
           end
           else begin
-            if p_listQueue.listActiveQueue[i].trunk = 'LISA' then ListItem.SubItems.Add('lisa')
+            if p_listQueue.m_list[i].trunk = 'LISA' then ListItem.SubItems.Add('lisa')
             else ListItem.SubItems.Add('ivr'); // транк
           end;
 
         end
         else
         begin
-          if CorrectTimeQueue(p_listQueue.listActiveQueue[i].m_queue,p_listQueue.listActiveQueue[i].waiting_time_start,
+          if CorrectTimeQueue(p_listQueue.m_list[i].m_queue,p_listQueue.m_list[i].waiting_time_start,
                                               correct_time) then begin
             correct_time:=Copy(correct_time, 4, 5);
             existingItem.SubItems[1] := correct_time; // Время ожидания

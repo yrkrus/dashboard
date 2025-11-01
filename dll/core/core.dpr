@@ -13,12 +13,12 @@ uses
 // ======== СМЕНА АДРЕСА БАЗЫ ДАННЫХ =========
 function _DefaultDataBase:string;
 begin
- // Result:=GetServerName;
-   Result:=GetServerNameTest;
+  Result:=GetServerName;
+ //  Result:=GetServerNameTest;
 end;
 // ======== СМЕНА АДРЕСА БАЗЫ ДАННЫХ =========
 
-function GetDefaultDataBase:PChar; stdcall; export;
+function _dll_GetDefaultDataBase:PChar; stdcall; export;
 begin
   Result:=PChar(_DefaultDataBase);
 end;
@@ -866,12 +866,13 @@ begin
 end;
 
 
-// нахождение на какой транк звонил номер который ушел в очередь
-function GetPhoneTrunkQueue(_table:enumReportTableIVR; _phone:string;_call_id:string):PChar; stdcall; export;
+// нахождение _call_id звонка
+function _dll_GetCallIDPhoneIVR(_table:enumReportTableIVR; _phone:string):PChar; stdcall; export;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  table:string;
+ request:TStringBuilder;
 begin
   Result:=PChar('null');
   table:=EnumReportTableIVRToString(_table);
@@ -884,10 +885,71 @@ begin
   end;
 
   try
+    request:=TStringBuilder.Create;
+
     with ado do begin
       ado.Connection:=serverConnect;
       SQL.Clear;
-      SQL.Add('select trunk from '+table+' where phone = '+#39+_phone+#39+' and call_id = '+#39+_call_id+#39+' and to_queue = 1 limit 1');
+
+      with request do begin
+        Clear;
+        Append('select call_id, date_time from '+table);
+        Append(' where phone = '+#39+_phone+#39);
+        Append(' order by date_time desc limit 1');
+      end;
+
+      SQL.Add(request.ToString);
+
+      Active:=True;
+      if Fields[0].Value<>null then begin
+        Result:=PChar(VarToStr(Fields[0].Value));
+      end;
+
+    end;
+  finally
+   FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+      FreeAndNil(request);
+    end;
+  end;
+end;
+
+
+// нахождение на какой транк звонил номер который ушел в очередь
+function _dll_GetPhoneTrunkQueue(_table:enumReportTableIVR; _phone:string;_call_id:string):PChar; stdcall; export;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ table:string;
+ request:TStringBuilder;
+begin
+  Result:=PChar('null');
+  table:=EnumReportTableIVRToString(_table);
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    request:=TStringBuilder.Create;
+
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+
+      with request do begin
+        Clear;
+        Append('select trunk from '+table);
+        Append(' where phone = '+#39+_phone+#39);
+        Append(' and call_id = '+#39+_call_id+#39+' and to_queue = 1 limit 1');
+      end;
+
+      SQL.Add(request.ToString);
 
       Active:=True;
       if Fields[0].Value<>null then begin
@@ -900,6 +962,7 @@ begin
     if Assigned(serverConnect) then begin
       serverConnect.Close;
       FreeAndNil(serverConnect);
+      FreeAndNil(request);
     end;
   end;
 end;
@@ -1129,8 +1192,44 @@ begin
 end;
 
 
+// отображение SIP пользвоателя
+function _dll_GetOperatorSIP(_userId:integer):integer;  stdcall; export;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+  Result:=-1;
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+
+      SQL.Clear;
+      SQL.Add('select sip from operators where user_id = '+#39+IntToStr(_userId)+#39);
+      Active:=True;
+
+      if Fields[0].Value<>null then Result:= StrToInt(VarToStr(Fields[0].Value));
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+
+
 exports
-  GetDefaultDataBase,
+  _dll_GetDefaultDataBase,
   createServerConnect,
   createServerConnectWithError,
   GetCopyright,
@@ -1165,13 +1264,15 @@ exports
   IsServerIkExistWorkingTime,
   GetClinicId,
   GetAliveCoreDashboard,
-  GetPhoneTrunkQueue,
+  _dll_GetPhoneTrunkQueue,
+  _dll_GetCallIDPhoneIVR,
   GetPhoneOperatorQueue,
   GetPhoneRegionQueue,
   GetCodeStatusSms,
   GetStatusSms,
   GetCountSmsSendingMessageInPhone,
-  _dll_GetAllowCommonQueueList;
+  _dll_GetAllowCommonQueueList,
+  _dll_GetOperatorSIP;
 
 begin
 end.

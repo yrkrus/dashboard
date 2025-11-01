@@ -66,7 +66,8 @@ var
   ICON_GUI_GROUP                :string;
   // sip (трубка)
   ICON_GUI_SIP                  :string;
-
+  // пк
+  ICON_GUI_PC                   :string;
 
 implementation
 
@@ -102,5 +103,7 @@ initialization
   ICON_GUI_AUTH_LDAP            := FOLDER_ICON_GUI              + 'auth_ldap.png';
   ICON_GUI_GROUP                := FOLDER_ICON_GUI              + 'group_access.png';
   ICON_GUI_SIP                  := FOLDER_ICON_GUI              + 'sip.png';
+  ICON_GUI_PC                   := FOLDER_ICON_GUI              + 'pc.png';
+
 
 end.

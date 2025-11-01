@@ -61,7 +61,7 @@ function CreateListAnsweredCall(_sip:Integer):TStringList;                   // 
 //                                var _errorDescriptions:string):Boolean;              // удаленная команда (добавление в очередь)
 procedure showWait(Status:enumShow_wait);                                            // отображение\сркытие окна запроса на сервер
 function remoteCommand_Responce(InStroka:string; var _errorDescriptions:string):boolean;  // отправка запроса на добавление удаленной команды
-function GetOperatorSIP(_userId:integer):integer;                                       // отображение SIP пользвоателя
+//function GetOperatorSIP(_userId:integer):integer;                                       // отображение SIP пользвоателя
 //function isExistRemoteCommand(command:enumLogging;_userID:Integer):Boolean;         // проверка есть ли уже такая удаленная команда на сервера
 function getStatus(InStatus:enumStatusOperators):string;                             // полчуение имени status оператора
 function GetCurrentQueueOperator(_sip:integer):TList<enumQueue>;                    // в какой очереди сейчас находится оператор
@@ -113,6 +113,7 @@ procedure OpenReports;                                                          
 procedure OpenService;                                                               // открытые exe услуг
 procedure OpenSMS;                                                                   // открытые exe SMS рассылки
 procedure OpenOutgoing;                                                              // открытые exe Звонилки
+procedure OpenRegPhone;                                                              // открытые exe Регистрация телефона
 function GetExistActiveSession(InUserID:Integer; var ActiveSession:string):Boolean;  // есть ли активная сессия уже
 function GetStatusUpdateService:Boolean;                                             // проверка запущена ли служба обновления
 function getStatusOperator(InUserId:Integer):enumStatusOperators;                    // текущий стаус оператора из таблицы operators
@@ -156,9 +157,10 @@ function RoleIsOperator(InRole:enumRole):Boolean;                               
 function CheckAnsweredSecondsToString(const _time:string):Boolean;                  // проверка корреткности перевода времени из int -> 00:00:00 формат
 procedure DeleteUserCommonQueue(_userID:Integer);                                   // удаление пользователя из таблицы users_common_queue
 procedure AddUserCommonQueue(_userID:Integer; var _list:TList<enumQueue>);          // добавление пользователя в таблицу users_common_queue
-procedure AccessUsersCommonQueue(_queuelist:TList<enumQueue>);                      // отображение только нужных очередей и взаимодействие с нимим
-procedure ShowUsersCommonQueuePanelStatus(_queuelist:TList<enumQueue>);             // отображение кнопок входа в панель статусов
-procedure ShowUsersCommonQueuePopMenu(_queuelist:TList<enumQueue>);                 // отображение кнопок входа в popmenu
+procedure AccessUsersCommonQueue(const _queuelist:TList<enumQueue>);                // отображение только нужных очередей и взаимодействие с нимим
+procedure ShowUsersCommonQueuePanelStatus(const _queuelist:TList<enumQueue>);       // отображение кнопок входа в панель статусов
+procedure ShowUsersCommonQueuePopMenu(const _queuelist:TList<enumQueue>);           // отображение кнопок входа в popmenu
+procedure ShowUsersCommonQueueStatisticsDay(const _queuelist:TList<enumQueue>);     // отображение статистики по чоередям
 function EqualCurrentQueue(_queueA, _queueB:TList<enumQueue>):Boolean;              // сравнение двух пар очередей
 
 
@@ -724,7 +726,7 @@ begin
        if countKillExe>10 then Break;
      end;
 
-      // закрываем outgoing_exe если открыт
+     // закрываем outgoing_exe если открыт
      countKillExe:=0;
      while GetTask(PChar(OUTGOING_EXE)) do begin
        KillTask(PChar(OUTGOING_EXE));
@@ -734,6 +736,18 @@ begin
        Inc(countKillExe);
        if countKillExe>10 then Break;
      end;
+
+     // закрываем reg_phone.exe если открыт
+     countKillExe:=0;
+     while GetTask(PChar(REG_PHONE_EXE)) do begin
+       KillTask(PChar(REG_PHONE_EXE));
+
+       // на случай если не удасться закрыть дочерний exe
+       Sleep(500);
+       Inc(countKillExe);
+       if countKillExe>10 then Break;
+     end;
+
 
    finally
       KillProcessNow;
@@ -2028,38 +2042,38 @@ end;
 
 
 // отображение SIP пользвоателя
-function GetOperatorSIP(_userId:integer):integer;
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
-begin
-  Result:=-1;
-
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
-  end;
-
-  try
-    with ado do begin
-      ado.Connection:=serverConnect;
-
-      SQL.Clear;
-      SQL.Add('select sip from operators where user_id = '+#39+IntToStr(_userId)+#39);
-      Active:=True;
-
-      if Fields[0].Value<>null then Result:= StrToInt(VarToStr(Fields[0].Value));
-    end;
-  finally
-    FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
-  end;
-end;
+//function GetOperatorSIP(_userId:integer):integer;
+//var
+// ado:TADOQuery;
+// serverConnect:TADOConnection;
+//begin
+//  Result:=-1;
+//
+//  ado:=TADOQuery.Create(nil);
+//  serverConnect:=createServerConnect;
+//  if not Assigned(serverConnect) then begin
+//     FreeAndNil(ado);
+//     Exit;
+//  end;
+//
+//  try
+//    with ado do begin
+//      ado.Connection:=serverConnect;
+//
+//      SQL.Clear;
+//      SQL.Add('select sip from operators where user_id = '+#39+IntToStr(_userId)+#39);
+//      Active:=True;
+//
+//      if Fields[0].Value<>null then Result:= StrToInt(VarToStr(Fields[0].Value));
+//    end;
+//  finally
+//    FreeAndNil(ado);
+//    if Assigned(serverConnect) then begin
+//      serverConnect.Close;
+//      FreeAndNil(serverConnect);
+//    end;
+//  end;
+//end;
 
 
 // полчуение userID из ФИО
@@ -2301,7 +2315,7 @@ begin
 
       // проверим пользователь принадлежит группе операторов
       if IsUserOperator(InUserID) then begin
-        operatorSip:=GetOperatorSIP(InUserID);
+        operatorSip:=_dll_GetOperatorSIP(InUserID);
 
         DisableOperator(InUserID);
         DeleteOperator(InUserID, operatorSip);
@@ -3378,7 +3392,7 @@ begin
       ado.Connection:=serverConnect;
       SQL.Clear;
       SQL.Add('update operators set status = '+#39+IntToStr(EnumStatusOperatorsToInteger(_status))+#39+
-                                             ' where sip = '+#39+IntToStr(GetOperatorSIP(_userID))+#39);
+                                             ' where sip = '+#39+IntToStr(_dll_GetOperatorSIP(_userID))+#39);
 
       try
           ExecSQL;
@@ -3869,9 +3883,7 @@ begin
  case InCurrentRole of
    role_lead_operator,role_senior_operator,role_operator:begin
 
-     // проверяемв друг еще в очереди находится оператор
-     if SharedActiveSipOperators.isExistOperatorInQueue(GetOperatorSIP(InUserID)) then Result:=True
-     else Result:=False;
+     
 
    end
    else Result:=False;
@@ -4656,6 +4668,23 @@ begin
 end;
 
 
+
+// открытые exe Регистрация телефона
+procedure OpenRegPhone;
+var
+  showSendingSMS:Boolean; // отображать ли excel рассылку
+begin
+  if not FileExists(REG_PHONE_EXE) then begin
+    MessageBox(HomeForm.Handle,PChar('Не удается найти файл '+REG_PHONE_EXE),PChar('Файл не найден'),MB_OK+MB_ICONERROR);
+    Exit;
+  end;
+
+   ShellExecute(HomeForm.Handle, 'Open', PChar(REG_PHONE_EXE),PChar(USER_ID_PARAM+' '+
+                                                            IntToStr(SharedCurrentUserLogon.ID)+' '+
+                                                            USER_ACCESS_PARAM +' '+
+                                                            SharedCurrentUserLogon.PC),nil,SW_SHOW);
+end;
+
 // открытые exe Звонилки
 procedure OpenOutgoing;
 begin
@@ -5301,7 +5330,7 @@ end;
 function SendCommandStatusDelay(_userID:Integer):enumStatus;
 begin
   // проверим разговариавет ли оператор
-  Result:=SharedActiveSipOperators.IsTalkOperator(GetOperatorSIP(_userID));
+  Result:=SharedActiveSipOperators.IsTalkOperator(_dll_GetOperatorSIP(_userID));
 end;
 
 // можно ли сменить оператору статус (вдруг стоит отложенный статус)
@@ -5311,7 +5340,7 @@ var
 begin
   Result:=True;
 
-  id:=SharedActiveSipOperators.GetListOperators_ID(GetOperatorSIP(_userID));
+  id:=SharedActiveSipOperators.GetListOperators_ID(_dll_GetOperatorSIP(_userID));
   if SharedActiveSipOperators.GetListOperators_StatusDelay(id) <> eUnknown  then
   begin
     _errorDescription:='Смена статуса невозможна, не выполнена предыдущая команда';
@@ -5339,7 +5368,7 @@ begin
    XML.Free;
   end;
 
-  id_sip:=GetOperatorSIP(SharedCurrentUserLogon.ID);
+  id_sip:=_dll_GetOperatorSIP(SharedCurrentUserLogon.ID);
 
   // в очереди ли находится оператор
   if SharedActiveSipOperators.isExistOperatorInQueue(id_sip) then begin
@@ -5399,6 +5428,7 @@ begin
     // свое время (MyTime)
     SharedCheckBoxUI.Add('MyTime', lbl_checkbox_MyTime, img_MyTime, paramStatus_DISABLED);
   end;
+
 end;
 
 
@@ -5446,7 +5476,7 @@ end;
 
 
 // отображение кнопок входа в панель статусов
-procedure ShowUsersCommonQueuePanelStatus(_queuelist:TList<enumQueue>);
+procedure ShowUsersCommonQueuePanelStatus(const _queuelist:TList<enumQueue>);
 const
  cSTEP:Word = 80;
  cDefaultLeft:Word = 380; // начальное положение
@@ -5486,7 +5516,7 @@ end;
 
 
 // отображение кнопок входа в popmenu
-procedure ShowUsersCommonQueuePopMenu(_queuelist:TList<enumQueue>);
+procedure ShowUsersCommonQueuePopMenu(const _queuelist:TList<enumQueue>);
 var
  i:Integer;
 begin
@@ -5512,8 +5542,57 @@ begin
 end;
 
 
+// отображение статистики по очередям
+procedure ShowUsersCommonQueueStatisticsDay(const _queuelist:TList<enumQueue>);
+const
+ cSTEP:Word = 15;
+ cDefTop:Word = 18; // начальное положение
+
+var
+ i,j:Integer;
+ FindedPanel:TPanel;
+ nameControl:string;
+begin
+
+ for i:=0 to _queuelist.Count-1 do begin
+  with HomeForm do begin
+    nameControl := EnumQueueToString(_queuelist[i]);
+
+     // Сначала находим родительскую панель
+     FindedPanel := TPanel(HomeForm.FindComponent('panel_QueueStatistics'));
+
+    if Assigned(FindedPanel) then
+    begin
+      // Теперь ищем метку внутри найденной панели
+      for j:=0 to FindedPanel.ControlCount-1 do begin
+        if FindedPanel.Controls[j].Name = 'lblStatistics_Queue' + nameControl then begin
+         FindedPanel.Controls[j].Visible:=True;
+         FindedPanel.Controls[j].Top:=cDefTop + i * cSTEP;
+        end;
+
+        if FindedPanel.Controls[j].Name = 'lblStstatisc_Queue' + nameControl +'_Summa' then begin
+         FindedPanel.Controls[j].Visible:=True;
+         FindedPanel.Controls[j].Top:=cDefTop + i * cSTEP;
+        end;
+
+        if FindedPanel.Controls[j].Name = 'lblStstatisc_Queue' + nameControl +'_Answered' then begin
+         FindedPanel.Controls[j].Visible:=True;
+         FindedPanel.Controls[j].Top:=cDefTop + i * cSTEP;
+        end;
+
+        if FindedPanel.Controls[j].Name = 'lblStstatisc_Queue' + nameControl +'_No_Answered' then begin
+         FindedPanel.Controls[j].Visible:=True;
+         FindedPanel.Controls[j].Top:=cDefTop + i * cSTEP;
+        end;
+      end;
+    end;
+  end;
+ end;
+
+end;
+
 // отображение только нужных очередей и взаимодействие с нимим
-procedure AccessUsersCommonQueue(_queuelist:TList<enumQueue>);
+procedure AccessUsersCommonQueue(const _queuelist:TList<enumQueue>);
 begin
   // панель статусов
   ShowUsersCommonQueuePanelStatus(_queuelist);
@@ -5521,6 +5600,8 @@ begin
   // popmenu
   ShowUsersCommonQueuePopMenu(_queuelist);
 
+  // отображение статистики по очередям
+  ShowUsersCommonQueueStatisticsDay(_queuelist);
 
 end;
 

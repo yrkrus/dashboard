@@ -219,6 +219,7 @@ begin
      Add('taskkill /F /IM '+CHAT_EXE);
      Add('taskkill /F /IM '+REPORT_EXE);
      Add('taskkill /F /IM '+SMS_EXE);
+     Add('taskkill /F /IM '+REG_PHONE_EXE);
      Add('taskkill /F /IM '+SERVICE_EXE);
      Add('taskkill /F /IM '+OUTGOING_EXE);
      Add('::');
@@ -275,12 +276,25 @@ begin
      if countKillExe>10 then Break;
    end;
 
-    // закрываем sms_exe если открыт
+   // закрываем sms_exe если открыт
    countKillExe:=0;
    p_Log.Save('Поиск процесса '+PChar(SMS_EXE));
    while GetTask(PChar(SMS_EXE)) do begin
      p_Log.Save('Закрытие процесса '+PChar(SMS_EXE));
      KillTask(PChar(SMS_EXE));
+
+     // на случай если не удасться закрыть дочерний exe
+     Sleep(500);
+     Inc(countKillExe);
+     if countKillExe>10 then Break;
+   end;
+
+   // закрываем reg_phone_exe если открыт
+   countKillExe:=0;
+   p_Log.Save('Поиск процесса '+PChar(REG_PHONE_EXE));
+   while GetTask(PChar(REG_PHONE_EXE)) do begin
+     p_Log.Save('Закрытие процесса '+PChar(REG_PHONE_EXE));
+     KillTask(PChar(REG_PHONE_EXE));
 
      // на случай если не удасться закрыть дочерний exe
      Sleep(500);
