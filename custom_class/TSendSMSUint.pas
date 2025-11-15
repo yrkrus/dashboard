@@ -150,10 +150,15 @@ begin
    Result:='null';
 
    ado:=TADOQuery.Create(nil);
-   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+      serverConnect:=createServerConnect;
+  except
+      on E:Exception do begin
+        if not Assigned(serverConnect) then begin
+           FreeAndNil(ado);
+           Exit;
+        end;
+      end;
   end;
 
   try
@@ -347,11 +352,15 @@ procedure TSendSMS.SaveToBase(InServerOtvet:string; InMessage:string; _reasonSMS
  countReal:Integer;
 begin
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+      serverConnect:=createServerConnect;
+  except
+      on E:Exception do begin
+        if not Assigned(serverConnect) then begin
+           FreeAndNil(ado);
+           Exit;
+        end;
+      end;
   end;
 //    phone:='+79093858545';
 //    sms_id:='1000';
@@ -602,11 +611,15 @@ begin
   _errorDescription:='';
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+      serverConnect:=createServerConnect;
+  except
+      on E:Exception do begin
+        if not Assigned(serverConnect) then begin
+           FreeAndNil(ado);
+           Exit;
+        end;
+      end;
   end;
 
   try
@@ -649,11 +662,15 @@ begin
   _sendinDate:='';
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+      serverConnect:=createServerConnect;
+  except
+      on E:Exception do begin
+        if not Assigned(serverConnect) then begin
+           FreeAndNil(ado);
+           Exit;
+        end;
+      end;
   end;
 
   try

@@ -85,6 +85,8 @@ type
     CheckBox7: TCheckBox;
     Label11: TLabel;
     CheckBox8: TCheckBox;
+    Label12: TLabel;
+    CheckBox9: TCheckBox;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
@@ -386,15 +388,16 @@ const
   cTOPSTART=40;
   cSTEP:Word = 25;
 var
- lblNameRole                        :array of TLabel;
- chkbox_menu_settings_users         :array of TCheckBox;
- chkbox_menu_settings_serversik     :array of TCheckBox;
- chkbox_menu_settings_siptrunk      :array of TCheckBox;
- chkbox_menu_settings_global        :array of TCheckBox;
- chkbox_menu_active_session         :array of TCheckBox;
- chkbox_menu_service                :array of TCheckBox;
- chkbox_menu_missed_calls           :array of TCheckBox;
- chkbox_menu_clear_status_operator  :array of TCheckBox;
+ lblNameRole                        :TArray<TLabel>;
+ chkbox_menu_settings_users         :TArray<TCheckBox>;
+ chkbox_menu_settings_serversik     :TArray<TCheckBox>;
+ chkbox_menu_settings_siptrunk      :TArray<TCheckBox>;
+ chkbox_menu_settings_global        :TArray<TCheckBox>;
+ chkbox_menu_active_session         :TArray<TCheckBox>;
+ chkbox_menu_service                :TArray<TCheckBox>;
+ chkbox_menu_missed_calls           :TArray<TCheckBox>;
+ chkbox_menu_clear_status_operator  :TArray<TCheckBox>;
+ chkbox_menu_register_phone         :TArray<TCheckBox>;
 
  i:Integer;
  nameRole:string;
@@ -409,6 +412,7 @@ begin
   SetLength(chkbox_menu_service,m_count);
   SetLength(chkbox_menu_missed_calls,m_count);
   SetLength(chkbox_menu_clear_status_operator,m_count);
+  SetLength(chkbox_menu_register_phone,m_count);
 
   for i:=0 to m_count-1 do begin
     nameRole:= EnumRoleToStringName(list_access[i].Role);
@@ -439,7 +443,7 @@ begin
         chkbox_menu_settings_global[i].Name:='chk_global_'+nameRole;
         chkbox_menu_settings_global[i].Tag:=1;
         chkbox_menu_settings_global[i].Caption:='';
-        chkbox_menu_settings_global[i].Left:=295;
+        chkbox_menu_settings_global[i].Left:=285;
 
         if i=0 then chkbox_menu_settings_global[i].Top:=cTOPSTART
         else chkbox_menu_settings_global[i].Top:=cTOPSTART+(cSTEP * i);
@@ -467,7 +471,7 @@ begin
       chkbox_menu_settings_users[i].Name:='chk_users_'+nameRole;
       chkbox_menu_settings_users[i].Tag:=1;
       chkbox_menu_settings_users[i].Caption:='';
-      chkbox_menu_settings_users[i].Left:=432;
+      chkbox_menu_settings_users[i].Left:=400;
 
       if i=0 then chkbox_menu_settings_users[i].Top:=cTOPSTART
       else chkbox_menu_settings_users[i].Top:=cTOPSTART+(cSTEP * i);
@@ -498,7 +502,7 @@ begin
       chkbox_menu_settings_serversik[i].Name:='chk_serversik_'+nameRole;
       chkbox_menu_settings_serversik[i].Tag:=1;
       chkbox_menu_settings_serversik[i].Caption:='';
-      chkbox_menu_settings_serversik[i].Left:=521;
+      chkbox_menu_settings_serversik[i].Left:=490;
 
       if i=0 then chkbox_menu_settings_serversik[i].Top:=cTOPSTART
       else chkbox_menu_settings_serversik[i].Top:=cTOPSTART+(cSTEP * i);
@@ -526,7 +530,7 @@ begin
       chkbox_menu_settings_siptrunk[i].Name:='chk_siptrunk_'+nameRole;
       chkbox_menu_settings_siptrunk[i].Tag:=1;
       chkbox_menu_settings_siptrunk[i].Caption:='';
-      chkbox_menu_settings_siptrunk[i].Left:=602;
+      chkbox_menu_settings_siptrunk[i].Left:=572;
 
       if i=0 then chkbox_menu_settings_siptrunk[i].Top:=cTOPSTART
       else chkbox_menu_settings_siptrunk[i].Top:=cTOPSTART+(cSTEP * i);
@@ -556,7 +560,7 @@ begin
       chkbox_menu_service[i].Name:='chk_service_'+nameRole;
       chkbox_menu_service[i].Tag:=1;
       chkbox_menu_service[i].Caption:='';
-      chkbox_menu_service[i].Left:=671;
+      chkbox_menu_service[i].Left:=640;
 
       if i=0 then chkbox_menu_service[i].Top:=cTOPSTART
       else chkbox_menu_service[i].Top:=cTOPSTART+(cSTEP * i);
@@ -586,7 +590,7 @@ begin
       chkbox_menu_missed_calls[i].Name:='chk_missed_calls_'+nameRole;
       chkbox_menu_missed_calls[i].Tag:=1;
       chkbox_menu_missed_calls[i].Caption:='';
-      chkbox_menu_missed_calls[i].Left:=782;
+      chkbox_menu_missed_calls[i].Left:=733;
 
       if i=0 then chkbox_menu_missed_calls[i].Top:=cTOPSTART
       else chkbox_menu_missed_calls[i].Top:=cTOPSTART+(cSTEP * i);
@@ -615,7 +619,7 @@ begin
       chkbox_menu_active_session[i].Name:='chk_active_session_'+nameRole;
       chkbox_menu_active_session[i].Tag:=1;
       chkbox_menu_active_session[i].Caption:='';
-      chkbox_menu_active_session[i].Left:=927;
+      chkbox_menu_active_session[i].Left:=834;
 
       if i=0 then chkbox_menu_active_session[i].Top:=cTOPSTART
       else chkbox_menu_active_session[i].Top:=cTOPSTART+(cSTEP * i);
@@ -645,7 +649,7 @@ begin
       chkbox_menu_clear_status_operator[i].Name:='chk_clear_status_operator_'+nameRole;
       chkbox_menu_clear_status_operator[i].Tag:=1;
       chkbox_menu_clear_status_operator[i].Caption:='';
-      chkbox_menu_clear_status_operator[i].Left:=1053;
+      chkbox_menu_clear_status_operator[i].Left:=931;
 
       if i=0 then chkbox_menu_clear_status_operator[i].Top:=cTOPSTART
       else chkbox_menu_clear_status_operator[i].Top:=cTOPSTART+(cSTEP * i);
@@ -665,7 +669,34 @@ begin
 
       // сохраним текущие данные в кзш
       SetFormCache(list_access[i].Role, menu_clear_status_operator, chkbox_menu_clear_status_operator[i]);
+    end;
 
+    // регистрация теелфона
+    begin
+      chkbox_menu_register_phone[i]:=TCheckBox.Create(FormMenuAccess.group);
+      chkbox_menu_register_phone[i].Name:='chk_register_phone_'+nameRole;
+      chkbox_menu_register_phone[i].Tag:=1;
+      chkbox_menu_register_phone[i].Caption:='';
+      chkbox_menu_register_phone[i].Left:=1031;
+
+      if i=0 then chkbox_menu_register_phone[i].Top:=cTOPSTART
+      else chkbox_menu_register_phone[i].Top:=cTOPSTART+(cSTEP * i);
+
+      chkbox_menu_register_phone[i].Font.Name:='Tahoma';
+      chkbox_menu_register_phone[i].Font.Size:=12;
+      chkbox_menu_register_phone[i].Width:=16;
+      chkbox_menu_register_phone[i].Height:=17;
+      chkbox_menu_register_phone[i].Parent:=FormMenuAccess.group;
+
+      if list_access[i].menu_register_phone then chkbox_menu_register_phone[i].Checked:=True;
+
+      // оператор без дашборда нет смысла ему права даже включать
+      if list_access[i].Role = role_operator_no_dash then begin
+        chkbox_menu_register_phone[i].Enabled:=False;
+      end;
+
+      // сохраним текущие данные в кзш
+      SetFormCache(list_access[i].Role, menu_register_phone, chkbox_menu_register_phone[i]);
     end;
 
   end;

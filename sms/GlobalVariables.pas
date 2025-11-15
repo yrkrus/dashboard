@@ -12,7 +12,7 @@ interface
 
 uses
   SysUtils, Windows, Classes, TCustomTypeUnit, TLogFileUnit, TMessageGeneratorSMSUnit,
-  TPacientsListUnit, TCheckBoxUIUnit;
+  TPacientsListUnit, TCheckBoxUIUnit, TUserCommonQueueUnit;
 
 
   type   // тип отправки
@@ -73,7 +73,10 @@ var
   SharedSendindPhoneManualSMS   : TStringList;
 
   // список с номерами тлф для проверки статуса сообщения
-  SharedStatusSendingSMS   : TStringList;
+  SharedStatusSendingSMS        : TStringList;
+
+  // список очередей которые можеть видеть юзер
+  SharedUserCommonQueue         : TUserCommonQueue;
 
 
   // все активные чек боксы на форме
@@ -92,6 +95,7 @@ var
   EXCEL_FILE_NOT_LOADED:string ='не загружен';
 
 implementation
+
 
 
 

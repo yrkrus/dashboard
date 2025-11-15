@@ -14,7 +14,8 @@ uses
   GlobalImageDestination in '..\custom_global\GlobalImageDestination.pas',
   TPhoneListUnit in '..\custom_class\TPhoneListUnit.pas',
   TRegisterPhoneUnit in '..\custom_class\TRegisterPhoneUnit.pas',
-  TSipPhoneListUnit in '..\custom_class\TSipPhoneListUnit.pas';
+  TSipPhoneListUnit in '..\custom_class\TSipPhoneListUnit.pas',
+  TIndividualSettingUserUnit in '..\custom_class\TIndividualSettingUserUnit.pas';
 
 {$R *.res}
 

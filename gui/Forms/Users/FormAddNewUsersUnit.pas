@@ -507,12 +507,16 @@ begin
 
   Screen.Cursor:=crHourGlass;
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-    FreeAndNil(ado);
-    Screen.Cursor:=crDefault;
-    _errorDescription:='Не удалось соединиться с сервером';
-    Exit;
+
+  try
+    serverConnect:=createServerConnectWithError(_errorDescription);
+  except
+    on E:Exception do begin
+      FreeAndNil(ado);
+      Screen.Cursor:=crDefault;
+      _errorDescription:='Не удалось соединиться с сервером'+#13+_errorDescription;
+      Exit;
+    end;
   end;
 
   try
@@ -775,10 +779,15 @@ var
 begin
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+   try
+      serverConnect:=createServerConnect;
+  except
+      on E:Exception do begin
+        if not Assigned(serverConnect) then begin
+           FreeAndNil(ado);
+           Exit;
+        end;
+      end;
   end;
 
   try
@@ -1284,11 +1293,15 @@ var
 begin
   Result:=True; // default
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+      serverConnect:=createServerConnect;
+  except
+      on E:Exception do begin
+        if not Assigned(serverConnect) then begin
+           FreeAndNil(ado);
+           Exit;
+        end;
+      end;
   end;
 
 

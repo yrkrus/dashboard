@@ -58,7 +58,7 @@ implementation
 
 
 uses
-GlobalVariables, FunctionUnit, FormReportCountRingsOperatorsUnit, GlobalVariablesLinkDLL, TCustomTypeUnit, FormReportShowRingsAfterWorkTimeUnit, FormReportShowStatusOperatorsUnit;
+GlobalVariables, FunctionUnit, FormReportCountRingsOperatorsUnit, GlobalVariablesLinkDLL, TCustomTypeUnit, FormReportShowRingsAfterWorkTimeUnit, FormReportShowStatusOperatorsUnit, TUserCommonQueueUnit;
 
 
 {$R *.dfm}
@@ -95,7 +95,7 @@ var
  error:string;
 begin
   // debug node
-  if DEBUG then Caption:='    ===== DEBUG | (base:'+GetDefaultDataBase+') =====    '+Caption;
+  if DEBUG then Caption:='    ===== DEBUG | (base:'+_dll_GetDefaultDataBase+') =====    '+Caption;
 
   // создатим copyright
   createCopyright;
@@ -189,6 +189,8 @@ var
 begin
   if DEBUG then begin
    USER_STARTED_REPORT_ID:=1;
+   if not Assigned(SharedUserCommonQueue) then SharedUserCommonQueue:=TUserCommonQueue.Create(USER_STARTED_REPORT_ID);
+
    Exit;
   end;
 
@@ -204,6 +206,7 @@ begin
       if (i + 1 <= ParamCount) then
       begin
         USER_STARTED_REPORT_ID:= StrToInt(ParamStr(i + 1));
+        if not Assigned(SharedUserCommonQueue) then SharedUserCommonQueue:=TUserCommonQueue.Create(USER_STARTED_REPORT_ID);
        // if DEBUG then ShowMessage('Value for --USER_ID: ' + ParamStr(i + 1));
 
       end

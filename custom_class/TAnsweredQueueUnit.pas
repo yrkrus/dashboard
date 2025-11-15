@@ -507,10 +507,15 @@ var
       n: Cardinal;
 begin
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   // кол-во отвеченных на текущий момент

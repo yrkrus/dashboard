@@ -15,12 +15,15 @@ type
     list_phone: TListView;
     st_NoPhone: TStaticText;
     btnEdit: TBitBtn;
+    btnDeRegister: TBitBtn;
     procedure FormShow(Sender: TObject);
     procedure btnAddClick(Sender: TObject);
     procedure list_phoneMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure btnEditClick(Sender: TObject);
     procedure btnDeleteClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure btnDeRegisterClick(Sender: TObject);
   private
     { Private declarations }
    m_phoneList:TPhoneList;
@@ -42,7 +45,7 @@ var
 implementation
 
 uses
-  FormPhoneListAddUnit;
+  FormPhoneListAddUnit, TRegisterPhoneUnit;
 
 
 
@@ -88,14 +91,13 @@ var
  resultat:Word;
  error:string;
 begin
-
    if not Assigned(SelectedItem) then begin
     MessageBox(Handle,PChar('Не выбрана строка'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
    end;
 
    resultat:=MessageBox(Handle,PChar('Точно удалить '+#13
-                                      + m_phoneList.ItemsData[StrToInt(SelectedItem.Caption)].m_namePC+'?'),PChar('Уточнение'),MB_YESNO+MB_ICONWARNING);
+                                      + m_phoneList.ItemsData[StrToInt(SelectedItem.Caption)].m_namePC+'?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
    if resultat=mrNo then Exit;
 
    if not m_phoneList.Delete(StrToInt(SelectedItem.Caption),error) then begin
@@ -106,6 +108,44 @@ begin
   // загружаем новые данные
   UpdateDataForm;
   MessageBox(Handle,PChar('Строка удалена'),PChar('Успешно'),MB_OK+MB_ICONINFORMATION);
+end;
+
+procedure TFormPhoneList.btnDeRegisterClick(Sender: TObject);
+var
+ resultat:Word;
+ error:string;
+ phoneRegister:TRegisterPhone;
+
+ sip:Integer;
+ ipPhone:string;
+begin
+
+   if not Assigned(SelectedItem) then begin
+    MessageBox(Handle,PChar('Не выбрана строка'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    Exit;
+   end;
+
+   sip:=m_phoneList.ItemsData[StrToInt(SelectedItem.Caption)].m_sip;
+   ipPhone:=m_phoneList.ItemsData[StrToInt(SelectedItem.Caption)].m_phoneIP;
+
+   resultat:=MessageBox(Handle,PChar('Точно сделать разрегистрацию на телефоне '+#13
+                                      + ipPhone+' с sip ' +IntToStr(sip)+'?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
+   if resultat=mrNo then Exit;
+
+  Screen.Cursor:=crHourGlass;
+
+  phoneRegister:=TRegisterPhone.Create(sip,ipPhone);
+  if not phoneRegister.DeRegisterPhone(error) then begin
+   Screen.Cursor:=crDefault;
+   MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+   Exit;
+  end;
+
+// загружаем новые данные
+  UpdateDataForm;
+
+  Screen.Cursor:=crDefault;
+  MessageBox(Handle,PChar('Телефон разрегистрирован'),PChar('Успешно'),MB_OK+MB_ICONINFORMATION);
 end;
 
 procedure TFormPhoneList.btnEditClick(Sender: TObject);
@@ -123,10 +163,10 @@ end;
 
 procedure TFormPhoneList.ClearListView(var p_ListView:TListView);
 const
- cWidth_default       :Word = 450;
- cWidth_namePC        :Word = 14;
- cWidth_IPPhone       :Word = 23;
- cWidth_ActiveSip     :Word = 61;
+ cWidth_default       :Word = 376;
+ cWidth_namePC        :Word = 17;
+ cWidth_IPPhone       :Word = 26;
+ cWidth_ActiveSip     :Word = 55;
 begin
  with p_ListView do begin
 
@@ -180,6 +220,13 @@ begin
   AddListItem(list_phone,m_phoneList);
 end;
 
+procedure TFormPhoneList.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  btnEdit.Enabled:=False;
+  btnDelete.Enabled:=False;
+  btnDeRegister.Enabled:=False;
+end;
+
 procedure TFormPhoneList.FormShow(Sender: TObject);
 begin
   Screen.Cursor:=crHourGlass;
@@ -203,6 +250,14 @@ begin
    else begin
     btnEdit.Enabled:=False;
     btnDelete.Enabled:=False;
+   end;
+
+   // разрегистрация
+   if SelectedItem.SubItems[2] <> '---' then begin
+    btnDeRegister.Enabled:=True;
+   end
+   else begin
+     btnDeRegister.Enabled:=False;
    end;
 end;
 

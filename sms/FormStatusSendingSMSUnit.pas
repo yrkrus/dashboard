@@ -229,10 +229,10 @@ begin
   re_Message.Lines.Add(m_smsInfo.MessageSMS[m_idStruct]);
 
   // оператор
-  lblOperator.Caption:='в разработке';
+  lblOperator.Caption:=m_smsInfo.PhoneOperator[m_idStruct];
 
   // регион
-  lblRegion.Caption:='в разработке';
+  lblRegion.Caption:=m_smsInfo.PhoneRegion[m_idStruct];
 
   // отправитель
   lblFIO.Caption:=m_smsInfo.UserFIOSending[m_idStruct];

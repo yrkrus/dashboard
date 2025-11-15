@@ -6,7 +6,8 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls, Vcl.Grids,
   Vcl.Samples.Gauges, Winapi.ShellAPI, Vcl.Imaging.jpeg, Vcl.ExtCtrls,
-  Vcl.Buttons, Vcl.Menus, ClipBrd, System.ImageList, Vcl.ImgList,RichEdit, TCustomTypeUnit;
+  Vcl.Buttons, Vcl.Menus, ClipBrd, System.ImageList, Vcl.ImgList,RichEdit, TCustomTypeUnit,
+  TThreadDispatcherUnit;
 
 type
   TFormHome = class(TForm)
@@ -26,19 +27,13 @@ type
     btnLoadFile: TBitBtn;
     GroupBox1: TGroupBox;
     RELog: TRichEdit;
-    lblCountSendingSMS: TLabel;
-    Label3: TLabel;
     ProgressStatusText: TStaticText;
-    Label4: TLabel;
-    lblCountNotSendingSMS: TLabel;
-    st_ShowNotSendingSMS: TStaticText;
     st_PhoneInfo: TStaticText;
     popmenu_AddressClinic: TPopupMenu;
     lblNameExcelFile: TLabel;
     lblManualSMS_List: TLabel;
     lblManualSMS_One: TLabel;
     ImageList1: TImageList;
-    st_ShowSendingSMS: TStaticText;
     panel_message_group: TPanel;
     ST_StatusPanel: TStaticText;
     st_ShowInfoAddAddressClinic: TStaticText;
@@ -63,6 +58,13 @@ type
     img_SaveGlobalTemplate: TImage;
     img_ShowLog: TImage;
     chkbox_ShowLog: TLabel;
+    GroupBox2: TGroupBox;
+    Label3: TLabel;
+    lblCountSendingSMS: TLabel;
+    st_ShowSendingSMS: TStaticText;
+    Label4: TLabel;
+    lblCountNotSendingSMS: TLabel;
+    st_ShowNotSendingSMS: TStaticText;
     procedure ProcessCommandLineParams(DEBUG:Boolean = False);
     procedure FormCreate(Sender: TObject);
     procedure btnLoadFileClick(Sender: TObject);
@@ -124,6 +126,8 @@ type
 
   private
     { Private declarations }
+
+   m_dispatcherCountSmsSending      :TThreadDispatcher;   // планировщик
    isSpelling:Boolean;
 
    isEditMessage:Boolean;  // флаг того что сообщение редактируется и его нужно проверить на ошибки
@@ -164,7 +168,9 @@ implementation
 uses
   FunctionUnit, GlobalVariables, GlobalVariablesLinkDLL, TSendSMSUint,
   FormMyTemplateUnit, FormNotSendingSMSErrorUnit, FormListSendingSMSUnit,
-  TXmlUnit, TSpellingUnit, FormSendingSMSUnit, FormDictionaryUnit, FormGenerateSMSUnit, DMUnit, FormManualPodborUnit, FormManualPodborStatusUnit, FormStatusSendingSMSUnit, FormPodborUnit, TAutoPodborSendingSmsUnit;
+  TXmlUnit, TSpellingUnit, FormSendingSMSUnit, FormDictionaryUnit, FormGenerateSMSUnit, DMUnit,
+  FormManualPodborUnit, FormManualPodborStatusUnit, FormStatusSendingSMSUnit, FormPodborUnit,
+  TAutoPodborSendingSmsUnit, TUserCommonQueueUnit;
 
  {$R *.dfm}
 
@@ -668,6 +674,7 @@ begin
   if DEBUG then begin
    USER_STARTED_SMS_ID:=1;
    USER_ACCESS_SENDING_LIST:=True;
+   if not Assigned(SharedUserCommonQueue) then SharedUserCommonQueue:=TUserCommonQueue.Create(USER_STARTED_SMS_ID);
    Exit;
   end;
 
@@ -683,6 +690,9 @@ begin
       if (i + 1 <= ParamCount) then
       begin
         USER_STARTED_SMS_ID:= StrToInt(ParamStr(i + 1));
+        if not Assigned(SharedUserCommonQueue) then SharedUserCommonQueue:=TUserCommonQueue.Create(USER_STARTED_SMS_ID);
+
+
        // if DEBUG then ShowMessage('Value for --USER_ID: ' + ParamStr(i + 1));
 
       end
@@ -893,9 +903,6 @@ begin
    // создатим copyright
   CreateCopyright;
 
-  // подсчет сколько за сегодня отправлено смс
-  ShowCountTodaySmsSending;
-
   // возможность автоматически вставлять подпись в смс сообщение
   SignSMS;
 
@@ -910,6 +917,12 @@ begin
 
   // подгружаем красивенькие чекбоксы
   AddCustomCheckBoxUI;
+
+ // планировщик кол-ва сколько было отправлено смс за сегодня
+ if not Assigned(m_dispatcherCountSmsSending) then begin
+  m_dispatcherCountSmsSending:=TThreadDispatcher.Create('CountSmsSending', 60, False, ShowCountTodaySmsSending);
+ end;
+ m_dispatcherCountSmsSending.StartThread;
 
   Screen.Cursor:=crDefault;
 end;

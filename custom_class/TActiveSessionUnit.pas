@@ -467,10 +467,15 @@ begin
   Result:=0;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   try
@@ -511,10 +516,15 @@ begin
   Result:=0;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+ try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   try
@@ -562,10 +572,15 @@ begin
  // if m_count = countActive then Exit;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+ try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   try

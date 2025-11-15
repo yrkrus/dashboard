@@ -60,14 +60,14 @@ function CreateListAnsweredCall(_sip:Integer):TStringList;                   // 
 //                                _userID:Integer;
 //                                var _errorDescriptions:string):Boolean;              // удаленная команда (добавление в очередь)
 procedure showWait(Status:enumShow_wait);                                            // отображение\сркытие окна запроса на сервер
-function remoteCommand_Responce(InStroka:string; var _errorDescriptions:string):boolean;  // отправка запроса на добавление удаленной команды
+//function remoteCommand_Responce(InStroka:string; var _errorDescriptions:string):boolean;  // отправка запроса на добавление удаленной команды
 //function GetOperatorSIP(_userId:integer):integer;                                       // отображение SIP пользвоателя
 //function isExistRemoteCommand(command:enumLogging;_userID:Integer):Boolean;         // проверка есть ли уже такая удаленная команда на сервера
 function getStatus(InStatus:enumStatusOperators):string;                             // полчуение имени status оператора
 function GetCurrentQueueOperator(_sip:integer):TList<enumQueue>;                    // в какой очереди сейчас находится оператор
 procedure UpdateOperatorStatus(_status:enumStatusOperators;_userID:Integer);         // очитска текущего статуса оператора
 procedure checkCurrentStatusOperator(InOperatorStatus:enumStatusOperators);              // проверка и отображение кнопок статусов оператора
-procedure ShowStatusOperator(InShow:Boolean = True);                                 // отобрадение панели статусы операторов
+procedure ShowStatusOperator(_show:boolean; _showRegisteredSip:Boolean);                                 // отобрадение панели статусы операторов
 function getLastStatusTime(InUserid:Integer; InOperatorStatus:enumStatusOperators):string;    // подсчет времени в текущем статусе оператора
 function isOperatorGoHome(inUserID:Integer):Boolean;                                 // проверка оператор ушел домой или нет
 function isOperatorGoHomeWithForceClosed(inUserID:Integer):Boolean;                  // проверка оператор ушел домой или нет (через завершение активной сессии)
@@ -81,11 +81,11 @@ function IsUserOperator(InUserID:Integer):Boolean;                              
 procedure DisableOperator(_userID:Integer);                                          // отключение оператора и перенос его в таблицу operators_disable
 function EnableUser(InUserID:Integer; var _errorDescription:string):Boolean;             // включение пользователя
 function GetOperatorAccessDashboard(InSip:string):Boolean;                           // нахождение статуса доступен ли дашбор орератору или нет
-function isExistSettingUsers(InUserID:Integer):Boolean;                              // проверка существу.т ли индивидуальные настрокий пользователч true - существуют настроки
-procedure saveIndividualSettingUser(InUserID:Integer; settings:enumSettingUsers;
-                                    status:enumParamStatus);                     // сохранение индивидульных настроек пользователя
-function getStatusIndividualSettingsUser(InUserID:Integer;
-                                        settings:enumSettingUsers):enumParamStatus; // получение данных об индивидуальных настройках пользователя
+//function isExistSettingUsers(InUserID:Integer):Boolean;                              // проверка существу.т ли индивидуальные настрокий пользователч true - существуют настроки
+//procedure SaveIndividualSettingUser(InUserID:Integer; settings:enumSettingUsers;
+                                   // status:enumParamStatus);                     // сохранение индивидульных настроек пользователя
+//function GetStatusIndividualSettingsUser(InUserID:Integer;
+//                                        settings:enumSettingUsers):enumParamStatus; // получение данных об индивидуальных настройках пользователя
 procedure LoadIndividualSettingUser(InUserId:Integer);                               // прогрузка индивидуальных настроек пользователя
 function getIsExitOperatorCurrentGoHome(InCurrentRole:enumRole;InUserID:Integer):Boolean; // проверка вдруг оператор не правильно выходит, нужно выходить через команду "домой"
 function GetLastStatusOperator(InUserId:Integer):enumLogging;                           // текущий стаус оператора из таблицы logging
@@ -96,7 +96,6 @@ function GetFirbirdAuth(FBType:enumFirebirdAuth):string;                        
 function GetStatusMonitoring(status:Integer):enumMonitoringTrunk;                    // мониторится ли транк
 function GetCountServersIK:Integer;                                                  // получение кол-ва серверов ИК
 procedure SetAccessMenu(InNameMenu:enumAccessList; InStatus: enumAccessStatus);      // установка разрешение\запрет на доступ к меню
-procedure ShowOperatorsStatus;                                                       // отображение оотдельного окна со статусами оператора
 procedure ResizeCentrePanelStatusOperators(WidthMainWindow:Integer);                 // изменение позиции панели статусы операторов в зависимости от размера главного окна
 procedure VisibleIconOperatorsGoHome(InStatus:enumHideShowGoHomeOperators;
                                      InClick:Boolean = False);                       // показывать\скрывать операторов ушедших домой
@@ -113,9 +112,10 @@ procedure OpenReports;                                                          
 procedure OpenService;                                                               // открытые exe услуг
 procedure OpenSMS;                                                                   // открытые exe SMS рассылки
 procedure OpenOutgoing;                                                              // открытые exe Звонилки
-procedure OpenRegPhone;                                                              // открытые exe Регистрация телефона
+procedure OpenRegPhone(_runStatus:enumTypeRunning);                                  // открытые exe Регистрация телефона
 function GetExistActiveSession(InUserID:Integer; var ActiveSession:string):Boolean;  // есть ли активная сессия уже
 function GetStatusUpdateService:Boolean;                                             // проверка запущена ли служба обновления
+function GetStatusRegisteredSipPhone(_sip:Integer; var _phoneIP:string):Boolean;     // проверка зарегестрирован ли sip на телфоне
 function getStatusOperator(InUserId:Integer):enumStatusOperators;                    // текущий стаус оператора из таблицы operators
 procedure ClearAfterUpdate;                                                          //  очистка от всего что осталось после обновления
 function GetListAdminRole:TStringList;                                               // получение списка пользвоателй с ролью администратор
@@ -162,6 +162,7 @@ procedure ShowUsersCommonQueuePanelStatus(const _queuelist:TList<enumQueue>);   
 procedure ShowUsersCommonQueuePopMenu(const _queuelist:TList<enumQueue>);           // отображение кнопок входа в popmenu
 procedure ShowUsersCommonQueueStatisticsDay(const _queuelist:TList<enumQueue>);     // отображение статистики по чоередям
 function EqualCurrentQueue(_queueA, _queueB:TList<enumQueue>):Boolean;              // сравнение двух пар очередей
+procedure ShowStatusOperatorRegisterPhone(_showRegisteredSip:Boolean);              // отображение формы с регистрацией на телефоне
 
 
 implementation
@@ -173,7 +174,7 @@ uses
   FormUsersUnit, TTranslirtUnit, Thread_ACTIVESIP_updatetalkUnit, Thread_ACTIVESIP_updatePhoneTalkUnit,
   Thread_ACTIVESIP_countTalkUnit, Thread_ACTIVESIP_QueueUnit, FormActiveSessionUnit, TIVRUnit,
   TXmlUnit, TOnlineChat, Thread_ChatUnit, Thread_ForecastUnit,
-  Thread_InternalProcessUnit, TActiveSessionUnit, FormTrunkSipUnit, Thread_CheckTrunkUnit, TStatusUnit, GlobalImageDestination, DMUnit, FormSettingsGlobalUnit, FormHistoryStatusOperatorUnit, FormSettingsGlobal_addIVRUnit;
+  Thread_InternalProcessUnit, TActiveSessionUnit, FormTrunkSipUnit, Thread_CheckTrunkUnit, TStatusUnit, GlobalImageDestination, DMUnit, FormSettingsGlobalUnit, FormHistoryStatusOperatorUnit, FormSettingsGlobal_addIVRUnit, TPhoneListUnit, TIndividualSettingUserUnit;
 
  // логирование действий
 procedure LoggingRemote(InLoggingID:enumLogging; _userID:Integer);
@@ -190,7 +191,6 @@ begin
      FreeAndNil(ado);
      Exit;
   end;
-
 
 
    try
@@ -1158,12 +1158,17 @@ var
   ado:TADOQuery;
   serverConnect:TADOConnection;
 begin
-    ado:=TADOQuery.Create(nil);
+  ado:=TADOQuery.Create(nil);
+  try
     serverConnect:=createServerConnect;
-    if not Assigned(serverConnect) then begin
-       FreeAndNil(ado);
-       Exit;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
     end;
+  end;
 
   try
     with ado do begin
@@ -1194,11 +1199,15 @@ begin
   Result:=0;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+ try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
  try
@@ -1231,12 +1240,16 @@ var
 begin
    Result:=TStringList.Create;
    ado:=TADOQuery.Create(nil);
-   serverConnect:=createServerConnect;
-
-    if not Assigned(serverConnect) then begin
-       FreeAndNil(ado);
-       Exit;
+  try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
     end;
+  end;
 
     // кол-во звонков
     countTalk:=GetCountAnsweredCall(_sip);
@@ -1857,11 +1870,15 @@ var
 begin
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+ try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
 
@@ -2014,11 +2031,16 @@ var
 begin
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
-  end;
+ try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
+ end;
 
   try
     with ado do begin
@@ -2084,11 +2106,16 @@ var
 begin
 
  ado:=TADOQuery.Create(nil);
- serverConnect:=createServerConnect;
- if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
- end;
+ try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
+  end;
 
  try
     with ado do begin
@@ -2122,11 +2149,16 @@ var
 begin
 
  ado:=TADOQuery.Create(nil);
- serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
-  end;
+  try
+      serverConnect:=createServerConnect;
+    except
+      on E:Exception do begin
+        if not Assigned(serverConnect) then begin
+           FreeAndNil(ado);
+           Exit;
+        end;
+      end;
+    end;
 
   try
     with ado do begin
@@ -2241,10 +2273,15 @@ var
 begin
 
  ado:=TADOQuery.Create(nil);
- serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+ try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   try
@@ -2425,11 +2462,15 @@ var
  CodOshibki:string;
 begin
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+ try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
 
@@ -2492,11 +2533,15 @@ var
  CodOshibki:string;
 begin
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   try
@@ -2539,11 +2584,15 @@ var
  i:Integer;
 begin
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+ try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   try
@@ -2978,14 +3027,39 @@ begin
   end;
 end;
 
+
+// отображение формы с регистрацией на телефоне
+procedure ShowStatusOperatorRegisterPhone(_showRegisteredSip:Boolean);
+const
+ cTOP:Integer = 6;
+begin
+ with HomeForm do begin
+   case _showRegisteredSip of
+     True:begin // форма с показом регистрации в телефоне
+       panel_RegisterPhone.Visible:=True;
+       panel_RegisterPhone.Top:=cTOP;
+
+       PanelStatusIN.Visible:=False;
+     end;
+     False:begin // форма со статусами
+       PanelStatusIN.Visible:=True;
+       PanelStatusIN.Top:=cTOP;
+
+       panel_RegisterPhone.Visible:=False;
+     end;
+   end;
+ end;
+end;
+
+
 // отобрадение панели статусы операторов
-procedure ShowStatusOperator(InShow:Boolean = True);
+procedure ShowStatusOperator(_show:boolean; _showRegisteredSip:Boolean);
 var
  XML:TXML;
  panelLeft,panelTop:Integer;
 begin
    with HomeForm do begin
-      if InShow then begin
+      if _show then begin
        ST_StatusPanel.Visible:=True;
 
        // устанавливаем поцизию панели
@@ -2998,6 +3072,7 @@ begin
          XML.Free;
        end;
 
+       ShowStatusOperatorRegisterPhone(_showRegisteredSip);
        PanelStatus.Visible:=True;
       end
       else begin
@@ -3074,36 +3149,36 @@ begin
      case p_TUser.Role of
        role_administrator:begin                  // администратор
         // панель статусы операторов
-        ShowStatusOperator(False);
+        ShowStatusOperator(False,False);
        end;
        role_lead_operator:begin                  // ведущий оператор
         // панель статусы операторов
-        ShowStatusOperator;
+        ShowStatusOperator(True,True);
        end;
        role_senior_operator:begin                // старший оператор
         // панель статусы операторов
-        ShowStatusOperator;
+        ShowStatusOperator(True,True);
 
         // контекстное меню (выключено)
         ListViewSIP.PopupMenu:=nil;
        end;
        role_operator:begin                       // оператор
         // панель статусы операторов
-        ShowStatusOperator;
+        ShowStatusOperator(True,True);
 
         // контекстное меню (выключено)
         ListViewSIP.PopupMenu:=nil;
        end;
        role_operator_no_dash:begin               // оператор (без дашборда)
         // панель статусы операторов
-        ShowStatusOperator;
+        ShowStatusOperator(False,False);
 
         // контекстное меню (выключено)
         ListViewSIP.PopupMenu:=nil;
        end;
        role_supervisor_cov:begin                 // Руководитель ЦОВ
         // панель статусы операторов
-        ShowStatusOperator(False);
+        ShowStatusOperator(False,False);
        end;
      end;
 
@@ -3247,56 +3322,56 @@ begin
 end;
 
 
-// отправка запроса на добавление удаленной команды
-function remoteCommand_Responce(InStroka:string; var _errorDescriptions:string):boolean;
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
-begin
-  _errorDescriptions:='';
-  Result:=False;
-
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnectWithError(_errorDescriptions);
-
-  if not Assigned(serverConnect) then begin
-     Result:=False;
-     FreeAndNil(ado);
-     Exit;
-  end;
-
-   try
-     with ado do begin
-        ado.Connection:=serverConnect;
-        SQL.Clear;
-        SQL.Add(InStroka);
-
-        try
-            ExecSQL;
-        except
-            on E:EIdException do begin
-               Result:=False;
-
-               FreeAndNil(ado);
-               if Assigned(serverConnect) then begin
-                 serverConnect.Close;
-                 FreeAndNil(serverConnect);
-               end;
-               _errorDescriptions:='Внутренняя ошибка сервера'+#13#13+e.ClassName+': '+e.Message;
-               Exit;
-            end;
-        end;
-     end;
-   finally
-    FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
-   end;
-
-  Result:=True;
-end;
+//// отправка запроса на добавление удаленной команды
+//function remoteCommand_Responce(InStroka:string; var _errorDescriptions:string):boolean;
+//var
+// ado:TADOQuery;
+// serverConnect:TADOConnection;
+//begin
+//  _errorDescriptions:='';
+//  Result:=False;
+//
+//  ado:=TADOQuery.Create(nil);
+//  serverConnect:=createServerConnectWithError(_errorDescriptions);
+//
+//  if not Assigned(serverConnect) then begin
+//     Result:=False;
+//     FreeAndNil(ado);
+//     Exit;
+//  end;
+//
+//   try
+//     with ado do begin
+//        ado.Connection:=serverConnect;
+//        SQL.Clear;
+//        SQL.Add(InStroka);
+//
+//        try
+//            ExecSQL;
+//        except
+//            on E:EIdException do begin
+//               Result:=False;
+//
+//               FreeAndNil(ado);
+//               if Assigned(serverConnect) then begin
+//                 serverConnect.Close;
+//                 FreeAndNil(serverConnect);
+//               end;
+//               _errorDescriptions:='Внутренняя ошибка сервера'+#13#13+e.ClassName+': '+e.Message;
+//               Exit;
+//            end;
+//        end;
+//     end;
+//   finally
+//    FreeAndNil(ado);
+//    if Assigned(serverConnect) then begin
+//      serverConnect.Close;
+//      FreeAndNil(serverConnect);
+//    end;
+//   end;
+//
+//  Result:=True;
+//end;
 
 
 // в какой очереди сейчас находится оператор
@@ -3310,10 +3385,15 @@ begin
   Result:=TList<enumQueue>.Create;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+ try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   try
@@ -3380,10 +3460,15 @@ begin
 
   // очищаем текущий статус
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+ try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
 
@@ -3691,10 +3776,15 @@ begin
 
   // находим последнее время
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+ try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   // текущий статуса из лога
@@ -3771,10 +3861,15 @@ begin
   Result:=False;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+ try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   try
@@ -3846,10 +3941,15 @@ begin
   Result:=False;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   try
@@ -3924,11 +4024,16 @@ var
  serverConnect:TADOConnection;
 begin
  ado:=TADOQuery.Create(nil);
- serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
-  end;
+  try
+      serverConnect:=createServerConnect;
+    except
+      on E:Exception do begin
+        if not Assigned(serverConnect) then begin
+           FreeAndNil(ado);
+           Exit;
+        end;
+      end;
+    end;
 
   try
     with ado do begin
@@ -3962,11 +4067,16 @@ var
  sip:string;
 begin
  ado:=TADOQuery.Create(nil);
- serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-    FreeAndNil(ado);
-    Exit;
-  end;
+  try
+      serverConnect:=createServerConnect;
+    except
+      on E:Exception do begin
+        if not Assigned(serverConnect) then begin
+           FreeAndNil(ado);
+           Exit;
+        end;
+      end;
+    end;
 
   try
     with ado do begin
@@ -4018,169 +4128,195 @@ begin
 end;
 
 
-// проверка существу.т ли индивидуальные настрокий пользователч true - существуют настроки
-function isExistSettingUsers(InUserID:Integer):Boolean;
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
-begin
- ado:=TADOQuery.Create(nil);
- serverConnect:=createServerConnect;
- if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
- end;
-
- try
-    with ado do begin
-      ado.Connection:=serverConnect;
-
-      SQL.Clear;
-      SQL.Add('select count(user_id) from settings_users where user_id = '+#39+IntToStr(InUserID)+#39);
-      Active:=True;
-
-      if Fields[0].Value<>0 then Result:=True
-      else Result:=False;
-    end;
- finally
-   FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
- end;
-end;
+//// проверка существу.т ли индивидуальные настрокий пользователч true - существуют настроки
+//function isExistSettingUsers(InUserID:Integer):Boolean;
+//var
+// ado:TADOQuery;
+// serverConnect:TADOConnection;
+//begin
+// ado:=TADOQuery.Create(nil);
+// serverConnect:=createServerConnect;
+// if not Assigned(serverConnect) then begin
+//     FreeAndNil(ado);
+//     Exit;
+// end;
+//
+// try
+//    with ado do begin
+//      ado.Connection:=serverConnect;
+//
+//      SQL.Clear;
+//      SQL.Add('select count(user_id) from settings_users where user_id = '+#39+IntToStr(InUserID)+#39);
+//      Active:=True;
+//
+//      if Fields[0].Value<>0 then Result:=True
+//      else Result:=False;
+//    end;
+// finally
+//   FreeAndNil(ado);
+//    if Assigned(serverConnect) then begin
+//      serverConnect.Close;
+//      FreeAndNil(serverConnect);
+//    end;
+// end;
+//end;
 
 
 
 // сохранение индивидульных настроек пользователя
-procedure saveIndividualSettingUser(InUserID:Integer; settings:enumSettingUsers; status:enumParamStatus);
-var
- response:string;
- error:string;
-begin
-   Screen.Cursor:=crHourGlass;
-
-   case settings of
-    settingUsers_gohome: begin // не показывать ушедших домой
-
-      // проверяем есть ли уже запись
-      if isExistSettingUsers(InUserID) then begin
-        response:='update settings_users set go_home = '+#39+IntToStr(SettingParamsStatusToInteger(status))+#39+' where user_id = '+#39+IntToStr(InUserID)+#39;
-
-      end
-      else begin
-        response:='insert into settings_users (user_id,go_home) values ('+#39+IntToStr(InUserID) +#39+','
-                                                                         +#39+IntToStr(SettingParamsStatusToInteger(status))+#39+')';
-      end;
-    end;
-    settingUsers_noConfirmExit: begin  // не показывать окно "точно хотите выйти из дашборда?"
-
-      // проверяем есть ли уже запись
-      if isExistSettingUsers(InUserID) then begin
-        response:='update settings_users set no_confirmExit = '+#39+IntToStr(SettingParamsStatusToInteger(status))+#39+' where user_id = '+#39+IntToStr(InUserID)+#39;
-
-      end
-      else begin
-        response:='insert into settings_users (user_id,no_confirmExit) values ('+#39+IntToStr(InUserID) +#39+','
-                                                                         +#39+IntToStr(SettingParamsStatusToInteger(status))+#39+')';
-      end;
-    end;
-    settingUsers_showStatisticsQueueDay:begin  // какой тип графика отображать в модуле "сатистика ожидания в очереди" 0-цифры | 1 - график
-      // проверяем есть ли уже запись
-      if isExistSettingUsers(InUserID) then begin
-        response:='update settings_users set statistics_queue_day = '+#39+IntToStr(SettingParamsStatusToInteger(status))+#39+' where user_id = '+#39+IntToStr(InUserID)+#39;
-
-      end
-      else begin
-        response:='insert into settings_users (user_id,statistics_queue_day) values ('+#39+IntToStr(InUserID) +#39+','
-                                                                         +#39+IntToStr(SettingParamsStatusToInteger(status))+#39+')';
-      end;
-    end;
-   end;
-
-  // выполняем запрос
-  if not remoteCommand_Responce(response,error) then begin
-    Screen.Cursor:=crDefault;
-    MessageBox(HomeForm.Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-    Exit;
-  end;
-
-  Screen.Cursor:=crDefault;
-end;
+//procedure SaveIndividualSettingUser(InUserID:Integer; settings:enumSettingUsers; status:enumParamStatus);
+//var
+// response:string;
+// error:string;
+//begin
+//   Screen.Cursor:=crHourGlass;
+//
+//   case settings of
+//    settingUsers_gohome: begin // не показывать ушедших домой
+//
+//      // проверяем есть ли уже запись
+//      if isExistSettingUsers(InUserID) then begin
+//        response:='update settings_users set go_home = '+#39+IntToStr(SettingParamsStatusToInteger(status))+#39+' where user_id = '+#39+IntToStr(InUserID)+#39;
+//
+//      end
+//      else begin
+//        response:='insert into settings_users (user_id,go_home) values ('+#39+IntToStr(InUserID) +#39+','
+//                                                                         +#39+IntToStr(SettingParamsStatusToInteger(status))+#39+')';
+//      end;
+//    end;
+//    settingUsers_noConfirmExit: begin  // не показывать окно "точно хотите выйти из дашборда?"
+//
+//      // проверяем есть ли уже запись
+//      if isExistSettingUsers(InUserID) then begin
+//        response:='update settings_users set no_confirmExit = '+#39+IntToStr(SettingParamsStatusToInteger(status))+#39+' where user_id = '+#39+IntToStr(InUserID)+#39;
+//
+//      end
+//      else begin
+//        response:='insert into settings_users (user_id,no_confirmExit) values ('+#39+IntToStr(InUserID) +#39+','
+//                                                                         +#39+IntToStr(SettingParamsStatusToInteger(status))+#39+')';
+//      end;
+//    end;
+//    settingUsers_showStatisticsQueueDay:begin  // какой тип графика отображать в модуле "сатистика ожидания в очереди" 0-цифры | 1 - график
+//      // проверяем есть ли уже запись
+//      if isExistSettingUsers(InUserID) then begin
+//        response:='update settings_users set statistics_queue_day = '+#39+IntToStr(SettingParamsStatusToInteger(status))+#39+' where user_id = '+#39+IntToStr(InUserID)+#39;
+//
+//      end
+//      else begin
+//        response:='insert into settings_users (user_id,statistics_queue_day) values ('+#39+IntToStr(InUserID) +#39+','
+//                                                                         +#39+IntToStr(SettingParamsStatusToInteger(status))+#39+')';
+//      end;
+//    end;
+//    settingUsers_autoRegisteredSipPhone:begin  // автоматическая регистрация в sip телефоне
+//      // проверяем есть ли уже запись
+//      if isExistSettingUsers(InUserID) then begin
+//        response:='update settings_users set auto_register_sip_phone = '+#39+IntToStr(SettingParamsStatusToInteger(status))+#39+' where user_id = '+#39+IntToStr(InUserID)+#39;
+//
+//      end
+//      else begin
+//        response:='insert into settings_users (user_id,auto_register_sip_phone) values ('+#39+IntToStr(InUserID) +#39+','
+//                                                                         +#39+IntToStr(SettingParamsStatusToInteger(status))+#39+')';
+//      end;
+//    end;
+//   end;
+//
+//  // выполняем запрос
+//  if not remoteCommand_Responce(response,error) then begin
+//    Screen.Cursor:=crDefault;
+//    MessageBox(HomeForm.Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+//    Exit;
+//  end;
+//
+//  Screen.Cursor:=crDefault;
+//end;
 
 // получение данных об индивидуальных настройках пользователя
-function getStatusIndividualSettingsUser(InUserID:Integer; settings:enumSettingUsers):enumParamStatus;
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
-
-begin
- Result:=paramStatus_DISABLED;
- if not isExistSettingUsers(InUserID) then Exit;
-
- ado:=TADOQuery.Create(nil);
- serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
-  end;
-
-  try
-    with ado do begin
-      ado.Connection:=serverConnect;
-
-       SQL.Clear;
-       case settings of
-        settingUsers_gohome: begin // не показывать ушедших домой
-          SQL.Add('select go_home from settings_users where user_id = '+#39+IntToStr(InUserID)+#39);
-        end;
-        settingUsers_noConfirmExit:begin // не показывать "Точно хотите выйти?"
-          SQL.Add('select no_confirmExit from settings_users where user_id = '+#39+IntToStr(InUserID)+#39);
-        end;
-        settingUsers_showStatisticsQueueDay:begin  // какой тип графика отображать в модуле "сатистика ожидания в очереди" 0-цифры | 1 - график
-          SQL.Add('select statistics_queue_day from settings_users where user_id = '+#39+IntToStr(InUserID)+#39);
-        end;
-       end;
-      Active:=True;
-
-      if Fields[0].Value<>null then begin
-        if VarToStr(Fields[0].Value) = '1'  then Result:=paramStatus_ENABLED
-        else Result:=paramStatus_DISABLED;
-      end;
-    end;
-  finally
-    FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
-  end;
-end;
+//function GetStatusIndividualSettingsUser(InUserID:Integer; settings:enumSettingUsers):enumParamStatus;
+//var
+// ado:TADOQuery;
+// serverConnect:TADOConnection;
+//
+//begin
+// Result:=paramStatus_DISABLED;
+// if not isExistSettingUsers(InUserID) then Exit;
+//
+// ado:=TADOQuery.Create(nil);
+// serverConnect:=createServerConnect;
+//  if not Assigned(serverConnect) then begin
+//     FreeAndNil(ado);
+//     Exit;
+//  end;
+//
+//  try
+//    with ado do begin
+//      ado.Connection:=serverConnect;
+//
+//       SQL.Clear;
+//       case settings of
+//        settingUsers_gohome: begin // не показывать ушедших домой
+//          SQL.Add('select go_home from settings_users where user_id = '+#39+IntToStr(InUserID)+#39);
+//        end;
+//        settingUsers_noConfirmExit:begin // не показывать "Точно хотите выйти?"
+//          SQL.Add('select no_confirmExit from settings_users where user_id = '+#39+IntToStr(InUserID)+#39);
+//        end;
+//        settingUsers_showStatisticsQueueDay:begin  // какой тип графика отображать в модуле "сатистика ожидания в очереди" 0-цифры | 1 - график
+//          SQL.Add('select statistics_queue_day from settings_users where user_id = '+#39+IntToStr(InUserID)+#39);
+//        end;
+//        settingUsers_autoRegisteredSipPhone:begin  // автоматическая регистрация в sip телефоне
+//          SQL.Add('select auto_register_sip_phone from settings_users where user_id = '+#39+IntToStr(InUserID)+#39);
+//        end;
+//       end;
+//      Active:=True;
+//
+//      if Fields[0].Value<>null then begin
+//        if VarToStr(Fields[0].Value) = '1'  then Result:=paramStatus_ENABLED
+//        else Result:=paramStatus_DISABLED;
+//      end;
+//    end;
+//  finally
+//    FreeAndNil(ado);
+//    if Assigned(serverConnect) then begin
+//      serverConnect.Close;
+//      FreeAndNil(serverConnect);
+//    end;
+//  end;
+//end;
 
 
 // прогрузка индивидуальных настроек пользователя
 procedure LoadIndividualSettingUser(InUserId:Integer);
 begin
+  SharedIndividualSettingUser:=TIndividualSettingUser.Create(InUserId);
+
   with HomeForm do begin
     // не показывать ушедших домой
     begin
-      if getStatusIndividualSettingsUser(InUserId,settingUsers_gohome) = paramStatus_ENABLED then
-      begin
-         VisibleIconOperatorsGoHome(goHome_Hide);
-         chkboxGoHome.Checked:=True;
+      if SharedIndividualSettingUser.GoHome then begin
+        VisibleIconOperatorsGoHome(goHome_Hide);
+        chkboxGoHome.Checked:=True;
       end
-      else  VisibleIconOperatorsGoHome(goHome_Show);
+      else begin
+       VisibleIconOperatorsGoHome(goHome_Show);
+      end;
     end;
 
 
     // какой тип графика отображать в модуле "сатистика ожидания в очереди"  0- цифры | 1 - график
     begin
-     if getStatusIndividualSettingsUser(InUserId,settingUsers_showStatisticsQueueDay) = paramStatus_DISABLED then
-     begin
-      ShowStatisticsCallsDay(eNumbers);
+     if SharedIndividualSettingUser.StatisticsQueueDay then begin
+       ShowStatisticsCallsDay(eGraph);
      end
-     else ShowStatisticsCallsDay(eGraph);
+     else begin
+       ShowStatisticsCallsDay(eNumbers);
+     end;
+    end;
+
+    // автоматическая регистрация в sip телефоне
+    begin
+     if SharedIndividualSettingUser.AutoRegisterSipPhone then begin
+      // регистрация в тлф
+      OpenRegPhone(eAutoRunningRegistered);
+     end;
     end;
 
   end;
@@ -4196,11 +4332,16 @@ begin
    Result:=eLog_unknown;
 
    ado:=TADOQuery.Create(nil);
-   serverConnect:=createServerConnect;
-   if not Assigned(serverConnect) then begin
-      FreeAndNil(ado);
-      Exit;
-   end;
+  try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
+  end;
 
    try
       with ado do begin
@@ -4233,11 +4374,16 @@ begin
    Result:=eUnknown;
 
    ado:=TADOQuery.Create(nil);
-   serverConnect:=createServerConnect;
-   if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
-   end;
+   try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
+  end;
 
    try
     with ado do begin
@@ -4304,10 +4450,15 @@ begin
    Result:=False;;
 
    ado:=TADOQuery.Create(nil);
-   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   try
@@ -4339,10 +4490,15 @@ begin
    Result:='null';
 
    ado:=TADOQuery.Create(nil);
-   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   try
@@ -4394,10 +4550,15 @@ begin
    Result:=0;
 
    ado:=TADOQuery.Create(nil);
-   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   try
@@ -4418,17 +4579,6 @@ begin
   end;
 end;
 
-
-
-// отображение оотдельного окна со статусами оператора
-procedure ShowOperatorsStatus;
-begin
- // FormOperatorStatus.show;
-
-  with HomeForm do begin
-    PanelStatus.Visible:=False;
-  end;
-end;
 
 
 // изменение позиции панели статусы операторов в зависимости от размера главного окна
@@ -4453,12 +4603,14 @@ end;
 
 // показывать\скрывать операторов ушедших домой
 procedure VisibleIconOperatorsGoHome(InStatus:enumHideShowGoHomeOperators; InClick:Boolean = False);
+var
+ errodDescription:string;
 begin
   with HomeForm do begin
     case InStatus of
      goHome_Hide:begin
        if InClick then begin
-        saveIndividualSettingUser(SharedCurrentUserLogon.ID,settingUsers_gohome,paramStatus_ENABLED);
+        SharedIndividualSettingUser.SaveIndividualSettingUser(settingUsers_gohome,paramStatus_ENABLED,errodDescription);
         chkboxGoHome.Checked:=True;
        end;
 
@@ -4476,7 +4628,7 @@ begin
      goHome_Show:begin
 
        if InClick then begin
-        saveIndividualSettingUser(SharedCurrentUserLogon.ID,settingUsers_gohome,paramStatus_DISABLED);
+        SharedIndividualSettingUser.SaveIndividualSettingUser(settingUsers_gohome,paramStatus_DISABLED,errodDescription);
         chkboxGoHome.Checked:=False;
        end;
 
@@ -4541,10 +4693,15 @@ begin
    Result:=False;
 
    ado:=TADOQuery.Create(nil);
-   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   try
@@ -4670,19 +4827,39 @@ end;
 
 
 // открытые exe Регистрация телефона
-procedure OpenRegPhone;
-var
-  showSendingSMS:Boolean; // отображать ли excel рассылку
+procedure OpenRegPhone(_runStatus:enumTypeRunning);
 begin
   if not FileExists(REG_PHONE_EXE) then begin
     MessageBox(HomeForm.Handle,PChar('Не удается найти файл '+REG_PHONE_EXE),PChar('Файл не найден'),MB_OK+MB_ICONERROR);
     Exit;
   end;
 
-   ShellExecute(HomeForm.Handle, 'Open', PChar(REG_PHONE_EXE),PChar(USER_ID_PARAM+' '+
+  case _runStatus of
+   eManualWithOutParam:begin    // ручной запуск (без парметров)
+    ShellExecute(HomeForm.Handle, 'Open', PChar(REG_PHONE_EXE),nil,nil,SW_SHOW);
+   end;
+   eManualRunning:begin       // ручной запуск
+    ShellExecute(HomeForm.Handle, 'Open', PChar(REG_PHONE_EXE),PChar(USER_ID_PARAM+' '+
                                                             IntToStr(SharedCurrentUserLogon.ID)+' '+
                                                             USER_ACCESS_PARAM +' '+
                                                             SharedCurrentUserLogon.PC),nil,SW_SHOW);
+   end;
+   eAutoRunningRegistered:begin // автоматический запуск
+    ShellExecute(HomeForm.Handle, 'Open', PChar(REG_PHONE_EXE),PChar(USER_ID_PARAM+' '+
+                                                            IntToStr(SharedCurrentUserLogon.ID)+' '+
+                                                            USER_ACCESS_PARAM +' '+
+                                                            SharedCurrentUserLogon.PC+' '+
+                                                            USER_BOOL_PARAM +' '+'True'),nil,SW_SHOW);
+   end;
+   eAutoRunningDeRegistered:begin // автоматический запуск
+    ShellExecute(HomeForm.Handle, 'Open', PChar(REG_PHONE_EXE),PChar(USER_ID_PARAM+' '+
+                                                            IntToStr(SharedCurrentUserLogon.ID)+' '+
+                                                            USER_ACCESS_PARAM +' '+
+                                                            SharedCurrentUserLogon.PC+' '+
+                                                            USER_BOOL_PARAM +' '+'False'),nil,SW_SHOW);
+   end;
+  end;
+
 end;
 
 // открытые exe Звонилки
@@ -4713,11 +4890,16 @@ begin
  Result:=False;
 
  ado:=TADOQuery.Create(nil);
- serverConnect:=createServerConnect;
- if not Assigned(serverConnect) then begin
-   FreeAndNil(ado);
-   Exit;
- end;
+  try
+      serverConnect:=createServerConnect;
+    except
+      on E:Exception do begin
+        if not Assigned(serverConnect) then begin
+           FreeAndNil(ado);
+           Exit;
+        end;
+      end;
+    end;
 
  try
    with ado do begin
@@ -4746,6 +4928,31 @@ end;
 function GetStatusUpdateService:Boolean;
 begin
   Result:=GetTask(UPDATE_EXE);
+end;
+
+
+// проверка зарегестрирован ли sip на телфоне
+function GetStatusRegisteredSipPhone(_sip:Integer; var _phoneIP:string):Boolean;
+var
+ sipPhone:TPhoneList;
+ status:Boolean;
+begin
+ status:=False;
+ _phoneIP:='';
+
+ try
+  sipPhone:=TPhoneList.Create;
+
+  if sipPhone.IsRegisterdSip[_sip] then begin
+    _phoneIP:=sipPhone.IPPhoneWithSip[_sip];
+    status:=True;
+  end;
+
+ finally
+   FreeAndNil(sipPhone);
+ end;
+
+ Result:=status;
 end;
 
 //  очистка от всего что осталось после обновления
@@ -4785,11 +4992,16 @@ begin
  Result:=TStringList.Create;
 
  ado:=TADOQuery.Create(nil);
- serverConnect:=createServerConnect;
- if not Assigned(serverConnect) then begin
-   FreeAndNil(ado);
-   Exit;
- end;
+ try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
+  end;
 
  try
   with ado do begin
@@ -4850,13 +5062,15 @@ end;
 
 // отображение статистики ожидание в очереди за текущий день
 procedure ShowStatisticsCallsDay(InTypeStatisticsCalls: enumStatisticsCalls; InClick:Boolean = False);
+var
+ errorDescription:string;
 begin
   with HomeForm do begin
      case InTypeStatisticsCalls of
        eNumbers: begin
         if InClick then begin
           // сохраняем текущий выбор
-         saveIndividualSettingUser(SharedCurrentUserLogon.ID,settingUsers_showStatisticsQueueDay,paramStatus_DISABLED);
+         SharedIndividualSettingUser.SaveIndividualSettingUser(settingUsers_showStatisticsQueueDay,paramStatus_DISABLED,errorDescription);
         end;
 
         PanelStatisticsQueue_Numbers.Visible:=True;
@@ -4868,8 +5082,7 @@ begin
        eGraph: begin
         if InClick then begin
          // сохраняем текущий выбор
-         saveIndividualSettingUser(SharedCurrentUserLogon.ID,settingUsers_showStatisticsQueueDay,paramStatus_ENABLED);
-
+         SharedIndividualSettingUser.SaveIndividualSettingUser(settingUsers_showStatisticsQueueDay,paramStatus_ENABLED,errorDescription);
         end;
 
         PanelStatisticsQueue_Numbers.Visible:=False;
@@ -5168,10 +5381,15 @@ begin
   Result:=0;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+ try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   try
@@ -5203,10 +5421,15 @@ begin
   Result:=0;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+ try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   try
@@ -5239,10 +5462,15 @@ begin
   Result:=0;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+ try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   try
@@ -5429,6 +5657,11 @@ begin
     SharedCheckBoxUI.Add('MyTime', lbl_checkbox_MyTime, img_MyTime, paramStatus_DISABLED);
   end;
 
+  with HomeForm do begin
+    // регистрация во всех очередях
+    SharedCheckBoxUI.Add('OperatorRegisterAllQueue', chkbox_users_OperatorRegisterAllQueue, img_users_OperatorRegisterAllQueue, paramStatus_DISABLED);
+  end;
+
 end;
 
 
@@ -5441,10 +5674,15 @@ begin
   Result:=False;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   try
@@ -5602,8 +5840,10 @@ begin
 
   // отображение статистики по очередям
   ShowUsersCommonQueueStatisticsDay(_queuelist);
-
 end;
+
+
+
 
 
 end.

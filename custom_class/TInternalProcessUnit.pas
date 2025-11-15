@@ -13,7 +13,8 @@ interface
 
 uses
   System.Classes, System.SysUtils,  TCustomTypeUnit, Data.Win.ADODB,
-  Data.DB, Variants, IdException, TXmlUnit,  Winapi.PsAPI, Winapi.Windows;
+  Data.DB, Variants, IdException, TXmlUnit,  Winapi.PsAPI, Winapi.Windows,
+  TPhoneListUnit;
 
 
  // class TInternalProcess
@@ -23,6 +24,8 @@ uses
       m_userLogonID             :Integer;                 // текущий залогиненый пользователь
       m_startedProgrammDate     :TDateTime;               // время запуска программы
       isSendingProgrammStarted  :Boolean;                 // был ли отправлено инфо о времени запуска программы
+
+
 
       function GetCurrentDateTimeWithTime:string;         // текущая дата + время
       function isExistFileUpdate:Boolean;                 // загружен ли файл с обновлением
@@ -37,6 +40,7 @@ uses
       procedure CheckForceActiveSessionClosed;
       procedure UpdateTimeDashboard;                          // обновление текущего времени в окне дашборда
       procedure CheckStatusUpdateService;                     // проверка работает ли служба обновления или нет
+      procedure CheckStatusRegisteredSipPhone;                // проверка зарегестирован ли sip в телефоне
       procedure XMLUpdateLastOnline;                          // обновление времемни в settings.xml
       procedure UpdateProgramStarted;                         // обновление времени запкуска программы
       procedure UpdateMemory;                                 // обновление занимаемой оперативки
@@ -148,10 +152,15 @@ begin
   if not HomeForm.IsInit then Exit;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+      serverConnect:=createServerConnect;
+  except
+      on E:Exception do begin
+        if not Assigned(serverConnect) then begin
+           FreeAndNil(ado);
+           Exit;
+        end;
+      end;
   end;
 
   try
@@ -195,10 +204,15 @@ begin
   if isSendingProgrammStarted then Exit;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+      serverConnect:=createServerConnect;
+  except
+      on E:Exception do begin
+        if not Assigned(serverConnect) then begin
+           FreeAndNil(ado);
+           Exit;
+        end;
+      end;
   end;
 
   try
@@ -244,10 +258,15 @@ begin
   if memory='0' then Exit;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+      serverConnect:=createServerConnect;
+  except
+      on E:Exception do begin
+        if not Assigned(serverConnect) then begin
+           FreeAndNil(ado);
+           Exit;
+        end;
+      end;
   end;
 
   try
@@ -306,6 +325,32 @@ begin
     else Panels[1].Text:='Служба обновления: не запущена';
   end;
 end;
+
+ // проверка зарегестирован ли sip в телефоне
+procedure TInternalProcess.CheckStatusRegisteredSipPhone;
+var
+ sip:Integer;
+ ip:string;
+begin
+  if not HomeForm.IsInit then Exit;
+
+  if SharedCurrentUserLogon.IsOperator then begin
+
+    sip:=_dll_GetOperatorSIP(SharedCurrentUserLogon.ID);
+    if sip = -1 then Exit;
+
+    with HomeForm.StatusBar do begin
+      if GetStatusRegisteredSipPhone(sip,ip) then begin
+        Panels[2].Text:='Регистрация телефона: '+ip;
+      end
+      else begin
+        Panels[2].Text:='Регистрация телефона [---]';
+      end;
+    end;
+
+  end;
+end;
+
 
 // обновление времемни в settings.xml
 procedure TInternalProcess.XMLUpdateLastOnline;

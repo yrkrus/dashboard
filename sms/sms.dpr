@@ -40,7 +40,9 @@ uses
   GlobalVariablesLinkDLL in '..\custom_global\GlobalVariablesLinkDLL.pas',
   FormServerIKCheckUnit in '..\gui\Forms\FooterSubMenu\FormServerIKCheckUnit.pas' {FormServerIKCheck},
   FormWaitUnit in '..\gui\FormSystem\FormWaitUnit.pas' {FormWait},
-  TCheckBoxUIUnit in '..\custom_class\TCheckBoxUIUnit.pas';
+  TCheckBoxUIUnit in '..\custom_class\TCheckBoxUIUnit.pas',
+  TUserCommonQueueUnit in '..\custom_class\TUserCommonQueueUnit.pas',
+  TThreadDispatcherUnit in '..\custom_class\TThreadDispatcherUnit.pas';
 
 {$R *.res}
 

@@ -21,7 +21,8 @@ uses
   TLogFileUnit in '..\custom_class\TLogFileUnit.pas',
   TDisableOperatorUnit in '..\custom_class\from_report\TDisableOperatorUnit.pas',
   GlobalImageDestination in '..\custom_global\GlobalImageDestination.pas',
-  GlobalVariablesLinkDLL in '..\custom_global\GlobalVariablesLinkDLL.pas';
+  GlobalVariablesLinkDLL in '..\custom_global\GlobalVariablesLinkDLL.pas',
+  TUserCommonQueueUnit in '..\custom_class\TUserCommonQueueUnit.pas';
 
 {$R *.res}
 

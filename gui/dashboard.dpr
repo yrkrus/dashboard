@@ -87,7 +87,10 @@ uses
   TIVRTimeUnit in '..\custom_class\TIVRTimeUnit.pas',
   TCheckBoxUIUnit in '..\custom_class\TCheckBoxUIUnit.pas',
   TUsersAllUnit in '..\custom_class\TUsersAllUnit.pas',
-  FormHomeInit in 'FormHomeInit.pas';
+  FormHomeInit in 'FormHomeInit.pas',
+  TIndividualSettingUserUnit in '..\custom_class\TIndividualSettingUserUnit.pas',
+  TRegisterPhoneUnit in '..\custom_class\TRegisterPhoneUnit.pas',
+  TUserCommonQueueUnit in '..\custom_class\TUserCommonQueueUnit.pas';
 
 {$R *.res}
 

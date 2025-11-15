@@ -578,62 +578,6 @@ object FormHome: TFormHome
       DesignSize = (
         482
         314)
-      object lblCountSendingSMS: TLabel
-        Left = 332
-        Top = 132
-        Width = 8
-        Height = 16
-        Caption = '0'
-        Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -13
-        Font.Name = 'Tahoma'
-        Font.Style = [fsBold]
-        ParentFont = False
-      end
-      object Label3: TLabel
-        Left = 135
-        Top = 132
-        Width = 190
-        Height = 16
-        Caption = #1050#1086#1083'-'#1074#1086' '#1089#1086#1086#1073#1097#1077#1085#1080#1081' '#1085#1072' '#1086#1090#1087#1088#1072#1074#1082#1091':'
-        Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clGreen
-        Font.Height = -13
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-      end
-      object Label4: TLabel
-        Left = 28
-        Top = 151
-        Width = 297
-        Height = 16
-        Caption = #1050#1086#1083'-'#1074#1086' '#1089#1086#1086#1073#1097#1077#1085#1080#1081' '#1082#1086#1090#1086#1088#1099#1077' '#1085#1077' '#1073#1091#1076#1091#1090' '#1086#1090#1087#1088#1072#1074#1083#1077#1085#1099':'
-        Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clMaroon
-        Font.Height = -13
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-      end
-      object lblCountNotSendingSMS: TLabel
-        Left = 332
-        Top = 151
-        Width = 8
-        Height = 16
-        BiDiMode = bdLeftToRight
-        Caption = '0'
-        Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -13
-        Font.Name = 'Tahoma'
-        Font.Style = [fsBold]
-        ParentBiDiMode = False
-        ParentFont = False
-        ParentShowHint = False
-        ShowHint = False
-      end
       object img_ShowLog: TImage
         Left = 22
         Top = 283
@@ -791,45 +735,113 @@ object FormHome: TFormHome
         Font.Style = [fsBold]
         ParentColor = False
         ParentFont = False
-        TabOrder = 3
-      end
-      object st_ShowNotSendingSMS: TStaticText
-        Left = 373
-        Top = 153
-        Width = 59
-        Height = 17
-        Cursor = crHandPoint
-        Caption = '('#1087#1086#1082#1072#1079#1072#1090#1100')'
-        Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
         TabOrder = 2
-        Visible = False
-        OnClick = st_ShowNotSendingSMSClick
-        OnMouseLeave = st_ShowNotSendingSMSMouseLeave
-        OnMouseMove = st_ShowNotSendingSMSMouseMove
       end
-      object st_ShowSendingSMS: TStaticText
-        Left = 373
-        Top = 134
-        Width = 59
-        Height = 17
-        Cursor = crHandPoint
-        Caption = '('#1087#1086#1082#1072#1079#1072#1090#1100')'
-        Font.Charset = RUSSIAN_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
+      object GroupBox2: TGroupBox
+        Left = 3
+        Top = 97
+        Width = 471
+        Height = 76
+        Caption = ' '#1050#1086#1083'-'#1074#1086' '#1089#1086#1086#1073#1097#1077#1085#1080#1081' '
         TabOrder = 1
-        Visible = False
-        OnClick = st_ShowSendingSMSClick
-        OnMouseLeave = st_ShowSendingSMSMouseLeave
-        OnMouseMove = st_ShowSendingSMSMouseMove
+        object Label3: TLabel
+          Left = 153
+          Top = 21
+          Width = 80
+          Height = 16
+          Caption = ' '#1085#1072' '#1086#1090#1087#1088#1072#1074#1082#1091':'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clGreen
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+        end
+        object lblCountSendingSMS: TLabel
+          Left = 265
+          Top = 22
+          Width = 8
+          Height = 16
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = '0'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object Label4: TLabel
+          Left = 103
+          Top = 43
+          Width = 130
+          Height = 16
+          Caption = #1085#1077' '#1073#1091#1076#1091#1090' '#1086#1090#1087#1088#1072#1074#1083#1077#1085#1099':'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clMaroon
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+        end
+        object lblCountNotSendingSMS: TLabel
+          Left = 265
+          Top = 44
+          Width = 8
+          Height = 16
+          Alignment = taRightJustify
+          AutoSize = False
+          BiDiMode = bdLeftToRight
+          Caption = '0'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Tahoma'
+          Font.Style = [fsBold]
+          ParentBiDiMode = False
+          ParentFont = False
+          ParentShowHint = False
+          ShowHint = False
+        end
+        object st_ShowSendingSMS: TStaticText
+          Left = 276
+          Top = 45
+          Width = 59
+          Height = 17
+          Cursor = crHandPoint
+          Caption = '('#1087#1086#1082#1072#1079#1072#1090#1100')'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+          TabOrder = 1
+          Visible = False
+          OnClick = st_ShowSendingSMSClick
+          OnMouseLeave = st_ShowSendingSMSMouseLeave
+          OnMouseMove = st_ShowSendingSMSMouseMove
+        end
+        object st_ShowNotSendingSMS: TStaticText
+          Left = 276
+          Top = 23
+          Width = 59
+          Height = 17
+          Cursor = crHandPoint
+          Caption = '('#1087#1086#1082#1072#1079#1072#1090#1100')'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+          TabOrder = 0
+          Visible = False
+          OnClick = st_ShowNotSendingSMSClick
+          OnMouseLeave = st_ShowNotSendingSMSMouseLeave
+          OnMouseMove = st_ShowNotSendingSMSMouseMove
+        end
       end
     end
     object sheet_StatusSMS: TTabSheet
@@ -1196,7 +1208,7 @@ object FormHome: TFormHome
     Left = 816
     Top = 432
     Bitmap = {
-      494C010103000C00B40018001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010103000C00B80018001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000600000001800000001002000000000000024
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

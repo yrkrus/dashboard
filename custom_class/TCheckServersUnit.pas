@@ -34,7 +34,7 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       procedure Clear;
 
       private
-      m_mutex                               : TMutex;
+     // m_mutex                               : TMutex;
 
 
       end;
@@ -165,10 +165,15 @@ var
   serverConnect:TADOConnection;
 begin
    ado:=TADOQuery.Create(nil);
-   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
 
@@ -203,10 +208,15 @@ var
  response:string;
 begin
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   try
@@ -294,7 +304,7 @@ var
 // lblName:string;
  CodOshibki:string;
 // viewErrors:Integer;
- allCount:Integer;
+// allCount:Integer;
 begin
 
    for i:=0 to Count-1 do begin
@@ -480,9 +490,9 @@ const
 
 var
  i,j:Integer;
- countServers:Integer;
- checkIP:string;
- lblName:string;
+ //countServers:Integer;
+// checkIP:string;
+// lblName:string;
  CodOshibki:string;
  viewErrors:Integer;
  connectBD_Firebird:Boolean;

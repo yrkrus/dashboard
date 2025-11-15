@@ -220,6 +220,7 @@ var
  isAbout:Boolean;
  waitingTime:string;
  phone:string;
+ call_id:string;
 begin
   isAbout:=False;
 
@@ -321,7 +322,8 @@ begin
            m_queue[i].talk_time:=Fields[6].Value;
            m_queue[i].operatorFIO:=FindFIO(m_queue[i].sip,m_queue[i].date_time);
 
-           m_queue[i].trunk:=GetPhoneTrunkQueue(tableTrunk,m_queue[i].phone,Fields[4].Value);
+           call_id:=_dll_GetCallIDPhoneIVR(tableTrunk,m_queue[i].phone);
+           m_queue[i].trunk:=_dll_GetPhoneTrunkQueue(tableTrunk,m_queue[i].phone,call_id);
            m_queue[i].phone_operator:=GetPhoneOperatorQueue(tableTrunk,m_queue[i].phone,Fields[4].Value);
            m_queue[i].region:=GetPhoneRegionQueue(tableTrunk,m_queue[i].phone,Fields[4].Value);
 

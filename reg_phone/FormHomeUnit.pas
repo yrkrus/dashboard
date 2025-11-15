@@ -32,8 +32,6 @@ type
     procedure FormShow(Sender: TObject);
     procedure btnNoClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure img_operators_AutoRegisterPhoneClick(Sender: TObject);
-    procedure lbl_operators_AutoRegisterPhoneClick(Sender: TObject);
     procedure btnRegisterClick(Sender: TObject);
     procedure btnRegisterManualClick(Sender: TObject);
     procedure btnDeRegisterManualClick(Sender: TObject);
@@ -43,6 +41,7 @@ type
     procedure combox_NamePCChange(Sender: TObject);
     procedure combox_NamePCDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
+    procedure ChangeStatus(Sender: TObject);
   private
     { Private declarations }
   m_imagelistSip  :TImageList;
@@ -54,6 +53,8 @@ type
   procedure LoadIconListSip;      // прогружаем иконки
   procedure LoadIconListPC;      // прогружаем иконки
   procedure FindIPForChangeSip; // поиск ip телефона в зависимости от sip
+
+
 
   function CheckChoise(var _errorDescription:string):Boolean;
 
@@ -72,7 +73,8 @@ var
 implementation
 
 uses
-  GlobalVariablesLinkDLL, GlobalVariables, FunctionUnit, TRegisterPhoneUnit, GlobalImageDestination;
+  GlobalVariablesLinkDLL, GlobalVariables, FunctionUnit, TRegisterPhoneUnit,
+  GlobalImageDestination, TIndividualSettingUserUnit, TCustomTypeUnit;
 
 {$R *.dfm}
 
@@ -105,7 +107,8 @@ begin
   combox_NamePC.Clear;
 
   for i:=0 to m_phoneList.Count-1 do begin
-    if m_phoneList[i].m_sip = -1 then combox_NamePC.Items.Add(' '+m_phoneList.Items[i].m_namePC);
+    //if m_phoneList[i].m_sip = -1 then combox_NamePC.Items.Add(' '+m_phoneList.Items[i].m_namePC);
+    combox_NamePC.Items.Add(' '+m_phoneList.Items[i].m_namePC);
   end;
 
   // прогружаем иконки
@@ -184,6 +187,32 @@ begin
   if bmpLocal<>nil then bmpLocal.Free;
 end;
 
+
+procedure TFormHome.ChangeStatus(Sender: TObject);
+var
+ individualSettings:TIndividualSettingUser;
+ errorDescription:string;
+begin
+ SharedCheckBoxUI.ChangeStatusCheckBox('AutoRegisterPhone');
+
+ if SharedCheckBoxUI.Checked['AutoRegisterPhone'] then begin
+  Screen.Cursor:=crHourGlass;
+
+   individualSettings:=TIndividualSettingUser.Create(USER_STARTED_REG_PHONE_ID);
+
+   if not individualSettings.SaveIndividualSettingUser(settingUsers_autoRegisteredSipPhone,paramStatus_ENABLED,errorDescription) then begin
+    Screen.Cursor:=crDefault;
+
+    SharedCheckBoxUI.ChangeStatusCheckBox('AutoRegisterPhone');
+    MessageBox(Handle,PChar(errorDescription),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+
+    Exit;
+   end;
+
+   Screen.Cursor:=crDefault;
+ end;
+end;
+
 // поиск ip телефона в зависимости от sip
 procedure TFormHome.FindIPForChangeSip;
 var
@@ -225,11 +254,13 @@ procedure TFormHome.ProcessCommandLineParams(DEBUG:Boolean);
 var
   i: Integer;
 begin
-//  if DEBUG then begin
-//   USER_STARTED_REG_PHONE_ID:=94; // тестовый оператор2 64153
-//   USER_STARTED_PC_NAME:='DEV';
-//   Exit;
-//  end;
+
+  if DEBUG then begin
+   USER_STARTED_REG_PHONE_ID:=94; // тестовый оператор2 64153
+   USER_STARTED_PC_NAME:='DEV';
+   USER_AUTO_REGISTERED_SIP_PHONE:=True;
+   Exit;
+  end;
 
   if ParamCount = 0 then begin
    MANUAL_STARTED:=True;
@@ -259,6 +290,21 @@ begin
       begin
         USER_STARTED_PC_NAME:= ParamStr(i + 1);
        // if DEBUG then ShowMessage('Value for --ACCESS: ' + ParamStr(i + 1));
+
+      end
+      else
+      begin
+        MessageBox(Handle,PChar('Слишком много параметров'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
+        KillProcessNow;
+      end;
+    end;
+
+    if ParamStr(i) = '--BOOLEAN' then
+    begin
+      if (i + 1 <= ParamCount) then
+      begin
+        USER_AUTO_REGISTERED_SIP_PHONE:=StrToBool(ParamStr(i + 1)) ;
+       // if DEBUG then ShowMessage('Value for --BOOLEAN: ' + ParamStr(i + 1));
 
       end
       else
@@ -317,19 +363,15 @@ begin
   if not RegisterPhoneAuto(errorDescription) then begin
     Screen.Cursor:=crDefault;
     MessageBox(Handle,PChar(errorDescription),PChar('Ошибка при регистрации'),MB_OK+MB_ICONERROR);
+    Exit;
   end;
 
-
-  if not DeRegisterPhoneAuto(errorDescription) then begin
-    Screen.Cursor:=crDefault;
-    MessageBox(Handle,PChar(errorDescription),PChar('Ошибка при регистрации'),MB_OK+MB_ICONERROR);
-  end;
-
-
+  MessageBox(Handle,PChar('Успешная регистрация'),PChar(''),MB_OK+MB_ICONINFORMATION);
   Screen.Cursor:=crDefault;
- // KillProcessNow;
 
-  // TODO тут чтото должно тоже быть типа закрытия автоматического
+
+
+  KillProcessNow;
 end;
 
 procedure TFormHome.btnRegisterManualClick(Sender: TObject);
@@ -462,6 +504,9 @@ end;
 
 
 procedure TFormHome._INIT;
+var
+ individualSettings:TIndividualSettingUser;
+ errorDescription:string;
 begin
  isERROR:=False;
 
@@ -473,16 +518,23 @@ begin
     InitManual;
    end;
    False:begin      // атоматически запустили из дашборда
-
     InitAuto;
+    individualSettings:=TIndividualSettingUser.Create(USER_STARTED_REG_PHONE_ID);
 
     // проверим нужно ли автоматически регистрироваться
-    // TODO сделать
-    // AUTO_REGISTER
-
+    if individualSettings.AutoRegisterSipPhone then begin
+      case USER_AUTO_REGISTERED_SIP_PHONE of
+       True:begin                                // автоматически входим
+         RegisterPhoneAuto(errorDescription);
+       end;
+       False:begin                               // автоматически выходим
+         DeRegisterPhoneAuto(errorDescription);
+       end;
+      end;
+      KillProcessNow;
+    end;
    end;
  end;
-
 
 end;
 
@@ -498,16 +550,6 @@ end;
 procedure TFormHome.imgClosedClick(Sender: TObject);
 begin
  KillProcessNow;
-end;
-
-procedure TFormHome.img_operators_AutoRegisterPhoneClick(Sender: TObject);
-begin
-   SharedCheckBoxUI.ChangeStatusCheckBox('AutoRegisterPhone');
-end;
-
-procedure TFormHome.lbl_operators_AutoRegisterPhoneClick(Sender: TObject);
-begin
- SharedCheckBoxUI.ChangeStatusCheckBox('AutoRegisterPhone');
 end;
 
 end.

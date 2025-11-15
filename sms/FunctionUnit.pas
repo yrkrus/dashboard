@@ -1477,7 +1477,7 @@ end;
 // подсчет сколько за сегодня отправлено смс было
 procedure ShowCountTodaySmsSending;
 begin
-   with FormHome.StatusBar do begin
+  with FormHome.StatusBar do begin
     Panels[0].Text:='  За сегодня отправлено: '+IntToStr(GetCountSendingSMSToday);
   end;
 end;

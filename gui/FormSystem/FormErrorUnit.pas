@@ -130,13 +130,19 @@ procedure TFormError.TimerReconnectBDHostTimer(Sender: TObject);
 var
   serverConnect:TADOConnection;
 begin
-
   if StartTime-Ostatok = 0 then begin
    lblTime.Caption:='Переподключение ...';
      // еще одна проверка
       try
-        serverConnect:=createServerConnect;
-        if not Assigned(serverConnect) then Exit;
+        try
+          serverConnect:=createServerConnect;
+         except
+            on E:Exception do begin
+              if not Assigned(serverConnect) then begin
+                 Exit;
+              end;
+            end;
+         end;
         Ostatok:=0;
       finally
         if serverConnect.Connected then begin

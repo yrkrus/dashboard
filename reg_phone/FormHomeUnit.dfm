@@ -27,7 +27,7 @@ object FormHome: TFormHome
     TabOrder = 0
     object ImgNewYear: TImage
       Left = 18
-      Top = 9
+      Top = 14
       Width = 55
       Height = 55
       ParentShowHint = False
@@ -103,14 +103,14 @@ object FormHome: TFormHome
     end
     object Label3: TLabel
       Left = 114
-      Top = 6
+      Top = 13
       Width = 199
       Height = 16
       Caption = #1047#1072#1088#1077#1075#1080#1089#1090#1088#1080#1088#1086#1074#1072#1090#1100#1089#1103' '#1074' '#1090#1077#1083#1077#1092#1086#1085#1077'?'
     end
     object lbl_operators_AutoRegisterPhone: TLabel
       Left = 17
-      Top = 82
+      Top = 79
       Width = 325
       Height = 26
       Align = alCustom
@@ -125,21 +125,21 @@ object FormHome: TFormHome
       Font.Style = [fsBold]
       ParentFont = False
       WordWrap = True
-      OnClick = lbl_operators_AutoRegisterPhoneClick
+      OnClick = ChangeStatus
     end
     object img_operators_AutoRegisterPhone: TImage
       Left = 297
-      Top = 94
+      Top = 91
       Width = 16
       Height = 16
       ParentShowHint = False
       ShowHint = False
       Transparent = True
-      OnClick = img_operators_AutoRegisterPhoneClick
+      OnClick = ChangeStatus
     end
     object btnRegister: TBitBtn
       Left = 119
-      Top = 34
+      Top = 35
       Width = 85
       Height = 37
       Caption = '&'#1044#1072
@@ -256,7 +256,7 @@ object FormHome: TFormHome
     end
     object btnNo: TBitBtn
       Left = 223
-      Top = 34
+      Top = 35
       Width = 85
       Height = 37
       Caption = '&'#1053#1077#1090

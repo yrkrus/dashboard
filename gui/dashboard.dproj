@@ -339,6 +339,9 @@
         <DCCReference Include="..\custom_class\TCheckBoxUIUnit.pas"/>
         <DCCReference Include="..\custom_class\TUsersAllUnit.pas"/>
         <DCCReference Include="FormHomeInit.pas"/>
+        <DCCReference Include="..\custom_class\TIndividualSettingUserUnit.pas"/>
+        <DCCReference Include="..\custom_class\TRegisterPhoneUnit.pas"/>
+        <DCCReference Include="..\custom_class\TUserCommonQueueUnit.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

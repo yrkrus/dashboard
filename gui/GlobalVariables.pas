@@ -12,9 +12,11 @@ interface
 
 uses
   Forms,
-  TActiveSIPUnit, TUserUnit, Data.Win.ADODB, Data.DB, SysUtils, Windows, TLogFileUnit,
+  TActiveSIPUnit, TUserUnit, Data.Win.ADODB, Data.DB, SysUtils, TLogFileUnit,
   TIVRUnit, TCustomTypeUnit, TFontSizeUnit, TQueueStatisticsUnit, TStatusUnit,
-  TDebugCountResponseUnit, GlobalVariablesLinkDLL, TCheckBoxUIUnit;
+  TDebugCountResponseUnit, GlobalVariablesLinkDLL, TCheckBoxUIUnit, TIndividualSettingUserUnit;
+
+
 
  type // глобальный перехват всех незарегистрированных исключений
   TGlobalExeption = class
@@ -55,6 +57,7 @@ var
 
   USER_ID_PARAM     :string = '--USER_ID';
   USER_ACCESS_PARAM :string = '--ACCESS';
+  USER_BOOL_PARAM   :string = '--BOOLEAN';
 
   // по умолчанию nullptr потом помен€ем
   USER_STARTED_SMS_ID :Integer;
@@ -74,17 +77,18 @@ var
   PROGRAMM_UPTIME:Int64 = 0;
   PROGRAM_STARTED:TDateTime;
 
-  ///////////////////// CLASSES /////////////////////
-  SharedMainLog             :TLoggingFile;         // лог главной формы
-  SharedCurrentUserLogon    :TUser;                // текущий залогиненый пользователь в системе
-  SharedActiveSipOperators  :TActiveSIP;           // список с текущими активными операторами
-  SharedIVR                 :TIVR;                 // список с текущим IVR кто звонит на линию
-  SharedQueueStatistics     :TQueueStatistics;     // список с текущей статистикой звонков за день
-  SharedFontSize            :TFontSize;            // размеры шрифтов на дашборде
-  SharedCountResponseThread :TDebugCountResponse;  // список дл€ отслеживани€ времени работы в потоках
-  SharedStatus              :TStatus;              // смена текущего статуса оператора
-  SharedCheckBoxUI          :TCheckBoxUI;          // список с красивыми чекбоксами
- ///////////////////// CLASSES /////////////////////
+  ///////////////////// CLASSES //////////////////////////
+  SharedMainLog               :TLoggingFile;            // лог главной формы
+  SharedCurrentUserLogon      :TUser;                   // текущий залогиненый пользователь в системе
+  SharedActiveSipOperators    :TActiveSIP;              // список с текущими активными операторами
+  SharedIVR                   :TIVR;                    // список с текущим IVR кто звонит на линию
+  SharedQueueStatistics       :TQueueStatistics;        // список с текущей статистикой звонков за день
+  SharedFontSize              :TFontSize;               // размеры шрифтов на дашборде
+  SharedCountResponseThread   :TDebugCountResponse;     // список дл€ отслеживани€ времени работы в потоках
+  SharedStatus                :TStatus;                 // смена текущего статуса оператора
+  SharedCheckBoxUI            :TCheckBoxUI;             // список с красивыми чекбоксами
+  SharedIndividualSettingUser :TIndividualSettingUser;  // индивидуальные настройки пользовател€
+ ///////////////////// CLASSES //////////////////////////
 
 
   // параметр дл€ лога что есть ошибка
@@ -94,9 +98,7 @@ var
   CONNECT_BD_ERROR        :Boolean = False;
   GlobalExceptions        :TGlobalExeption;
 
-
 implementation
-
 
 
 procedure TGlobalExeption.HandleGlobalException(Sender: TObject; E: Exception);
@@ -114,25 +116,30 @@ initialization  // »нициализаци€
   FOLDERPATH      :=ExtractFilePath(ParamStr(0));
   FOLDERUPDATE    :=FOLDERPATH+GetUpdateNameFolder;
 
-  SharedActiveSipOperators  := TActiveSIP.Create;
-  SharedIVR                 := TIVR.Create;
-  SharedQueueStatistics     := TQueueStatistics.Create(True);
-  SharedMainLog             := TLoggingFile.Create('main');   // лог работы main формы
-  SharedFontSize            := TFontSize.Create;
-  SharedCountResponseThread := TDebugCountResponse.Create(SharedMainLog);
-  SharedStatus              := TStatus.Create(True);
-  SharedCheckBoxUI          := TCheckBoxUI.Create;
+  SharedActiveSipOperators      := TActiveSIP.Create;
+  SharedIVR                     := TIVR.Create;
+  SharedQueueStatistics         := TQueueStatistics.Create(True);
+  SharedMainLog                 := TLoggingFile.Create('main');   // лог работы main формы
+  SharedFontSize                := TFontSize.Create;
+  SharedCountResponseThread     := TDebugCountResponse.Create(SharedMainLog);
+  SharedStatus                  := TStatus.Create(True);
+  SharedCheckBoxUI              := TCheckBoxUI.Create;
 
-  begin
+//  SetupGlobalExceptionHandlers;
+
+//  begin
     GlobalExceptions        := TGlobalExeption.Create;
     GlobalExceptions.Setup;
-  end;
+//  end;
 
 
 finalization
+  // ¬осстановим, чтобы при выходе не было Ђвис€чихї указателей
+//  SysUtils.ErrorProc := OriginalErrorProc;
+//  SetUnhandledExceptionFilter(nil);
 
   // ќсвобождение пам€ти
-  GlobalExceptions.Free;
+  //GlobalExceptions.Free;
   SharedIVR.Free;
   SharedQueueStatistics.Free;
   SharedActiveSipOperators.Free;
@@ -140,5 +147,6 @@ finalization
   SharedCountResponseThread.Free;
   SharedStatus.Free;
   SharedCheckBoxUI.Free;
+  SharedIndividualSettingUser.Free;
 
 end.

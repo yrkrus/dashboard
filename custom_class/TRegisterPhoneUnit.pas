@@ -32,6 +32,9 @@ uses
   CustomHeaders3='Accept-Charset:utf-8';
   CustomHeaders4='Accept:application/json, text/javascript, */*; q=0.01';
 
+  cLoginDef = 'admin';
+  cPwdDef   = '5000';
+
       private
       m_sip         :Integer;
       m_ipPhone     :string;
@@ -45,7 +48,8 @@ uses
 
       public
 
-      constructor Create(_sip:Integer; _ipPhone:string; _login:string; _pwd:string);                   overload;
+      constructor Create(_sip:Integer; _ipPhone:string; _login:string; _pwd:string);        overload;
+      constructor Create(_sip:Integer; _ipPhone:string);                                    overload;
       function RegisterPhone(var _errorDescription:string):Boolean;     // регистрация
       function DeRegisterPhone(var _errorDescription:string):Boolean;   // разрегистрация
 
@@ -68,6 +72,14 @@ begin
   m_authPwd:=_pwd;
 end;
 
+
+constructor TRegisterPhone.Create(_sip:Integer; _ipPhone:string);
+begin
+  m_sip:=_sip;
+  m_ipPhone:=_ipPhone;
+  m_authLogin:=cLoginDef;
+  m_authPwd:=cPwdDef;
+end;
 
 
 // регистрация
@@ -138,9 +150,7 @@ begin
 
    case _regStatus of
       enumRegistration:begin
-       // HTTPGet:='https://'+m_authLogin+':'+m_authPwd+'@'+m_ipPhone+'/servlet?phonecfg=set[&account.1.enable=1][&account.1.label='+IntToStr(m_sip)+'][&account.1.display_name='+IntToStr(m_sip)+'][&account.1.auth_name='+IntToStr(m_sip)+'][&account.1.user_name='+IntToStr(m_sip)+'][&account.1.password=159753]';
         HTTPGet:='https://'+m_ipPhone+'/servlet?phonecfg=set[&account.1.enable=1][&account.1.label='+IntToStr(m_sip)+'][&account.1.display_name='+IntToStr(m_sip)+'][&account.1.auth_name='+IntToStr(m_sip)+'][&account.1.user_name='+IntToStr(m_sip)+'][&account.1.password=159753]';
-
       end;
       enumUnRegistration:begin
         HTTPGet:='https://'+m_ipPhone+'/servlet?phonecfg=set[&account.1.enable=0][&account.1.label=''][&account.1.display_name=''][&account.1.auth_name=''][&account.1.user_name=''][&account.1.password='']';

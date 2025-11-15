@@ -80,11 +80,15 @@ var
 begin
   Result:=0;
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+      serverConnect:=createServerConnect;
+  except
+      on E:Exception do begin
+        if not Assigned(serverConnect) then begin
+           FreeAndNil(ado);
+           Exit;
+        end;
+      end;
   end;
 
   try
@@ -112,11 +116,15 @@ var
 begin
   Result:=0;
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+      serverConnect:=createServerConnect;
+  except
+      on E:Exception do begin
+        if not Assigned(serverConnect) then begin
+           FreeAndNil(ado);
+           Exit;
+        end;
+      end;
   end;
 
   try

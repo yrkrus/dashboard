@@ -76,7 +76,8 @@ begin
     p_InternalProcess.CheckForceActiveSessionClosed;              // нужно ли немедленно закрыть сессию
     p_InternalProcess.UpdateTimeActiveSession(PROGRAMM_UPTIME);   // обновление времени ондайна в БД
     p_InternalProcess.CheckStatusUpdateService;                   // проверка запущена ли служба обновления
-   // p_InternalProcess.XMLUpdateLastOnline;                        // обновление времемни в settings.xml
+    p_InternalProcess.CheckStatusRegisteredSipPhone;              // проверка зарегестрирован ли sip на телефоне
+   // p_InternalProcess.XMLUpdateLastOnline;                      // обновление времемни в settings.xml
     p_InternalProcess.UpdateMemory;                               // обновление загрузки по памяти
   end;
 

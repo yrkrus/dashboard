@@ -271,7 +271,7 @@ object FormStatusSendingSMS: TFormStatusSendingSMS
     end
     object Label11: TLabel
       Left = 335
-      Top = 60
+      Top = 53
       Width = 97
       Height = 13
       Alignment = taCenter

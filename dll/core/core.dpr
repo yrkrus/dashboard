@@ -18,9 +18,10 @@ begin
 end;
 // ======== СМЕНА АДРЕСА БАЗЫ ДАННЫХ =========
 
-function _dll_GetDefaultDataBase:PChar; stdcall; export;
+function _dll_GetDefaultDataBase:string; stdcall; export;
 begin
-  Result:=PChar(_DefaultDataBase);
+ // Result:=PChar(_DefaultDataBase);
+ Result:=_DefaultDataBase;
 end;
 
 
@@ -98,15 +99,15 @@ end;
 
 
 
-function GetCopyright:PChar;stdcall;export;
+function GetCopyright:string;stdcall;export;
 const
  cSTART_YEAR:string = '2024';
 var
   CurrentYear: string;
 begin
   CurrentYear:=FormatDateTime('yyyy', Now);
-  if CurrentYear = cSTART_YEAR then Result:=PChar('developer by Petrov Yuri © '+CurrentYear+'       ')
-  else Result:=PChar('developer by Petrov Yuri © '+cSTART_YEAR+'-'+CurrentYear+'       ');
+  if CurrentYear = cSTART_YEAR then Result:='developer by Petrov Yuri © '+CurrentYear+'       '
+  else Result:='developer by Petrov Yuri © '+cSTART_YEAR+'-'+CurrentYear+'       ';
 end;
 
 
@@ -320,7 +321,7 @@ begin
 end;
 
 // текущая версия дашборда (БД)
-function GetRemoteVersionDashboard(var _errorDescriptions:string):PChar; stdcall;export;
+function GetRemoteVersionDashboard(var _errorDescriptions:string):string stdcall;export;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
@@ -343,7 +344,7 @@ begin
       SQL.Add('select id from version_current');
       Active:=True;
 
-      Result:=Pchar(VarToStr(Fields[0].Value));
+      Result:=VarToStr(Fields[0].Value);
    end;
   finally
     FreeAndNil(ado);
@@ -372,9 +373,9 @@ begin
   TerminateProcess(OpenProcess($0001, Boolean(0), getcurrentProcessID), 0);
 end;
 
-function GetUserNameFIO(InUserID:Integer):PChar; stdcall; export;
+function GetUserNameFIO(InUserID:Integer):string; stdcall; export;
 begin
-  Result:=PChar(GetUserFIO(InUserID));
+  Result:=GetUserFIO(InUserID);
 end;
 
 
@@ -385,9 +386,9 @@ begin
 end;
 
 
-function GetCurrentStartDateTime:PChar; stdcall; export;
+function GetCurrentStartDateTime:string; stdcall; export;
 begin
- Result:= PChar(getNowDateTime);
+ Result:= getNowDateTime;
 end;
 
 // текущее время начала дня (минус минуты)
@@ -400,9 +401,9 @@ begin
 end;
 
 
-function GetCurrentDateTimeDec(DecMinutes:Integer):PChar; stdcall; export;
+function GetCurrentDateTimeDec(DecMinutes:Integer):string; stdcall; export;
 begin
-  Result:=PChar(getNowDateTimeDec(DecMinutes));
+  Result:=getNowDateTimeDec(DecMinutes);
 end;
 
 
@@ -412,33 +413,33 @@ begin
   Result:= FormatDateTime('yyyymmdd', Now);
 end;
 
-function GetCurrentTime:PChar; stdcall; export;
+function GetCurrentTime:string; stdcall; export;
 begin
-  Result:=PChar(getCurrentNowTime);
+  Result:=getCurrentNowTime;
 end;
 
 // папка с локальным чатом
-function GetLocalChatNameFolder:PChar; stdcall; export;
+function GetLocalChatNameFolder:string; stdcall; export;
 begin
- Result:= PChar('chat_history');
+ Result:= 'chat_history';
 end;
 
 // расширение логов
-function GetExtensionLog:PChar; stdcall; export;
+function GetExtensionLog:string; stdcall; export;
 begin
- Result:= PChar('.html');
+ Result:= '.html';
 end;
 
 // папка с логом
-function GetLogNameFolder:PChar; stdcall; export;
+function GetLogNameFolder:string; stdcall; export;
 begin
- Result:= PChar('log');
+ Result:= 'log';
 end;
 
 // папка с update
-function GetUpdateNameFolder:PChar; stdcall; export;
+function GetUpdateNameFolder:string; stdcall; export;
 begin
- Result:= PChar('update');
+ Result:= 'update';
 end;
 
 
@@ -489,7 +490,7 @@ function GetTask(ExeFileName: string): Boolean;stdcall;export;
 
 
  // перевод даты и времени в ненормальный вид для BD
-function GetDateTimeToDateBD(InDateTime:string):PChar;stdcall;export;
+function GetDateTimeToDateBD(InDateTime:string):string;stdcall;export;
 var
  Timetmp,Datetmp:string;
 begin
@@ -500,11 +501,11 @@ begin
  System.Delete(Datetmp,AnsiPos(' ',Datetmp),Length(Datetmp));
  Datetmp:=Copy(Datetmp,7,4)+'-'+Copy(Datetmp,4,2)+'-'+Copy(Datetmp,1,2);
 
- Result:=PChar(Datetmp+' '+Timetmp);
+ Result:=Datetmp+' '+Timetmp;
 end;
 
  // перевод даты в ненормальный вид для BD
-function GetDateToDateBD(InDateTime:string):PChar;stdcall;export;
+function GetDateToDateBD(InDateTime:string):string;stdcall;export;
 var
  Datetmp:string;
 begin
@@ -512,7 +513,7 @@ begin
  System.Delete(Datetmp,AnsiPos(' ',Datetmp),Length(Datetmp));
  Datetmp:=Copy(Datetmp,7,4)+'-'+Copy(Datetmp,4,2)+'-'+Copy(Datetmp,1,2);
 
- Result:=PChar(Datetmp);
+ Result:=Datetmp;
 end;
 
 // перевод времени разговора оператора типа 00:00:00 или 00:00 в секунды
@@ -554,7 +555,7 @@ end;
 
 
 // перевод времени разговора оператора типа из секунд в 00:00:00
-function GetTimeAnsweredSecondsToString(InSecondAnswered:Integer):PChar; stdcall;export;
+function GetTimeAnsweredSecondsToString(InSecondAnswered:Integer):string; stdcall;export;
 const
   SecPerDay = 86400;
   SecPerHour = 3600;
@@ -586,7 +587,7 @@ begin
   else sec := IntToStr(ss);
 
   // Формируем итоговую строку
-  Result := PChar(days + hour + ':' + min + ':' + sec);
+  Result := days + hour + ':' + min + ':' + sec;
 end;
 
 
@@ -646,24 +647,24 @@ begin
 end;
 
 // конвертер из TQueue в string
-function TQueueToString(InQueueSTR:enumQueue):PChar; stdcall;export;
+function TQueueToString(InQueueSTR:enumQueue):string; stdcall;export;
 begin
   case InQueueSTR of
-    queue_5000: Result:=PChar('5000');
-    queue_5050: Result:=PChar('5050');
-    queue_5911: Result:=PChar('5911');
+    queue_5000: Result:='5000';
+    queue_5050: Result:='5050';
+    queue_5911: Result:='5911';
   end;
 end;
 
 
 
 // полчуение имени пользователя из его SIP номера
-function GetUserNameOperators(InSip:string):PChar; stdcall;export;
+function GetUserNameOperators(InSip:string):string; stdcall;export;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
 begin
-  Result:=PChar('null');
+  Result:='null';
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
@@ -681,7 +682,7 @@ begin
 
       Active:=True;
 
-      if Fields[0].Value<>null then Result:=PChar(VarToStr(Fields[0].Value)+' '+VarToStr(Fields[1].Value));
+      if Fields[0].Value<>null then Result:=VarToStr(Fields[0].Value)+' '+VarToStr(Fields[1].Value);
     end;
   finally
    FreeAndNil(ado);
@@ -709,9 +710,9 @@ begin
 end;
 
  // получение имени залогиненого пользователя (внешняя функция)
-function GetCurrentUserNamePC:PChar; stdcall; export;
+function GetCurrentUserNamePC:string; stdcall; export;
 begin
-  Result:=PChar(GetCurrentUserNamePC_LOCAL);
+  Result:=GetCurrentUserNamePC_LOCAL;
 end;
 
 
@@ -867,14 +868,14 @@ end;
 
 
 // нахождение _call_id звонка
-function _dll_GetCallIDPhoneIVR(_table:enumReportTableIVR; _phone:string):PChar; stdcall; export;
+function _dll_GetCallIDPhoneIVR(_table:enumReportTableIVR; _phone:string):string; stdcall; export;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  table:string;
  request:TStringBuilder;
 begin
-  Result:=PChar('null');
+  Result:='null';
   table:=EnumReportTableIVRToString(_table);
 
   ado:=TADOQuery.Create(nil);
@@ -902,7 +903,7 @@ begin
 
       Active:=True;
       if Fields[0].Value<>null then begin
-        Result:=PChar(VarToStr(Fields[0].Value));
+        Result:=VarToStr(Fields[0].Value);
       end;
 
     end;
@@ -918,14 +919,14 @@ end;
 
 
 // нахождение на какой транк звонил номер который ушел в очередь
-function _dll_GetPhoneTrunkQueue(_table:enumReportTableIVR; _phone:string;_call_id:string):PChar; stdcall; export;
+function _dll_GetPhoneTrunkQueue(_table:enumReportTableIVR; _phone:string;_call_id:string):string; stdcall; export;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  table:string;
  request:TStringBuilder;
 begin
-  Result:=PChar('null');
+  Result:='null';
   table:=EnumReportTableIVRToString(_table);
 
   ado:=TADOQuery.Create(nil);
@@ -953,9 +954,9 @@ begin
 
       Active:=True;
       if Fields[0].Value<>null then begin
-       Result:=PChar(VarToStr(Fields[0].Value));
+       Result:=VarToStr(Fields[0].Value);
       end
-      else Result:=PChar('LISA');
+      else Result:='LISA';
     end;
   finally
    FreeAndNil(ado);
@@ -973,13 +974,13 @@ end;
 
 
 // нахождение у какого оператора зарегистрирован телефон
-function GetPhoneOperatorQueue(_table:enumReportTableIVR; _phone:string;_timecall:string):PChar; stdcall; export;
+function GetPhoneOperatorQueue(_table:enumReportTableIVR; _phone:string;_timecall:string):string; stdcall; export;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  table:string;
 begin
-  Result:=PChar('null');
+  Result:='null';
   table:=EnumReportTableIVRToString(_table);
 
   ado:=TADOQuery.Create(nil);
@@ -997,7 +998,7 @@ begin
 
       Active:=True;
       if Fields[0].Value<>null then begin
-       Result:=PChar(VarToStr(Fields[0].Value));
+       Result:=VarToStr(Fields[0].Value);
       end;
     end;
   finally
@@ -1010,13 +1011,13 @@ begin
 end;
 
 // нахождение у в каком регионе зарегистрирован телефон
-function GetPhoneRegionQueue(_table:enumReportTableIVR; _phone:string;_timecall:string):PChar; stdcall; export;
+function GetPhoneRegionQueue(_table:enumReportTableIVR; _phone:string;_timecall:string):string; stdcall; export;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  table:string;
 begin
-  Result:=PChar('null');
+  Result:='null';
   table:=EnumReportTableIVRToString(_table);
 
   ado:=TADOQuery.Create(nil);
@@ -1034,7 +1035,7 @@ begin
 
       Active:=True;
       if Fields[0].Value<>null then begin
-       Result:=PChar(VarToStr(Fields[0].Value));
+       Result:=VarToStr(Fields[0].Value);
       end;
     end;
   finally
@@ -1086,13 +1087,13 @@ end;
 
 
 // нахождение статуса сообщения
-function GetStatusSms(_code:enumStatusCodeSms):PChar; stdcall; export;
+function GetStatusSms(_code:enumStatusCodeSms):string; stdcall; export;
 var
  ado:TADOQuery;
  serverConnect:TADOConnection;
  table:string;
 begin
-  Result:=PChar(EnumStatusCodeSmsToString(eStatusCodeSmsUnknown));
+  Result:=EnumStatusCodeSmsToString(eStatusCodeSmsUnknown);
 
   ado:=TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
@@ -1109,7 +1110,7 @@ begin
 
       Active:=True;
       if Fields[0].Value<>null then begin
-       Result:=PChar(VarToStr(Fields[0].Value));
+       Result:=VarToStr(Fields[0].Value);
       end;
     end;
   finally

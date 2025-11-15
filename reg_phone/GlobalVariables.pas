@@ -17,7 +17,7 @@ uses
 
 var
   // ****************** режим разработки ******************
-                      DEBUG:Boolean = TRUE;
+                      DEBUG:Boolean = FALSE;
   // ****************** режим разработки ******************
 
   REG_PHONE_EXE           :string = 'reg_phone.exe';
@@ -35,6 +35,8 @@ var
   USER_STARTED_REG_PHONE_ID    :Integer;
   // ИМЯ ПК с которого запустили
   USER_STARTED_PC_NAME         :string;
+  // автоматически пытаться зарешестироватбься сразу
+  USER_AUTO_REGISTERED_SIP_PHONE:Boolean;
 
   // автоматически регистрироваться или нет
   AUTO_REGISTER                : Boolean;
@@ -71,9 +73,9 @@ implementation
 
 
 initialization  // Инициализация
- FOLDERPATH                   :=ExtractFilePath(ParamStr(0));
- SharedMainLog                :=TLoggingFile.Create('reg_phone');   // лог работы формы
- SharedCheckBoxUI             := TCheckBoxUI.Create;
+ FOLDERPATH                   :=  ExtractFilePath(ParamStr(0));
+ SharedMainLog                :=  TLoggingFile.Create('reg_phone');   // лог работы формы
+ SharedCheckBoxUI             :=  TCheckBoxUI.Create;
 
  finalization
 

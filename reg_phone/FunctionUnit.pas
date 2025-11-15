@@ -138,8 +138,6 @@ procedure InitManual;
 begin
   // подгрудаем свободные не залогиненые sip номера
   AddFreeSipListRegister;
-
-
 end;
 
 

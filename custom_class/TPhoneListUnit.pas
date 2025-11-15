@@ -43,6 +43,7 @@ uses
       function IsExistIpPhone(_ipphone:string; var _errorDescription:string):Boolean;
       function GetIPPhoneWithNamePC(_namePC:string):string;  // получение ip адрес из имени пк
       function GetIPPhoneWithSip(_sip:Integer):string;        // получение ip адрес из sip
+      function GetRegisterdSip(_sip:Integer):Boolean;
 
       public
       constructor Create;                   overload;
@@ -60,6 +61,8 @@ uses
       property ItemsData[_id_base:Integer]:TPhone read GetItemsData;  // получение данных по id которое из БД
       property IPPhoneWithNamePC[_namePC:string]:string read GetIPPhoneWithNamePC;  // получение ip адрес из имени пк
       property IPPhoneWithSip[_sip:Integer]:string read GetIPPhoneWithSip;          // получение ip адрес из имени пк
+      property IsRegisterdSip[_sip:Integer]:Boolean read GetRegisterdSip;           // зарегестировани ли sip номер на телеыоне
+
 
       end;
  // class TSipPhoneList END
@@ -111,10 +114,15 @@ var
 begin
 
  ado:=TADOQuery.Create(nil);
- serverConnect:=createServerConnect;
- if not Assigned(serverConnect) then begin
-   FreeAndNil(ado);
-   Exit;
+  try
+      serverConnect:=createServerConnect;
+ except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
  end;
 
  try
@@ -195,7 +203,11 @@ procedure TPhoneList.Clear;
 var
  i:Integer;
 begin
-  for i:=0 to m_count-1 do m_list[i].Clear;
+  for i:=0 to m_count-1 do begin
+   m_list[i].Clear;
+   m_list[i].Free;
+   m_list[i]:= nil;
+  end;
 
   SetLength(m_list,0);
   m_count:=0;
@@ -343,6 +355,22 @@ begin
      end;
    end;
 end;
+
+
+function TPhoneList.GetRegisterdSip(_sip:Integer):Boolean;
+var
+ i:Integer;
+begin
+   Result:=False;
+
+   for i:=0 to m_count-1 do begin
+     if m_list[i].m_sip = _sip then begin
+       Result:=True;
+       Exit;
+     end;
+   end;
+end;
+
 
 // добавление нового
 function TPhoneList.Insert(_namepc, _ipphone:string; var _errorDescription:string):Boolean;

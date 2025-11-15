@@ -74,7 +74,8 @@ interface
   type  // тип сохранения индивидуальных настроек пользователя
     enumSettingUsers = (  settingUsers_gohome,                  // не показывать ушедших домой
                           settingUsers_noConfirmExit,           // не показывать окно "точно хотите выйти из дашборда?"
-                          settingUsers_showStatisticsQueueDay   // какой тип графика отображать в модуле "сатистика ожидания в очереди" 0-цифры | 1 - график
+                          settingUsers_showStatisticsQueueDay,  // какой тип графика отображать в модуле "сатистика ожидания в очереди" 0-цифры | 1 - график
+                          settingUsers_autoRegisteredSipPhone   // автоматическая регистрация в sip теелфоне (для операторов)
                             );
 
   type  // тип включение\отключение boolean параметров
@@ -166,7 +167,8 @@ interface
                      menu_active_session,                       // Меню-Активные сессии
                      menu_service,                              // Меню-Услуги
                      menu_missed_calls,                         // Меню-Пропущенные звонки
-                     menu_clear_status_operator                 // Меню-Сброс панели статусов
+                     menu_clear_status_operator,                // Меню-Сброс панели статусов
+                     menu_register_phone                        // Меню-Регистрация телефона
                      );
 
 
@@ -446,6 +448,13 @@ interface
                  eAuthLdap = 1     // LDAP авторизация
               );
 
+   type // тип запуска
+   enumTypeRunning = (  eManualWithOutParam = -1,       // ручной запуск(без парметров)
+                        eManualRunning = 0,             // ручной запуск
+                        eAutoRunningRegistered = 1,     // автоматический (вход)
+                        eAutoRunningDeRegistered = 2    // автоматический (выход
+                    );
+
   // =================== ПРОЕОБРАЗОВАНИЯ ===================
 
   // Boolean -> string
@@ -514,6 +523,7 @@ interface
  function IntegerToEnumAuth(_value:Integer):enumAuth;                                 // Integer --> enumAuth
  function EnumAuthToString(_auth:enumAuth):string;                                    // EnumAuth --> string
  function EnumAuthToInteger(_auth:enumAuth):integer;                                  // EnumAuth --> integer
+ function EnumQueueToEnumLogging(_commonQueue:enumQueue):enumLogging;                 // EnumQueue --> EnumLogging
 
  // =================== ПРОЕОБРАЗОВАНИЯ ===================
  implementation
@@ -718,6 +728,7 @@ begin
     menu_service:               Result:='menu_service';
     menu_missed_calls:          Result:='menu_missed_calls';
     menu_clear_status_operator: Result:='menu_clear_status_operator';
+    menu_register_phone:        Result:='menu_register_phone';
   end;
 end;
 
@@ -733,6 +744,7 @@ begin
     menu_service:               Result:='menu_service';
     menu_missed_calls:          Result:='menu_missed_calls';
     menu_clear_status_operator: Result:='menu_clear_status_operator';
+    menu_register_phone:        Result:='menu_register_phone';
   end;
 end;
 
@@ -1519,6 +1531,16 @@ begin
    eAuthLocal: Result:=0;
    eAuthLdap:  Result:=1;
  end;
+end;
+
+// EnumQueue --> EnumLogging
+function EnumQueueToEnumLogging(_commonQueue:enumQueue):enumLogging;
+begin
+  case _commonQueue of
+   queue_5000:  Result:=eLog_add_queue_5000;
+   queue_5050:  Result:=eLog_add_queue_5050;
+   queue_5911:  Result:=eLog_add_queue_5911;
+  end;
 end;
 
 end.

@@ -86,7 +86,7 @@ begin
   begin
     sip:=SelectedItemPopMenu.SubItems[0];
 
-    resultatDel:=MessageBox(Handle,PChar('Точно удалить SIP '+sip+'?'),PChar('Уточнение'),MB_YESNO+MB_ICONWARNING);
+    resultatDel:=MessageBox(Handle,PChar('Точно удалить SIP '+sip+'?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
     if resultatDel=mrNo then Exit;
 
     // проверим что sip пустой

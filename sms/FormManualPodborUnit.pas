@@ -103,10 +103,12 @@ var
   id, dateTime, sip, phone, numberQueue, talkTime:string;
   countCalls:Integer;
   i:Integer;
-  response:string;
+  request:TStringBuilder;
+  commonQueueSTR:string;  // список с очередями которые видит пользователь
 begin
   ado := TADOQuery.Create(nil);
   serverConnect:=createServerConnect;
+  commonQueueSTR:=SharedUserCommonQueue.ActiveQueueSTRToBase;
 
   if not Assigned(serverConnect) then
   begin
@@ -120,10 +122,16 @@ begin
       Connection := serverConnect;
       SQL.Clear;
 
-      if _idUser = -1 then response:='select count(id) from queue where hash is not NULL'
-      else response:='select count(id) from queue where sip = '+#39+GetUserSIP(_idUser)+#39+ 'and hash is not NULL';
+      request:=TStringBuilder.Create;
+      with request do begin
+       Clear;
+       request.Append('select count(id) from queue');
+       request.Append(' where number_queue IN('+commonQueueSTR+') and hash is not NULL');
+       if _idUser <> -1 then request.Append(' and sip = '+#39+GetUserSIP(_idUser)+#39);
+      end;
 
-       SQL.Add(response);
+      SQL.Add(request.ToString);
+
       Active := True;
       countCalls := Fields[0].Value;
 
@@ -137,12 +145,18 @@ begin
 
       // скрываем надпись что нет данных
       st_NoCalls.Visible := False;
-
       SQL.Clear;
-      if _idUser = -1 then response:='select id, date_time, sip, phone, number_queue, talk_time from queue where hash is not NULL order by date_time DESC'
-      else response:='select id, date_time, sip, phone, number_queue, talk_time from queue where sip = '+#39+GetUserSIP(_idUser)+#39+' and hash is not NULL order by date_time DESC';
 
-      SQL.Add(response);
+      with request do begin
+       Clear;
+       request.Append('select id, date_time, sip, phone, number_queue, talk_time from queue');
+       request.Append(' where number_queue IN('+commonQueueSTR+') and hash is not NULL');
+       if _idUser <> -1 then request.Append(' and sip = '+#39+GetUserSIP(_idUser)+#39);
+
+       request.Append(' order by date_time DESC');
+      end;
+
+      SQL.Add(request.ToString);
       Active := True;
 
       for i := 0 to countCalls - 1 do
@@ -154,7 +168,6 @@ begin
         phone       :=VarToStr(Fields[3].Value);
         numberQueue :=VarToStr(Fields[4].Value);
         talkTime    :=VarToStr(Fields[5].Value);
-
 
         // Элемент не найден, добавляем новый
         AddListItem(id, dateTime,sip, phone, numberQueue, talkTime,
@@ -170,6 +183,7 @@ begin
     begin
       serverConnect.Close;
       FreeAndNil(serverConnect);
+      FreeAndNil(request);
     end;
   end;
 end;

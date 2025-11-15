@@ -361,10 +361,15 @@ begin
   Result.Duplicates:=dupIgnore;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
 
@@ -506,10 +511,15 @@ begin
   Result:=TStringList.Create;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   try
@@ -572,10 +582,15 @@ begin
   Result:=TStringList.Create;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   try
@@ -759,17 +774,22 @@ end;
   commonQueueSTR:string;  // список с очередями которые видит пользователь
  begin
    ado:=TADOQuery.Create(nil);
-   serverConnect:=createServerConnect;
    count_sip:=0;
    request:=TStringBuilder.Create;
    commonQueueSTR:='';
 
-   
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     FreeAndNil(request);
-     Exit;
+   try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         FreeAndNil(request);
+         Exit;
+      end;
+    end;
   end;
+
 
 
     if m_mutex.WaitFor(INFINITE) = wrSignaled  then
@@ -778,14 +798,12 @@ end;
           Self.Clear;
        end;
 
-      for i:=0 to m_commonQueue.Count-1 do begin
+     for i:=0 to m_commonQueue.Count-1 do begin
        if commonQueueSTR='' then commonQueueSTR:=#39+EnumQueueToString(m_commonQueue[i])+#39
-       else commonQueueSTR:=commonQueueSTR+','+#39+EnumQueueToString(m_commonQueue[i])+#39;   
+       else commonQueueSTR:=commonQueueSTR+','+#39+EnumQueueToString(m_commonQueue[i])+#39;
      end;
 
-       
       try
-
          if isNotViewGoHome = False then begin  // показываем всех операторов
 
            try
@@ -1062,11 +1080,17 @@ end;
   if getCountSipOperators=0 then Exit;
 
    ado:=TADOQuery.Create(nil);
-   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+      serverConnect:=createServerConnect;
+  except
+      on E:Exception do begin
+        if not Assigned(serverConnect) then begin
+           FreeAndNil(ado);
+           Exit;
+        end;
+      end;
   end;
+
 
   try
     with ado do begin
@@ -1109,10 +1133,15 @@ end;
   if getCountSipOperators=0 then Exit;
 
    ado:=TADOQuery.Create(nil);
-   serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   try
@@ -1187,11 +1216,16 @@ var
   if getCountSipOperators=0 then Exit;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
-  end;
+   try
+      serverConnect:=createServerConnect;
+    except
+      on E:Exception do begin
+        if not Assigned(serverConnect) then begin
+           FreeAndNil(ado);
+           Exit;
+        end;
+      end;
+    end;
 
   try
     with ado do begin
@@ -1249,10 +1283,15 @@ var
   if getCountSipOperators=0 then Exit;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   try
@@ -1310,10 +1349,15 @@ var
   if countSipOperators=0 then Exit;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   try
@@ -1376,10 +1420,15 @@ var
   if getCountSipOperators=0 then Exit;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   try
@@ -1442,10 +1491,15 @@ var
   if getCountSipOperators=0 then Exit;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-      FreeAndNil(ado);
-      Exit;
+  try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   try
@@ -1534,11 +1588,16 @@ procedure TActiveSIP.updateTalkTimeAll;
 
   // проверяем есть ли новые операторы
    ado:=TADOQuery.Create(nil);
-   serverConnect:=createServerConnect;
-   if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
-   end;
+  try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
+  end;
 
    request:=TStringBuilder.Create;
 
@@ -1681,10 +1740,15 @@ begin
   Result:=False;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     FreeAndNil(ado);
-     Exit;
+  try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
   end;
 
   try

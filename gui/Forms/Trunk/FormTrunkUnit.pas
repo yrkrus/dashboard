@@ -166,7 +166,7 @@ begin
 
 
  resultatDel:=MessageBox(Handle,PChar('Точно удалить '+#13+#13+
-                                       panel_Trunks_Login+' ('+panel_Trunks_Alias+') ?'),PChar('Уточнение'),MB_YESNO+MB_ICONWARNING);
+                                       panel_Trunks_Login+' ('+panel_Trunks_Alias+') ?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
  if resultatDel=mrNo then Exit;
 
 

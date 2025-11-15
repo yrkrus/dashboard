@@ -223,11 +223,17 @@ begin
   Screen.Cursor:=crHourGlass;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     Screen.Cursor:=crDefault;
-     FreeAndNil(ado);
-     Exit;
+
+  try
+      serverConnect:=createServerConnect;
+  except
+      on E:Exception do begin
+        if not Assigned(serverConnect) then begin
+           Screen.Cursor:=crDefault;
+           FreeAndNil(ado);
+           Exit;
+        end;
+      end;
   end;
 
   try
@@ -340,7 +346,7 @@ begin
 
  resultatDel:=MessageBox(Handle,PChar('Точно удалить '+#13+#13+
                                        panel_Server_IP+' ('+panel_Server_Alias+')'+#13+
-                                       panel_Server_addr+'?'),PChar('Уточнение'),MB_YESNO+MB_ICONWARNING);
+                                       panel_Server_addr+'?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
  if resultatDel=mrNo then Exit;
 
 

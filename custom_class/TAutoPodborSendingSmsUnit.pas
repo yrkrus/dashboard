@@ -30,6 +30,8 @@ uses
       m_message         :string;  // само сообщение
       m_userSending     :Integer; // пользователь который отправил сообщение
       m_userLogin       :string;  // логин входа пользователя
+      m_operator        :string;
+      m_region          :string;
 
       constructor Create;    overload;
       constructor Create(_id:Integer;
@@ -40,7 +42,9 @@ uses
                          _timeStatus:string;
                          _message:string;
                          _userSending:Integer;
-                         _userLogin:string);    overload;
+                         _userLogin:string;
+                         _operator:string;
+                         _region:string);    overload;
       procedure Clear;
 
       end;
@@ -69,6 +73,8 @@ uses
       function GetMessageSMS(_id:Integer):string;
       function GetUserFIO(_id:Integer):string;
       function GetUserLogin(_id:Integer):string;
+      function GetPhoneOperator(_id:Integer):string;
+      function GetPhoneRegion(_id:Integer):string;
 
       public
       constructor Create(_phone:string);    overload;
@@ -89,6 +95,8 @@ uses
       property MessageSMS[_id:Integer]:string read GetMessageSMS;
       property UserFIOSending[_id:Integer]:string read GetUserFIO;
       property UserLogin[_id:Integer]:string read GetUserLogin;
+      property PhoneOperator[_id:Integer]:string read GetPhoneOperator;
+      property PhoneRegion[_id:Integer]:string read GetPhoneRegion;
 
 
       end;
@@ -112,7 +120,9 @@ constructor TStructSending.Create(_id:Integer;
                                   _timeStatus:string;
                                   _message:string;
                                   _userSending:Integer;
-                                  _userLogin:string);
+                                  _userLogin:string;
+                                  _operator:string;
+                                  _region:string);
 begin
   m_idBase:=_id;
   m_idSms:=_idSms;
@@ -123,6 +133,8 @@ begin
   m_message:=_message;
   m_userSending:=_userSending;
   m_userLogin:=_userLogin;
+  m_operator:=_operator;
+  m_region:=_region;
 end;
 
 
@@ -138,6 +150,8 @@ begin
   m_message:='';
   m_userSending:=-1;
   m_userLogin:='';
+  m_operator:='';;
+  m_region:='';
 end;
 
 constructor TAutoPodborSendingSms.Create(_phone:string);
@@ -178,7 +192,9 @@ begin
                                 src.m_timeStatus,
                                 src.m_message,
                                 src.m_userSending,
-                                src.m_userLogin);
+                                src.m_userLogin,
+                                src.m_operator,
+                                src.m_region);
     m_list[i]:=dst;
   end;
 end;
@@ -221,7 +237,9 @@ begin
                                     _sending.m_timeStatus,
                                     _sending.m_message,
                                     _sending.m_userSending,
-                                    _sending.m_userLogin);
+                                    _sending.m_userLogin,
+                                    _sending.m_operator,
+                                    _sending.m_region);
 
   m_list[High(m_list)] := newSending;
   Inc(m_count);
@@ -287,6 +305,29 @@ begin
  Result:=m_list[_id].m_userLogin;
 end;
 
+function TAutoPodborSendingSms.GetPhoneOperator(_id:Integer):string;
+begin
+ if m_list[_id].m_operator='' then
+ begin
+   Result:='нет информации';
+   Exit;
+ end;
+
+ Result:=m_list[_id].m_operator;
+end;
+
+function TAutoPodborSendingSms.GetPhoneRegion(_id:Integer):string;
+begin
+ if m_list[_id].m_region='' then
+ begin
+   Result:='нет информации';
+   Exit;
+ end;
+
+ Result:=m_list[_id].m_region;
+end;
+
+
 procedure TAutoPodborSendingSms.FindData(_count:Integer);     // поиск когда отправляли SMS сообщения
 var
   ado: TADOQuery;
@@ -314,11 +355,11 @@ begin
 
        with request do begin
         Clear;
-        Append('select id,sms_id,date_time,status,status_date,message,user_id,user_login_pc ');
+        Append('select id,sms_id,date_time,status,status_date,message,user_id,user_login_pc,operator,region ');
         Append('from '+EnumReportTableSMSToString(eTableHistorySMS));
         Append(' where phone = '+#39+m_phone+#39);
         Append(' UNION ');
-        Append('select id,sms_id,date_time,status,status_date,message,user_id,user_login_pc ');
+        Append('select id,sms_id,date_time,status,status_date,message,user_id,user_login_pc,operator,region ');
         Append('from '+EnumReportTableSMSToString(eTableSMS));
         Append(' where phone = '+#39+m_phone+#39);
         Append(' order by date_time DESC');
@@ -342,6 +383,9 @@ begin
        sendingSMS.m_message:=VarToStr(Fields[5].Value);
        sendingSMS.m_userSending:=StrToInt(VarToStr(Fields[6].Value));
        sendingSMS.m_userLogin:=VarToStr(Fields[7].Value);
+
+       if Fields[8].Value <> null then sendingSMS.m_operator:=VarToStr(Fields[8].Value);
+       if Fields[9].Value <> null then sendingSMS.m_region:=VarToStr(Fields[9].Value);
 
        Add(sendingSMS);
        ado.Next;

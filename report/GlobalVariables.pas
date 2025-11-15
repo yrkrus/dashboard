@@ -11,7 +11,7 @@ unit GlobalVariables;
 interface
 
 uses
-  SysUtils, Windows, TCustomTypeUnit;
+  SysUtils, Windows, TCustomTypeUnit, TUserCommonQueueUnit;
 
 
 var
@@ -35,7 +35,11 @@ var
   // кол-во отчетов(нужно для формирования иконки рядом с названием отчета)
   MAX_COUNT_REPORT        :Word = 3;
 
+  SharedUserCommonQueue    :TUserCommonQueue;
+
 implementation
+
+
 
 
 initialization  // Инициализация

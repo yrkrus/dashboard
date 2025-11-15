@@ -164,7 +164,9 @@ type
     Label4: TLabel;
     panel_RegisterPhone: TPanel;
     btnRegPhone: TBitBtn;
-    Label8: TLabel;
+    menu_register_phone: TMenuItem;
+    chkbox_users_OperatorRegisterAllQueue: TLabel;
+    img_users_OperatorRegisterAllQueue: TImage;
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure menu_missed_callsClick(Sender: TObject);
@@ -196,7 +198,6 @@ type
     procedure menu_ServersIKClick(Sender: TObject);
     procedure menu_GlobalSettingsClick(Sender: TObject);
     procedure menu_SIPtrunkClick(Sender: TObject);
-    procedure ST_StatusPanelWindowClick(Sender: TObject);
     procedure img_goHome_YESClick(Sender: TObject);
     procedure img_goHome_NOClick(Sender: TObject);
     procedure menu_ChatClick(Sender: TObject);
@@ -264,10 +265,15 @@ type
     procedure lblStstatisc_Queue5911_No_AnsweredMouseMove(Sender: TObject;
       Shift: TShiftState; X, Y: Integer);
     procedure btnRegPhoneClick(Sender: TObject);
+    procedure menu_register_phoneClick(Sender: TObject);
+    procedure chkbox_users_OperatorRegisterAllQueueClick(Sender: TObject);
+    procedure img_users_OperatorRegisterAllQueueClick(Sender: TObject);
 
   private
     { Private declarations }
-   m_dispatcher    :TThreadDispatcher;   // планировщик
+   m_dispatcherCreateThreadDashboard                :TThreadDispatcher;   // планировщик
+   m_dispatcherCreateThreadWaitForRegisterPhone     :TThreadDispatcher;   // планировщик
+
    m_init:Boolean;    // полностью инициализировали главную форму
 
    FDragging: Boolean;      // состояние что панель со статусами операторов перемещается
@@ -278,10 +284,12 @@ type
 
    procedure ViewLabel(IsBold,IsUnderline:Boolean; var p_label:TLabel); // визуальная подсветка при наведении указателя мыши
    function SendCommand(_command:enumLogging;  _delay:enumStatus; var _errorDescriptions:string):boolean; overload;    // отправка удаленной команды
-   procedure SendCommand(_command:enumLogging; _delay:enumStatus);  overload;
+   procedure SendCommand(_command:enumLogging; _delay:enumStatus; isMultyCommand:Boolean);  overload;
    procedure AddQueuePopMenu(_command:enumLogging;_userSip:Integer); // добавление в очередь из popmenu
 
    procedure DashboardCreateThread; // создание потоков
+   procedure WaitForRegisteredPhone; // ожидание пока будет решистрация в телефоне
+
 
 
   public
@@ -373,55 +381,91 @@ begin
 end;
 
 
+// ожидание пока будет решистрация в телефоне
+procedure THomeForm.WaitForRegisteredPhone;
+var
+ ip:string;
+ sip:Integer;
+begin
+  sip:=_dll_GetOperatorSIP(SharedCurrentUserLogon.ID);
+  if sip = -1 then Exit;
+
+  if GetStatusRegisteredSipPhone(sip,ip) then begin
+    ShowStatusOperator(True,False);
+    m_dispatcherCreateThreadWaitForRegisterPhone.StopThread;
+  end;
+
+end;
+
 procedure OnDevelop;
 begin
   MessageBox(HomeForm.Handle,PChar('Данный функционал в разработке!'),PChar('В разработке'),MB_OK+MB_ICONINFORMATION);
 end;
 
 
-procedure THomeForm.SendCommand(_command:enumLogging; _delay:enumStatus);
+procedure THomeForm.SendCommand(_command:enumLogging; _delay:enumStatus; isMultyCommand:Boolean);
 var
  error:string;
+ i:Integer;
+ command:enumLogging;
 begin
-   if not SendCommand(_command,_delay, error) then begin
-     MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+
+  case isMultyCommand of
+   False:begin
+    if not SendCommand(_command, _delay, error) then begin
+       MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+       Exit;
+    end;
    end;
+   True:begin  // регистарция в нескольких очередях одновроеменно
+    for i:=0 to  SharedCurrentUserLogon.QueueList.Count-1 do begin
+      command:=EnumQueueToEnumLogging(SharedCurrentUserLogon.QueueList[i]);
+      SendCommand(command, _delay, False);
+    end;
+   end;
+  end;
+
 end;
 
 
 procedure THomeForm.btnRegPhoneClick(Sender: TObject);
 begin
-  OpenRegPhone;
+  OpenRegPhone(eManualRunning);
 end;
 
 procedure THomeForm.btnStatus_add_queue5000Click(Sender: TObject);
 var
  delay:enumStatus;
+ multyCommand:Boolean;
 begin
   delay:=eNO;
+  multyCommand:=SharedCheckBoxUI.Checked['OperatorRegisterAllQueue'];
 
  // добавление в очередь 5000
- SendCommand(eLog_add_queue_5000, delay);
+ SendCommand(eLog_add_queue_5000, delay, multyCommand);
 end;
 
 procedure THomeForm.btnStatus_add_queue5911Click(Sender: TObject);
 var
  delay:enumStatus;
+ multyCommand:Boolean;
 begin
   delay:=eNO;
+  multyCommand:=SharedCheckBoxUI.Checked['OperatorRegisterAllQueue'];
 
  // добавление в очередь 5911
-  SendCommand(eLog_add_queue_5911, delay);
+  SendCommand(eLog_add_queue_5911, delay, multyCommand);
 end;
 
 procedure THomeForm.btnStatus_add_queue5050Click(Sender: TObject);
 var
  delay:enumStatus;
+ multyCommand:Boolean;
 begin
  delay:=eNO;
-
+ multyCommand:=SharedCheckBoxUI.Checked['OperatorRegisterAllQueue'];
  // добавление в очередь 5050
- SendCommand(eLog_add_queue_5050, delay);
+ SendCommand(eLog_add_queue_5050, delay, multyCommand);
 end;
 
 procedure THomeForm.btnStatus_availableClick(Sender: TObject);
@@ -485,7 +529,7 @@ begin
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
   // перерыв
-  SendCommand(eLog_break,delay);
+  SendCommand(eLog_break,delay, False);
 end;
 
 procedure THomeForm.btnStatus_callbackClick(Sender: TObject);
@@ -518,7 +562,7 @@ begin
 
   // выход из всех очередей из 5000 и 5050
   delay:=eNO;
-  SendCommand(eLog_del_queue_5000_5050, delay);
+  SendCommand(eLog_del_queue_5000_5050, delay, False);
 end;
 
 
@@ -536,7 +580,7 @@ begin
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
    // обед
-  SendCommand(eLog_dinner,delay);
+  SendCommand(eLog_dinner, delay, False);
 end;
 
 procedure THomeForm.btnStatus_exodusClick(Sender: TObject);
@@ -553,7 +597,7 @@ begin
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
  // исход
-  SendCommand(eLog_exodus, delay);
+  SendCommand(eLog_exodus, delay, False);
 end;
 
 
@@ -571,7 +615,7 @@ begin
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
  // домой
-  SendCommand(eLog_home,delay);
+  SendCommand(eLog_home,delay, False);
 end;
 
 procedure THomeForm.btnStatus_ITClick(Sender: TObject);
@@ -588,7 +632,7 @@ begin
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
   // ИТ
-   SendCommand(eLog_IT,delay);
+   SendCommand(eLog_IT,delay, False);
 end;
 
 procedure THomeForm.btnStatus_postvyzovClick(Sender: TObject);
@@ -605,7 +649,7 @@ begin
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
  // поствызов
-  SendCommand(eLog_postvyzov, delay);
+  SendCommand(eLog_postvyzov, delay, False);
 end;
 
 procedure THomeForm.btnStatus_reserveClick(Sender: TObject);
@@ -622,7 +666,7 @@ begin
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
  // переносы
-  SendCommand(eLog_reserve,delay);
+  SendCommand(eLog_reserve,delay, False);
 end;
 
 procedure THomeForm.btnStatus_studiesClick(Sender: TObject);
@@ -639,7 +683,7 @@ begin
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
  // учеба
-   SendCommand(eLog_studies,delay);
+   SendCommand(eLog_studies,delay, False);
 end;
 
 procedure THomeForm.btnStatus_transferClick(Sender: TObject);
@@ -656,7 +700,12 @@ begin
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
 // переносы
- SendCommand(eLog_transfer,delay);
+ SendCommand(eLog_transfer,delay, False);
+end;
+
+procedure THomeForm.chkbox_users_OperatorRegisterAllQueueClick(Sender: TObject);
+begin
+ SharedCheckBoxUI.ChangeStatusCheckBox('OperatorRegisterAllQueue');
 end;
 
 procedure THomeForm.ST_HelpStatusInfoClick(Sender: TObject);
@@ -680,8 +729,12 @@ var
   AMsgDialog: TForm;
   ACheckBox: TCheckBox;
   DialogResult: Integer;
+  errorDescription:string;
 begin
-  if DEBUG then KillProcess;
+  if DEBUG then begin
+    KillProcess;
+  end;
+
 
   if SharedCurrentUserLogon.IsOperator then begin
 
@@ -695,11 +748,13 @@ begin
     if getIsExitOperatorCurrentGoHome(SharedCurrentUserLogon.Role, SharedCurrentUserLogon.ID) then begin
       CanClose:= Application.MessageBox(PChar('Прежде чем закрыть, необходимо выбрать статус "Домой"'), 'Ошибка при выходе', MB_OK + MB_ICONERROR) = IDNO;
       Exit;
-    end
+    end;
+
+   // разрегистрация в тлф
+   OpenRegPhone(eAutoRunningDeRegistered);
   end;
 
-  if getStatusIndividualSettingsUser(SharedCurrentUserLogon.ID,settingUsers_noConfirmExit) = paramStatus_DISABLED then begin
-
+  if not SharedIndividualSettingUser.NoConfirmExit then begin
     AMsgDialog := CreateMessageDialog('Вы действительно хотите завершить работу?', mtConfirmation, [mbYes, mbNo]);
     ACheckBox := TCheckBox.Create(AMsgDialog);
 
@@ -724,7 +779,7 @@ begin
       begin
         if ACheckBox.Checked then begin
           // созраняем параметр чтобы больше не показывать это окно
-          saveIndividualSettingUser(SharedCurrentUserLogon.ID,settingUsers_noConfirmExit,paramStatus_ENABLED);
+         SharedIndividualSettingUser.SaveIndividualSettingUser(settingUsers_noConfirmExit,paramStatus_ENABLED,errorDescription);
         end;
 
         KillProcess;
@@ -739,9 +794,7 @@ begin
       Free;
     end;
   end;
-
   KillProcess;
-
 end;
 
 procedure THomeForm.FormCreate(Sender: TObject);
@@ -830,11 +883,21 @@ begin
 
    // создаем все потоки (ВСЕГДА ДОЛЖНЫ ПОСЛЕДНИМИ ИНИЦИАЛИЗИРОВАТЬСЯ!!)
    begin
-     if not Assigned(m_dispatcher) then begin
-      m_dispatcher:=TThreadDispatcher.Create('CreateThreadDashboard',3,True,DashboardCreateThread);
+     if not Assigned(m_dispatcherCreateThreadDashboard) then begin
+      m_dispatcherCreateThreadDashboard:=TThreadDispatcher.Create('CreateThreadDashboard',3,True,DashboardCreateThread);
      end;
-     m_dispatcher.StartThread;
+     m_dispatcherCreateThreadDashboard.StartThread;
+
+
+     if SharedCurrentUserLogon.IsOperator then begin
+
+       if not Assigned(m_dispatcherCreateThreadWaitForRegisterPhone) then begin
+        m_dispatcherCreateThreadWaitForRegisterPhone:=TThreadDispatcher.Create('WaitForRegisteredPhone',1,False,WaitForRegisteredPhone);
+       end;
+       m_dispatcherCreateThreadWaitForRegisterPhone.StartThread;
+     end;
    end;
+
 
   except
   on E: Exception do begin
@@ -1053,10 +1116,6 @@ begin
   end;
 end;
 
-procedure THomeForm.ST_StatusPanelWindowClick(Sender: TObject);
-begin
-  ShowOperatorsStatus;
-end;
 
 procedure THomeForm.img_goHome_YESClick(Sender: TObject);
 begin
@@ -1131,6 +1190,11 @@ end;
 procedure THomeForm.img_UpFont_QueueClick(Sender: TObject);
 begin
   ChangeFontSize(eFontUP,eQueue);
+end;
+
+procedure THomeForm.img_users_OperatorRegisterAllQueueClick(Sender: TObject);
+begin
+ SharedCheckBoxUI.ChangeStatusCheckBox('OperatorRegisterAllQueue');
 end;
 
 procedure THomeForm.lblCheckInfocilinikaServerAliveClick(Sender: TObject);
@@ -1422,6 +1486,11 @@ end;
 procedure THomeForm.menu_OutgoingClick(Sender: TObject);
 begin
   OpenOutgoing;
+end;
+
+procedure THomeForm.menu_register_phoneClick(Sender: TObject);
+begin
+  OpenRegPhone(eManualWithOutParam);
 end;
 
 procedure THomeForm.menu_ServersIKClick(Sender: TObject);

@@ -33,6 +33,7 @@ uses
    menu_service                               : Boolean;
    menu_missed_calls                          : Boolean;
    menu_clear_status_operator                 : Boolean;
+   menu_register_phone                        : Boolean;
 
   constructor Create(InGroupRole:enumRole);      overload;
   property Role:enumRole read m_role;
@@ -57,6 +58,7 @@ implementation
    menu_service                             :=  False;
    menu_missed_calls                        :=  False;
    menu_clear_status_operator               :=  False;
+   menu_register_phone                      :=  False;
 
    m_role                                   :=  InGroupRole;
 
@@ -72,11 +74,16 @@ var
 begin
 //
  ado:=TADOQuery.Create(nil);
- serverConnect:=createServerConnect;
- if not Assigned(serverConnect) then begin
-   FreeAndNil(ado);
-   Exit;
- end;
+  try
+      serverConnect:=createServerConnect;
+  except
+      on E:Exception do begin
+        if not Assigned(serverConnect) then begin
+           FreeAndNil(ado);
+           Exit;
+        end;
+      end;
+  end;
 
  try
   with ado do begin
@@ -87,7 +94,7 @@ begin
       Clear;
       Append('select menu_users,menu_serversik, menu_siptrunk,');
       Append('menu_settings_global, menu_active_session, menu_service,');
-      Append('menu_missed_calls, menu_clear_status_operator ');
+      Append('menu_missed_calls, menu_clear_status_operator,menu_register_phone ');
       Append('from access_panel where role = '+#39+IntToStr(GetRoleID(EnumRoleToString(p_InRole)))+#39);
     end;
 
@@ -104,6 +111,7 @@ begin
     if StrToInt(VarToStr(Fields[5].Value))=1 then menu_service:=True;
     if StrToInt(VarToStr(Fields[6].Value))=1 then menu_missed_calls:=True;
     if StrToInt(VarToStr(Fields[7].Value))=1 then menu_clear_status_operator:=True;
+    if StrToInt(VarToStr(Fields[8].Value))=1 then menu_register_phone:=True;
 
   end;
  finally

@@ -51,11 +51,15 @@ begin
   Screen.Cursor:=crHourGlass;
 
   ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnect;
-  if not Assigned(serverConnect) then begin
-     Screen.Cursor:=crDefault;
-     FreeAndNil(ado);
-     Exit;
+  try
+      serverConnect:=createServerConnect;
+  except
+      on E:Exception do begin
+        if not Assigned(serverConnect) then begin
+           FreeAndNil(ado);
+           Exit;
+        end;
+      end;
   end;
 
   try
@@ -204,7 +208,7 @@ begin
     Exit;
    end;
 
-   resultat:=MessageBox(Handle,PChar('Точно удалить?'),PChar('Уточнение'),MB_YESNO+MB_ICONWARNING);
+   resultat:=MessageBox(Handle,PChar('Точно удалить?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
    if resultat=mrNo then Exit;
 
    if not (m_ivrTime.Delete(StrToInt(SelectedItem.Caption), error)) then begin

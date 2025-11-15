@@ -552,7 +552,7 @@ begin
   if m_isEditData then begin
 
     resultat:=MessageBox(Handle,PChar('Данные были изменены'+#13#13+
-                                      'сохранить изменения?'),PChar('Уточнение'),MB_YESNO+MB_ICONINFORMATION);
+                                      'сохранить изменения?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
     if resultat = mrNo then Exit;
   end
   else Exit;

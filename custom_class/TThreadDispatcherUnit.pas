@@ -132,7 +132,7 @@ begin
   end;
 
   // завершаемся
-  Log.Save('Task: ' + m_taskName + '<font color="red"> <b>terminated</b></font>');
+  Log.Save('Task: ' + m_taskName + '<font color="red"> <b> terminated</b></font>');
 end;
 
 
@@ -144,7 +144,7 @@ begin
 
   if not m_running then
   begin
-    Log.Save('Task: ' + m_taskName + '<font color="green"><b>is started</b></font>');
+    Log.Save('Task: ' + m_taskName + '<font color="green"><b> is started</b></font>');
     m_running := True; // Устанавливаем флаг в true
   end;
 end;

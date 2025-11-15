@@ -66,7 +66,7 @@ procedure _INIT;
 begin
       // стататус бар
    with HomeForm.StatusBar do begin
-    Panels[2].Text:='Регистрация телефона(скоро)';
+    Panels[2].Text:='Регистрация телефона [---]';
     Panels[3].Text:=SharedCurrentUserLogon.Familiya+' '+SharedCurrentUserLogon.Name;
     Panels[4].Text:=GetUserRoleSTR(SharedCurrentUserLogon.ID);
     Panels[5].Text:=GetCopyright;

@@ -578,6 +578,10 @@ var
  countUsers,i:Integer;
  only_operators_roleID:TStringList;
  id_operators:string;
+ request:TStringBuilder;
+
+ commonQueueSTR:string;  // список с очередями которые видит пользователь
+
 begin
   Screen.Cursor:=crHourGlass;
 
@@ -587,6 +591,9 @@ begin
      FreeAndNil(ado);
      Exit;
   end;
+
+  commonQueueSTR:=SharedUserCommonQueue.ActiveQueueSTRToBase;
+  request:=TStringBuilder.Create;
 
   try
      with ado do begin
@@ -599,6 +606,13 @@ begin
           if id_operators='' then id_operators:=#39+only_operators_roleID[i]+#39
           else id_operators:=id_operators+','#39+only_operators_roleID[i]+#39;
         end;
+
+        with request do begin
+
+
+
+        end;
+
 
         if InShowDisableUsers=False then SQL.Add('select count(id) from users where disabled =''0'' and role IN('+id_operators+') ')
         else SQL.Add('select count(id) from users where disabled =''1'' and role IN('+id_operators+') ');

@@ -356,10 +356,10 @@ begin
 
 
   resultat:=MessageBox(Handle,PChar('Точно удалить '+GetUserNameFIO(userId)+'?'+#13#13+
-                                    'ВНИМАНИЕ! Восстановить удаленную учетную запись не получиться' ),PChar('Уточнение'),MB_YESNO+MB_ICONWARNING);
+                                    'ВНИМАНИЕ! Восстановить удаленную учетную запись не получиться' ),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
   if resultat=mrNo then Exit;
 
-  resultat:=MessageBox(Handle,PChar('ВНИМАНИЕ! ВОССТАНОВИТЬ НЕ ПОЛУЧИТСЯ!!!'+#13#13+'Точно удаляем?' ),PChar('Последнее предупреждение'),MB_YESNO+MB_ICONWARNING);
+  resultat:=MessageBox(Handle,PChar('ВНИМАНИЕ! ВОССТАНОВИТЬ НЕ ПОЛУЧИТСЯ!!!'+#13#13+'Точно удаляем?' ),PChar('Последнее предупреждение'),MB_YESNO+MB_ICONQUESTION);
   if resultat=mrNo then Exit;
 
   // отключаем
@@ -437,7 +437,7 @@ begin
 //
 // id:=StrToInt(currentEditUserId);
 //
-// resultat:=MessageBox(Handle,PChar('Точно включить '+getUserNameFIO(id)+'?'),PChar('Уточнение'),MB_YESNO+MB_ICONWARNING);
+// resultat:=MessageBox(Handle,PChar('Точно включить '+getUserNameFIO(id)+'?'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
 // if resultat=mrNo then Exit;
 //
 //
