@@ -314,6 +314,11 @@ begin
       end;
     end;
   end;
+
+//   USER_STARTED_REG_PHONE_ID:=94;
+//   USER_STARTED_PC_NAME:='DEV';
+//   USER_AUTO_REGISTERED_SIP_PHONE:=StrToBool('False');
+
 end;
 
 
@@ -531,6 +536,7 @@ begin
          DeRegisterPhoneAuto(errorDescription);
        end;
       end;
+
       KillProcessNow;
     end;
    end;

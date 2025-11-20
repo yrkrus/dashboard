@@ -44,6 +44,8 @@ uses
       function GetIPPhoneWithNamePC(_namePC:string):string;  // получение ip адрес из имени пк
       function GetIPPhoneWithSip(_sip:Integer):string;        // получение ip адрес из sip
       function GetRegisterdSip(_sip:Integer):Boolean;
+      function GetNamePCWithSip(_sip:Integer):string;          // получение имени пк из его sip
+
 
       public
       constructor Create;                   overload;
@@ -62,6 +64,7 @@ uses
       property IPPhoneWithNamePC[_namePC:string]:string read GetIPPhoneWithNamePC;  // получение ip адрес из имени пк
       property IPPhoneWithSip[_sip:Integer]:string read GetIPPhoneWithSip;          // получение ip адрес из имени пк
       property IsRegisterdSip[_sip:Integer]:Boolean read GetRegisterdSip;           // зарегестировани ли sip номер на телеыоне
+      property NamePCWithSip[_sip:Integer]:string read GetNamePCWithSip;            // получение имени пк из его sip
 
 
       end;
@@ -366,6 +369,21 @@ begin
    for i:=0 to m_count-1 do begin
      if m_list[i].m_sip = _sip then begin
        Result:=True;
+       Exit;
+     end;
+   end;
+end;
+
+ // получение имени пк из его sip
+function TPhoneList.GetNamePCWithSip(_sip:Integer):string;
+var
+ i:Integer;
+begin
+  Result:='';
+
+   for i:=0 to m_count-1 do begin
+     if m_list[i].m_sip = _sip then begin
+       Result:=m_list[i].m_namePC;
        Exit;
      end;
    end;

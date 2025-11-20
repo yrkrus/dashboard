@@ -18,7 +18,10 @@ uses  System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
-  // class TStructTrunk
+ const
+  cERROR_COUNT_TRUNK:Word = 3; // кол-во ошибок при котором считается что есть пробьлема с транком
+
+ // class TStructTrunk
  type
       TStructTrunk = class
 
@@ -178,7 +181,7 @@ begin
         if Active then ACtive:=false;
 
         SQL.Clear;
-        response:='select id,state,alias,date_time_update from sip_trunks where is_monitoring = ''1''';
+        response:='select id,state,alias,date_time_update,is_error_count from sip_trunks where is_monitoring = ''1''';
 
         SQL.Add(response);
 
@@ -204,7 +207,9 @@ begin
            m_listTrunk[i].time_update:=VarToStr(Fields[3].Value);
 
            // живой ли транк
-           if m_listTrunk[i].status = eTrunkRegisterd then  m_listTrunk[i].is_alive:=True;
+          if StrToInt(VarToStr(Fields[4].Value)) <= cERROR_COUNT_TRUNK then begin
+            m_listTrunk[i].is_alive:=True;
+          end;
 
            ado.Next;
          end;
@@ -261,12 +266,14 @@ begin
       ado.Connection:=serverConnect;
 
       SQL.Clear;
-      response:='select state from sip_trunks where id = '+#39+IntToStr(_id)+#39+'';
+      response:='select is_error_count from sip_trunks where id = '+#39+IntToStr(_id)+#39+'';
       SQL.Add(response);
 
       try
           Active:=True;
-          if Fields[0].Value <> null then Result:=StringToEnumTrunkStatus(VarToStr(Fields[0].Value));
+
+          if StrToInt(VarToStr(Fields[0].Value)) <= cERROR_COUNT_TRUNK then Result:=eTrunkRegisterd
+          else Result:=eTrunkRequest;
       except
           on E:EIdException do begin
              FreeAndNil(ado);

@@ -66,7 +66,7 @@ procedure _INIT;
 begin
       // стататус бар
    with HomeForm.StatusBar do begin
-    Panels[2].Text:='Регистрация телефона [---]';
+    Panels[2].Text:='Регистрация телефона [-]';
     Panels[3].Text:=SharedCurrentUserLogon.Familiya+' '+SharedCurrentUserLogon.Name;
     Panels[4].Text:=GetUserRoleSTR(SharedCurrentUserLogon.ID);
     Panels[5].Text:=GetCopyright;
@@ -89,9 +89,6 @@ begin
   // прогрузка красивых чекбоксов на форме
   AddCustomCheckBoxUI;
 
-  // пасхалки
-  Egg;
-
   // линковка окна формы debug info в класс для подсчета статистики работы потоков
   SharedCountResponseThread.SetAddForm(FormDEBUG);
 
@@ -104,13 +101,13 @@ begin
   // отображение только нужных очередей
   AccessUsersCommonQueue(SharedCurrentUserLogon.QueueList);
 
-
   // дата+время старта
   PROGRAM_STARTED:=Now;
 
   // размер главной офрмы экрана
   WindowStateInit;
+
+  // пасхалки
+  Egg;
 end;
-
-
 end.

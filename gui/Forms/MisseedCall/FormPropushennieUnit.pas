@@ -37,6 +37,7 @@ type
     ST_no_missed: TStaticText;
     Label14: TLabel;
     Label15: TLabel;
+    Label16: TLabel;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
@@ -362,6 +363,8 @@ begin
         lblPeriod[_id].Name:='lbl_period_'+nameControl;
         lblPeriod[_id].Tag:=1;
         lblPeriod[_id].Caption:=GetPeriodCall(SharedQueueStatistics.GetCalls_DateTime(_queue,_missed,i), lblPeriod[_id]);
+        lblPeriod[_id].Hint:=DateTimeToStr(SharedQueueStatistics.GetCalls_DateTime(_queue,_missed,i));
+        lblPeriod[_id].ShowHint:=True;
         lblPeriod[_id].Left:=1039;
 
         if _id=0 then lblPeriod[_id].Top:=cTOPSTART

@@ -61,7 +61,9 @@ end;
 
 procedure Thread_CheckTrunks.show(var p_listTrunks: TCheckSipTrunk);
 begin
- if not CONNECT_BD_ERROR then p_listTrunks.CheckSipTrunk;
+ if not CONNECT_BD_ERROR then begin
+   p_listTrunks.CheckSipTrunk;
+ end;
 end;
 
 

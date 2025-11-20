@@ -2,7 +2,7 @@ object HomeForm: THomeForm
   Left = 0
   Top = 0
   Caption = #1044#1072#1096#1073#1086#1088#1076' '#1050#1086#1083#1083#1062#1077#1085#1090#1088#1072
-  ClientHeight = 874
+  ClientHeight = 854
   ClientWidth = 1454
   Color = clWindow
   DefaultMonitor = dmDesktop
@@ -13,14 +13,14 @@ object HomeForm: THomeForm
   Font.Style = []
   Menu = FooterMenu
   OldCreateOrder = False
-  Position = poScreenCenter
+  Position = poDesigned
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnResize = FormResize
   OnShow = FormShow
   DesignSize = (
     1454
-    874)
+    854)
   PixelsPerInch = 96
   TextHeight = 15
   object Label5: TLabel
@@ -330,7 +330,7 @@ object HomeForm: THomeForm
   end
   object lblNewMessageLocalChat: TLabel
     Left = 1202
-    Top = 833
+    Top = 813
     Width = 243
     Height = 16
     Cursor = crHandPoint
@@ -354,33 +354,6 @@ object HomeForm: THomeForm
     OnMouseLeave = lblNewMessageLocalChatMouseLeave
     ExplicitLeft = 1142
     ExplicitTop = 801
-  end
-  object lblNewVersionDashboard: TLabel
-    Left = 751
-    Top = 22
-    Width = 346
-    Height = 20
-    Cursor = crHandPoint
-    Hint = #1053#1086#1074#1072#1103' '#1074#1077#1088#1089#1080#1103' '#1075#1086#1090#1086#1074#1072' '#1082' '#1091#1089#1090#1072#1085#1086#1074#1082#1077
-    Alignment = taCenter
-    Anchors = [akTop]
-    AutoSize = False
-    Caption = #1044#1086#1089#1090#1091#1087#1085#1072' '#1085#1086#1074#1072#1103' '#1074#1077#1088#1089#1080#1103' ('#1087#1086#1076#1088#1086#1073#1085#1077#1077')'
-    Color = clWindow
-    Font.Charset = RUSSIAN_CHARSET
-    Font.Color = clNavy
-    Font.Height = -16
-    Font.Name = 'Courier New'
-    Font.Style = [fsBold]
-    ParentColor = False
-    ParentFont = False
-    ParentShowHint = False
-    ShowHint = True
-    Transparent = False
-    Visible = False
-    OnClick = lblNewVersionDashboardClick
-    OnMouseMove = lblNewMessageLocalChatMouseMove
-    OnMouseLeave = lblNewMessageLocalChatMouseLeave
   end
   object img_StatisticsQueue_Graph: TImage
     Left = 16
@@ -483,7 +456,7 @@ object HomeForm: THomeForm
   end
   object Img8Mart: TImage
     Left = 1374
-    Top = 802
+    Top = 782
     Width = 79
     Height = 50
     Anchors = [akRight, akBottom]
@@ -610,7 +583,7 @@ object HomeForm: THomeForm
   end
   object ImageLogo: TImage
     Left = 1277
-    Top = 794
+    Top = 774
     Width = 157
     Height = 37
     Anchors = [akRight, akBottom]
@@ -777,7 +750,7 @@ object HomeForm: THomeForm
   end
   object ImgNewYear: TImage
     Left = 1389
-    Top = 774
+    Top = 754
     Width = 55
     Height = 55
     Anchors = [akRight, akBottom]
@@ -5813,6 +5786,21 @@ object HomeForm: THomeForm
     ExplicitLeft = 1329
     ExplicitTop = 742
   end
+  object lblTalkLisaCount: TLabel
+    Left = 1288
+    Top = 23
+    Width = 152
+    Height = 16
+    Alignment = taRightJustify
+    Anchors = [akTop, akRight]
+    Caption = '&'#1056#1072#1079#1075#1086#1074#1072#1088#1080#1074#1072#1102#1090' '#1089' '#1083#1080#1079#1086#1081': -'
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+  end
   object panel_IVR: TPanel
     Left = 10
     Top = 44
@@ -6233,7 +6221,7 @@ object HomeForm: THomeForm
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 853
+    Top = 833
     Width = 1454
     Height = 21
     Panels = <
@@ -6654,14 +6642,14 @@ object HomeForm: THomeForm
       object chkbox_users_OperatorRegisterAllQueue: TLabel
         Left = 32
         Top = 93
-        Width = 160
+        Width = 224
         Height = 13
-        Caption = #1088#1077#1075#1080#1089#1090#1088#1072#1094#1080#1103' '#1074#1086' '#1074#1089#1077#1093' '#1086#1095#1077#1088#1077#1076#1103#1093' '
+        Caption = #1088#1077#1075#1080#1089#1090#1088#1072#1094#1080#1103' '#1074#1086' '#1074#1089#1077#1093' '#1086#1095#1077#1088#1077#1076#1103#1093' '#1079#1072' '#1088#1072#1079' '
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
         Font.Name = 'Tahoma'
-        Font.Style = []
+        Font.Style = [fsBold]
         ParentFont = False
         OnClick = chkbox_users_OperatorRegisterAllQueueClick
       end
@@ -7481,8 +7469,23 @@ object HomeForm: THomeForm
       OnMouseDown = PanelStatusINMouseDown
       OnMouseMove = PanelStatusINMouseMove
       OnMouseUp = PanelStatusINMouseUp
+      object Label8: TLabel
+        Left = 276
+        Top = 30
+        Width = 53
+        Height = 16
+        Cursor = crHandPoint
+        Caption = 'fix fix fix'
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+        OnClick = Label8Click
+      end
       object btnRegPhone: TBitBtn
-        Left = 414
+        Left = 335
         Top = 21
         Width = 234
         Height = 37
@@ -7542,6 +7545,52 @@ object HomeForm: THomeForm
         WordWrap = True
         OnClick = btnRegPhoneClick
       end
+      object BitBtn1: TBitBtn
+        Left = 588
+        Top = 21
+        Width = 91
+        Height = 37
+        Hint = #1054#1082#1086#1085#1095#1072#1085#1080#1077' '#1088#1072#1073#1086#1095#1077#1075#1086' '#1076#1085#1103
+        Caption = '&'#1044#1086#1084#1086#1081
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        Glyph.Data = {
+          36030000424D3603000000000000360000002800000010000000100000000100
+          1800000000000003000074120000741200000000000000000000FFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFF6F6F6808181FFFFFFFFFFFFFFFFFFFFFFFFC9C9C99E9F
+          9FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEEEFEF656666FF
+          FFFFFFFFFFFFFFFFFFFFFFFCFCFC545555F3F3F3FFFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFF2F2F25D5F5FB4B4B4FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFAFAF
+          AFA2A3A3FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE7E8E8535454C1C1C1FFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFEDEDED6C6D6DFFFFFFFFFFFFFFFFFFFFFFFF
+          DCDCDC4D4F4FD2D3D3FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFCFC
+          FC5B5C5CFFFFFFFFFFFFFFFFFFFFFFFF676868E0E1E1EFEFEF979898939494FF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFC0C1C1979898FFFFFFFFFFFFFFFFFFFFFFFF
+          8B8C8C6162625253539FA0A0656666FFFFFFFFFFFFFFFFFFFFFFFFCACACA5354
+          54E8E8E8FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBFBFBFFFFFFF1F1F1656666FF
+          FFFFAEAEAE7374745455557E8080EDEDEDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFF1F1F1656666FFFFFF515353DEDEDEFCFCFCFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF1F1F1656666FF
+          FFFF575959FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          FDFDFDB2B3B3CDCECEF1F1F1656666FFFFFF575959F8F8F8ADAEAED8D8D8FFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFDFDFDB2B3B3CDCECEF5F5F5595A5AF9
+          F9F9545656F8F8F8ADAEAED8D8D8FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFF787A7A4244449A9A9AFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF3F3F3717373FFFFFFFFFFFFFA
+          FAFAFFFFFFB6B7B7AEAEAEFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          FFFFFFCACACAC4C4C4FFFFFFFFFFFF868787FFFFFFFAFAFA939494FFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF77
+          7878FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
+        ParentFont = False
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 1
+        WordWrap = True
+        OnClick = btnStatus_homeClick
+      end
     end
     object ST_StatusPanel: TStaticText
       Left = 414
@@ -7573,7 +7622,7 @@ object HomeForm: THomeForm
     Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
-    TabOrder = 2
+    TabOrder = 3
     Visible = False
   end
   object PanelStatisticsQueue_Numbers: TPanel
@@ -7932,19 +7981,22 @@ object HomeForm: THomeForm
     Width = 75
     Height = 25
     Caption = 'Button1'
-    TabOrder = 1
+    TabOrder = 2
     Visible = False
   end
   object ST_SL: TStaticText
-    Left = 1308
-    Top = 4
-    Width = 137
-    Height = 20
-    Hint = #1063#1077#1084' '#1074#1099#1096#1077' '#1090#1077#1084' '#1093#1086#1088#1086#1096#1086
+    Left = 1253
+    Top = 2
+    Width = 98
+    Height = 18
+    Hint = 
+      'Service Level, '#1091#1088#1086#1074#1077#1085#1100' '#1089#1077#1088#1074#1080#1089#1072#13#10#1076#1086#1083#1103' '#1074#1093#1086#1076#1103#1097#1080#1093' '#1074#1099#1079#1086#1074#1086#1074', '#1085#1072' '#1082#1086#1090#1086#1088#1099 +
+      #1077' '#1086#1087#1077#1088#1072#1090#1086#1088#1099' '#1086#1090#1074#1077#1090#1080#1083#1080' '#1074' '#1087#1088#1077#1076#1077#1083#1072#1093' '#1079#1072#1088#1072#1085#1077#1077' '#1079#1072#1076#1072#1085#1085#1086#1075#1086' '#1094#1077#1083#1077#1074#1086#1075#1086' '#1074#1088#1077#1084#1077 +
+      #1085#1080
     Alignment = taRightJustify
     Anchors = [akTop, akRight]
     AutoSize = False
-    Caption = 'SL: 100%'
+    Caption = 'SL: -%'
     Color = clWindow
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -7959,15 +8011,17 @@ object HomeForm: THomeForm
     Transparent = False
   end
   object ST_AR: TStaticText
-    Left = 1308
-    Top = 20
-    Width = 137
-    Height = 20
-    Hint = #1063#1077#1084' '#1085#1080#1078#1077' '#1090#1077#1084' '#1093#1086#1088#1086#1096#1086
+    Left = 1362
+    Top = 2
+    Width = 78
+    Height = 18
+    Hint = 
+      'Abandon Rate, '#1091#1088#1086#1074#1077#1085#1100' '#1086#1090#1082#1072#1079#1086#1074'/'#1089#1073#1088#1086#1089#1086#1074#13#10#1076#1086#1083#1103' '#1079#1074#1086#1085#1082#1086#1074', '#1082#1086#1090#1086#1088#1099#1077' '#1087#1072#1094 +
+      #1080#1077#1085#1090#1099' '#1089#1073#1088#1086#1089#1080#1083#1080' '#1076#1086' '#1090#1086#1075#1086', '#1082#1072#1082' '#1080#1084' '#1086#1090#1074#1077#1090#1080#1083#1080' '#1086#1087#1077#1088#1072#1090#1086#1088#1099
     Alignment = taRightJustify
     Anchors = [akTop, akRight]
     AutoSize = False
-    Caption = 'AR: 0%'
+    Caption = 'AR: -%'
     Color = clWindow
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
@@ -7978,7 +8032,7 @@ object HomeForm: THomeForm
     ParentFont = False
     ParentShowHint = False
     ShowHint = True
-    TabOrder = 3
+    TabOrder = 1
     Transparent = False
   end
   object panel_QueueStatistics: TPanel

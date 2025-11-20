@@ -1148,13 +1148,13 @@ begin
 
   case _stat of
    stat_no_answered:begin
-    SQL_text:='select id,phone,waiting_time,date_time from queue where number_queue = '+#39+TQueueToString(_queue)+#39+' and fail = ''1'' and date_time > '+#39+GetNowDateTime+#39;
+    SQL_text:='select id,phone,waiting_time,date_time from queue where number_queue = '+#39+TQueueToString(_queue)+#39+' and fail = ''1'' and date_time > '+#39+GetNowDateTime+#39+' order by date_time DESC';
    end;
    stat_no_answered_return:begin
     SQL_text:='select id,phone,waiting_time,date_time from queue where number_queue='+#39+TQueueToString(_queue)+#39+
                                                                 ' and fail =''1'' and date_time >'+#39+GetNowDateTime+#39+
                                                                 ' and phone not in (select phone from queue where number_queue ='+#39+TQueueToString(_queue)+#39+
-                                                                ' and answered  = ''1'' and date_time > +'#39+GetNowDateTime+#39+')';
+                                                                ' and answered  = ''1'' and date_time > +'#39+GetNowDateTime+#39+') order by date_time DESC';
    end;
   end;
 

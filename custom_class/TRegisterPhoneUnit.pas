@@ -45,6 +45,8 @@ uses
       function CheckRequest(const _responce:string; var _errorDescription:string):Boolean;  // проверка ответа
       function CheckStatus(_regStatus:EnumRegStatus; var _errorDescription:string):Boolean; // проверка статуса телефона
       function SendRequestToBase(_regStatus:EnumRegStatus; var _errorDescription:string):Boolean; // отправка инфы на базу
+      function CheckLastRegistration(var _errorDescription:string):Boolean; // проверка была ли уже ранее такая регистрация телефона TRUE - чисто
+
 
       public
 
@@ -60,7 +62,7 @@ uses
 implementation
 
 uses
-  GlobalVariablesLinkDLL;
+  GlobalVariablesLinkDLL, TPhoneListUnit;
 
 
 
@@ -81,7 +83,6 @@ begin
   m_authPwd:=cPwdDef;
 end;
 
-
 // регистрация
 function TRegisterPhone.RegisterPhone(var _errorDescription:string):Boolean;
 var
@@ -89,6 +90,12 @@ var
 begin
   _errorDescription:='';
   Result:=False;
+
+  // проверяем есть ли уже такая регистрация
+  if not CheckLastRegistration(_errorDescription) then begin
+    Exit;
+  end;
+
 
   try
    if not CreateRequest(enumRegistration, responce, _errorDescription) then begin
@@ -332,5 +339,22 @@ begin
   Result:=True;
 end;
 
+
+// проверка была ли уже ранее такая регистрация телефона TRUE - чисто
+function TRegisterPhone.CheckLastRegistration(var _errorDescription:string):Boolean;
+var
+ phoneList:TPhoneList;
+begin
+  _errorDescription:='';
+  Result:=False;
+
+  phoneList:=TPhoneList.Create;
+  if phoneList.IsRegisterdSip[m_sip] then begin
+    _errorDescription:='Sip '+IntToStr(m_sip)+' уже зарегистрирован на ПК '+phoneList.NamePCWithSip[m_sip];
+    Exit;
+  end;
+
+  Result:=True;
+end;
 
 end.

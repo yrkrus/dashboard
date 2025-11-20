@@ -81,11 +81,11 @@ begin
 
                // обновление SL
                UpdateSL;
-               ShowSL;
+               Synchronize(ShowSL);
 
                // обновление AR
                UpdateAR;
-               ShowAR;
+               Synchronize(ShowAR);
             end;
         end
         else begin

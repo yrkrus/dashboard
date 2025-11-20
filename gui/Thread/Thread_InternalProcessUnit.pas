@@ -73,14 +73,14 @@ begin
    p_InternalProcess.UpdateTimeDashboard;
 
   if not CONNECT_BD_ERROR then begin
-    p_InternalProcess.CheckForceActiveSessionClosed;              // нужно ли немедленно закрыть сессию
-    p_InternalProcess.UpdateTimeActiveSession(PROGRAMM_UPTIME);   // обновление времени ондайна в БД
-    p_InternalProcess.CheckStatusUpdateService;                   // проверка запущена ли служба обновления
-    p_InternalProcess.CheckStatusRegisteredSipPhone;              // проверка зарегестрирован ли sip на телефоне
+   p_InternalProcess.CheckForceActiveSessionClosed;              // нужно ли немедленно закрыть сессию
+   p_InternalProcess.UpdateTimeActiveSession(PROGRAMM_UPTIME);   // обновление времени ондайна в БД
+   Synchronize(p_InternalProcess.CheckStatusUpdateService);                   // проверка запущена ли служба обновления
+   Synchronize(p_InternalProcess.CheckStatusRegisteredSipPhone);              // проверка зарегестрирован ли sip на телефоне
    // p_InternalProcess.XMLUpdateLastOnline;                      // обновление времемни в settings.xml
-    p_InternalProcess.UpdateMemory;                               // обновление загрузки по памяти
+   p_InternalProcess.UpdateMemory;                               // обновление загрузки по памяти
+   Synchronize(p_InternalProcess.ActiveCallsLisaTalk);                 // сколько сейчас разговаривает с лизой
   end;
-
 end;
 
 procedure Thread_InternalProcess.Execute;

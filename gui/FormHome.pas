@@ -79,7 +79,6 @@ type
     ST_operatorsHideCount: TStaticText;
     menu_Chat: TMenuItem;
     lblNewMessageLocalChat: TLabel;
-    lblNewVersionDashboard: TLabel;
     PanelStatisticsQueue_Numbers: TPanel;
     PanelStatisticsQueue_Graph: TPanel;
     Label12: TLabel;
@@ -167,6 +166,9 @@ type
     menu_register_phone: TMenuItem;
     chkbox_users_OperatorRegisterAllQueue: TLabel;
     img_users_OperatorRegisterAllQueue: TImage;
+    BitBtn1: TBitBtn;
+    Label8: TLabel;
+    lblTalkLisaCount: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure menu_missed_callsClick(Sender: TObject);
@@ -210,7 +212,6 @@ type
     procedure lblCheckInfocilinikaServerAliveMouseMove(Sender: TObject;
       Shift: TShiftState; X, Y: Integer);
     procedure lblCheckInfocilinikaServerAliveMouseLeave(Sender: TObject);
-    procedure lblNewVersionDashboardClick(Sender: TObject);
     procedure img_StatisticsQueue_GraphClick(Sender: TObject);
     procedure img_StatisticsQueue_NumbersClick(Sender: TObject);
     procedure img_SL_History_GraphClick(Sender: TObject);
@@ -268,6 +269,8 @@ type
     procedure menu_register_phoneClick(Sender: TObject);
     procedure chkbox_users_OperatorRegisterAllQueueClick(Sender: TObject);
     procedure img_users_OperatorRegisterAllQueueClick(Sender: TObject);
+    procedure Label8Click(Sender: TObject);
+
 
   private
     { Private declarations }
@@ -364,7 +367,7 @@ uses
     GlobalVariables, FormUsersUnit, FormServersIKUnit, FormSettingsGlobalUnit,
     FormTrunkUnit, TFTPUnit, TForecastCallsUnit, FormStatusInfoUnit,
     FormHistoryCallOperatorUnit, TDebugStructUnit, FormHistoryStatusOperatorUnit,
-    GlobalVariablesLinkDLL, TStatusUnit, FormTrunkSipUnit, TLdapUnit, FormHomeInit;
+    GlobalVariablesLinkDLL, TStatusUnit, FormTrunkSipUnit, TLdapUnit, FormHomeInit, TPhoneListUnit;
 
 
 {$R *.dfm}
@@ -394,7 +397,6 @@ begin
     ShowStatusOperator(True,False);
     m_dispatcherCreateThreadWaitForRegisterPhone.StopThread;
   end;
-
 end;
 
 procedure OnDevelop;
@@ -703,6 +705,8 @@ begin
  SendCommand(eLog_transfer,delay, False);
 end;
 
+
+
 procedure THomeForm.chkbox_users_OperatorRegisterAllQueueClick(Sender: TObject);
 begin
  SharedCheckBoxUI.ChangeStatusCheckBox('OperatorRegisterAllQueue');
@@ -730,11 +734,11 @@ var
   ACheckBox: TCheckBox;
   DialogResult: Integer;
   errorDescription:string;
+  regPhone:TPhoneList;
 begin
   if DEBUG then begin
     KillProcess;
   end;
-
 
   if SharedCurrentUserLogon.IsOperator then begin
 
@@ -751,7 +755,10 @@ begin
     end;
 
    // разрегистрация в тлф
-   OpenRegPhone(eAutoRunningDeRegistered);
+   regPhone:=TPhoneList.Create;
+   if regPhone.IsRegisterdSip[_dll_GetOperatorSIP(SharedCurrentUserLogon.ID)] then begin
+    OpenRegPhone(eAutoRunningDeRegistered);
+   end;
   end;
 
   if not SharedIndividualSettingUser.NoConfirmExit then begin
@@ -1197,6 +1204,12 @@ begin
  SharedCheckBoxUI.ChangeStatusCheckBox('OperatorRegisterAllQueue');
 end;
 
+procedure THomeForm.Label8Click(Sender: TObject);
+begin
+  ShowStatusOperator(True,False);
+   m_dispatcherCreateThreadWaitForRegisterPhone.StopThread;
+end;
+
 procedure THomeForm.lblCheckInfocilinikaServerAliveClick(Sender: TObject);
 begin
   FormServerIKCheck.Show;
@@ -1246,10 +1259,6 @@ begin
   lblNewMessageLocalChat.Font.Style:=[fsUnderline,fsBold];
 end;
 
-procedure THomeForm.lblNewVersionDashboardClick(Sender: TObject);
-begin
-  MessageBox(Handle,PChar('Для применения обновления закройте программу'+#13+'и подождите около 30 сек'),PChar('Информация'),MB_OK+MB_ICONINFORMATION);
-end;
 
 procedure THomeForm.lblStstatisc_Queue5000_No_AnsweredClick(Sender: TObject);
 var
@@ -1605,6 +1614,8 @@ begin
   UpdateOperatorStatus(eAvailable,user_id);
   LoggingRemote(eLog_available,user_id);
 end;
+
+
 
 
 end.

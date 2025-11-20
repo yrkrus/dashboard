@@ -34,6 +34,21 @@ object FormPropushennie: TFormPropushennie
     Font.Style = [fsBold]
     ParentFont = False
   end
+  object Label16: TLabel
+    Left = 829
+    Top = 10
+    Width = 366
+    Height = 16
+    Alignment = taCenter
+    AutoSize = False
+    Caption = #1087#1088#1080' '#1085#1072#1074#1077#1076#1077#1085#1080#1080' '#1085#1072' '#1087#1077#1088#1080#1086#1076' '#1079#1074#1086#1085#1082#1072', '#1086#1090#1086#1073#1088#1072#1079#1080#1090#1100#1089#1103' '#1090#1086#1095#1085#1086#1077' '#1074#1088#1077#1084#1103' '#1079#1074#1086#1085#1082#1072
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clGreen
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+  end
   object combox_QueueFilter: TComboBox
     Left = 8
     Top = 5

@@ -31,6 +31,7 @@ function GetUserGroupID(InGroup:string):Integer;                                
 function GetUserID(InLogin:string):Integer; overload;                                // отображение ID пользвоателя
 function GetUserID(InUserName,InUserFamiliya:string):Integer; overload;              // полчуение userID из ФИО
 function GetUserID(InSIPNumber:integer):Integer; overload;                           // полчуение userID из SIP номера
+function GetUserSIP(_userID:integer):Integer;                                        // полчуение SIP номера из userID
 function DisableUser(InUserID:Integer; var _errorDescription:string):Boolean;        // отключение пользователя
 procedure DeleteOperator(_userID:Integer; _sip:Integer);                             // удаление пользователя из таблицы operators
 function getUserPwd(InUserID:Integer):Integer;                                       // полчуение userPwd из userID
@@ -1001,7 +1002,7 @@ begin
       with Columns.Add do
       begin
         Caption:='Оператор';
-        Width:=Round((InWidth*cProcentWidth_operator)/100);
+        Width:=Round((InWidth*cProcentWidth_operator)/100)-17;
         test_size_operator:=Width;
 
         Alignment:=taLeftJustify;
@@ -2166,6 +2167,49 @@ begin
 
       SQL.Clear;
       SQL.Add('select user_id from operators where sip = '+#39+IntToStr(InSIPNumber)+#39);
+      Active:=True;
+
+      if Fields[0].Value<>null then begin
+        if Fields[0].Value <> 0 then Result:=Fields[0].Value
+        else Result:=-1;
+      end
+      else Result:= -1;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+
+// полчуение SIP номера из userID
+function GetUserSIP(_userID:integer):Integer;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+ Result:=-1;
+ ado:=TADOQuery.Create(nil);
+  try
+      serverConnect:=createServerConnect;
+    except
+      on E:Exception do begin
+        if not Assigned(serverConnect) then begin
+           FreeAndNil(ado);
+           Exit;
+        end;
+      end;
+    end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+
+      SQL.Clear;
+      SQL.Add('select sip from operators where user_id = '+#39+IntToStr(_userID)+#39);
       Active:=True;
 
       if Fields[0].Value<>null then begin
@@ -4859,7 +4903,6 @@ begin
                                                             USER_BOOL_PARAM +' '+'False'),nil,SW_SHOW);
    end;
   end;
-
 end;
 
 // открытые exe Звонилки
@@ -5341,7 +5384,7 @@ begin
   XML:=TXML.Create;
   try
     with HomeForm do begin
-      if XML.GetWindowState = 'wsMaximized' then WindowState:=wsMaximized
+      if XML.GetWindowState = 'wsMaximized' then HomeForm.WindowState:=wsMaximized
       else begin
        WindowState  :=wsNormal;
        Height       :=900; //1011  // default

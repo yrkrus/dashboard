@@ -4,7 +4,7 @@ object FormAddNewUsers: TFormAddNewUsers
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = #1044#1086#1073#1072#1074#1083#1077#1085#1080#1077' '#1085#1086#1074#1086#1075#1086' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1103
-  ClientHeight = 277
+  ClientHeight = 279
   ClientWidth = 600
   Color = clWindow
   Font.Charset = RUSSIAN_CHARSET

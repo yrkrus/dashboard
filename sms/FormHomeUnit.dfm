@@ -722,8 +722,8 @@ object FormHome: TFormHome
         end
       end
       object ProgressStatusText: TStaticText
-        Left = 20
-        Top = 235
+        Left = 10
+        Top = 174
         Width = 51
         Height = 17
         Caption = #1057#1090#1072#1090#1091#1089' :'
@@ -763,7 +763,6 @@ object FormHome: TFormHome
           Width = 8
           Height = 16
           Alignment = taRightJustify
-          AutoSize = False
           Caption = '0'
           Font.Charset = RUSSIAN_CHARSET
           Font.Color = clWindowText
@@ -791,7 +790,6 @@ object FormHome: TFormHome
           Width = 8
           Height = 16
           Alignment = taRightJustify
-          AutoSize = False
           BiDiMode = bdLeftToRight
           Caption = '0'
           Font.Charset = RUSSIAN_CHARSET
@@ -805,26 +803,7 @@ object FormHome: TFormHome
           ShowHint = False
         end
         object st_ShowSendingSMS: TStaticText
-          Left = 276
-          Top = 45
-          Width = 59
-          Height = 17
-          Cursor = crHandPoint
-          Caption = '('#1087#1086#1082#1072#1079#1072#1090#1100')'
-          Font.Charset = RUSSIAN_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -11
-          Font.Name = 'Tahoma'
-          Font.Style = []
-          ParentFont = False
-          TabOrder = 1
-          Visible = False
-          OnClick = st_ShowSendingSMSClick
-          OnMouseLeave = st_ShowSendingSMSMouseLeave
-          OnMouseMove = st_ShowSendingSMSMouseMove
-        end
-        object st_ShowNotSendingSMS: TStaticText
-          Left = 276
+          Left = 281
           Top = 23
           Width = 59
           Height = 17
@@ -837,6 +816,25 @@ object FormHome: TFormHome
           Font.Style = []
           ParentFont = False
           TabOrder = 0
+          Visible = False
+          OnClick = st_ShowSendingSMSClick
+          OnMouseLeave = st_ShowSendingSMSMouseLeave
+          OnMouseMove = st_ShowSendingSMSMouseMove
+        end
+        object st_ShowNotSendingSMS: TStaticText
+          Left = 281
+          Top = 45
+          Width = 59
+          Height = 17
+          Cursor = crHandPoint
+          Caption = '('#1087#1086#1082#1072#1079#1072#1090#1100')'
+          Font.Charset = RUSSIAN_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+          TabOrder = 1
           Visible = False
           OnClick = st_ShowNotSendingSMSClick
           OnMouseLeave = st_ShowNotSendingSMSMouseLeave
@@ -1044,7 +1042,7 @@ object FormHome: TFormHome
     Hint = #1055#1086#1082#1072#1079#1072#1090#1100' '#1086#1090#1087#1088#1072#1074#1083#1077#1085#1085#1099#1077' '#1089#1086#1086#1073#1097#1077#1085#1080#1103
     Panels = <
       item
-        Text = #1047#1072' '#1089#1077#1075#1086#1076#1085#1103' '#1086#1090#1087#1088#1072#1074#1083#1077#1085#1086':'
+        Text = '  '#1047#1072' '#1089#1077#1075#1086#1076#1085#1103' '#1086#1090#1087#1088#1072#1074#1083#1077#1085#1086': -'
         Width = 180
       end
       item
@@ -1208,7 +1206,7 @@ object FormHome: TFormHome
     Left = 816
     Top = 432
     Bitmap = {
-      494C010103000C00B80018001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010103000C00BC0018001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000600000001800000001002000000000000024
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
