@@ -18,12 +18,26 @@ uses
 procedure _CHECK;
 var
  errorDescription:string;
+ countKillExe:Integer;
 begin
   // проверка на 2ую копию дошборда
   if GetCloneRun(PChar(DASHBOARD_EXE)) then begin
     MessageBox(HomeForm.Handle,PChar('Обнаружен запуск 2ой копии программы'+#13#13+
                                      'Для продолжения закройте предыдущую копию'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
     KillProcess;
+  end;
+
+  // убираем reg_phone если был не закрыт
+  if GetCloneRun(PChar(REG_PHONE_EXE)) then begin
+     countKillExe:=0;
+     while GetTask(PChar(REG_PHONE_EXE)) do begin
+       KillTask(PChar(REG_PHONE_EXE));
+
+       // на случай если не удасться закрыть дочерний exe
+       Sleep(500);
+       Inc(countKillExe);
+       if countKillExe>10 then Break;
+     end;
   end;
 
   // остаток свободного места на диске
@@ -53,7 +67,6 @@ begin
    else Caption:=Caption+' '+GetVersion(GUID_VERSION,eGUI) + ' | '+'('+GUID_VERSION+')';
   end;
 
-
   // проверка на ткущую версию
   CheckCurrentVersion;
 
@@ -77,6 +90,7 @@ begin
 
   // создание списка серверов для проверки доступности
   createCheckServersInfoclinika;
+
   // создание списка sip trunk для проверки
   CreateCheckSipTrunk;
 
@@ -101,13 +115,13 @@ begin
   // отображение только нужных очередей
   AccessUsersCommonQueue(SharedCurrentUserLogon.QueueList);
 
-  // дата+время старта
-  PROGRAM_STARTED:=Now;
-
   // размер главной офрмы экрана
   WindowStateInit;
 
   // пасхалки
   Egg;
+
+  // дата+время старта
+  PROGRAM_STARTED:=Now;
 end;
 end.

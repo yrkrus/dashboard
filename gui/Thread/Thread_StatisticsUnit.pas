@@ -12,7 +12,7 @@ type
 
   protected
     procedure Execute; override;
-    procedure show(var p_SharedQueueStatistics:TQueueStatistics);
+    procedure ShowExecute(var p_SharedQueueStatistics:TQueueStatistics);
     procedure CriticalError;
 
   private
@@ -64,24 +64,21 @@ begin
   Log.Save(messclass+':'+mess,IS_ERROR);
 end;
 
-procedure Thread_Statistics.show;
+procedure Thread_Statistics.ShowExecute;
 begin
-  if not CONNECT_BD_ERROR then begin
+  try
+    // обновляем даынне
+    p_SharedQueueStatistics.Update;
 
-    try
-      // обновляем даынне
-      p_SharedQueueStatistics.Update;
+    // отображаем данные
+    p_SharedQueueStatistics.Show;
+  except
+    on E:Exception do
+    begin
+     messclass:=e.ClassName;
+     mess:=e.Message;
 
-      // отображаем данные
-      p_SharedQueueStatistics.Show;
-    except
-      on E:Exception do
-      begin
-       messclass:=e.ClassName;
-       mess:=e.Message;
-
-       Synchronize(CriticalError);
-      end;
+     Synchronize(CriticalError);
     end;
   end;
 end;
@@ -137,7 +134,9 @@ begin
       try
         StartTime:=GetTickCount;
 
-        show(SharedQueueStatistics);
+        if not CONNECT_BD_ERROR then begin
+          ShowExecute(SharedQueueStatistics);
+        end;
 
         EndTime:= GetTickCount;
         Duration:= EndTime - StartTime;

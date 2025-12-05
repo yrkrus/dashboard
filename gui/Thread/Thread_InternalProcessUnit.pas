@@ -12,7 +12,7 @@ type
 
   protected
     procedure Execute; override;
-    procedure show(var p_InternalProcess: TInternalProcess);
+    procedure ShowExecute(var p_InternalProcess: TInternalProcess);
     procedure CriticalError;
   private
     m_initThread: TEvent;  // событие что поток успешно стартовал
@@ -67,20 +67,20 @@ begin
 end;
 
 
-procedure Thread_InternalProcess.show(var p_InternalProcess: TInternalProcess);
+procedure Thread_InternalProcess.ShowExecute(var p_InternalProcess: TInternalProcess);
 begin
   // текущее время обоновляем постоянно не зависимо от того есть ли коннект с БД или нет
    p_InternalProcess.UpdateTimeDashboard;
 
-  if not CONNECT_BD_ERROR then begin
+
    p_InternalProcess.CheckForceActiveSessionClosed;              // нужно ли немедленно закрыть сессию
    p_InternalProcess.UpdateTimeActiveSession(PROGRAMM_UPTIME);   // обновление времени ондайна в БД
    Synchronize(p_InternalProcess.CheckStatusUpdateService);                   // проверка запущена ли служба обновления
    Synchronize(p_InternalProcess.CheckStatusRegisteredSipPhone);              // проверка зарегестрирован ли sip на телефоне
-   // p_InternalProcess.XMLUpdateLastOnline;                      // обновление времемни в settings.xml
+   // p_InternalProcess.XMLUpdateLastOnline;                     // обновление времемни в settings.xml
    p_InternalProcess.UpdateMemory;                               // обновление загрузки по памяти
-   Synchronize(p_InternalProcess.ActiveCallsLisaTalk);                 // сколько сейчас разговаривает с лизой
-  end;
+   Synchronize(p_InternalProcess.ActiveCallsLisaTalk);           // сколько сейчас разговаривает с лизой
+
 end;
 
 procedure Thread_InternalProcess.Execute;
@@ -125,7 +125,10 @@ begin
    try
       StartTime:=GetTickCount;
 
-      show(InternalProcess);
+      if not CONNECT_BD_ERROR then begin
+        ShowExecute(InternalProcess);
+      end;
+
 
       EndTime:= GetTickCount;
       Duration:= EndTime - StartTime;

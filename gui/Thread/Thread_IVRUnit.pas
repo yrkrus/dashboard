@@ -13,8 +13,8 @@ type
 
   protected
     procedure Execute; override;
-    procedure show(var p_SharedIVR: TIVR);     // переадача списка с данными по ссылке!!
-    procedure showIVR(var p_SharedIVR: TIVR);
+    procedure ShowExecute(var p_SharedIVR: TIVR);     // переадача списка с данными по ссылке!!
+    procedure ShowIVR(var p_SharedIVR: TIVR);
     procedure CriticalError;
  private
    m_initThread: TEvent;  // событие что поток успешно стартовал
@@ -65,7 +65,7 @@ begin
 end;
 
 
-procedure Thread_IVR.showIVR(var p_SharedIVR:TIVR);
+procedure Thread_IVR.ShowIVR(var p_SharedIVR:TIVR);
 var
  i:Integer;
  ListItem: TListItem;
@@ -154,12 +154,10 @@ begin
 end;
 
 
-procedure Thread_IVR.show(var p_SharedIVR: TIVR);
+procedure Thread_IVR.ShowExecute(var p_SharedIVR: TIVR);
 begin
-  if not CONNECT_BD_ERROR then begin
-      p_SharedIVR.UpdateData;
-      showIVR(p_SharedIVR);
-  end;
+   p_SharedIVR.UpdateData;
+   ShowIVR(p_SharedIVR);
 end;
 
 procedure Thread_IVR.Execute;
@@ -200,7 +198,9 @@ begin
       try
         StartTime:=GetTickCount;
 
-        show(SharedIVR);
+         if not CONNECT_BD_ERROR then begin
+           ShowExecute(SharedIVR);
+         end;
 
         EndTime:= GetTickCount;
         Duration:= EndTime - StartTime;

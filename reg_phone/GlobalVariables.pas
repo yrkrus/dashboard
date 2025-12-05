@@ -17,7 +17,7 @@ uses
 
 var
   // ****************** режим разработки ******************
-                      DEBUG:Boolean = FALSE;
+                      DEBUG:Boolean = TRUE;
   // ****************** режим разработки ******************
 
   REG_PHONE_EXE           :string = 'reg_phone.exe';

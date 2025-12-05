@@ -11,7 +11,7 @@ type
 
   protected
     procedure Execute; override;
-    procedure show(var p_listServers: TCheckServersIK);
+    procedure ShowExecute(var p_listServers: TCheckServersIK);
     procedure CriticalError;
  private
   Log:TLoggingFile;
@@ -31,11 +31,9 @@ begin
 end;
 
 
-procedure Thread_CHECKSERVERS.show(var p_listServers: TCheckServersIK);
+procedure Thread_CHECKSERVERS.ShowExecute(var p_listServers: TCheckServersIK);
 begin
- if not CONNECT_BD_ERROR then begin
    p_listServers.CheckServerFirebird;
- end;
 end;
 
 
@@ -87,7 +85,10 @@ begin
       try
         StartTime:=GetTickCount;
 
-        show(listServers);
+         if not CONNECT_BD_ERROR then begin
+           ShowExecute(listServers);
+         end;
+
 
         EndTime:= GetTickCount;
         Duration:= EndTime - StartTime;

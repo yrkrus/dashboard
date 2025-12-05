@@ -16,7 +16,7 @@ type
 
   protected
     procedure Execute; override;
-    procedure show(var p_AnsweredQueue: TAnsweredQueue);
+    procedure ShowExecute(var p_AnsweredQueue: TAnsweredQueue);
     procedure CriticalError;
 
  public
@@ -61,9 +61,8 @@ begin
    Log.Save(messclass+':'+mess,IS_ERROR);
 end;
 
- procedure Thread_AnsweredQueue.show(var p_AnsweredQueue: TAnsweredQueue);
+ procedure Thread_AnsweredQueue.ShowExecute(var p_AnsweredQueue: TAnsweredQueue);
 begin
-  if not CONNECT_BD_ERROR then begin
     // проверяем вдруг надо обновить всю статистку
     // такое случается если изменить настроки корреткировки ожидания в очереди
    with p_AnsweredQueue do begin
@@ -103,7 +102,6 @@ begin
         end;
       end;
    end;
-  end;
 end;
 
 procedure Thread_AnsweredQueue.Execute;
@@ -150,7 +148,9 @@ begin
       try
         StartTime:=GetTickCount;
 
-        show(AnsweredQueue);
+         if not CONNECT_BD_ERROR then begin
+          ShowExecute(AnsweredQueue);
+         end;
 
         EndTime:= GetTickCount;
         Duration:= EndTime - StartTime;

@@ -102,7 +102,7 @@ begin
   // создаем отчет
   report:=TReportShowRingsAfterWorkTime.Create('Отчет по звонкам после рабочего времени',dateStart,dateStop,onlyCurrentDay,findFIO);
   report.ShowProgress; //показываем прогресс бар
-  report.SetProgressStatusText('Загрузка данных с сервера');
+  report.SetProgressStatusText('Загрузка данных');
 
   report.CreateReportExcel;
 

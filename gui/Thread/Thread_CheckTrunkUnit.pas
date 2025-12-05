@@ -12,7 +12,7 @@ type
 
   protected
     procedure Execute; override;
-    procedure show(var p_listTrunks: TCheckSipTrunk);
+    procedure ShowExecute(var p_listTrunks: TCheckSipTrunk);
     procedure CriticalError;
  private
   m_initThread: TEvent;  // событие что поток успешно стартовал
@@ -59,11 +59,9 @@ begin
 end;
 
 
-procedure Thread_CheckTrunks.show(var p_listTrunks: TCheckSipTrunk);
+procedure Thread_CheckTrunks.ShowExecute(var p_listTrunks: TCheckSipTrunk);
 begin
- if not CONNECT_BD_ERROR then begin
    p_listTrunks.CheckSipTrunk;
- end;
 end;
 
 
@@ -117,7 +115,9 @@ begin
       try
         StartTime:=GetTickCount;
 
-        show(listTrunks);
+        if not CONNECT_BD_ERROR then begin
+          ShowExecute(listTrunks);
+        end;
 
         EndTime:= GetTickCount;
         Duration:= EndTime - StartTime;

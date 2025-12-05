@@ -279,7 +279,7 @@ begin
      procentLoadSTR:=FormatFloat('0.0',procentLoad);
      procentLoadSTR:=StringReplace(procentLoadSTR,',','.',[rfReplaceAll]);
 
-     SetProgressStatusText('Загрузка данных с сервера ['+procentLoadSTR+'%]');
+     SetProgressStatusText('Загрузка данных ['+procentLoadSTR+'%]');
      SetProgressBar(procentLoad);
 
      call.id:=StrToInt(VarToStr(Fields[0].Value));

@@ -150,7 +150,7 @@ begin
   _errorDescriptions:='';
 
   soLongWait:=0;
-  if m_waitInfo then showWait(show_open);
+  if m_waitInfo then ShowWait(show_open);
 
 
   if _delay = eNO then begin
@@ -176,14 +176,14 @@ begin
   // выполн€ем запрос
   if not Responce(response,_errorDescriptions) then begin
 
-    if m_waitInfo then showWait(show_close);
+    if m_waitInfo then ShowWait(show_close);
     Exit;
   end;
 
   // отлеженна€ команда сразу выходим
   if _delay = eYES then begin
     Result:=True;
-    if m_waitInfo then showWait(show_close);
+    if m_waitInfo then ShowWait(show_close);
 
     Exit;
   end;
@@ -208,12 +208,12 @@ begin
 
     if not Responce(response,_errorDescriptions) then begin
 
-      if m_waitInfo then showWait(show_close);
+      if m_waitInfo then ShowWait(show_close);
 
       Exit;
     end;
 
-     if m_waitInfo then showWait(show_close);
+     if m_waitInfo then ShowWait(show_close);
 
     _errorDescriptions:='—ервер не смог обработать команду'+#13#13+'ѕричина: '+resultat;
     Exit;
@@ -223,7 +223,7 @@ begin
    end;
   end;
 
-  if m_waitInfo then showWait(show_close);
+  if m_waitInfo then ShowWait(show_close);
 
   Result:=True;
 end;

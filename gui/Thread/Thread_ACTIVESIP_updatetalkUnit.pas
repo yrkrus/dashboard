@@ -10,7 +10,7 @@ type
     messclass,mess: string;
   protected
     procedure Execute; override;
-    procedure show(var p_ActiveSipOperators:TActiveSIP);
+    procedure ShowExecute(var p_ActiveSipOperators:TActiveSIP);
     procedure CriticalError;
   private
     m_initThread: TEvent;  // событие что поток успешно стартовал
@@ -57,14 +57,10 @@ begin
    Log.Save(messclass+':'+mess,IS_ERROR);
 end;
 
-procedure Thread_ACTIVESIP_updateTalk.show(var p_ActiveSipOperators:TActiveSIP);
+procedure Thread_ACTIVESIP_updateTalk.ShowExecute(var p_ActiveSipOperators:TActiveSIP);
 begin
-  if not CONNECT_BD_ERROR then begin
-    with p_ActiveSipOperators do begin
-      updateTalkTime;
-      updateTalkTimeAll;
-    end;
-  end;
+   p_ActiveSipOperators.updateTalkTime;
+   p_ActiveSipOperators.updateTalkTimeAll;
 end;
 
 procedure Thread_ACTIVESIP_updateTalk.Execute;
@@ -106,7 +102,9 @@ begin
       try
         StartTime:=GetTickCount;
 
-        show(SharedActiveSipOperators);
+         if not CONNECT_BD_ERROR then begin
+          ShowExecute(SharedActiveSipOperators);
+         end;
 
         EndTime:= GetTickCount;
         Duration:= EndTime - StartTime;

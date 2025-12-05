@@ -117,7 +117,7 @@ uses
   FunctionUnit, GlobalVariables, GlobalVariablesLinkDLL, TStatusUnit;
 
  const
-  cTIME_ONLINE:Word = 10; // время в секундах при котором считается что пользоак не онлайн
+  cTIME_ONLINE:Word = 60; // время в секундах при котором считается что пользоак не онлайн
 
 //////////////////////////////////////////////////
 // class TActiveStruct  STARt

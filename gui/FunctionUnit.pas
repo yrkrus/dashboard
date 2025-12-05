@@ -60,7 +60,7 @@ function CreateListAnsweredCall(_sip:Integer):TStringList;                   // 
 //function remoteCommand_addQueue(_command:enumLogging;
 //                                _userID:Integer;
 //                                var _errorDescriptions:string):Boolean;              // удаленная команда (добавление в очередь)
-procedure showWait(Status:enumShow_wait);                                            // отображение\сркытие окна запроса на сервер
+procedure ShowWait(Status:enumShow_wait);                                            // отображение\сркытие окна запроса на сервер
 //function remoteCommand_Responce(InStroka:string; var _errorDescriptions:string):boolean;  // отправка запроса на добавление удаленной команды
 //function GetOperatorSIP(_userId:integer):integer;                                       // отображение SIP пользвоателя
 //function isExistRemoteCommand(command:enumLogging;_userID:Integer):Boolean;         // проверка есть ли уже такая удаленная команда на сервера
@@ -3346,7 +3346,7 @@ begin
 end;
 
 // отображение\сркытие окна запроса на сервер
-procedure showWait(Status:enumShow_wait);
+procedure ShowWait(Status:enumShow_wait);
 begin
   case (Status) of
    show_open: begin

@@ -6,7 +6,6 @@ uses
   Vcl.Themes,
   Vcl.Styles,
   GlobalVariables in 'GlobalVariables.pas',
-  TCustomTypeUnit in '..\custom_class\TCustomTypeUnit.pas',
   TLogFileUnit in '..\custom_class\TLogFileUnit.pas',
   GlobalVariablesLinkDLL in '..\custom_global\GlobalVariablesLinkDLL.pas',
   FunctionUnit in 'FunctionUnit.pas',
@@ -15,7 +14,9 @@ uses
   TPhoneListUnit in '..\custom_class\TPhoneListUnit.pas',
   TRegisterPhoneUnit in '..\custom_class\TRegisterPhoneUnit.pas',
   TSipPhoneListUnit in '..\custom_class\TSipPhoneListUnit.pas',
-  TIndividualSettingUserUnit in '..\custom_class\TIndividualSettingUserUnit.pas';
+  TIndividualSettingUserUnit in '..\custom_class\TIndividualSettingUserUnit.pas',
+  FormWaitUnit in 'FormWaitUnit.pas' {FormWait},
+  TCustomTypeUnit in '..\custom_class\TCustomTypeUnit.pas';
 
 {$R *.res}
 
@@ -23,5 +24,6 @@ begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TFormHome, FormHome);
+  Application.CreateForm(TFormWait, FormWait);
   Application.Run;
 end.

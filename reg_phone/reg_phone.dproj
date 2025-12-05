@@ -5,7 +5,7 @@
         <FrameworkType>VCL</FrameworkType>
         <MainSource>reg_phone.dpr</MainSource>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Release</Config>
+        <Config Condition="'$(Config)'==''">Debug</Config>
         <Platform Condition="'$(Platform)'==''">Win64</Platform>
         <TargetedPlatforms>2</TargetedPlatforms>
         <AppType>Application</AppType>
@@ -147,7 +147,6 @@
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="GlobalVariables.pas"/>
-        <DCCReference Include="..\custom_class\TCustomTypeUnit.pas"/>
         <DCCReference Include="..\custom_class\TLogFileUnit.pas"/>
         <DCCReference Include="..\custom_global\GlobalVariablesLinkDLL.pas"/>
         <DCCReference Include="FunctionUnit.pas"/>
@@ -157,6 +156,11 @@
         <DCCReference Include="..\custom_class\TRegisterPhoneUnit.pas"/>
         <DCCReference Include="..\custom_class\TSipPhoneListUnit.pas"/>
         <DCCReference Include="..\custom_class\TIndividualSettingUserUnit.pas"/>
+        <DCCReference Include="FormWaitUnit.pas">
+            <Form>FormWait</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\custom_class\TCustomTypeUnit.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -192,9 +196,9 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="Win64\Debug\reg_phone.rsm" Configuration="Debug" Class="DebugSymbols">
-                    <Platform Name="Win64">
-                        <RemoteName>reg_phone.rsm</RemoteName>
+                <DeployFile LocalName="Win32\Debug\reg_phone.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win32">
+                        <RemoteName>reg_phone.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
@@ -211,16 +215,16 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="Win64\Debug\reg_phone.rsm" Configuration="Debug" Class="DebugSymbols">
+                    <Platform Name="Win64">
+                        <RemoteName>reg_phone.rsm</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="telephone_icon-icons.com_56460.png" Configuration="Debug" Class="UWP_DelphiLogo150">
                     <Platform Name="Win32">
                         <RemoteDir>Assets\</RemoteDir>
                         <RemoteName>Logo150x150.png</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="Win32\Debug\reg_phone.exe" Configuration="Debug" Class="ProjectOutput">
-                    <Platform Name="Win32">
-                        <RemoteName>reg_phone.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>

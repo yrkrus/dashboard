@@ -163,7 +163,7 @@ var
  i:Integer;
  countUsers:Integer;
 begin
-   showWait(show_open);
+   ShowWait(show_open);
 
    if not Assigned(m_usersAll) then m_usersAll:=TUsersAll.Create(SharedCurrentUserLogon.Role)
    else m_usersAll.Update;
@@ -180,7 +180,7 @@ begin
 
 
    Caption:='Пользователи ['+IntToStr(countUsers)+']';
-   showWait(show_close);
+   ShowWait(show_close);
 
 end;
 

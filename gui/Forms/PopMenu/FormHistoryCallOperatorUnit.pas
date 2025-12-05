@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.ComCtrls, Vcl.StdCtrls,
   Data.DB, Data.Win.ADODB, IdException, System.ImageList, Vcl.ImgList, System.DateUtils,
-  Vcl.Imaging.jpeg, Vcl.Menus, Vcl.MPlayer;
+  Vcl.Imaging.jpeg, Vcl.Menus, Vcl.MPlayer, Vcl.Buttons;
 
   type
     enumFilterTime = ( time_all,
@@ -47,6 +47,9 @@ type
     popmenu_InfoCall: TPopupMenu;
     menu_FIO: TMenuItem;
     lblCallInfo: TLabel;
+    edtFindPhone: TEdit;
+    st_PhoneFind: TStaticText;
+    btn_Find: TBitBtn;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure list_HistoryCustomDrawItem(Sender: TCustomListView;
@@ -57,6 +60,10 @@ type
     procedure list_HistoryMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure menu_FIOClick(Sender: TObject);
+    procedure edtFindPhoneChange(Sender: TObject);
+    procedure edtFindPhoneClick(Sender: TObject);
+    procedure edtFindPhoneKeyPress(Sender: TObject; var Key: Char);
+    procedure btn_FindClick(Sender: TObject);
   private
     { Private declarations }
   m_id:Integer;  // id пользовател€
@@ -70,7 +77,9 @@ type
   m_count10_15,
   m_count15 :Integer;
 
-  procedure Show(_timeFilter:enumFilterTime);
+  procedure Show(_timeFilter:enumFilterTime); overload;
+  procedure Show(_phone:string);              overload;
+
   procedure LoadCountCalls(isShowAllCalls:Boolean);
   function GetTimeOnHoldCall(_sip:Integer; _phone:string):Integer;  // врем€ сколько номер телефона был в OnHold
 
@@ -78,8 +87,10 @@ type
   procedure LoadComboxFilterValue(_timeFilter:enumFilterTime);
   procedure LoadData(var p_ListView:TListView;
                      isReducedTime:Boolean;
-                     _filterTime:enumFilterTime);
+                     _filterTime:enumFilterTime);  overload;
 
+  procedure LoadData(var p_ListView:TListView;
+                     _phone:string);               overload;
 
 
   procedure ClearData(isClearUserID:Boolean = True);      // очистка данных
@@ -175,6 +186,14 @@ begin
 end;
 
 
+procedure TFormHistoryCallOperator.btn_FindClick(Sender: TObject);
+begin
+  if Length(edtFindPhone.Text) = 0 then Exit;
+
+  Show(edtFindPhone.Text);
+  list_History.SetFocus;
+end;
+
 procedure TFormHistoryCallOperator.ClearData(isClearUserID:Boolean = True);
 begin
   if isClearUserID then begin
@@ -199,6 +218,10 @@ begin
   lblPlayCall.Enabled:=False;
   lblCallInfo.Caption:='';
   lblCallInfo.Visible:=False;
+
+  // поиск по номеру
+  edtFindPhone.Text:='';
+  st_PhoneFind.Visible:=True;
 end;
 
 
@@ -272,6 +295,31 @@ end;
 procedure TFormHistoryCallOperator.combox_TimeFilterChange(Sender: TObject);
 begin
   Show(IntegerToEnumFiterTime(combox_TimeFilter.Items.IndexOf(combox_TimeFilter.Text)));
+end;
+
+procedure TFormHistoryCallOperator.edtFindPhoneChange(Sender: TObject);
+begin
+  if Length(edtFindPhone.Text) > 0 then st_PhoneFind.Visible:=False
+  else st_PhoneFind.Visible:=True;
+end;
+
+procedure TFormHistoryCallOperator.edtFindPhoneClick(Sender: TObject);
+begin
+ st_PhoneFind.Visible:=False;
+end;
+
+procedure TFormHistoryCallOperator.edtFindPhoneKeyPress(Sender: TObject;
+  var Key: Char);
+begin
+  if Key = #13 then
+  begin
+    btn_Find.Click;
+  end;
+
+  if not (Key in ['0'..'9', #8]) then  // #8 - Backspace, #13 - Enter
+  begin
+    Key := #0; // ќтмен€ем ввод, если символ не €вл€етс€ цифрой
+  end;
 end;
 
 procedure TFormHistoryCallOperator.LoadComboxFilterValue(_timeFilter:enumFilterTime);
@@ -591,6 +639,114 @@ begin
 end;
 
 
+
+procedure TFormHistoryCallOperator.LoadData(var p_ListView:TListView;
+                                            _phone:string);
+var
+  ado: TADOQuery;
+  serverConnect: TADOConnection;
+  i, countCalls: Integer;
+  fullTimeOnHold:string;
+  diffTime:Integer;
+  time_talk: Integer;
+  program_started: TDateTime;
+  id, dateTime, trunk, phone, numberQueue, talkTime, onHold:string;
+  program_exit: TDateTime;
+  filteringCount:Integer;
+  call_id:string;
+begin
+  Caption := '»стори€ звонков: ' + GetUserNameOperators(IntToStr(m_sip));
+  filteringCount:=0;
+
+  ado := TADOQuery.Create(nil);
+  serverConnect := createServerConnect;
+  if not Assigned(serverConnect) then
+  begin
+    FreeAndNil(ado);
+    Exit;
+  end;
+
+  try
+    with ado do
+    begin
+      Connection := serverConnect;
+      SQL.Clear;
+      SQL.Add('select count(id) from queue where date_time > '+#39+GetNowDateTime+#39+' and sip = ' + QuotedStr(IntToStr(m_sip)) + ' and phone LIKE CONCAT(''%'','+_phone+',''%'')' +' and hash is not NULL');
+      Active := True;
+      countCalls := Fields[0].Value;
+
+      if countCalls = 0 then
+      begin
+        // надпись что нет данных
+        st_NoCalls.Visible := True;
+        Exit;
+      end;
+
+      // скрываем надпись что нет данных
+      st_NoCalls.Visible := False;
+
+      SQL.Clear;
+      SQL.Add('select id, date_time, phone, number_queue, talk_time from queue where date_time > '+#39+GetNowDateTime+#39+' and sip = ' + QuotedStr(IntToStr(m_sip)) + ' and phone LIKE CONCAT(''%'','+_phone+',''%'')' + ' and hash is not NULL order by date_time DESC');
+      Active := True;
+
+      for i := 0 to countCalls - 1 do
+      begin
+
+        id          :=VarToStr(Fields[0].Value);
+        dateTime    :=VarToStr(Fields[1].Value);
+        phone       :=VarToStr(Fields[2].Value);
+        numberQueue :=VarToStr(Fields[3].Value);
+        talkTime    :=VarToStr(Fields[4].Value);
+
+        // врем€ в onHold
+        begin
+         diffTime:=GetTimeOnHoldCall(m_sip, phone);
+         if diffTime<>0 then begin
+            fullTimeOnHold:=GetTimeAnsweredSecondsToString(diffTime);
+            onHold:=Copy(fullTimeOnHold, 4, 5);  // формат (mm::ss)
+         end
+         else begin
+           onHold:='---';
+         end;
+        end;
+
+         try
+            call_id:=_dll_GetCallIDPhoneIVR(eTableIVR,phone);
+            trunk:=_dll_GetPhoneTrunkQueue(eTableIVR,phone,call_id);
+         except
+            trunk:='null';
+         end;
+
+
+
+          // Ёлемент не найден, добавл€ем новый
+          AddListItem(id, dateTime,trunk, phone, numberQueue, talkTime, onHold,
+                      True,
+                      p_ListView,
+                      m_count3, m_count3_10, m_count10_15, m_count15);
+
+
+        ado.Next;
+      end;
+
+//      // показывать надпись что нет данных или нет дл€ фильтрации
+//      if _filterTime<>time_all then begin
+//        if filteringCount > 0 then st_NoCalls.Visible := False
+//        else st_NoCalls.Visible := True;
+//      end;
+
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then
+    begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+
 procedure TFormHistoryCallOperator.menu_FIOClick(Sender: TObject);
 var
  people:TAutoPodborPeople;
@@ -605,11 +761,11 @@ begin
   phonePodbor:= SelectedItemPopMenu.SubItems[2];
   phonePodbor:=StringReplace(phonePodbor,'+7','8',[rfReplaceAll]);
 
-  showWait(show_open);
+  ShowWait(show_open);
   people:=TAutoPodborPeople.Create(phonePodbor, False);
 
   FormPropushennieShowPeople.SetListPacients(people);
-  showWait(show_close);
+  ShowWait(show_close);
 
   FormPropushennieShowPeople.ShowModal;
 end;
@@ -618,7 +774,7 @@ procedure TFormHistoryCallOperator.Show(_timeFilter:enumFilterTime);
 const
  cReducedTime:Boolean = True;
 begin
-  Screen.Cursor:=crHourGlass;
+  ShowWait(show_open);
 
   // обнулим все данные (кроме id пользовател€)
   ClearData(False);
@@ -633,8 +789,31 @@ begin
   if m_count10_15>0 then lbl_10_15.Caption:=IntToStr(m_count10_15);
   if m_count15>0 then lbl_15.Caption:=IntToStr(m_count15);
 
-  Screen.Cursor:=crDefault;
+  ShowWait(show_close);
 end;
+
+
+procedure TFormHistoryCallOperator.Show(_phone:string);
+begin
+  ShowWait(show_open);
+
+  // обнулим все данные (кроме id пользовател€)
+  ClearData(False);
+
+  ClearListView(list_History);
+  LoadData(list_History,_phone);
+//  LoadComboxFilterValue(_timeFilter);
+
+  // звонки распределенные по времени
+//  if m_count3>0 then lbl_3.Caption:=IntToStr(m_count3);
+//  if m_count3_10>0 then lbl_3_10.Caption:=IntToStr(m_count3_10);
+//  if m_count10_15>0 then lbl_10_15.Caption:=IntToStr(m_count10_15);
+//  if m_count15>0 then lbl_15.Caption:=IntToStr(m_count15);
+
+  ShowWait(show_close);
+end;
+
+
 
 procedure TFormHistoryCallOperator.FormClose(Sender: TObject;
   var Action: TCloseAction);

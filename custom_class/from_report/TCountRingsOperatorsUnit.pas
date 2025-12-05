@@ -303,7 +303,7 @@ begin
               procentLoadSTR:=FormatFloat('0.0',procentLoad);
               procentLoadSTR:=StringReplace(procentLoadSTR,',','.',[rfReplaceAll]);
 
-              SetProgressStatusText('Загрузка данных с сервера ('+sipList[i]+' | '+DateToStr(currentDay)+') ['+procentLoadSTR+'%]');
+              SetProgressStatusText('Загрузка данных ('+sipList[i]+' | '+DateToStr(currentDay)+') ['+procentLoadSTR+'%]');
               SetProgressBar(procentLoad);
 
               SQL.Clear;
@@ -353,7 +353,7 @@ begin
           procentLoadSTR:=FormatFloat('0.0',procentLoad);
           procentLoadSTR:=StringReplace(procentLoadSTR,',','.',[rfReplaceAll]);
 
-          SetProgressStatusText('Загрузка данных с сервера ('+sipList[i]+') ['+procentLoadSTR+'%]');
+          SetProgressStatusText('Загрузка данных ('+sipList[i]+') ['+procentLoadSTR+'%]');
           SetProgressBar(procentLoad);
 
 

@@ -455,6 +455,11 @@ interface
                         eAutoRunningDeRegistered = 2    // автоматический (выход
                     );
 
+   type // тип регистрации sip телефона
+   enumTypeSipRegPhone = (  eDeRegisterPhone = 0,       // разрегистрация телефона
+                            eRegisterPhone   = 1        // регистрация телефона
+                         );
+
   // =================== ПРОЕОБРАЗОВАНИЯ ===================
 
   // Boolean -> string

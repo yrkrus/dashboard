@@ -12,7 +12,7 @@ type
 
   protected
     procedure Execute; override;
-    procedure Show(var p_ActiveSipOperators:TActiveSIP);
+    procedure ShowExecute(var p_ActiveSipOperators:TActiveSIP);
     procedure CriticalError;
     procedure UpdateActiveSipOperators(var p_ActiveSipOperators:TActiveSIP);
 
@@ -78,8 +78,7 @@ end;
 
 { Thread_ACTIVESIP }
 procedure Thread_ACTIVESIP.UpdateActiveSipOperators(var p_ActiveSipOperators:TActiveSIP);
-begin
-  if not CONNECT_BD_ERROR then begin
+begin   
     // проверим есть ли новые операторы
     p_ActiveSipOperators.checkNewSipOperators(isCheckThreadSipOperators);
 
@@ -92,9 +91,8 @@ begin
     // (по факту вызываетмся когда нет этой записи в памяти)
     p_ActiveSipOperators.createUserID;
 
-    // обновим дату последнего онлайна
-    p_ActiveSipOperators.updateOnline;
-  end;
+    // обновим дату последнего онлайна 
+    p_ActiveSipOperators.updateOnline; 
 end;
 
 
@@ -304,7 +302,6 @@ end;
 procedure Thread_ACTIVESIP.UpdateListSubMenuItems(var p_ActiveSipOperators: TActiveSIP;
                                                       i: Integer;
                                                       ListItem: TListItem);
-
 var
  timeAnsweredAwarage, timeAnsweredAll:string;
 begin
@@ -504,7 +501,7 @@ begin
 
 end;
 
-procedure Thread_ACTIVESIP.Show(var p_ActiveSipOperators:TActiveSIP);
+procedure Thread_ACTIVESIP.ShowExecute(var p_ActiveSipOperators:TActiveSIP);
 var
  i:Integer;
  ListItem: TListItem;
@@ -641,13 +638,16 @@ begin
 
      try
         StartTime:=GetTickCount;
-        UpdateActiveSipOperators(SharedActiveSipOperators);
 
-        //отображаем что у нас по операторам на главной форме
-        Show(SharedActiveSipOperators);
+        if not CONNECT_BD_ERROR then begin          
+          UpdateActiveSipOperators(SharedActiveSipOperators);
 
-        // отображаем кол-во скрытых операторов если установлен параметр "не показывать ушедших домой"
-        SharedActiveSipOperators.showHideOperatorsForm;
+          //отображаем что у нас по операторам на главной форме
+          ShowExecute(SharedActiveSipOperators);
+
+          // отображаем кол-во скрытых операторов если установлен параметр "не показывать ушедших домой"
+          SharedActiveSipOperators.showHideOperatorsForm;
+        end;         
 
         EndTime:=GetTickCount;
         Duration:=EndTime-StartTime;

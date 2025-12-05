@@ -851,10 +851,10 @@ begin
     end;
   end;
 
-  showWait(show_open);
+  ShowWait(show_open);
 
   if not ExecuteResponce(action, error) then begin
-    showWait(show_close);
+    ShowWait(show_close);
     MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
     Exit;
   end;
@@ -871,7 +871,7 @@ begin
     FormUsers.UpdateUsersAfterAddOrEdit;
   end;
 
-  showWait(show_close);
+  ShowWait(show_close);
 
   case m_IsEditUser of
     false:begin   // добавление нового пользователя
@@ -1581,7 +1581,7 @@ end;
 
 procedure TFormAddNewUsers.FormShow(Sender: TObject);
 begin
-  showWait(show_open);
+  ShowWait(show_open);
 
   InitForm;
 
@@ -1590,7 +1590,7 @@ begin
   // редактируется пользователь
   if m_IsEditUser then LoadingEditUser;
 
-  showWait(show_close);
+  ShowWait(show_close);
 end;
 
 end.

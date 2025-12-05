@@ -2,8 +2,9 @@ unit FunctionUnit;
 
 interface
   uses
-    Windows, Messages,Data.Win.ADODB, Data.DB, System.SysUtils, System.Variants;
-
+    Windows, Messages,Data.Win.ADODB, Data.DB, System.SysUtils,
+    System.Variants, Vcl.StdCtrls, Vcl.Graphics, TCustomTypeUnit,
+    Vcl.Forms, System.Classes, Controls;
 
     function GetComputerPCName: string;                               // функция получения имени ПК
     function GetUserID(InSIPNumber:integer):Integer;                  // полчуение userID из SIP номера
@@ -15,16 +16,16 @@ interface
     function DeRegisterPhoneAuto(var _errorDescription:string):Boolean; // разрегистрация в телефоне
     function RegisterPhoneManual(_userID:Integer; _namePC:string; var _errorDescription:string):Boolean;   // регистрация в телефоне
     function DeRegisterPhoneManual(_userID:Integer; _namePC:string; var _errorDescription:string):Boolean; // разрегистрация в телефоне
-
     procedure AddFreeSipListRegister;                                 // подгрузка sip номеров (при чем те которые не залогинены)
-
+    procedure SetRandomFontColor(var p_label: TLabel);                // изменение цвета надписи
+    procedure ShowWait(Status:enumShow_wait; _sipType:enumTypeSipRegPhone);               // отображение\сркытие окна запроса на сервер
 
 implementation
 
 uses
-  FormHomeUnit, GlobalVariables, TCustomTypeUnit,
+  FormHomeUnit, GlobalVariables,
   TRegisterPhoneUnit, GlobalVariablesLinkDLL,
-  TPhoneListUnit, TSipPhoneListUnit;
+  TPhoneListUnit, TSipPhoneListUnit, FormWaitUnit;
 
 
 // функция получения имени ПК
@@ -238,5 +239,35 @@ begin
   Result:=regPhone.DeRegisterPhone(_errorDescription);
 end;
 
+
+// отображение\сркытие окна запроса на сервер
+procedure ShowWait(Status:enumShow_wait; _sipType:enumTypeSipRegPhone);
+begin
+  case (Status) of
+   show_open: begin
+     Screen.Cursor:=crHourGlass;
+     FormWait.SetInfo(_sipType);
+     FormWait.Show;
+     Application.ProcessMessages;
+   end;
+   show_close: begin
+     Screen.Cursor:=crDefault;
+     FormWait.Close;
+   end;
+  end;
+end;
+
+
+// изменение цвета надписи
+procedure SetRandomFontColor(var p_label: TLabel);
+var
+  RandomColor: TColor;
+begin
+  // Генерируем случайные значения для RGB
+  RandomColor := RGB(Random(256), Random(256), Random(256));
+
+  // Устанавливаем случайный цвет шрифта для метки
+  p_label.Font.Color := RandomColor;
+end;
 
 end.

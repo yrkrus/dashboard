@@ -525,11 +525,11 @@ begin
       end;
      end;
 
-     showWait(show_open);
+     ShowWait(show_open);
      people:=TAutoPodborPeople.Create(phonePodbor, False);
 
      FormPropushennieShowPeople.SetListPacients(people);
-     showWait(show_close);
+     ShowWait(show_close);
 
      FormPropushennieShowPeople.ShowModal;
   end;
@@ -806,7 +806,7 @@ end;
 procedure TFormPropushennie.Show;
 begin
  if m_manualShow then begin
-   showWait(show_open);
+   ShowWait(show_open);
  end;
 
   // инициируем первое значение кол-ва
@@ -818,7 +818,7 @@ begin
      Screen.Cursor:=crDefault;
 
      if m_manualShow then begin
-       showWait(show_close);
+       ShowWait(show_close);
        m_manualShow:=False;
      end;
 
@@ -828,7 +828,7 @@ begin
   UpdateData;
 
   if m_manualShow then begin
-    showWait(show_close);
+    ShowWait(show_close);
     m_manualShow:=False;
   end;
 

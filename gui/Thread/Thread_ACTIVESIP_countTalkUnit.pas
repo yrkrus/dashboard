@@ -12,7 +12,7 @@ type
 
   protected
     procedure Execute; override;
-    procedure show(var p_ActiveSipOperators:TActiveSIP);
+    procedure ShowExecute(var p_ActiveSipOperators:TActiveSIP);
     procedure CriticalError;
   private
    m_initThread: TEvent;  // событие что поток успешно стартовал
@@ -57,11 +57,9 @@ begin
    Log.Save(messclass+':'+mess,IS_ERROR);
 end;
 
-procedure Thread_ACTIVESIP_countTalk.show(var p_ActiveSipOperators:TActiveSIP);
+procedure Thread_ACTIVESIP_countTalk.ShowExecute(var p_ActiveSipOperators:TActiveSIP);
 begin
-  if not CONNECT_BD_ERROR then begin
-    p_ActiveSipOperators.updateCountTalk;
-  end;
+   p_ActiveSipOperators.updateCountTalk;
 end;
 
 procedure Thread_ACTIVESIP_countTalk.Execute;
@@ -103,10 +101,12 @@ begin
      try
         StartTime:=GetTickCount;
 
-        show(SharedActiveSipOperators);
+         if not CONNECT_BD_ERROR then begin
+           ShowExecute(SharedActiveSipOperators);
+         end;
 
         EndTime:= GetTickCount;
-        Duration:= EndTime - StartTime;
+        Duration:= EndTime - STARTTIME;
 
         SharedCountResponseThread.SetCurrentResponse(NAME_THREAD,Duration);
      except

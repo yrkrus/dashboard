@@ -339,7 +339,7 @@ begin
              m_queue[i].SetPhonePeople(phone);
            end;
 
-           SetProgressStatusText('Загрузка данных с сервера ('+ VarToStr(Fields[5].Value)+' | '+DateToStr(DateOf(m_queue[i].date_time))+') ['+procentLoadSTR+'%]');
+           SetProgressStatusText('Загрузка данных ('+ VarToStr(Fields[5].Value)+' | '+DateToStr(DateOf(m_queue[i].date_time))+') ['+procentLoadSTR+'%]');
            SetProgressBar(procentLoadD);
 
            ado.Next;

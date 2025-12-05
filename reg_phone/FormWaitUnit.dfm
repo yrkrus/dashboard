@@ -4,7 +4,7 @@ object FormWait: TFormWait
   BorderStyle = bsNone
   Caption = 'FormWait'
   ClientHeight = 47
-  ClientWidth = 222
+  ClientWidth = 260
   Color = clWindow
   TransparentColorValue = clWindow
   DefaultMonitor = dmDesktop
@@ -22,19 +22,19 @@ object FormWait: TFormWait
   object panel: TPanel
     Left = 0
     Top = 0
-    Width = 221
+    Width = 259
     Height = 45
     BevelInner = bvLowered
     TabOrder = 0
-    object Label1: TLabel
+    object lblInfo: TLabel
       Left = 68
       Top = 3
-      Width = 133
+      Width = 187
       Height = 39
       Align = alCustom
       Alignment = taCenter
       AutoSize = False
-      Caption = #1054#1078#1080#1076#1072#1085#1080#1077' '#1086#1090#1074#1077#1090#1072
+      Caption = #1044#1077#1081#1089#1090#1074#1080#1077
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
       Font.Height = -13

@@ -12,7 +12,7 @@ type
 
   protected
     procedure Execute; override;
-    procedure show;
+    procedure ShowExecute;
     procedure showQueue(var  p_listQueue: TQueue);  // переадача списка с данными по ссылке!!
     procedure CriticalError;
 
@@ -169,7 +169,7 @@ begin
  Log.Save(messclass+':'+mess,IS_ERROR);
 end;
 
-procedure Thread_QUEUE.show;
+procedure Thread_QUEUE.ShowExecute;
 var
  listQueue:TQueue;
 begin
@@ -179,7 +179,7 @@ begin
    if not Assigned(listQueue) then Exit;
   end;
 
-  if not CONNECT_BD_ERROR then showQueue(listQueue);
+   showQueue(listQueue);
 
   if listQueue<>nil then FreeAndNil(listQueue);
 end;
@@ -222,7 +222,9 @@ begin
         try
           StartTime:=GetTickCount;
 
-          show;
+           if not CONNECT_BD_ERROR then begin
+              ShowExecute;
+           end;
 
           EndTime:= GetTickCount;
           Duration:= EndTime - StartTime;
