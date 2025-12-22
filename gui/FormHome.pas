@@ -11,8 +11,8 @@ uses
   Thread_ACTIVESIPUnit, Thread_StatisticsUnit,Thread_IVRUnit,Thread_AnsweredQueueUnit,
   Thread_QUEUEUnit, Thread_ACTIVESIP_QueueUnit, Thread_ACTIVESIP_updatetalkUnit,
   Thread_ACTIVESIP_updatePhoneTalkUnit, Thread_ACTIVESIP_countTalkUnit,
-  Thread_CheckTrunkUnit, Thread_InternalProcessUnit, TThreadDispatcherUnit,TXmlUnit,
-  System.Generics.Collections;
+  Thread_CheckTrunkUnit, Thread_InternalProcessUnit, Thread_LISAUnit,
+  TThreadDispatcherUnit,TXmlUnit, System.Generics.Collections;
 
 
 type
@@ -57,7 +57,6 @@ type
     ListViewQueue: TListView;
     Panel_SIP: TPanel;
     ListViewSIP: TListView;
-    img_statistics_IVR: TImage;
     lblCount_ACTIVESIP: TLabel;
     STlist_ACTIVESIP_NO_Rings: TStaticText;
     popMenu_ActionOperators: TPopupMenu;
@@ -167,8 +166,13 @@ type
     chkbox_users_OperatorRegisterAllQueue: TLabel;
     img_users_OperatorRegisterAllQueue: TImage;
     BitBtn1: TBitBtn;
-    Label8: TLabel;
-    lblTalkLisaCount: TLabel;
+    Panel_Lisa: TPanel;
+    lblCount_LISA: TLabel;
+    img_UpFont_Lisa: TImage;
+    img_DownFont_Lisa: TImage;
+    ListViewLisa: TListView;
+    STlist_LISA_NO_Rings: TStaticText;
+    img_statistics_LISA: TImage;
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure menu_missed_callsClick(Sender: TObject);
@@ -269,7 +273,8 @@ type
     procedure menu_register_phoneClick(Sender: TObject);
     procedure chkbox_users_OperatorRegisterAllQueueClick(Sender: TObject);
     procedure img_users_OperatorRegisterAllQueueClick(Sender: TObject);
-    procedure Label8Click(Sender: TObject);
+    procedure img_UpFont_LisaClick(Sender: TObject);
+    procedure img_DownFont_LisaClick(Sender: TObject);
 
 
   private
@@ -286,8 +291,8 @@ type
    procedure WndProc(var Msg: TMessage); override;   // изменение размер шрифта по сочетанию  Ctrl + колесико
 
    procedure ViewLabel(IsBold,IsUnderline:Boolean; var p_label:TLabel); // визуальная подсветка при наведении указателя мыши
-   function SendCommand(_command:enumLogging;  _delay:enumStatus; var _errorDescriptions:string):boolean; overload;    // отправка удаленной команды
-   procedure SendCommand(_command:enumLogging; _delay:enumStatus; isMultyCommand:Boolean);  overload;
+   function SendCommand(_command:enumLogging;  _delay:enumStatus; _paused:Boolean; var _errorDescriptions:string):boolean; overload;    // отправка удаленной команды
+   procedure SendCommand(_command:enumLogging; _delay:enumStatus; _paused:Boolean; isMultyCommand:Boolean);  overload;
    procedure AddQueuePopMenu(_command:enumLogging;_userSip:Integer); // добавление в очередь из popmenu
 
    procedure DashboardCreateThread; // создание потоков
@@ -304,6 +309,7 @@ type
   STATISTICS_thread                 :Thread_Statistics;
   IVR_thread                        :Thread_IVR;
   QUEUE_thread                      :Thread_QUEUE;
+  LISA_thread                       :Thread_LISA;
   ACTIVESIP_thread                  :Thread_ACTIVESIP;
   ACTIVESIP_Queue_thread            :Thread_ACTIVESIP_Queue;
   ACTIVESIP_updateTalk_thread       :Thread_ACTIVESIP_updatetalk;
@@ -340,6 +346,7 @@ var
   UpdateStatistiscSTOP:Boolean;                            // остановка обновления статичтики
   UpdateIVRSTOP:Boolean;                                   // остановка обновления IVR
   UpdateQUEUESTOP:Boolean;                                 // остановка обновления QUEUE
+  UpdateLISASTOP:Boolean;                                  // остановка обновления LISA
   UpdateACTIVESIPSTOP:Boolean;                             // остановка обновления ACTIVESIP
   UpdateACTIVESIPQueue:Boolean;                            // остановка обновления ACTIVESIP_Queue
   UpdateACTIVESIPtalkTime:Boolean;                         // остановка обновления ACTIVESIP_updateTalk
@@ -367,7 +374,8 @@ uses
     GlobalVariables, FormUsersUnit, FormServersIKUnit, FormSettingsGlobalUnit,
     FormTrunkUnit, TFTPUnit, TForecastCallsUnit, FormStatusInfoUnit,
     FormHistoryCallOperatorUnit, TDebugStructUnit, FormHistoryStatusOperatorUnit,
-    GlobalVariablesLinkDLL, TStatusUnit, FormTrunkSipUnit, TLdapUnit, FormHomeInit, TPhoneListUnit;
+    GlobalVariablesLinkDLL, TStatusUnit, FormTrunkSipUnit, TLdapUnit, FormHomeInit,
+    TPhoneListUnit, FormHomeCloseQuery, FormStatisticsLisaUnit;
 
 
 {$R *.dfm}
@@ -405,7 +413,7 @@ begin
 end;
 
 
-procedure THomeForm.SendCommand(_command:enumLogging; _delay:enumStatus; isMultyCommand:Boolean);
+procedure THomeForm.SendCommand(_command:enumLogging; _delay:enumStatus; _paused:Boolean; isMultyCommand:Boolean);
 var
  error:string;
  i:Integer;
@@ -414,7 +422,7 @@ begin
 
   case isMultyCommand of
    False:begin
-    if not SendCommand(_command, _delay, error) then begin
+    if not SendCommand(_command, _delay, _paused, error) then begin
        MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
        Exit;
     end;
@@ -422,7 +430,7 @@ begin
    True:begin  // регистарция в нескольких очередях одновроеменно
     for i:=0 to  SharedCurrentUserLogon.QueueList.Count-1 do begin
       command:=EnumQueueToEnumLogging(SharedCurrentUserLogon.QueueList[i]);
-      SendCommand(command, _delay, False);
+      SendCommand(command, _delay, _paused, False);
     end;
    end;
   end;
@@ -444,7 +452,7 @@ begin
   multyCommand:=SharedCheckBoxUI.Checked['OperatorRegisterAllQueue'];
 
  // добавление в очередь 5000
- SendCommand(eLog_add_queue_5000, delay, multyCommand);
+ SendCommand(eLog_add_queue_5000, delay, False, multyCommand);
 end;
 
 procedure THomeForm.btnStatus_add_queue5911Click(Sender: TObject);
@@ -456,7 +464,7 @@ begin
   multyCommand:=SharedCheckBoxUI.Checked['OperatorRegisterAllQueue'];
 
  // добавление в очередь 5911
-  SendCommand(eLog_add_queue_5911, delay, multyCommand);
+  SendCommand(eLog_add_queue_5911, delay, False, multyCommand);
 end;
 
 procedure THomeForm.btnStatus_add_queue5050Click(Sender: TObject);
@@ -467,7 +475,7 @@ begin
  delay:=eNO;
  multyCommand:=SharedCheckBoxUI.Checked['OperatorRegisterAllQueue'];
  // добавление в очередь 5050
- SendCommand(eLog_add_queue_5050, delay, multyCommand);
+ SendCommand(eLog_add_queue_5050, delay, False, multyCommand);
 end;
 
 procedure THomeForm.btnStatus_availableClick(Sender: TObject);
@@ -475,6 +483,9 @@ var
  curr_queue:enumQueue;
  queueList:TList<enumQueue>;
  i:Integer;
+ paused:Boolean;
+ delay:enumStatus;
+ multyCommand:Boolean;
 begin
 
    if PanelStatusIN.Height=cPanelStatusHeight_showqueue then begin
@@ -484,10 +495,26 @@ begin
 
    Screen.Cursor:=crHourGlass;
 
-   PanelStatusIN.Height:=cPanelStatusHeight_showqueue;
-
-    // проверяем в какой очереди находится оператор
+   // проверяем в какой очереди находится оператор
    queueList:=GetCurrentQueueOperator(_dll_GetOperatorSIP(SharedCurrentUserLogon.ID));
+
+   // проверим не в pause ли находится оператор
+   if queueList.Count > 0 then begin
+     paused:=GetCurrentQueuePausedOperator(_dll_GetOperatorSIP(SharedCurrentUserLogon.ID));
+     if paused then begin
+       // снимаем паузу
+        begin
+         delay:=eNO;
+         multyCommand:=False;
+         SendCommand(eLog_available, delay, False, multyCommand);
+        end;
+
+       Screen.Cursor:=crDefault;
+       Exit;
+     end;
+   end;
+
+   PanelStatusIN.Height:=cPanelStatusHeight_showqueue;
 
    if queueList.Count > 0 then begin
      for i:=0 to queueList.Count-1 do begin
@@ -522,16 +549,22 @@ var
  delay:enumStatus;
  error:string;
 begin
+   // нужно чтобы оператор обязательно находился в очереди
+  if not IsOpearorExistAnyQueue(SharedCurrentUserLogon.ID,error) then begin
+   MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
+   Exit;
+  end;
+
   // проверка есть ли сейчас отложенный статус
   if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.ID,error) then begin
-    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
     Exit;
   end;
 
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
   // перерыв
-  SendCommand(eLog_break,delay, False);
+  SendCommand(eLog_break,delay, True, False);
 end;
 
 procedure THomeForm.btnStatus_callbackClick(Sender: TObject);
@@ -564,7 +597,7 @@ begin
 
   // выход из всех очередей из 5000 и 5050
   delay:=eNO;
-  SendCommand(eLog_del_queue_5000_5050, delay, False);
+  SendCommand(eLog_del_queue_5000_5050, delay, False, False);
 end;
 
 
@@ -573,16 +606,22 @@ var
  delay:enumStatus;
  error:string;
 begin
+  // нужно чтобы оператор обязательно находился в очереди
+  if not IsOpearorExistAnyQueue(SharedCurrentUserLogon.ID,error) then begin
+   MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
+   Exit;
+  end;
+
   // проверка есть ли сейчас отложенный статус
   if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.ID,error) then begin
-    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
     Exit;
   end;
 
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
    // обед
-  SendCommand(eLog_dinner, delay, False);
+  SendCommand(eLog_dinner, delay, True, False);
 end;
 
 procedure THomeForm.btnStatus_exodusClick(Sender: TObject);
@@ -590,16 +629,22 @@ var
  delay:enumStatus;
  error:string;
 begin
+  // нужно чтобы оператор обязательно находился в очереди
+  if not IsOpearorExistAnyQueue(SharedCurrentUserLogon.ID,error) then begin
+   MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
+   Exit;
+  end;
+
   // проверка есть ли сейчас отложенный статус
   if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.ID,error) then begin
-    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
     Exit;
   end;
 
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
  // исход
-  SendCommand(eLog_exodus, delay, False);
+  SendCommand(eLog_exodus, delay, True, False);
 end;
 
 
@@ -617,7 +662,7 @@ begin
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
  // домой
-  SendCommand(eLog_home,delay, False);
+  SendCommand(eLog_home, delay, True, False);
 end;
 
 procedure THomeForm.btnStatus_ITClick(Sender: TObject);
@@ -625,16 +670,22 @@ var
  delay:enumStatus;
  error:string;
 begin
+  // нужно чтобы оператор обязательно находился в очереди
+  if not IsOpearorExistAnyQueue(SharedCurrentUserLogon.ID,error) then begin
+   MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
+   Exit;
+  end;
+
   // проверка есть ли сейчас отложенный статус
   if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.ID,error) then begin
-    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
     Exit;
   end;
 
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
   // ИТ
-   SendCommand(eLog_IT,delay, False);
+   SendCommand(eLog_IT,delay, True, False);
 end;
 
 procedure THomeForm.btnStatus_postvyzovClick(Sender: TObject);
@@ -642,16 +693,22 @@ var
  delay:enumStatus;
  error:string;
 begin
+   // нужно чтобы оператор обязательно находился в очереди
+  if not IsOpearorExistAnyQueue(SharedCurrentUserLogon.ID,error) then begin
+   MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
+   Exit;
+  end;
+
   // проверка есть ли сейчас отложенный статус
   if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.ID,error) then begin
-    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
     Exit;
   end;
 
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
  // поствызов
-  SendCommand(eLog_postvyzov, delay, False);
+  SendCommand(eLog_postvyzov, delay, True, False);
 end;
 
 procedure THomeForm.btnStatus_reserveClick(Sender: TObject);
@@ -659,16 +716,22 @@ var
  delay:enumStatus;
  error:string;
 begin
+   // нужно чтобы оператор обязательно находился в очереди
+  if not IsOpearorExistAnyQueue(SharedCurrentUserLogon.ID,error) then begin
+   MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
+   Exit;
+  end;
+
   // проверка есть ли сейчас отложенный статус
   if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.ID,error) then begin
-    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
     Exit;
   end;
 
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
  // переносы
-  SendCommand(eLog_reserve,delay, False);
+  SendCommand(eLog_reserve,delay, True, False);
 end;
 
 procedure THomeForm.btnStatus_studiesClick(Sender: TObject);
@@ -676,16 +739,22 @@ var
  delay:enumStatus;
  error:string;
 begin
+  // нужно чтобы оператор обязательно находился в очереди
+  if not IsOpearorExistAnyQueue(SharedCurrentUserLogon.ID,error) then begin
+   MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
+   Exit;
+  end;
+
   // проверка есть ли сейчас отложенный статус
   if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.ID,error) then begin
-    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
     Exit;
   end;
 
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
  // учеба
-   SendCommand(eLog_studies,delay, False);
+   SendCommand(eLog_studies,delay, True, False);
 end;
 
 procedure THomeForm.btnStatus_transferClick(Sender: TObject);
@@ -693,16 +762,22 @@ var
  delay:enumStatus;
  error:string;
 begin
+   // нужно чтобы оператор обязательно находился в очереди
+  if not IsOpearorExistAnyQueue(SharedCurrentUserLogon.ID,error) then begin
+   MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
+   Exit;
+  end;
+
   // проверка есть ли сейчас отложенный статус
   if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.ID,error) then begin
-    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
     Exit;
   end;
 
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
 
 // переносы
- SendCommand(eLog_transfer,delay, False);
+ SendCommand(eLog_transfer,delay, True, False);
 end;
 
 
@@ -729,79 +804,8 @@ begin
 end;
 
 procedure THomeForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-var
-  AMsgDialog: TForm;
-  ACheckBox: TCheckBox;
-  DialogResult: Integer;
-  errorDescription:string;
-  regPhone:TPhoneList;
 begin
-  if DEBUG then begin
-    KillProcess;
-  end;
-
-  if SharedCurrentUserLogon.IsOperator then begin
-
-    // проверяемв друг еще в очереди находится оператор
-     if SharedActiveSipOperators.isExistOperatorInQueue(_dll_GetOperatorSIP(SharedCurrentUserLogon.ID)) then begin
-       CanClose:= Application.MessageBox(PChar('Вы забыли выйти из очереди'), 'Ошибка при выходе', MB_OK + MB_ICONERROR) = IDNO;
-       Exit;
-     end;
-
-    // проверяем правильно ли оператор вышел через команду
-    if getIsExitOperatorCurrentGoHome(SharedCurrentUserLogon.Role, SharedCurrentUserLogon.ID) then begin
-      CanClose:= Application.MessageBox(PChar('Прежде чем закрыть, необходимо выбрать статус "Домой"'), 'Ошибка при выходе', MB_OK + MB_ICONERROR) = IDNO;
-      Exit;
-    end;
-
-   // разрегистрация в тлф
-   regPhone:=TPhoneList.Create;
-   if regPhone.IsRegisterdSip[_dll_GetOperatorSIP(SharedCurrentUserLogon.ID)] then begin
-    OpenRegPhone(eAutoRunningDeRegistered);
-   end;
-  end;
-
-  if not SharedIndividualSettingUser.NoConfirmExit then begin
-    AMsgDialog := CreateMessageDialog('Вы действительно хотите завершить работу?', mtConfirmation, [mbYes, mbNo]);
-    ACheckBox := TCheckBox.Create(AMsgDialog);
-
-    with AMsgDialog do
-    try
-      Caption:= 'Уточнение выхода';
-      Height:= 150;
-      (FindComponent('Yes') as TButton).Caption := 'Да';
-      (FindComponent('No')  as TButton).Caption := 'Нет';
-
-      with ACheckBox do begin
-        Parent:= AMsgDialog;
-        Caption:= 'Не показывать больше это сообщение';
-        Top:= 100;
-        Left:= 8;
-        Width:= AMsgDialog.Width;
-      end;
-
-      DialogResult:= ShowModal; // Сохраняем результат в переменной
-
-      if DialogResult = ID_YES then
-      begin
-        if ACheckBox.Checked then begin
-          // созраняем параметр чтобы больше не показывать это окно
-         SharedIndividualSettingUser.SaveIndividualSettingUser(settingUsers_noConfirmExit,paramStatus_ENABLED,errorDescription);
-        end;
-
-        KillProcess;
-      end
-      else if DialogResult = ID_NO then
-      begin
-        Abort; // Отмена выхода
-      end else Abort;
-
-    finally
-      FreeAndNil(ACheckBox);
-      Free;
-    end;
-  end;
-  KillProcess;
+  FormHomeCloseQuery._CLOSEQUERY(Sender,CanClose);
 end;
 
 procedure THomeForm.FormCreate(Sender: TObject);
@@ -897,11 +901,16 @@ begin
 
 
      if SharedCurrentUserLogon.IsOperator then begin
-
-       if not Assigned(m_dispatcherCreateThreadWaitForRegisterPhone) then begin
-        m_dispatcherCreateThreadWaitForRegisterPhone:=TThreadDispatcher.Create('WaitForRegisteredPhone',1,False,WaitForRegisteredPhone);
+       // регистрация в обычном телефоне
+       if not SharedCurrentUserLogon.IsZoiperSip then begin
+         if not Assigned(m_dispatcherCreateThreadWaitForRegisterPhone) then begin
+          m_dispatcherCreateThreadWaitForRegisterPhone:=TThreadDispatcher.Create('WaitForRegisteredPhone',1,False,WaitForRegisteredPhone);
+         end;
+         m_dispatcherCreateThreadWaitForRegisterPhone.StartThread;
+       end
+       else begin
+         ShowStatusOperator(True,False);
        end;
-       m_dispatcherCreateThreadWaitForRegisterPhone.StartThread;
      end;
    end;
 
@@ -1154,6 +1163,11 @@ begin
  ChangeFontSize(eFontDonw,eIvr);
 end;
 
+procedure THomeForm.img_DownFont_LisaClick(Sender: TObject);
+begin
+ ChangeFontSize(eFontDonw,eLisa);
+end;
+
 procedure THomeForm.img_DownFont_QueueClick(Sender: TObject);
 begin
  ChangeFontSize(eFontDonw,eQueue);
@@ -1170,9 +1184,15 @@ begin
 end;
 
 procedure THomeForm.img_statistics_IVRClick(Sender: TObject);
+var
+ mouse_coordinate:TPoint;
 begin
-  OnDevelop;
+  GetCursorPos(mouse_coordinate);
+  FormStatisticsLisa.Left:=mouse_coordinate.x;
+  FormStatisticsLisa.Top:=mouse_coordinate.Y;
+  FormStatisticsLisa.Show;
 end;
+
 
 procedure THomeForm.img_statistics_list_QUEUEClick(Sender: TObject);
 begin
@@ -1194,6 +1214,11 @@ begin
  ChangeFontSize(eFontUP,eIvr);
 end;
 
+procedure THomeForm.img_UpFont_LisaClick(Sender: TObject);
+begin
+ ChangeFontSize(eFontUP,eLisa);
+end;
+
 procedure THomeForm.img_UpFont_QueueClick(Sender: TObject);
 begin
   ChangeFontSize(eFontUP,eQueue);
@@ -1202,12 +1227,6 @@ end;
 procedure THomeForm.img_users_OperatorRegisterAllQueueClick(Sender: TObject);
 begin
  SharedCheckBoxUI.ChangeStatusCheckBox('OperatorRegisterAllQueue');
-end;
-
-procedure THomeForm.Label8Click(Sender: TObject);
-begin
-  ShowStatusOperator(True,False);
-   m_dispatcherCreateThreadWaitForRegisterPhone.StopThread;
 end;
 
 procedure THomeForm.lblCheckInfocilinikaServerAliveClick(Sender: TObject);
@@ -1351,20 +1370,31 @@ procedure THomeForm.ListViewSIPCustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
 var
  time_talk:Integer;
- test:string;
+ err:Boolean;
  longtalk:string;
 begin
   if not Assigned(Item) then Exit;
+  err:=False;
 
   try
     if Item.SubItems.Count = 8 then // Проверяем, что есть достаточно SubItems
     begin
 
-      if Item.SubItems.Strings[1] = 'доступен' then
-      begin
-        Sender.Canvas.Font.Color := EnumColorStatusToTColor(color_Good);
-        Exit;
+      try
+        if Item.SubItems.Strings[1] = 'доступен' then
+        begin
+          Sender.Canvas.Font.Color := EnumColorStatusToTColor(color_Good);
+          Exit;
+        end;
+      except
+          on E:Exception do
+          begin
+           SharedMainLog.Save('THomeForm.ListViewSIPCustomDrawItem. '+e.ClassName+': '+e.Message, IS_ERROR);
+           err:=True;
+          end;
       end;
+
+      if err then Exit;
 
       if (AnsiPos('OnHold',Item.SubItems.Strings[1]) <> 0) then
       begin
@@ -1373,9 +1403,19 @@ begin
       end;
 
       if Item.SubItems.Strings[5] <> '---' then begin
-        test:=Item.SubItems.Strings[5];
+       // test:=Item.SubItems.Strings[5];
 
-        time_talk:=GetTimeAnsweredToSeconds(Item.SubItems.Strings[5],True);
+        try
+          time_talk:=GetTimeAnsweredToSeconds(Item.SubItems.Strings[5],True);
+        except
+          on E:Exception do
+          begin
+           SharedMainLog.Save('THomeForm.ListViewSIPCustomDrawItem. '+e.ClassName+': '+e.Message, IS_ERROR);
+           time_talk:=-1;
+          end;
+        end;
+
+        if time_talk = -1 then Exit;
 
         if (time_talk >= 180) and (time_talk <= 600)  then begin
          Sender.Canvas.Font.Color := EnumColorStatusToTColor(color_NotBad);
@@ -1584,9 +1624,9 @@ begin
 end;
 
  // отправка удаленной команды
-function THomeForm.SendCommand(_command:enumLogging; _delay:enumStatus; var _errorDescriptions:string):boolean;
+function THomeForm.SendCommand(_command:enumLogging; _delay:enumStatus; _paused:Boolean; var _errorDescriptions:string):boolean;
 begin
-  Result:=SharedStatus.SendCommand(_command,_delay,_errorDescriptions);
+  Result:=SharedStatus.SendCommand(_command,_delay, _paused, _errorDescriptions);
 end;
 
 
@@ -1605,7 +1645,7 @@ begin
   delay:=eNO;
 
 
-  if not status.SendCommand(_command, delay, error) then begin
+  if not status.SendCommand(_command, delay, False, error) then begin
     MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
     Exit;
   end;

@@ -470,6 +470,10 @@ begin
       end;
 
       // ===== ОЧЕРЕДЬ =====
+//      if p_ActiveSipOperators.GetListOperators_SipNumber(i) = 64197 then begin // TODO удалить потом
+//        Sleep(100);
+//      end;
+
       begin
        if p_ActiveSipOperators.QueueList[i].Count = 0 then ListItem.SubItems[6]:='---'
        else ListItem.SubItems[6]:=p_ActiveSipOperators.QueueListSTR[i];

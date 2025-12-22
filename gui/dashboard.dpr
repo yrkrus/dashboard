@@ -90,7 +90,12 @@ uses
   FormHomeInit in 'FormHomeInit.pas',
   TIndividualSettingUserUnit in '..\custom_class\TIndividualSettingUserUnit.pas',
   TRegisterPhoneUnit in '..\custom_class\TRegisterPhoneUnit.pas',
-  TUserCommonQueueUnit in '..\custom_class\TUserCommonQueueUnit.pas';
+  TUserCommonQueueUnit in '..\custom_class\TUserCommonQueueUnit.pas',
+  FormHomeCloseQuery in 'FormHomeCloseQuery.pas',
+  Thread_LISAUnit in 'Thread\Thread_LISAUnit.pas',
+  TLisaUnit in '..\custom_class\TLisaUnit.pas',
+  FormStatisticsLisaUnit in 'Forms\FormStatisticsLisaUnit.pas' {FormStatisticsLisa},
+  TLisaStatisticsDayUnit in '..\custom_class\TLisaStatisticsDayUnit.pas';
 
 {$R *.res}
 
@@ -138,6 +143,7 @@ begin
   Application.CreateForm(TFormSipPhoneListAdd, FormSipPhoneListAdd);
   Application.CreateForm(TFormPhoneList, FormPhoneList);
   Application.CreateForm(TFormPhoneListAdd, FormPhoneListAdd);
+  Application.CreateForm(TFormStatisticsLisa, FormStatisticsLisa);
   Application.Run;
 end.
 

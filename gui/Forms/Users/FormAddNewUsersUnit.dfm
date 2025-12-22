@@ -4,7 +4,7 @@ object FormAddNewUsers: TFormAddNewUsers
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = #1044#1086#1073#1072#1074#1083#1077#1085#1080#1077' '#1085#1086#1074#1086#1075#1086' '#1087#1086#1083#1100#1079#1086#1074#1072#1090#1077#1083#1103
-  ClientHeight = 279
+  ClientHeight = 280
   ClientWidth = 600
   Color = clWindow
   Font.Charset = RUSSIAN_CHARSET
@@ -369,7 +369,7 @@ object FormAddNewUsers: TFormAddNewUsers
       Top = 309
       Width = 345
       Height = 66
-      TabOrder = 8
+      TabOrder = 9
       Visible = False
       object lblInfoNewPwd: TLabel
         Left = 11
@@ -672,10 +672,43 @@ object FormAddNewUsers: TFormAddNewUsers
       Visible = False
       OnDrawItem = combox_SipDrawItem
     end
+    object panel_zoiper: TPanel
+      Left = 379
+      Top = 162
+      Width = 177
+      Height = 22
+      BevelOuter = bvNone
+      TabOrder = 8
+      Visible = False
+      object lbl_checkbox_SipZoiper: TLabel
+        Left = 28
+        Top = 2
+        Width = 118
+        Height = 16
+        Caption = #1080#1089#1087#1086#1083#1100#1079#1091#1077#1090#1089#1103' zoiper'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+        OnClick = lbl_checkbox_SipZoiperClick
+      end
+      object img_SipZoiper: TImage
+        Left = 6
+        Top = 3
+        Width = 16
+        Height = 16
+        ParentShowHint = False
+        ShowHint = False
+        Transparent = True
+        OnClick = img_SipZoiperClick
+      end
+    end
   end
   object btnEdit: TBitBtn
     Left = 8
-    Top = 314
+    Top = 326
     Width = 583
     Height = 47
     Caption = '   &'#1056#1077#1076#1072#1082#1090#1080#1088#1086#1074#1072#1090#1100

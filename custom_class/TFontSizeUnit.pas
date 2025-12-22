@@ -34,6 +34,7 @@ TCustomTypeUnit;
       m_ActiveSip                :Word;
       m_Ivr                      :Word;
       m_Queue                    :Word;
+      m_Lisa                     :Word;
 
       end;
  // class TFontSize END
@@ -49,6 +50,7 @@ begin
  m_ActiveSip  := DEFAULT_FONT_SIZE;
  m_Ivr        := DEFAULT_FONT_SIZE;
  m_Queue      := DEFAULT_FONT_SIZE;
+ m_Lisa       := DEFAULT_FONT_SIZE;
 end;
 
 
@@ -59,6 +61,7 @@ begin
     eActiveSip:   m_ActiveSip:=NewSize;
     eIvr:         m_Ivr:=NewSize;
     eQueue:       m_Queue:=NewSize;
+    eLisa:        m_Lisa:=NewSize;
   end; 
 end;
 
@@ -68,7 +71,8 @@ begin
     eActiveSip:  Result:= m_ActiveSip;
     eIvr:        Result:= m_Ivr;
     eQueue:      Result:= m_Queue;
-  end; 
+    eLisa:       Result:= m_Lisa;
+  end;
 end;
 
 end.

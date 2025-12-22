@@ -146,11 +146,10 @@
         <Icon_MainIcon>ico\diagram09.ico</Icon_MainIcon>
         <UWP_DelphiLogo44>C:\Users\home0\Desktop\DASHBOARD\develop\gui\ico\diagram09(1).png</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>C:\Users\home0\Desktop\DASHBOARD\develop\gui\ico\diagram09.png</UWP_DelphiLogo150>
-        <VerInfo_MinorVer>27</VerInfo_MinorVer>
-        <VerInfo_Keys>CompanyName=Petrov Yuri;FileDescription=Дашборд коллцентра;FileVersion=1.27.1.103;InternalName=;LegalCopyright=Petrov Yuri;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Дашборд коллцентра;ProductVersion=0.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_MinorVer>28</VerInfo_MinorVer>
+        <VerInfo_Keys>CompanyName=Petrov Yuri;FileDescription=Дашборд коллцентра;FileVersion=1.28.0.105;InternalName=;LegalCopyright=Petrov Yuri;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Дашборд коллцентра;ProductVersion=0.0.0.0;Comments=</VerInfo_Keys>
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
-        <VerInfo_Build>103</VerInfo_Build>
-        <VerInfo_Release>1</VerInfo_Release>
+        <VerInfo_Build>105</VerInfo_Build>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -343,6 +342,14 @@
         <DCCReference Include="..\custom_class\TIndividualSettingUserUnit.pas"/>
         <DCCReference Include="..\custom_class\TRegisterPhoneUnit.pas"/>
         <DCCReference Include="..\custom_class\TUserCommonQueueUnit.pas"/>
+        <DCCReference Include="FormHomeCloseQuery.pas"/>
+        <DCCReference Include="Thread\Thread_LISAUnit.pas"/>
+        <DCCReference Include="..\custom_class\TLisaUnit.pas"/>
+        <DCCReference Include="Forms\FormStatisticsLisaUnit.pas">
+            <Form>FormStatisticsLisa</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\custom_class\TLisaStatisticsDayUnit.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

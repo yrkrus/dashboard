@@ -79,8 +79,6 @@ begin
    Synchronize(p_InternalProcess.CheckStatusRegisteredSipPhone);              // проверка зарегестрирован ли sip на телефоне
    // p_InternalProcess.XMLUpdateLastOnline;                     // обновление времемни в settings.xml
    p_InternalProcess.UpdateMemory;                               // обновление загрузки по памяти
-   Synchronize(p_InternalProcess.ActiveCallsLisaTalk);           // сколько сейчас разговаривает с лизой
-
 end;
 
 procedure Thread_InternalProcess.Execute;

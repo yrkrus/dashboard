@@ -61,6 +61,9 @@ type
     lblLoginInfo: TLabel;
     lblSwapSip: TLabel;
     btnEdit: TBitBtn;
+    panel_zoiper: TPanel;
+    lbl_checkbox_SipZoiper: TLabel;
+    img_SipZoiper: TImage;
     procedure btnAddNewUserClick(Sender: TObject);
     procedure edtNewFamiliyaChange(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -94,6 +97,8 @@ type
     procedure combox_SipDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
     procedure ButtonAction(Sender: TObject);
+    procedure lbl_checkbox_SipZoiperClick(Sender: TObject);
+    procedure img_SipZoiperClick(Sender: TObject);
   private
     { Private declarations }
   m_checkBoxUI              :TCheckBoxUI;   // красивенькие чек боксы
@@ -132,6 +137,12 @@ type
   procedure ChangeChoisNewPassword; // выбор смены пароля
   procedure ChangeChoisAccessGroup; // выбор групп доступа
 
+  procedure AddUserCommonQueue(_userID:Integer; var _list:TList<enumQueue>);  // добавление пользователя в таблицу users_common_queue
+  procedure InsertOrUpdateTableOperators(_action:enumAction;
+                                         _userID:string;
+                                         _sip:string;
+                                         _isZoiper:Integer);                  // добавление\редактирование пользователя в таблице operators
+
   function CheckFields(var _errorDescription:string):Boolean; // проверка полей
   function CheckLogin(_login:string):Boolean;  // существует ли login пользвоателчя
 
@@ -162,6 +173,146 @@ uses
   FunctionUnit, FormUsersUnit, GlobalVariables, GlobalVariablesLinkDLL, GlobalImageDestination, TLdapUnit;
 
 {$R *.dfm}
+
+
+// добавление пользователя в таблицу users_common_queue
+procedure TFormAddNewUsers.AddUserCommonQueue(_userID:Integer; var _list:TList<enumQueue>);
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ i:Integer;
+begin
+  ado:=TADOQuery.Create(nil);
+ try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+
+      try
+         for i:=0 to _list.Count-1 do begin
+          SQL.Clear;
+          SQL.Add('insert into users_common_queue (user_id,queue) values ('+#39+IntToStr(_userID)+#39+','
+                                                                           +#39+EnumQueueToString(_list[i])+#39+')');
+          try
+              ExecSQL;
+          except
+              on E:EIdException do begin
+                  FreeAndNil(ado);
+                  if Assigned(serverConnect) then begin
+                    serverConnect.Close;
+                    FreeAndNil(serverConnect);
+                  end;
+                 Exit;
+              end;
+          end;
+        end;
+      except
+          on E:EIdException do begin
+             FreeAndNil(ado);
+            if Assigned(serverConnect) then begin
+              serverConnect.Close;
+              FreeAndNil(serverConnect);
+            end;
+            Exit;
+          end;
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+
+// добавление\редактирование пользователя в таблице operators
+procedure TFormAddNewUsers.InsertOrUpdateTableOperators(_action:enumAction; _userID:string; _sip:string; _isZoiper:Integer);
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ i:Integer;
+ request:TStringBuilder;
+begin
+  ado:=TADOQuery.Create(nil);
+ try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      request:=TStringBuilder.Create;
+
+      case _action of
+        action_add:begin
+          with request do begin
+           Clear;
+           Append('insert into operators');
+           Append(' (sip,user_id,phone_zoiper)');
+           Append(' values (');
+           Append(#39+_userID+#39+','+#39+_sip+#39+','+#39+IntToStr(_isZoiper)+#39);
+           Append(')');
+          end;
+        end;
+        action_edit:begin
+          with request do begin
+           Clear;
+           Append('update operators set ');
+           Append('phone_zoiper='+#39+IntToStr(_isZoiper)+#39);
+           Append(' where user_id = '+#39+_userID+#39);
+          end;
+        end;
+      end;
+
+      try
+          SQL.Add(request.ToString);
+          ExecSQL;
+      except
+          on E:EIdException do begin
+             Screen.Cursor:=crDefault;
+
+            FreeAndNil(ado);
+            if Assigned(serverConnect) then begin
+              serverConnect.Close;
+              FreeAndNil(serverConnect);
+              FreeAndNil(request);
+            end;
+            Exit;
+          end;
+      end;
+
+
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+      FreeAndNil(request);
+    end;
+  end;
+end;
 
 
 procedure TFormAddNewUsers.CreateParams(var Params: TCreateParams);
@@ -387,6 +538,7 @@ begin
    lblLdapInfo.Visible:=False;
    group_localPassword.Visible:=False;
    m_checkBoxUI.ChangeStatusCheckBox('NewPassword', paramStatus_DISABLED);
+   m_checkBoxUI.ChangeStatusCheckBox('SipZoiper', paramStatus_DISABLED);
  end;
 
  // правая сторона
@@ -410,6 +562,7 @@ begin
   combox_Sip.Visible:=False;
   lblNoSip.Visible:=False;
   lblSwapSip.Visible:=False;
+  panel_zoiper.Visible:=False;
  end;
 
  // private
@@ -477,6 +630,11 @@ begin
  ChangeChoisNewPassword;
 end;
 
+procedure TFormAddNewUsers.img_SipZoiperClick(Sender: TObject);
+begin
+ m_checkBoxUI.ChangeStatusCheckBox('SipZoiper');
+end;
+
 function TFormAddNewUsers.ExecuteResponce(_action:enumAction; var _errorDescription:string):Boolean;
 var
  ado:TADOQuery;
@@ -501,6 +659,9 @@ var
  i:Integer;
 
  request:TStringBuilder;
+
+ sip_is_zoiper:Word; // 1 = true (т.е. zoiper)
+
 begin
   Result:=False;
   _errorDescription:='';
@@ -602,6 +763,11 @@ begin
       u_role:=IntToStr(getUserGroupID(user_group));
 
        if RoleIsOperator(StringToEnumRole(user_group)) then begin
+
+          // телефон используется zoiper
+         if m_checkBoxUI.Checked['SipZoiper'] then sip_is_zoiper:=1
+         else sip_is_zoiper:=0;
+
          // новое добавление пользователя
          if not m_IsEditUser then begin
            if combox_Sip.Items.Count = 0 then begin
@@ -707,29 +873,15 @@ begin
       begin
         if not m_IsEditUser then begin
           if NewUserIsOperator then begin
-
-             SQL.Clear;
-             SQL.Add('insert into operators (sip,user_id) values ('+#39+user_sip+#39+','
-                                                                   +#39+userID+#39+')');
-            try
-                ExecSQL;
-            except
-                on E:EIdException do begin
-                   Screen.Cursor:=crDefault;
-                   _errorDescription:=e.Message;
-                    FreeAndNil(ado);
-                    if Assigned(serverConnect) then begin
-                      serverConnect.Close;
-                      FreeAndNil(serverConnect);
-                      FreeAndNil(request);
-                    end;
-                   Exit;
-                end;
-            end;
+            InsertOrUpdateTableOperators(action_add, userID, user_sip, sip_is_zoiper);
+          end;
+        end
+        else begin
+          if RoleIsOperator(StringToEnumRole(user_group)) then begin
+            InsertOrUpdateTableOperators(action_edit, userID, '', sip_is_zoiper);
           end;
         end;
       end;
-
 
       // таблица settings_sip (толькол для операторов)
       if RoleIsOperator(StringToEnumRole(user_group)) then begin
@@ -1149,12 +1301,20 @@ begin
  ChangeChoisNewPassword;
 end;
 
+procedure TFormAddNewUsers.lbl_checkbox_SipZoiperClick(Sender: TObject);
+begin
+ m_checkBoxUI.ChangeStatusCheckBox('SipZoiper');
+end;
+
 procedure TFormAddNewUsers.InitCheckboxUI;
 begin
   if not Assigned(m_checkBoxUI) then m_checkBoxUI:=TCheckBoxUI.Create;
 
   // установка своего пароля
   m_checkBoxUI.Add('NewPassword',lbl_checkbox_NewPassword,img_NewPassword, paramStatus_DISABLED);
+
+  // используется zoiper
+  m_checkBoxUI.Add('SipZoiper',lbl_checkbox_SipZoiper,img_SipZoiper, paramStatus_DISABLED);
 
   // видимые группы
   m_checkBoxUI.Add('CommonQueue5000',lbl_checkbox_CommonQueue5000,img_CommonQueue5000, paramStatus_DISABLED);
@@ -1466,7 +1626,6 @@ begin
          lblNoSip.Visible:=False;
 
          combox_Sip.Visible:=True;
-
        end
        else begin
          // нет номеров
@@ -1477,6 +1636,8 @@ begin
          lblNoSip.Left:=cNoSIPLEFT;
          lblNoSip.Top:=cNoSIPTOP;
        end;
+
+       panel_zoiper.Visible:=True;
     end;
     True:begin   // редактируется пользователь
       if m_editUser.IsOperator then begin
@@ -1485,11 +1646,12 @@ begin
           lblSwapSip.Visible:=True;
           lblSwapSip.Left:=cNoSIPLEFT;
           lblSwapSip.Top:=cNoSIPTOP;
+
+          panel_zoiper.Visible:=True;
         end;
       end;
     end;
   end;
-
 
  end
  else begin
@@ -1497,9 +1659,10 @@ begin
     lblNoSip.Visible:=False;
     lblSwapSip.Visible:=False;
     combox_Sip.Visible:=False;
+    panel_zoiper.Visible:=False;
  end;
-
 end;
+
 
 
 procedure TFormAddNewUsers.Loading;
@@ -1574,6 +1737,10 @@ begin
       lblSwapSip.Visible:=True;
       lblSwapSip.Left:=cSwapSIPLEFT;
       lblSwapSip.Top:=cSwapSIPTOP;
+
+      // используется zoiper
+      panel_zoiper.Visible:=True;
+      m_checkBoxUI.Checked['SipZoiper']  :=m_editUser.IsZoiperSip;
     end;
   end;
 end;

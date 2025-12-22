@@ -91,6 +91,7 @@ uses  System.Classes, Data.Win.ADODB, Data.DB,System.SysUtils,
       function GetExistQueue(_queue:enumQueue):Boolean;   // входит ли пользак в очередь
       function GetExternalAccess(_access:enumExternalAccessEXE):Boolean;   // какие доступы есть к внешним программам
       function GetQueueList:TList<enumQueue>;   // отображение очередей в которых учавствует пользователь
+      function GetZoiperSip:Boolean;  // sip телефон не стационарный а программный zoiper
 
       public
 
@@ -126,6 +127,7 @@ uses  System.Classes, Data.Win.ADODB, Data.DB,System.SysUtils,
       property Queue[_queue:enumQueue]:Boolean read GetExistQueue;
       property ExternalAccess[_access:enumExternalAccessEXE]:Boolean read GetExternalAccess;
       property QueueList:TList<enumQueue> read GetQueueList;
+      property IsZoiperSip:Boolean read GetZoiperSip;
 
       end;
  // class TUser END
@@ -417,6 +419,55 @@ begin
       if Fields[0].Value <> null then begin
         Result:=StrToDateTime(VarToStr(Fields[0].Value));
       end;
+
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+      FreeAndNil(request);
+    end;
+  end;
+end;
+
+// sip телефон не стационарный а программный zoiper
+function TUser.GetZoiperSip:Boolean;
+ var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ request:TStringBuilder;
+begin
+  Result:=False;
+
+  ado:=TADOQuery.Create(nil);
+  try
+      serverConnect:=createServerConnect;
+  except
+      on E:Exception do begin
+        if not Assigned(serverConnect) then begin
+           FreeAndNil(ado);
+           Exit;
+        end;
+      end;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+
+      request:=TStringBuilder.Create;
+      with request do begin
+       Clear;
+       Append('select phone_zoiper from operators');
+       Append(' where user_id = '+#39+IntToStr(m_params.m_id)+#39);
+      end;
+
+      SQL.Add(request.ToString);
+      Active:=True;
+
+      if StrToInt((VarToStr(Fields[0].Value))) > 0 then Result:=True;
 
     end;
   finally

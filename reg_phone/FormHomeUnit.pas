@@ -42,6 +42,7 @@ type
     procedure combox_NamePCDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
     procedure ChangeStatus(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
   m_imagelistSip  :TImageList;
@@ -255,12 +256,18 @@ var
   i: Integer;
 begin
 
-  if DEBUG then begin
-   USER_STARTED_REG_PHONE_ID:=94; // тестовый оператор2 64153
-   USER_STARTED_PC_NAME:='DEV';
-   USER_AUTO_REGISTERED_SIP_PHONE:=True;
-   Exit;
-  end;
+//  if DEBUG then begin
+//   USER_STARTED_REG_PHONE_ID:=94; // тестовый оператор2 64153
+//   USER_STARTED_PC_NAME:='DEV';
+//   USER_AUTO_REGISTERED_SIP_PHONE:=True;
+//   Exit;
+//  end;
+
+//  // для отладки
+//   USER_STARTED_REG_PHONE_ID:=94;
+//   USER_STARTED_PC_NAME:='DEV';
+//   USER_AUTO_REGISTERED_SIP_PHONE:=StrToBool('True');
+//   Exit;
 
   if ParamCount = 0 then begin
    MANUAL_STARTED:=True;
@@ -314,11 +321,6 @@ begin
       end;
     end;
   end;
-
-//   USER_STARTED_REG_PHONE_ID:=94;
-//   USER_STARTED_PC_NAME:='DEV';
-//   USER_AUTO_REGISTERED_SIP_PHONE:=StrToBool('False');
-
 end;
 
 
@@ -334,7 +336,7 @@ begin
    Exit;
   end;
 
-  Screen.Cursor:=crHourGlass;
+  ShowWait(show_open,eDeRegisterPhone);
 
   sip:=combox_SIP.Items[combox_SIP.ItemIndex];
   System.Delete(sip,1,1);   // убираем первую строку она всегада  ' '
@@ -343,15 +345,14 @@ begin
   userPC:=combox_NamePC.Items[combox_NamePC.ItemIndex];
   System.Delete(userPC,1,1);   // убираем первую строку она всегада  ' '
 
-
   if not DeRegisterPhoneManual(userID, userPC, errorDescription) then begin
-    Screen.Cursor:=crDefault;
+    ShowWait(show_close);
     MessageBox(Handle,PChar(errorDescription),PChar('Ошибка при разрегистрации'),MB_OK+MB_ICONERROR);
     Exit;
   end;
 
+  ShowWait(show_close);
   MessageBox(Handle,PChar('Успешная разрегистрация'),PChar(''),MB_OK+MB_ICONINFORMATION);
-  Screen.Cursor:=crDefault;
 end;
 
 procedure TFormHome.btnNoClick(Sender: TObject);
@@ -363,19 +364,16 @@ procedure TFormHome.btnRegisterClick(Sender: TObject);
 var
  errorDescription:string;
 begin
-  Screen.Cursor:=crHourGlass;
+  ShowWait(show_open,eRegisterPhone);
 
   if not RegisterPhoneAuto(errorDescription) then begin
-    Screen.Cursor:=crDefault;
+    ShowWait(show_close);
     MessageBox(Handle,PChar(errorDescription),PChar('Ошибка при регистрации'),MB_OK+MB_ICONERROR);
     Exit;
   end;
 
+  ShowWait(show_close);
   MessageBox(Handle,PChar('Успешная регистрация'),PChar(''),MB_OK+MB_ICONINFORMATION);
-  Screen.Cursor:=crDefault;
-
-
-
   KillProcessNow;
 end;
 
@@ -392,7 +390,7 @@ begin
    Exit;
   end;
 
-  Screen.Cursor:=crHourGlass;
+  ShowWait(show_open,eRegisterPhone);
 
   sip:=combox_SIP.Items[combox_SIP.ItemIndex];
   System.Delete(sip,1,1);   // убираем первую строку она всегада  ' '
@@ -403,13 +401,13 @@ begin
 
 
   if not RegisterPhoneManual(userID, userPC, errorDescription) then begin
-    Screen.Cursor:=crDefault;
+    ShowWait(show_close);
     MessageBox(Handle,PChar(errorDescription),PChar('Ошибка при регистрации'),MB_OK+MB_ICONERROR);
     Exit;
   end;
 
+  ShowWait(show_close);
   MessageBox(Handle,PChar('Успешная регистрация'),PChar(''),MB_OK+MB_ICONINFORMATION);
-  Screen.Cursor:=crDefault;
 end;
 
 
@@ -495,14 +493,19 @@ begin
   end;
 end;
 
+procedure TFormHome.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  KillProcessNow;
+end;
+
 procedure TFormHome.FormCreate(Sender: TObject);
 begin
-  // проверка на запуска 2ой копи
-  if GetCloneRun(Pchar(REG_PHONE_EXE)) then begin
-    MessageBox(Handle,PChar('Обнаружен запуск 2ой копии регистрации телефона'+#13#13+
-                            'Для продолжения закройте предыдущую копию'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
-   KillProcessNow;
-  end;
+//  // проверка на запуска 2ой копи
+//  if GetCloneRun(Pchar(REG_PHONE_EXE)) then begin
+//   MessageBox(Handle,PChar('Обнаружен запуск 2ой копии регистрации телефона'+#13#13+
+//                            'Для продолжения закройте предыдущую копию'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
+//   KillProcessNow;
+//  end;
 
   ProcessCommandLineParams(DEBUG);
 end;
@@ -530,10 +533,20 @@ begin
     if individualSettings.AutoRegisterSipPhone then begin
       case USER_AUTO_REGISTERED_SIP_PHONE of
        True:begin                                // автоматически входим
-         RegisterPhoneAuto(errorDescription);
+        ShowWait(show_open,eRegisterPhone);
+
+        if not RegisterPhoneAuto(errorDescription) then begin
+         ShowWait(show_close);
+         MessageBox(Handle,PChar('Ошибка регистрации телефона'+#13#13+
+                                  errorDescription),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
+        end;
+
+        ShowWait(show_close);
        end;
        False:begin                               // автоматически выходим
+         ShowWait(show_open,eDeRegisterPhone);
          DeRegisterPhoneAuto(errorDescription);
+         ShowWait(show_close);
        end;
       end;
 

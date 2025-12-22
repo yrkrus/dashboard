@@ -48,6 +48,7 @@ uses System.Classes, Data.Win.ADODB, Data.DB, System.SysUtils,
       phone                                  : string;        // номер телефона
       talk_time                              : string;        // время разговора
       m_queueList                            : TList<enumQueue>;    // очереди в которых сидит оператор
+      m_queuePaused                          : Boolean;       // очередь на паузе находиться или нет(при true звонки не принимаются)
       status                                 : enumStatusOperators;       // текущий статус оператора
       status_delay                           : enumStatusOperators; // отложенный статус (когда оператор в разговоре)
       access_dashboard                       : Boolean;       // есть ли доступ к дашборду
@@ -216,6 +217,7 @@ uses
    Self.access_dashboard:=False;
    Self.online:=TOnline.Create;
    Self.m_queueList:=TList<enumQueue>.Create;
+   Self.m_queuePaused:=False;
    
    //id:=0;
    user_id:= -1;
@@ -237,6 +239,7 @@ uses
    Self.phone:='';
    Self.talk_time:='';
    Self.m_queueList.Clear;
+   Self.m_queuePaused:=False;
    Self.status:=eUnknown;
    Self.status_delay:=eUnknown;
    Self.access_dashboard:=False;
@@ -1182,21 +1185,25 @@ end;
  procedure TActiveSIP.updateQueue;
   var
   i:Integer;  
-  tempQueue,newQueue:TList<enumQueue>;  
+  tempQueue,newQueue:TList<enumQueue>;
+  paused:Boolean;
  begin
    if getCountSipOperators=0 then Exit; 
    
    for i:=0 to Length(listOperators)-1 do begin
      if listOperators[i].sip_number = -1 then Continue;
 
-     tempQueue:=listOperators[i].m_queueList; 
+     tempQueue:=listOperators[i].m_queueList;
      newQueue:=GetCurrentQueueOperator(listOperators[i].sip_number);
-        
+     paused:=GetCurrentQueuePausedOperator(listOperators[i].sip_number);
+
+     listOperators[i].m_queuePaused:=paused;
+
      // равны ли пары очередей
      case EqualCurrentQueue(tempQueue,newQueue) of
        False:begin // пары не равны, обновляем данные
          listOperators[i].m_queueList.Clear;
-         listOperators[i].m_queueList:=newQueue;  
+         listOperators[i].m_queueList:=newQueue;
        end;
        True:begin  // пары равны пропускаем
          Continue;
@@ -1893,12 +1900,14 @@ begin
   if m_mutex.WaitFor(INFINITE) = wrSignaled  then begin
     try
       Result:='';
-
       for i:=0 to listOperators[id].m_queueList.Count-1 do begin
         if Result='' then Result:=EnumQueueToString(listOperators[id].m_queueList[i])
-        else  Result:=Result +' и '+ EnumQueueToString(listOperators[id].m_queueList[i]);     
-      end; 
-        
+        else Result:=Result +' и '+ EnumQueueToString(listOperators[id].m_queueList[i]);
+      end;
+
+      if listOperators[id].m_queuePaused then begin
+        Result:='~('+Result+')';
+      end;
     finally
       m_mutex.Release;
     end;

@@ -45,6 +45,7 @@ type
     procedure lblReportShowStatusOperatorsMouseMove(Sender: TObject;
       Shift: TShiftState; X, Y: Integer);
     procedure lblReportShowStatusOperatorsClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
   public
@@ -62,6 +63,11 @@ GlobalVariables, FunctionUnit, FormReportCountRingsOperatorsUnit, GlobalVariable
 
 
 {$R *.dfm}
+
+procedure TFormHome.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  KillProcessNow;
+end;
 
 procedure TFormHome.FormCreate(Sender: TObject);
 var

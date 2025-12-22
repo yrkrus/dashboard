@@ -44,8 +44,6 @@ uses
       procedure XMLUpdateLastOnline;                          // обновление времемни в settings.xml
       procedure UpdateProgramStarted;                         // обновление времени запкуска программы
       procedure UpdateMemory;                                 // обновление занимаемой оперативки
-      procedure ActiveCallsLisaTalk;                          // обновление кол-ва сколько сейчас разговаривает с лизой
-
 
 
       end;
@@ -298,50 +296,6 @@ begin
     end;
   end;
 end;
-
-// обновление кол-ва сколько сейчас разговаривает с лизой
-procedure TInternalProcess.ActiveCallsLisaTalk;
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
- error:string;
- countTalk:Integer;
-begin
- if not HomeForm.IsInit then Exit;
-
-  ado:=TADOQuery.Create(nil);
-  serverConnect:=createServerConnectWithError(error);
-  if not Assigned(serverConnect) then begin
-     with HomeForm.lblTalkLisaCount do Caption:='&Разговаривают с лизой: -';
-     FreeAndNil(ado);
-     Exit;
-  end;
-
-  try
-    with ado do begin
-      ado.Connection:=serverConnect;
-
-      SQL.Clear;
-      SQL.Add('select count(id) from queue_lisa where hash is NULL and answered = ''1''');
-
-      Active:=True;
-
-      countTalk:=StrToInt(VarToStr(Fields[0].Value));
-    end;
-  finally
-   FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
-  end;
-
-  with HomeForm.lblTalkLisaCount do begin
-    if countTalk = 0 then Caption:='&Разговаривают с лизой: -'
-    else Caption:='&Разговаривают с лизой: '+IntToStr(countTalk);
-  end;
-end;
-
 
 
 // нужно ли немедленно закрыть сессию и закрыть дашборд

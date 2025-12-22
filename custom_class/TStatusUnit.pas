@@ -14,8 +14,7 @@ interface
 uses
   System.Classes, System.SysUtils, Data.Win.ADODB,
   Data.DB, System.Variants, Forms, GlobalVariablesLinkDLL,
-  IdException,
-  TCustomTypeUnit, TUserUnit;
+  IdException, TCustomTypeUnit, TUserUnit;
 
 
  // class TStatusUnit
@@ -28,7 +27,7 @@ uses
 
 
     function IsExistCommand(_command:enumLogging; var _errorDescriptions:string):Boolean;       // есть ли уже такая команда на сервере
-    function AddCommand(_command:enumLogging; _delay:enumStatus; var _errorDescriptions:string):Boolean; // добавление команды в БД для дальнейшей обработки на стороне core
+    function AddCommand(_command:enumLogging; _delay:enumStatus; _paused:Boolean; var _errorDescriptions:string):Boolean; // добавление команды в БД для дальнейшей обработки на стороне core
     function Responce(InStroka:string; var _errorDescriptions:string):boolean;     // отправка запроса на добавление удаленной команды
     function IsFail(_command:enumLogging):boolean;
     function GetFailStr(var _errorDescriptions:string):string;                    // получение строки с ошибкой при выполнении удаленной команды
@@ -37,7 +36,10 @@ uses
   public
    procedure SetUserID(_userID:integer);
    procedure SetUser(_user:TUserData);
-   function SendCommand(_command:enumLogging; _delay:enumStatus; var _errorDescriptions:string):Boolean;  // отправка команды
+   function SendCommand(_command:enumLogging;
+                        _delay:enumStatus;
+                        _paused:Boolean;
+                        var _errorDescriptions:string):Boolean;  // отправка команды
 
 
 
@@ -83,7 +85,7 @@ begin
   m_user.Clone(_user);
 end;
 
-function TStatus.SendCommand(_command:enumLogging; _delay:enumStatus; var _errorDescriptions:string):Boolean;  // отправка команды
+function TStatus.SendCommand(_command:enumLogging; _delay:enumStatus; _paused:Boolean; var _errorDescriptions:string):Boolean;  // отправка команды
 begin
   _errorDescriptions:='';
 
@@ -94,7 +96,7 @@ begin
     Exit;
   end;
 
-  Result:=AddCommand(_command, _delay, _errorDescriptions);
+  Result:=AddCommand(_command, _delay, _paused, _errorDescriptions);
 end;
 
 
@@ -140,11 +142,12 @@ begin
 end;
 
 
-function TStatus.AddCommand(_command:enumLogging; _delay:enumStatus; var _errorDescriptions:string):Boolean;
+function TStatus.AddCommand(_command:enumLogging; _delay:enumStatus; _paused:Boolean; var _errorDescriptions:string):Boolean;
 var
  resultat:string;
- response:string;
  soLongWait:UInt16;
+ request:TStringBuilder;
+ paused:string;
 begin
    Result:=False;
   _errorDescriptions:='';
@@ -152,31 +155,34 @@ begin
   soLongWait:=0;
   if m_waitInfo then ShowWait(show_open);
 
+  request:=TStringBuilder.Create;
+  paused:=IntToStr(BooleanToInteger(_paused));
 
-  if _delay = eNO then begin
-    response:='insert into remote_commands (sip,command,ip,user_id,user_login_pc,pc) values ('+#39+IntToStr(_dll_GetOperatorSIP(m_userID)) +#39+','
-                                                                                            +#39+IntToStr(EnumLoggingToInteger(_command))+#39+','
-                                                                                            +#39+m_user.m_ip+#39+','
-                                                                                            +#39+IntToStr(m_user.m_id)+#39+','
-                                                                                            +#39+m_user.m_user_login_pc+#39+','
-                                                                                            +#39+m_user.m_pc+#39+')';
+  with request do begin
+    Clear;
+    Append('insert into remote_commands');
+    case _delay of
+     eNO:  Append(' (sip,command,ip,user_id,user_login_pc,pc,pause)');
+     eYES: Append(' (sip,command,ip,user_id,user_login_pc,pc,pause,delay)');
+    end;
+    Append(' values (');
+    Append(#39+IntToStr(_dll_GetOperatorSIP(m_userID)) +#39+',' +#39+IntToStr(EnumLoggingToInteger(_command))+#39);
+    Append(','+#39+m_user.m_ip+#39+','+#39+IntToStr(m_user.m_id)+#39);
+    Append(',' +#39+m_user.m_user_login_pc+#39+','+#39+m_user.m_pc+#39);
+    Append(',' +#39+paused+#39);
 
-  end
-  else begin
-    response:='insert into remote_commands (sip,command,ip,user_id,user_login_pc,pc,delay) values ('+#39+IntToStr(_dll_GetOperatorSIP(m_userID)) +#39+','
-                                                                                            +#39+IntToStr(EnumLoggingToInteger(_command))+#39+','
-                                                                                            +#39+m_user.m_ip+#39+','
-                                                                                            +#39+IntToStr(m_user.m_id)+#39+','
-                                                                                            +#39+m_user.m_user_login_pc+#39+','
-                                                                                            +#39+m_user.m_pc+#39+','
-                                                                                            +#39+IntToStr(EnumStatusToInteger(_delay))+#39+')';
+    if _delay = eYES then begin
+     Append(','+#39+IntToStr(EnumStatusToInteger(_delay))+#39);
+    end;
+
+    Append(')');
   end;
 
-
   // выполняем запрос
-  if not Responce(response,_errorDescriptions) then begin
+  if not Responce(request.ToString,_errorDescriptions) then begin
 
     if m_waitInfo then ShowWait(show_close);
+    if Assigned(request) then FreeAndNil(request);
     Exit;
   end;
 
@@ -184,6 +190,7 @@ begin
   if _delay = eYES then begin
     Result:=True;
     if m_waitInfo then ShowWait(show_close);
+    if Assigned(request) then FreeAndNil(request);
 
     Exit;
   end;
@@ -201,21 +208,24 @@ begin
     // получим строку с ошибкой
     resultat:=GetFailStr(_errorDescriptions);
 
+    with request do begin
+      Clear;
+      Append('delete from remote_commands');
+      Append(' where sip ='+#39+IntToStr(_dll_GetOperatorSIP(m_userID))+#39);
+      Append(' and command ='+#39+IntToStr(EnumLoggingToInteger(_command))+#39);
+    end;
 
-    // пробуем удалить команду
-       response:='delete from remote_commands where sip ='+#39+IntToStr(_dll_GetOperatorSIP(m_userID))+#39+
-                                                         ' and command ='+#39+IntToStr(EnumLoggingToInteger(_command))+#39;
-
-    if not Responce(response,_errorDescriptions) then begin
+    if not Responce(request.ToString,_errorDescriptions) then begin
 
       if m_waitInfo then ShowWait(show_close);
-
+      if Assigned(request) then FreeAndNil(request);
       Exit;
     end;
 
      if m_waitInfo then ShowWait(show_close);
 
     _errorDescriptions:='Сервер не смог обработать команду'+#13#13+'Причина: '+resultat;
+    if Assigned(request) then FreeAndNil(request);
     Exit;
 
    end else begin
@@ -224,6 +234,7 @@ begin
   end;
 
   if m_waitInfo then ShowWait(show_close);
+  if Assigned(request) then FreeAndNil(request);
 
   Result:=True;
 end;

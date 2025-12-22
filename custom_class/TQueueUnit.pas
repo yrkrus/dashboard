@@ -195,8 +195,8 @@ end;
 
 
  procedure TQueue.UpdateData;
- const
-  cTimeResponse:Word = 45; // время которое просматривается
+// const
+//  cTimeResponse:Word = 45; // время которое просматривается
  var
  i:Integer;
  ado:TADOQuery;

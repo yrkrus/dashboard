@@ -265,7 +265,8 @@ interface
   type // типа размера шрифтов
   enumFontSize  = (eActiveSip,
                    eIvr,
-                   eQueue);
+                   eQueue,
+                   eLisa);
 
   type  // тип изменение размера шрифта
   enumFontChange = (eFontUP,
@@ -462,8 +463,10 @@ interface
 
   // =================== ПРОЕОБРАЗОВАНИЯ ===================
 
-  // Boolean -> string
+ // Boolean -> string
  function BooleanToString(InValue:Boolean):string;
+ // Boolean -> Integer
+ function BooleanToInteger(InValue:Boolean):Integer;
 
  function EnumLoggingToInteger(_logging:enumLogging):Integer;                      // проеобразование из EnumLogging в Integer
  function IntegerToEnumLogging(_logging:Integer):enumLogging;                      // преобразование из Integer в EnumLogging
@@ -542,6 +545,12 @@ begin
   else Result:='False';
 end;
 
+// Boolean -> Integer
+function BooleanToInteger(InValue:Boolean):Integer;
+begin
+  if InValue = True then Result:=1
+  else Result:=0;
+end;
 
 // проеобразование из EnumLoggin в Integer
 function EnumLoggingToInteger(_logging:enumLogging):Integer;
@@ -1104,6 +1113,7 @@ begin
     eActiveSip: Result:='ActiveSip';
     eIvr:       Result:='IVR';
     eQueue:     Result:='Queue';
+    eLisa:      Result:='Lisa';
   end;
 end;
 

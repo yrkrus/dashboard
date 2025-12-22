@@ -333,7 +333,7 @@ begin
   delay:=eNO;
 
   status:=TStatus.Create(_idUser, SharedCurrentUserLogon.GetUserData, False);
-  Result:=status.SendCommand(eLog_home, delay, _errorDescription);
+  Result:=status.SendCommand(eLog_home, delay, False, _errorDescription);
 end;
 
 

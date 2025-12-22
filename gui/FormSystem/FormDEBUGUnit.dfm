@@ -4,7 +4,7 @@ object FormDEBUG: TFormDEBUG
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'DEBUG '#1048#1085#1092#1086
-  ClientHeight = 356
+  ClientHeight = 366
   ClientWidth = 686
   Color = clWindow
   DefaultMonitor = dmMainForm
@@ -82,7 +82,7 @@ object FormDEBUG: TFormDEBUG
     Left = 11
     Top = 74
     Width = 664
-    Height = 272
+    Height = 282
     BevelInner = bvLowered
     TabOrder = 1
     object Label2: TLabel

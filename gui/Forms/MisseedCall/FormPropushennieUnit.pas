@@ -9,8 +9,7 @@ uses
   Data.Win.ADODB, Data.DB, IdException,
   Vcl.StdCtrls,TCustomTypeUnit,
   TQueueStatisticsUnit, Vcl.Buttons, Vcl.ExtCtrls,
-  System.DateUtils, TThreadDispatcherUnit;
-
+  System.DateUtils, TThreadDispatcherUnit, Clipbrd;
 
 
 type
@@ -48,6 +47,7 @@ type
     procedure combox_QueueFilterChange(Sender: TObject);
     procedure btnActionClick(Sender: TObject);
     procedure lblPeopleClick(Sender: TObject);
+    procedure lblPhoneCopyBufferClick(Sender: TObject);
 
 
   private
@@ -257,6 +257,14 @@ begin
         lblPhone[_id].AutoSize:=False;
         lblPhone[_id].Width:=139;
         lblPhone[_id].Height:=16;
+
+        // копирование номера тлф в буфер обмена
+        lblPhone[_id].OnClick:=lblPhoneCopyBufferClick;
+        lblPhone[_id].Cursor:=crHandPoint;
+        lblPhone[_id].Hint:='Скопировать номер телефона в буфер обмена';
+        lblPhone[_id].ShowHint:=True;
+
+
         lblPhone[_id].Alignment:=taCenter;
         lblPhone[_id].Parent:=FormPropushennie.panel;
       end;
@@ -536,6 +544,50 @@ begin
 end;
 
 
+procedure TFormPropushennie.lblPhoneCopyBufferClick(Sender: TObject);
+var
+  lbl: TLabel;
+  id:Integer;
+  phonePodbor:string;
+  FindedComponent:TLabel;
+begin
+  // Приводим Sender к типу TLabel
+  if Sender is TLabel then
+  begin
+    lbl:= TLabel(Sender);
+
+    // найдем id
+     try
+       id := StrToInt(Copy(lbl.Name, Length('lbl_phone_') + 1, Length(lbl.Name) - Length('lbl_phone_')));
+
+       // проверим был ли уже ранее такой компонент сделан
+        FindedComponent := TLabel(FormPropushennie.panel.FindComponent('lbl_phone_' + IntToStr(id)));
+        if not Assigned(FindedComponent) then
+        begin
+         MessageBox(Handle,PChar('Возникла ошибка при парсинге id номера'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+         Exit;
+        end;
+
+       phonePodbor:=FindedComponent.Caption;
+       try
+         Clipboard.AsText:=phonePodbor;
+         MessageBox(Handle,PChar('Скопировано'),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
+       except
+         on E:Exception do
+          begin
+           MessageBox(Handle,PChar('Ошибка доступа к буферу обмена'+#13#13+e.Message),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+           Exit;
+          end;
+       end;
+
+     except
+      on E:EIdException do begin
+       MessageBox(Handle,PChar('Возникла ошибка при парсинге id номера'+#13#13+e.Message),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+       Exit;
+      end;
+     end;
+  end;
+end;
 
 
 procedure TFormPropushennie.Clear;
@@ -765,7 +817,7 @@ begin
   try
     Caption:= 'Информация';
     Height:= 150;
-    (FindComponent('OK') as TButton).Caption := 'Хорошо';
+   // (FindComponent('OK') as TButton).Caption := 'Хорошо';
 
     with ACheckBox do begin
       Parent:= AMsgDialog;

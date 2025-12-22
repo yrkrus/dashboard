@@ -57,7 +57,6 @@ uses
       function Update(_id:Integer; _namepc, _ipphone:string; var _errorDescription:string):Boolean;  // редактирование
       function Delete(_id:Integer; var _errorDescription:string):Boolean;  // удаление
 
-
       property Count:Integer read m_count;
       property Items[_id:Integer]:TPhone read GetItems; default;
       property ItemsData[_id_base:Integer]:TPhone read GetItemsData;  // получение данных по id которое из БД

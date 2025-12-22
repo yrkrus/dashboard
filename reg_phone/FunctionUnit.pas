@@ -18,7 +18,9 @@ interface
     function DeRegisterPhoneManual(_userID:Integer; _namePC:string; var _errorDescription:string):Boolean; // разрегистрация в телефоне
     procedure AddFreeSipListRegister;                                 // подгрузка sip номеров (при чем те которые не залогинены)
     procedure SetRandomFontColor(var p_label: TLabel);                // изменение цвета надписи
-    procedure ShowWait(Status:enumShow_wait; _sipType:enumTypeSipRegPhone);               // отображение\сркытие окна запроса на сервер
+    procedure ShowWait(Status:enumShow_wait; _sipType:enumTypeSipRegPhone); overload;               // отображение\сркытие окна запроса на сервер
+    procedure ShowWait(Status:enumShow_wait); overload;               // отображение\сркытие окна запроса на сервер
+
 
 implementation
 
@@ -156,6 +158,11 @@ begin
   phoneIP:=phoneList.IPPhoneWithNamePC[USER_STARTED_PC_NAME];
   sipUser:=_dll_GetOperatorSIP(USER_STARTED_REG_PHONE_ID);
 
+  if (phoneIP='') or (sipUser=-1)  then begin
+    _errorDescription:='Ошибка входных параметров';
+    Exit;
+  end;
+
   regPhone:=TRegisterPhone.Create(sipUser,phoneIP, PHONE_AUTH_USER, PHONE_AUTH_PWD);
 
   if not Assigned(regPhone) then begin
@@ -237,6 +244,23 @@ begin
   end;
 
   Result:=regPhone.DeRegisterPhone(_errorDescription);
+end;
+
+
+// отображение\сркытие окна запроса на сервер
+procedure ShowWait(Status:enumShow_wait);
+begin
+  case (Status) of
+   show_open: begin
+     Screen.Cursor:=crHourGlass;
+     FormWait.Show;
+     Application.ProcessMessages;
+   end;
+   show_close: begin
+     Screen.Cursor:=crDefault;
+     FormWait.Close;
+   end;
+  end;
 end;
 
 

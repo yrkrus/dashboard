@@ -13,10 +13,13 @@ interface
 
 
 procedure KillProcess;                                                               // принудительное завершение работы
+function KillExecuteProcess(_processName:string):Boolean;                            // закрытые внешнего процесса
+procedure ExecuteWaitCommand(const Command: string);                                 // ожидание пока отработает команда и не закроется окно
 function GetStatistics_day(inStatDay:enumStatistiscDay; _queue:enumQueue =queue_null):string;                      // отображение инфо за день
 procedure clearAllLists;                                                             // очистка всех list's
 procedure clearList_IVR(InFontSize:Word);                                            // отображение листа с текущими звонками
 procedure clearList_QUEUE(InFontSize:Word);                                          // очистка listbox_QUEUE
+procedure clearList_LISA(InFontSize:Word);                                           // очистка listbox_Lisa
 procedure clearList_SIP(InWidth:Integer;InFontSize:Word);                            // очистка listbox_SIP
 function CreateThreadDashboard(var _errorDescription:string):Boolean;                // создание потоков
 function GetVersion(GUID:string; programm:enumProrgamm):string;                      // отображение текущей версии
@@ -33,6 +36,7 @@ function GetUserID(InUserName,InUserFamiliya:string):Integer; overload;         
 function GetUserID(InSIPNumber:integer):Integer; overload;                           // полчуение userID из SIP номера
 function GetUserSIP(_userID:integer):Integer;                                        // полчуение SIP номера из userID
 function DisableUser(InUserID:Integer; var _errorDescription:string):Boolean;        // отключение пользователя
+procedure DeleteUserCommonQueue(_userID:Integer);                                    // удаление пользователя из таблицы users_common_queue
 procedure DeleteOperator(_userID:Integer; _sip:Integer);                             // удаление пользователя из таблицы operators
 function getUserPwd(InUserID:Integer):Integer;                                       // полчуение userPwd из userID
 function getUserLogin(InUserID:Integer):string;                                      // полчуение userLogin из userID
@@ -66,6 +70,7 @@ procedure ShowWait(Status:enumShow_wait);                                       
 //function isExistRemoteCommand(command:enumLogging;_userID:Integer):Boolean;         // проверка есть ли уже такая удаленная команда на сервера
 function getStatus(InStatus:enumStatusOperators):string;                             // полчуение имени status оператора
 function GetCurrentQueueOperator(_sip:integer):TList<enumQueue>;                    // в какой очереди сейчас находится оператор
+function GetCurrentQueuePausedOperator(_sip:integer):Boolean;                       // в paused сейчас находиться оператор или нет
 procedure UpdateOperatorStatus(_status:enumStatusOperators;_userID:Integer);         // очитска текущего статуса оператора
 procedure checkCurrentStatusOperator(InOperatorStatus:enumStatusOperators);              // проверка и отображение кнопок статусов оператора
 procedure ShowStatusOperator(_show:boolean; _showRegisteredSip:Boolean);                                 // отобрадение панели статусы операторов
@@ -149,6 +154,7 @@ function ExecuteCommandKillActiveSession(_userID:Integer;
                                          var _errorDescription:string):Boolean;      // выполенние команды закрытые активной сессии
 function SendCommandStatusDelay(_userID:Integer):enumStatus;                         // нужно ли делать задержку при смене статуса оператора
 function IsAllowChangeStatusOperators(_userID:Integer; var _errorDescription:string):Boolean; // можно ли сменить оператору статус (вдруг стоит отложенный статус)
+function IsOpearorExistAnyQueue(_userID:Integer; var _errorDescription:string):Boolean; // находится ли орператор в любой очереди
 procedure SetLinkColor(var _label:TLabel);                                          // установка цвета на label если на него можно нажать
 procedure ResetPanelStatusOperator;                                                 // сброс панели статусы оператора на дефолтные значения
 procedure ForceExitOperatorAllQueue(_userID:Integer);                               // принудительный выход из всех очередей оператора
@@ -156,8 +162,6 @@ procedure AddCustomCheckBoxUI;                                                  
 function GetUserAuth(_userId:Integer):enumAuth;                                     // тип авторизации пользователя
 function RoleIsOperator(InRole:enumRole):Boolean;                                   // проверка роль пользователя это операторская роль
 function CheckAnsweredSecondsToString(const _time:string):Boolean;                  // проверка корреткности перевода времени из int -> 00:00:00 формат
-procedure DeleteUserCommonQueue(_userID:Integer);                                   // удаление пользователя из таблицы users_common_queue
-procedure AddUserCommonQueue(_userID:Integer; var _list:TList<enumQueue>);          // добавление пользователя в таблицу users_common_queue
 procedure AccessUsersCommonQueue(const _queuelist:TList<enumQueue>);                // отображение только нужных очередей и взаимодействие с нимим
 procedure ShowUsersCommonQueuePanelStatus(const _queuelist:TList<enumQueue>);       // отображение кнопок входа в панель статусов
 procedure ShowUsersCommonQueuePopMenu(const _queuelist:TList<enumQueue>);           // отображение кнопок входа в popmenu
@@ -175,7 +179,7 @@ uses
   FormUsersUnit, TTranslirtUnit, Thread_ACTIVESIP_updatetalkUnit, Thread_ACTIVESIP_updatePhoneTalkUnit,
   Thread_ACTIVESIP_countTalkUnit, Thread_ACTIVESIP_QueueUnit, FormActiveSessionUnit, TIVRUnit,
   TXmlUnit, TOnlineChat, Thread_ChatUnit, Thread_ForecastUnit,
-  Thread_InternalProcessUnit, TActiveSessionUnit, FormTrunkSipUnit, Thread_CheckTrunkUnit, TStatusUnit, GlobalImageDestination, DMUnit, FormSettingsGlobalUnit, FormHistoryStatusOperatorUnit, FormSettingsGlobal_addIVRUnit, TPhoneListUnit, TIndividualSettingUserUnit;
+  Thread_InternalProcessUnit, TActiveSessionUnit, FormTrunkSipUnit, Thread_CheckTrunkUnit, TStatusUnit, GlobalImageDestination, DMUnit, FormSettingsGlobalUnit, FormHistoryStatusOperatorUnit, FormSettingsGlobal_addIVRUnit, TPhoneListUnit, TIndividualSettingUserUnit, Thread_LISAUnit;
 
  // логирование действий
 procedure LoggingRemote(InLoggingID:enumLogging; _userID:Integer);
@@ -343,6 +347,26 @@ begin
 
     end
     else UpdateQUEUESTOP:=True;
+
+    // LISA
+    if LISA_thread=nil then
+    begin
+     FreeAndNil(LISA_thread);
+
+     try
+       LISA_thread:=Thread_LISA.Create;
+       LISA_thread.Priority:=tpNormal;
+       UpdateLISASTOP:=True;
+     except
+        on E:Exception do
+        begin
+         _errorDescription:='Ошибка создания потока LISA'+#13+e.ClassName+' : '+e.Message;
+         Exit;
+        end;
+     end;
+
+    end
+    else UpdateLISASTOP:=True;
 
     // ACTIVESIP + дочерние потоки
     begin
@@ -584,6 +608,14 @@ begin
       QUEUE_thread.Start;
       if not QUEUE_thread.WaitForInit(cWaitForThread) then begin
         _errorDescription:='Ошибка запуска потока QUEUE';
+       Exit;
+      end;
+
+      Sleep(10);
+
+      LISA_thread.Start;
+      if not LISA_thread.WaitForInit(cWaitForThread) then begin
+        _errorDescription:='Ошибка запуска потока LISA';
        Exit;
       end;
 
@@ -904,6 +936,7 @@ begin
 
   clearList_IVR(SharedFontSize.GetSize(eIvr));
   clearList_QUEUE(SharedFontSize.GetSize(eQueue));
+  clearList_LISA(SharedFontSize.GetSize(eLisa));
   clearList_SIP(HomeForm.Panel_SIP.Width, SharedFontSize.GetSize(eActiveSip));
 end;
 
@@ -957,17 +990,60 @@ begin
 end;
 
 
+// очистка listbox_Lisa
+procedure clearList_LISA(InFontSize:Word);
+ const
+ cWidth_default         :Word = 335;
+ cProcentWidth_phone    :Word = 59;
+ cProcentWidth_waiting  :Word = 36;
+
+begin
+ with HomeForm do begin
+
+   lblCount_LISA.Caption:='Лиза';
+
+   ListViewLisa.Columns.Clear;
+
+   with ListViewLisa do begin
+     ViewStyle:= vsReport;
+     Font.Size:=InFontSize;
+
+      with Columns.Add do
+      begin
+        Caption:='ID';
+        Width:=0;
+      end;
+
+      with Columns.Add do
+      begin
+        Caption:='Номер телефона';
+        Width:=Round((cWidth_default*cProcentWidth_phone)/100);
+        Alignment:=taCenter;
+      end;
+
+      with Columns.Add do
+      begin
+        Caption:='Время';
+        Width:=Round((cWidth_default*cProcentWidth_waiting)/100)-1;
+        Alignment:=taCenter;
+      end;
+   end;
+ end;
+end;
+
+
+
 // очистка listbox_SIP
 procedure clearList_SIP(InWidth:Integer; InFontSize:Word);
  const
  //cWidth_default           :Word = 1094;
- cProcentWidth_operator   :Word = 27;
+ cProcentWidth_operator   :Word = 25;
  cProcentWidth_status     :Word = 13;
  cProcentWidth_responce   :Word = 9;
  cProcentWidth_trunk      :Word = 9;
  cProcentWidth_phone      :Word = 9;
  cProcentWidth_talk       :Word = 11;
- cProcentWidth_queue      :Word = 8;
+ cProcentWidth_queue      :Word = 10;
  cProcentWidth_time       :Word = 14;
 
  var // для дебага
@@ -2348,6 +2424,57 @@ begin
   end;
 end;
 
+
+// удаление пользователя из таблицы users_common_queue
+procedure DeleteUserCommonQueue(_userID:Integer);
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ CodOshibki:string;
+begin
+  ado:=TADOQuery.Create(nil);
+  try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+
+      SQL.Add('delete from users_common_queue where user_id = '+#39+IntToStr(_userID)+#39);
+
+      try
+          ExecSQL;
+      except
+          on E:EIdException do begin
+             CodOshibki:=e.Message;
+             FreeAndNil(ado);
+            if Assigned(serverConnect) then begin
+              serverConnect.Close;
+              FreeAndNil(serverConnect);
+            end;
+
+             Exit;
+          end;
+      end;
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
 // отключение пользователя
 function DisableUser(InUserID:Integer; var _errorDescription:string):Boolean;
 var
@@ -2558,120 +2685,6 @@ begin
         end;
       end;
 
-    end;
-  finally
-    FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
-  end;
-end;
-
-
-// удаление пользователя из таблицы users_common_queue
-procedure DeleteUserCommonQueue(_userID:Integer);
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
- CodOshibki:string;
-begin
-  ado:=TADOQuery.Create(nil);
-  try
-    serverConnect:=createServerConnect;
-  except
-    on E:Exception do begin
-      if not Assigned(serverConnect) then begin
-         FreeAndNil(ado);
-         Exit;
-      end;
-    end;
-  end;
-
-  try
-    with ado do begin
-      ado.Connection:=serverConnect;
-      SQL.Clear;
-
-      SQL.Add('delete from users_common_queue where user_id = '+#39+IntToStr(_userID)+#39);
-
-      try
-          ExecSQL;
-      except
-          on E:EIdException do begin
-             CodOshibki:=e.Message;
-             FreeAndNil(ado);
-            if Assigned(serverConnect) then begin
-              serverConnect.Close;
-              FreeAndNil(serverConnect);
-            end;
-
-             Exit;
-          end;
-      end;
-    end;
-  finally
-    FreeAndNil(ado);
-    if Assigned(serverConnect) then begin
-      serverConnect.Close;
-      FreeAndNil(serverConnect);
-    end;
-  end;
-end;
-
-
-// добавление пользователя в таблицу users_common_queue
-procedure AddUserCommonQueue(_userID:Integer; var _list:TList<enumQueue>);
-var
- ado:TADOQuery;
- serverConnect:TADOConnection;
- i:Integer;
-begin
-  ado:=TADOQuery.Create(nil);
- try
-    serverConnect:=createServerConnect;
-  except
-    on E:Exception do begin
-      if not Assigned(serverConnect) then begin
-         FreeAndNil(ado);
-         Exit;
-      end;
-    end;
-  end;
-
-  try
-    with ado do begin
-      ado.Connection:=serverConnect;
-      SQL.Clear;
-
-      try
-         for i:=0 to _list.Count-1 do begin
-          SQL.Clear;
-          SQL.Add('insert into users_common_queue (user_id,queue) values ('+#39+IntToStr(_userID)+#39+','
-                                                                           +#39+EnumQueueToString(_list[i])+#39+')');
-          try
-              ExecSQL;
-          except
-              on E:EIdException do begin
-                  FreeAndNil(ado);
-                  if Assigned(serverConnect) then begin
-                    serverConnect.Close;
-                    FreeAndNil(serverConnect);
-                  end;
-                 Exit;
-              end;
-          end;
-        end;
-      except
-          on E:EIdException do begin
-             FreeAndNil(ado);
-            if Assigned(serverConnect) then begin
-              serverConnect.Close;
-              FreeAndNil(serverConnect);
-            end;
-            Exit;
-          end;
-      end;
     end;
   finally
     FreeAndNil(ado);
@@ -3462,6 +3475,50 @@ begin
         ado.Next;
       end;
 
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
+
+
+// в paused сейчас находиться оператор или нет
+function GetCurrentQueuePausedOperator(_sip:integer):Boolean;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ countQueue:Integer;
+ i:Integer;
+begin
+  Result:=False;
+
+ ado:=TADOQuery.Create(nil);
+ try
+    serverConnect:=createServerConnect;
+  except
+    on E:Exception do begin
+      if not Assigned(serverConnect) then begin
+         FreeAndNil(ado);
+         Exit;
+      end;
+    end;
+  end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+
+      SQL.Clear;
+      SQL.Add('select in_pause from operators_queue where sip = '+#39+IntToStr(_sip)+#39);
+      Active:=True;
+
+      if Fields[0].Value <> null then begin
+        if StrToInt(VarToStr(Fields[0].Value)) = 1 then Result:=True;
+      end;
     end;
   finally
     FreeAndNil(ado);
@@ -4357,12 +4414,15 @@ begin
 
     // автоматическая регистрация в sip телефоне
     begin
-     if SharedIndividualSettingUser.AutoRegisterSipPhone then begin
-      // регистрация в тлф
-      OpenRegPhone(eAutoRunningRegistered);
+     if SharedCurrentUserLogon.IsOperator then begin
+       if not SharedCurrentUserLogon.IsZoiperSip then begin
+         if SharedIndividualSettingUser.AutoRegisterSipPhone then begin
+          // регистрация в тлф
+          OpenRegPhone(eAutoRunningRegistered);
+         end;
+       end;
      end;
     end;
-
   end;
 end;
 
@@ -4793,6 +4853,9 @@ end;
 
 // открытые exe локального чата
 procedure OpenLocalChat;
+var
+ resultat:Word;
+ killCopy:Boolean;
 begin
  if not SharedCurrentUserLogon.IsAccessLocalChat then begin
     MessageBox(HomeForm.Handle,PChar('Отсутствует доступ к локальному чату'),PChar('Отсутствует доступ'),MB_OK+MB_ICONINFORMATION);
@@ -4804,12 +4867,32 @@ begin
     Exit;
   end;
 
+  // проверяем есть ли открытые копии ранее
+  begin
+    killCopy:=False;
+    if GetTask(PChar(CHAT_EXE)) then begin
+     resultat:=MessageBox(HomeForm.Handle,PChar('Уже есть открытая копия чата, открыть новую?'+#13+
+                                                'Предыдущая копия будет закрыта'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
+     if resultat=mrYes then killCopy:=True;
+    end;
+
+    if killCopy then begin
+      if not KillExecuteProcess(CHAT_EXE) then begin
+        MessageBox(HomeForm.Handle,PChar('Не удается закрыть процесс '+CHAT_EXE),PChar('Ошибка доступа к процессу'),MB_OK+MB_ICONERROR);
+        Exit;
+      end;
+    end;
+  end;
+
   ShellExecute(HomeForm.Handle, 'Open', PChar(CHAT_EXE),PChar(USER_ID_PARAM+' '+IntToStr(SharedCurrentUserLogon.ID)),nil,SW_SHOW);
 end;
 
 
 // открытые exe отчетов
 procedure OpenReports;
+var
+ resultat:Word;
+ killCopy:Boolean;
 begin
  if not SharedCurrentUserLogon.IsAccessReports then begin
     MessageBox(HomeForm.Handle,PChar('Отсутствует доступ к отчетам'),PChar('Отсутствует доступ'),MB_OK+MB_ICONINFORMATION);
@@ -4820,6 +4903,24 @@ begin
     MessageBox(HomeForm.Handle,PChar('Не удается найти файл '+REPORT_EXE),PChar('Файл не найден'),MB_OK+MB_ICONERROR);
     Exit;
   end;
+
+  // проверяем есть ли открытые копии ранее
+  begin
+    killCopy:=False;
+    if GetTask(PChar(REPORT_EXE)) then begin
+     resultat:=MessageBox(HomeForm.Handle,PChar('Уже есть открытая копия отчетов, открыть новую?'+#13+
+                                                'Предыдущая копия будет закрыта'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
+     if resultat=mrYes then killCopy:=True;
+    end;
+
+    if killCopy then begin
+      if not KillExecuteProcess(REPORT_EXE) then begin
+        MessageBox(HomeForm.Handle,PChar('Не удается закрыть процесс '+REPORT_EXE),PChar('Ошибка доступа к процессу'),MB_OK+MB_ICONERROR);
+        Exit;
+      end;
+    end;
+  end;
+
 
   ShellExecute(HomeForm.Handle, 'Open', PChar(REPORT_EXE),PChar(USER_ID_PARAM+' '+IntToStr(SharedCurrentUserLogon.ID)),nil,SW_SHOW);
 end;
@@ -4844,7 +4945,9 @@ end;
 // открытые exe SMS рассылки
 procedure OpenSMS;
  var
-  showSendingSMS:Boolean; // отображать ли excel рассылку
+ showSendingSMS:Boolean; // отображать ли excel рассылку
+ resultat:Word;
+ killCopy:Boolean;
 begin
  if not SharedCurrentUserLogon.IsAccessSMS then begin
     MessageBox(HomeForm.Handle,PChar('Отсутствует доступ к SMS рассылке'),PChar('Отсутствует доступ'),MB_OK+MB_ICONINFORMATION);
@@ -4854,6 +4957,23 @@ begin
   if not FileExists(SMS_EXE) then begin
     MessageBox(HomeForm.Handle,PChar('Не удается найти файл '+SMS_EXE),PChar('Файл не найден'),MB_OK+MB_ICONERROR);
     Exit;
+  end;
+
+  // проверяем есть ли открытые копии ранее
+  begin
+    killCopy:=False;
+    if GetTask(PChar(SMS_EXE)) then begin
+     resultat:=MessageBox(HomeForm.Handle,PChar('Уже есть открытая копия смс расылки, открыть новую?'+#13+
+                                                'Предыдущая копия будет закрыта'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
+     if resultat=mrYes then killCopy:=True;
+    end;
+
+    if killCopy then begin
+      if not KillExecuteProcess(SMS_EXE) then begin
+        MessageBox(HomeForm.Handle,PChar('Не удается закрыть процесс '+SMS_EXE),PChar('Ошибка доступа к процессу'),MB_OK+MB_ICONERROR);
+        Exit;
+      end;
+    end;
   end;
 
   // отображать ли excel рассылку
@@ -4872,10 +4992,31 @@ end;
 
 // открытые exe Регистрация телефона
 procedure OpenRegPhone(_runStatus:enumTypeRunning);
+var
+ resultat:Word;
+ killCopy:Boolean;
+ waitCommandExecute:string; // команда которая ждет пока отработается
 begin
   if not FileExists(REG_PHONE_EXE) then begin
     MessageBox(HomeForm.Handle,PChar('Не удается найти файл '+REG_PHONE_EXE),PChar('Файл не найден'),MB_OK+MB_ICONERROR);
     Exit;
+  end;
+
+   // проверяем есть ли открытые копии ранее
+  begin
+    killCopy:=False;
+    if GetTask(PChar(REG_PHONE_EXE)) then begin
+     resultat:=MessageBox(HomeForm.Handle,PChar('Уже есть открытая копия регистрации телефона, открыть новую?'+#13+
+                                                'Предыдущая копия будет закрыта'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
+     if resultat=mrYes then killCopy:=True;
+    end;
+
+    if killCopy then begin
+      if not KillExecuteProcess(REG_PHONE_EXE) then begin
+        MessageBox(HomeForm.Handle,PChar('Не удается закрыть процесс '+REG_PHONE_EXE),PChar('Ошибка доступа к процессу'),MB_OK+MB_ICONERROR);
+        Exit;
+      end;
+    end;
   end;
 
   case _runStatus of
@@ -4896,17 +5037,23 @@ begin
                                                             USER_BOOL_PARAM +' '+'True'),nil,SW_SHOW);
    end;
    eAutoRunningDeRegistered:begin // автоматический запуск
-    ShellExecute(HomeForm.Handle, 'Open', PChar(REG_PHONE_EXE),PChar(USER_ID_PARAM+' '+
-                                                            IntToStr(SharedCurrentUserLogon.ID)+' '+
-                                                            USER_ACCESS_PARAM +' '+
-                                                            SharedCurrentUserLogon.PC+' '+
-                                                            USER_BOOL_PARAM +' '+'False'),nil,SW_SHOW);
+
+    waitCommandExecute:=PChar(REG_PHONE_EXE) + ' ' + PChar(USER_ID_PARAM
+                                             + ' ' + IntToStr(SharedCurrentUserLogon.ID)
+                                             + ' ' + USER_ACCESS_PARAM +' '+ SharedCurrentUserLogon.PC
+                                             + ' ' + USER_BOOL_PARAM +' '+'False');
+
+    // запуск с ожиданием выполнения
+    ExecuteWaitCommand(waitCommandExecute);
    end;
   end;
 end;
 
 // открытые exe Звонилки
 procedure OpenOutgoing;
+var
+ resultat:Word;
+ killCopy:Boolean;
 begin
   if not SharedCurrentUserLogon.IsAccessCalls then begin
     MessageBox(HomeForm.Handle,PChar('Отсутствует доступ к звонкам'),PChar('Отсутствует доступ'),MB_OK+MB_ICONINFORMATION);
@@ -4916,6 +5063,23 @@ begin
   if not FileExists(OUTGOING_EXE) then begin
     MessageBox(HomeForm.Handle,PChar('Не удается найти файл '+OUTGOING_EXE),PChar('Файл не найден'),MB_OK+MB_ICONERROR);
     Exit;
+  end;
+
+  // проверяем есть ли открытые копии ранее
+  begin
+    killCopy:=False;
+    if GetTask(PChar(OUTGOING_EXE)) then begin
+     resultat:=MessageBox(HomeForm.Handle,PChar('Уже есть открытая копия звонков, открыть новую?'+#13+
+                                                'Предыдущая копия будет закрыта'),PChar('Уточнение'),MB_YESNO+MB_ICONQUESTION);
+     if resultat=mrYes then killCopy:=True;
+    end;
+
+    if killCopy then begin
+      if not KillExecuteProcess(OUTGOING_EXE) then begin
+        MessageBox(HomeForm.Handle,PChar('Не удается закрыть процесс '+OUTGOING_EXE),PChar('Ошибка доступа к процессу'),MB_OK+MB_ICONERROR);
+        Exit;
+      end;
+    end;
   end;
 
   ShellExecute(HomeForm.Handle, 'Open', PChar(OUTGOING_EXE),PChar(USER_ID_PARAM+' '+IntToStr(SharedCurrentUserLogon.ID)),nil,SW_SHOW);
@@ -5116,11 +5280,11 @@ begin
          SharedIndividualSettingUser.SaveIndividualSettingUser(settingUsers_showStatisticsQueueDay,paramStatus_DISABLED,errorDescription);
         end;
 
-        PanelStatisticsQueue_Numbers.Visible:=True;
-        PanelStatisticsQueue_Graph.Visible:=False;
+       // PanelStatisticsQueue_Numbers.Visible:=True;  TODO отключено пока
+       // PanelStatisticsQueue_Graph.Visible:=False; TODO отключено пока
 
-        img_StatisticsQueue_Graph.Visible:=True;
-        img_StatisticsQueue_Numbers.Visible:=False;
+       // img_StatisticsQueue_Graph.Visible:=True;      TODO отключено пока
+       // img_StatisticsQueue_Numbers.Visible:=False;    TODO отключено пока
        end;
        eGraph: begin
         if InClick then begin
@@ -5128,11 +5292,11 @@ begin
          SharedIndividualSettingUser.SaveIndividualSettingUser(settingUsers_showStatisticsQueueDay,paramStatus_ENABLED,errorDescription);
         end;
 
-        PanelStatisticsQueue_Numbers.Visible:=False;
-        PanelStatisticsQueue_Graph.Visible:=True;
+       // PanelStatisticsQueue_Numbers.Visible:=False; TODO отключено пока
+       // PanelStatisticsQueue_Graph.Visible:=True;  TODO отключено пока
 
-        img_StatisticsQueue_Graph.Visible:=False;
-        img_StatisticsQueue_Numbers.Visible:=True;
+       // img_StatisticsQueue_Graph.Visible:=False;      TODO отключено пока
+       // img_StatisticsQueue_Numbers.Visible:=True;     TODO отключено пока
        end;
      end;
   end;
@@ -5354,6 +5518,7 @@ begin
     eActiveSip: clearList_SIP(HomeForm.Width - DEFAULT_SIZE_PANEL_ACTIVESIP, SharedFontSize.GetSize(InTypeFont));
     eIvr:       clearList_IVR(SharedFontSize.GetSize(InTypeFont));
     eQueue:     clearList_QUEUE(SharedFontSize.GetSize(InTypeFont));
+    eLisa:      clearList_LISA(SharedFontSize.GetSize(InTypeFont))
   end;
 end;
 
@@ -5619,6 +5784,27 @@ begin
   end;
 end;
 
+
+// находится ли орператор в любой очереди
+function IsOpearorExistAnyQueue(_userID:Integer; var _errorDescription:string):Boolean;
+var
+  queueList:TList<enumQueue>;
+  sip:Integer;
+begin
+   Result:=True;
+
+   sip:=_dll_GetOperatorSIP(_userID);
+
+   // проверяем в какой очереди находится оператор
+   queueList:=GetCurrentQueueOperator(sip);
+
+   if queueList.Count = 0 then begin
+     _errorDescription:='Смена статуса невозможна, нужно находиться в очереди';
+     Result:=False;
+   end;
+end;
+
+
 // установка цвета на label если на него можно нажать
 procedure SetLinkColor(var _label:TLabel);
 begin
@@ -5659,7 +5845,7 @@ begin
   status:=TStatus.Create(_userID,SharedCurrentUserLogon.GetUserData, True);
   delay:=eNO;
 
-  if not status.SendCommand(eLog_home,delay,error) then begin
+  if not status.SendCommand(eLog_home,delay,False, error) then begin
     MessageBox(HomeForm.Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
     Exit;
   end;
@@ -5886,7 +6072,51 @@ begin
 end;
 
 
+// закрытые внешнего процесса
+function KillExecuteProcess(_processName:string):Boolean;
+var
+ countKillExe:Integer;
+begin
+  Result:=False;
 
+   countKillExe:=0;
+   while GetTask(PChar(_processName)) do begin
+     KillTask(PChar(_processName));
 
+     // на случай если не удасться закрыть дочерний exe
+     Sleep(500);
+     Inc(countKillExe);
+     if countKillExe>10 then Break;
+   end;
+
+   case GetTask(PChar(_processName)) of
+     False: Result:=True;
+     True:  Result:=False;
+   end;
+end;
+
+// ожидание пока отработает команда и не закроется окно
+procedure ExecuteWaitCommand(const Command: string);
+var
+  StartupInfo: TStartupInfo;
+  ProcessInfo: TProcessInformation;
+begin
+  ZeroMemory(@StartupInfo, SizeOf(StartupInfo));
+  StartupInfo.cb := SizeOf(StartupInfo);
+  StartupInfo.dwFlags := STARTF_USESHOWWINDOW;
+  StartupInfo.wShowWindow := SW_HIDE; // Скрыть окно
+
+  if CreateProcess(nil, PChar(Command), nil, nil, False, 0, nil, nil, StartupInfo, ProcessInfo) then
+  begin
+    // Ждем завершения процесса
+    WaitForSingleObject(ProcessInfo.hProcess, INFINITE);
+    CloseHandle(ProcessInfo.hProcess);
+    CloseHandle(ProcessInfo.hThread);
+  end
+  else
+  begin
+    RaiseLastOSError; // Обработка ошибок
+  end;
+end;
 
 end.
