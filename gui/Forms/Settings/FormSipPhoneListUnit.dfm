@@ -5,7 +5,7 @@ object FormSipPhoneList: TFormSipPhoneList
   BorderStyle = bsSingle
   Caption = #1057#1087#1080#1089#1086#1082' SIP '#1085#1086#1084#1077#1088#1086#1074' '#1086#1087#1077#1088#1072#1090#1086#1088#1086#1074
   ClientHeight = 463
-  ClientWidth = 344
+  ClientWidth = 542
   Color = clWindow
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -21,7 +21,7 @@ object FormSipPhoneList: TFormSipPhoneList
   object panel_sip: TPanel
     Left = 5
     Top = 7
-    Width = 332
+    Width = 530
     Height = 399
     BevelInner = bvLowered
     ShowCaption = False
@@ -29,7 +29,7 @@ object FormSipPhoneList: TFormSipPhoneList
     object list_sip: TListView
       Left = 2
       Top = 2
-      Width = 328
+      Width = 526
       Height = 395
       Align = alClient
       BorderStyle = bsNone
@@ -49,11 +49,12 @@ object FormSipPhoneList: TFormSipPhoneList
       ViewStyle = vsReport
       OnCustomDrawItem = list_sipCustomDrawItem
       OnMouseDown = list_sipMouseDown
+      ExplicitWidth = 328
     end
     object st_NoSip: TStaticText
-      Left = 4
+      Left = 7
       Top = 205
-      Width = 325
+      Width = 517
       Height = 20
       Alignment = taCenter
       AutoSize = False
@@ -69,7 +70,7 @@ object FormSipPhoneList: TFormSipPhoneList
     end
   end
   object btnAdd: TBitBtn
-    Left = 5
+    Left = 98
     Top = 413
     Width = 156
     Height = 42
@@ -154,7 +155,7 @@ object FormSipPhoneList: TFormSipPhoneList
     OnClick = btnAddClick
   end
   object btnDelete: TBitBtn
-    Left = 181
+    Left = 270
     Top = 413
     Width = 156
     Height = 42

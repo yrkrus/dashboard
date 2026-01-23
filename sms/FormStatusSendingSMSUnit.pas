@@ -7,7 +7,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Buttons,
   Vcl.ComCtrls, Data.DB, Data.Win.ADODB, Vcl.Imaging.pngimage, System.ImageList,
   Vcl.ImgList, TCustomTypeUnit, Vcl.Imaging.jpeg, TAutoPodborSendingSmsUnit,
-  Vcl.ExtDlgs;
+  Vcl.ExtDlgs, Clipbrd;
 
 type
   TFormStatusSendingSMS = class(TForm)
@@ -37,6 +37,7 @@ type
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btnSaveFirebirdSettingsClick(Sender: TObject);
+    procedure lblPhoneClick(Sender: TObject);
   private
     { Private declarations }
   m_smsInfo:TAutoPodborSendingSms;
@@ -93,6 +94,16 @@ begin
  Result:=((Assigned(m_smsInfo)) and (m_idStruct<>-1));
 end;
 
+
+procedure TFormStatusSendingSMS.lblPhoneClick(Sender: TObject);
+begin
+  try
+    Clipboard.AsText:=lblPhone.Caption;;
+    MessageBox(Handle,PChar('Скопировано'),PChar('Успех'),MB_OK+MB_ICONINFORMATION);
+  except
+    MessageBox(Handle,PChar('Не удалось скопировать номер телефона в буфер обмена'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+  end;
+end;
 
 procedure TFormStatusSendingSMS.ShowStatus;
 begin

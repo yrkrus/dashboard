@@ -44,7 +44,7 @@ var
 implementation
 
 uses
-  FormSipPhoneListAddUnit, TCustomTypeUnit, GlobalVariables;
+  FormSipPhoneListAddUnit, TCustomTypeUnit, GlobalVariables, FunctionUnit;
 
 
 {$R *.dfm}
@@ -65,6 +65,15 @@ begin
       ListItem.SubItems.Add(_sipList.Items[i].m_fio);     // за кем закреплен
     end
     else ListItem.SubItems.Add('свободный');
+
+    if _sipList.Items[i].m_lastActive <> 0 then begin     // активность
+      ListItem.SubItems.Add(DateTimeToStr(_sipList.Items[i].m_lastActive) + ShowLastActiveTime(_sipList.Items[i].m_lastActive))
+    end
+    else
+    begin
+       if _sipList.Items[i].m_userId <> -1 then ListItem.SubItems.Add('никогда')
+       else  ListItem.SubItems.Add('---');
+    end;
   end;
 end;
 
@@ -115,9 +124,10 @@ end;
 
 procedure TFormSipPhoneList.ClearListView(var p_ListView:TListView);
 const
- cWidth_default       :Word = 330;
- cWidth_sip           :Word = 30;
- cWidth_fio           :Word = 64;
+ cWidth_default       :Word = 526;
+ cWidth_sip           :Word = 10;
+ cWidth_fio           :Word = 40;
+ cWidth_lastEnter     :Word = 46;
 begin
  with p_ListView do begin
 
@@ -142,6 +152,13 @@ begin
     begin
       Caption:=' «а кем закреплен ';
       Width:=Round((cWidth_default*cWidth_fio)/100);
+      Alignment:=taCenter;
+    end;
+
+    with Columns.Add do
+    begin
+      Caption:=' јктивность ';
+      Width:=Round((cWidth_default*cWidth_lastEnter)/100);
       Alignment:=taCenter;
     end;
  end;
@@ -186,7 +203,7 @@ begin
    if not Assigned(Item) then Exit;
 
   try
-    if Item.SubItems.Count = 2 then // ѕровер€ем, что есть достаточно SubItems
+    if Item.SubItems.Count = 3 then // ѕровер€ем, что есть достаточно SubItems
     begin
 
       if Item.SubItems.Strings[1] = 'свободный' then

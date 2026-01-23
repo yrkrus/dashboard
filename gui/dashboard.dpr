@@ -94,8 +94,9 @@ uses
   FormHomeCloseQuery in 'FormHomeCloseQuery.pas',
   Thread_LISAUnit in 'Thread\Thread_LISAUnit.pas',
   TLisaUnit in '..\custom_class\TLisaUnit.pas',
-  FormStatisticsLisaUnit in 'Forms\FormStatisticsLisaUnit.pas' {FormStatisticsLisa},
-  TLisaStatisticsDayUnit in '..\custom_class\TLisaStatisticsDayUnit.pas';
+  TLisaStatisticsDayUnit in '..\custom_class\TLisaStatisticsDayUnit.pas',
+  FormStatisticsLisaUnit in 'Forms\StatisticsLisa\FormStatisticsLisaUnit.pas' {FormStatisticsLisa},
+  FormStatisticsLisaShowUnit in 'Forms\StatisticsLisa\FormStatisticsLisaShowUnit.pas' {FormStatisticsLisaShow};
 
 {$R *.res}
 
@@ -144,6 +145,7 @@ begin
   Application.CreateForm(TFormPhoneList, FormPhoneList);
   Application.CreateForm(TFormPhoneListAdd, FormPhoneListAdd);
   Application.CreateForm(TFormStatisticsLisa, FormStatisticsLisa);
+  Application.CreateForm(TFormStatisticsLisaShow, FormStatisticsLisaShow);
   Application.Run;
 end.
 

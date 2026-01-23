@@ -196,15 +196,17 @@ end;
 function TReportCountOperators.FindFIO(InSipOperator:Integer;InCurrentDate:TDate):string;
 begin
   if m_disableOperatorList.IsDisable(InSipOperator,InCurrentDate) then begin
-    Result:=m_disableOperatorList.GetUserNameOperator(InSipOperator,InCurrentDate);
+    Result:=m_disableOperatorList.GetUserNameOperator(InSipOperator,InCurrentDate)+cDISMISSED_STAFF;
   end
   else begin
-    Result:=GetUserNameOperators(IntToStr(InSipOperator))+cDISMISSED_STAFF;
+    Result:=GetUserNameOperators(IntToStr(InSipOperator));
   end;
 end;
 
 // создание отчета (подробный)
 procedure TReportCountOperators.CreateReportDetailed(const p_list:string);
+const
+ cINTERNALCALL:Boolean = False;
 var
  i:Integer;
  ado:TADOQuery;
@@ -336,7 +338,7 @@ begin
            if m_findFIO then begin
              phone:=m_queue[i].phone;
              phone:=StringReplace(phone,'+7','8',[rfReplaceAll]);
-             m_queue[i].SetPhonePeople(phone);
+             m_queue[i].SetPhonePeople(phone,cINTERNALCALL);
            end;
 
            SetProgressStatusText('Загрузка данных ('+ VarToStr(Fields[5].Value)+' | '+DateToStr(DateOf(m_queue[i].date_time))+') ['+procentLoadSTR+'%]');

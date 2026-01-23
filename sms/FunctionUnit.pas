@@ -84,7 +84,7 @@ procedure AddCustomCheckBoxUI;                                                  
 implementation
 
 uses
-  FormMyTemplateUnit, TSendSMSUint, TAddressClinicPopMenuUnit, TThreadSendSMSUnit, TSpellingUnit, GlobalVariablesLinkDLL, FormWaitUnit, DMUnit, GlobalImageDestination, FormManualPodborUnit;
+  FormMyTemplateUnit, TSendSMSUint, TAddressClinicPopMenuUnit, TThreadSendSMSUnit, TSpellingUnit, GlobalVariablesLinkDLL, FormWaitUnit, DMUnit, GlobalImageDestination, FormManualPodborUnit, FormManualPodborStatusUnit;
 
 
 
@@ -814,18 +814,12 @@ var
  WorkSheet,Excel:OLEVariant;
  Rows, Cols, i:integer;
  FData: OLEVariant;
-
  stopRows:string;
-
  checkRows:Boolean;
-
  PacientPCode,PacientPhone,PacientFamiliya,PacientIO,PacientBirthday,PacientPol,
  PacientDataPriema,PacientTimePriema, PacientFIOVracha, Napravlenie,Address:string;
-
  NewPacient:TListPacients;
-
  progress:Integer;
-
 begin
   Screen.Cursor:=crHourGlass;
 
@@ -1404,6 +1398,11 @@ begin
 
   if Pacient.IO = '' then begin
     Pacient._errorDescriptions:=cPACIENT_ERROR;
+    Exit;
+  end;
+
+  if AnsiPos('-',Pacient.IO) <> 0 then begin
+    Pacient._errorDescriptions:=cPACIENT_ERROR2;
     Exit;
   end;
 
@@ -2115,6 +2114,11 @@ begin
   with FormManualPodbor do begin
     // только свои звонки (MyCalls)
     SharedCheckBox.Add('MyCalls', chkbox_MyCalls, img_MyCalls, paramStatus_DISABLED);
+  end;
+
+  with FormManualPodborStatus do begin
+    // отобразить только с ошибкой отправки()
+    SharedCheckBox.Add('ShowErrorSendindSMS', chkbox_ShowErrorSendindSMS, img_ShowErrorSendindSMS, paramStatus_DISABLED);
   end;
 end;
 

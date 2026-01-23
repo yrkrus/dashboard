@@ -345,11 +345,15 @@
         <DCCReference Include="FormHomeCloseQuery.pas"/>
         <DCCReference Include="Thread\Thread_LISAUnit.pas"/>
         <DCCReference Include="..\custom_class\TLisaUnit.pas"/>
-        <DCCReference Include="Forms\FormStatisticsLisaUnit.pas">
+        <DCCReference Include="..\custom_class\TLisaStatisticsDayUnit.pas"/>
+        <DCCReference Include="Forms\StatisticsLisa\FormStatisticsLisaUnit.pas">
             <Form>FormStatisticsLisa</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="..\custom_class\TLisaStatisticsDayUnit.pas"/>
+        <DCCReference Include="Forms\StatisticsLisa\FormStatisticsLisaShowUnit.pas">
+            <Form>FormStatisticsLisaShow</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

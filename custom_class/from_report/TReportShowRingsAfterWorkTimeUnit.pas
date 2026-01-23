@@ -222,7 +222,8 @@ procedure TReportShowRingsAfterWorkTime.FindCalls(var _ado:TADOQuery;
                                                       _count:Integer;
                                                       _listDate:TStringList);
 const
- cFIELDS_TABLE:string = 'id,waiting_time,phone,date_time,trunk,to_queue,operator,region';
+ cFIELDS_TABLE:string = 'id,call_time,phone,date_time,trunk,to_queue,operator,region';
+ cINTERNALCALLS:Boolean = False;
 var
  table:string;
  i:Integer;
@@ -263,13 +264,12 @@ begin
       SQL.Add(request.ToString);
     end
     else begin
-     SQL.Add('select id,waiting_time,phone,date_time,trunk,to_queue,operator,region from '+table+' where DATE(date_time) IN ('+listDate+') and (TIME(date_time) >= '+#39+m_workTime.StopTimeStr+':00:00'+#39+' OR TIME(date_time) < '+#39+m_workTime.StartTimeStr+':00:00'+#39+')');
+     SQL.Add('select '+cFIELDS_TABLE+' from '+table+' where DATE(date_time) IN ('+listDate+') and (TIME(date_time) >= '+#39+m_workTime.StopTimeStr+':00:00'+#39+' OR TIME(date_time) < '+#39+m_workTime.StartTimeStr+':00:00'+#39+')');
     end;
 
     Active:=True;
 
     if isESC then Exit;
-
 
     call:=TIVRHistory.Create;
 
@@ -283,7 +283,7 @@ begin
      SetProgressBar(procentLoad);
 
      call.id:=StrToInt(VarToStr(Fields[0].Value));
-     call.waiting_time:=VarToStr(Fields[1].Value);
+     call.call_time:=StrToInt(VarToStr(Fields[1].Value));
      call.phone:=VarToStr(Fields[2].Value);
      call.date_time:=Fields[3].Value;
      call.trunk:=Fields[4].Value;
@@ -295,7 +295,8 @@ begin
      if m_findFIO then begin
        phone:=call.phone;
        phone:=StringReplace(phone,'+7','8',[rfReplaceAll]);
-       call.SetPhonePeople(phone);
+
+       call.SetPhonePeople(phone,cINTERNALCALLS);
      end;
 
      AddIvrHistory(call);
@@ -430,7 +431,7 @@ begin
 
     m_sheet.cells[ColIndex,1]:=IntToStr(m_history[i].id);   // ID
     m_sheet.cells[ColIndex,2]:=m_history[i].date_time;      // Дата\Время
-    m_sheet.cells[ColIndex,3]:=m_history[i].waiting_time;   // Ожидание в IVR
+    m_sheet.cells[ColIndex,3]:=GetTimeAnsweredSecondsToString(m_history[i].call_time);   // Ожидание в IVR
     m_sheet.cells[ColIndex,4]:=m_history[i].phone;          // Телефон
     m_sheet.cells[ColIndex,5]:=m_history[i].trunk;          // Транк
     m_sheet.cells[ColIndex,6]:=m_history[i].phone_operator; // Оператор

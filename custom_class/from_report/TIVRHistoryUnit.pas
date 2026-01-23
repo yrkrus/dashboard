@@ -23,7 +23,7 @@ uses
 
       public
       id            :Integer;
-      waiting_time  :string;
+      call_time     :Integer;
       phone         :string;
       date_time     :string;
       trunk         :string;
@@ -36,7 +36,7 @@ uses
       destructor  Destroy; override;
 
       procedure Clear;
-      procedure SetPhonePeople(_phone:string);
+      procedure SetPhonePeople(_phone:string;_internalCall:Boolean);
 
       function  Clone: TIVRHistory;
 
@@ -64,7 +64,7 @@ constructor TIVRHistory.Create;
   Create;
 
   id:=_call.id;
-  waiting_time:=_call.waiting_time;
+  call_time:=_call.call_time;
   phone:=_call.phone;
   date_time:=_call.date_time;
   trunk:=_call.trunk;
@@ -85,7 +85,7 @@ end;
  procedure TIVRHistory.Clear;
  begin
   id:=0;
-  waiting_time:='';
+  call_time:=0;
   phone:='';
   date_time:='';
   trunk:='';
@@ -95,9 +95,16 @@ end;
   if Assigned(m_people) then m_people.Clear;
  end;
 
-procedure TIVRHistory.SetPhonePeople(_phone:string);
+procedure TIVRHistory.SetPhonePeople(_phone:string;_internalCall:Boolean);
 begin
-  m_people.SetPhone(_phone);
+  if not m_people.IsInit then begin
+   FreeAndNil(m_people);
+   m_people:=TAutoPodborPeople.Create(_phone,_internalCall);
+  end
+  else begin
+   m_people.Clear;
+   m_people.SetPhone(_phone,_internalCall);
+  end;
 end;
 
 function TIVRHistory.Clone: TIVRHistory;

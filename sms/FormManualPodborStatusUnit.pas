@@ -21,6 +21,9 @@ type
     btnStatus_available: TBitBtn;
     popmenu_FindStatus: TPopupMenu;
     popmenu_ActionShowStatus: TMenuItem;
+    img_ShowErrorSendindSMS: TImage;
+    chkbox_ShowErrorSendindSMS: TLabel;
+    menu_FIO: TMenuItem;
     procedure FormShow(Sender: TObject);
     procedure btnStatus_availableClick(Sender: TObject);
     procedure list_HistoryDblClick(Sender: TObject);
@@ -29,24 +32,32 @@ type
     procedure popmenu_ActionShowStatusClick(Sender: TObject);
     procedure list_HistoryMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure chkbox_ShowErrorSendindSMSClick(Sender: TObject);
+    procedure img_ShowErrorSendindSMSClick(Sender: TObject);
+    procedure menu_FIOClick(Sender: TObject);
   private
     { Private declarations }
    SelectedItemPopMenu: TListItem; // Переменная для хранения выбранного элемента(для popmenu_ActionShowStatus)
 
-   procedure ShowLoading;
+   procedure ShowLoading(_showOnlyError:Boolean);
    procedure FormDefault;
    procedure ClearListView(var p_ListView:TListView);
    procedure LoadData(_startDate:TDate;
                      _stopDate:TDate;
-                     _table:enumReportTableSMSStatus); // прогрузка данных
+                     _table:enumReportTableSMSStatus;
+                     _onlyError:Boolean); // прогрузка данных
    procedure ShowSMS(var p_ListView:TListView;
                     _startDate:TDate;
                     _stopDate:TDate;
-                    _table:enumReportTableSMSStatus);       // прогрузка отправленных смс
+                    _table:enumReportTableSMSStatus;
+                    _onlyError:Boolean);       // прогрузка отправленных смс
    procedure AddListItem(const _id, _dateTime, _phone, _code, _userId: string;
                          var p_ListView: TListView);
 
    function Check(var _errorDescription:string):Boolean;  // проверка
+
+   procedure ShowErrorSending;  // показ только смс с ошибками
 
   public
     { Public declarations }
@@ -58,18 +69,19 @@ var
 implementation
 
 uses
-  FunctionUnit, GlobalVariablesLinkDLL, FormHomeUnit, GlobalVariables, FormStatusSendingSMSUnit;
+  FunctionUnit, GlobalVariablesLinkDLL, FormHomeUnit, GlobalVariables, FormStatusSendingSMSUnit, TAutoPodborPeopleUnit,
+  FormPropushennieShowPeopleUnit;
 
 {$R *.dfm}
 
-procedure TFormManualPodborStatus.ShowLoading;
+procedure TFormManualPodborStatus.ShowLoading(_showOnlyError:Boolean);
 var
  errorDescription:string;
 begin
   FormDefault;
 
   // прогружаем данные по умолчанию сегодняшний день
-  LoadData(Now, Now, eTableSMS);
+  LoadData(Now, Now, eTableSMS, _showOnlyError);
 end;
 
 
@@ -81,7 +93,7 @@ var
   time_talk: Integer;
 begin
   ListItem := p_ListView.Items.Add;
-  ListItem.Caption := _id;      // id
+  ListItem.Caption := _id;          // id
   ListItem.SubItems.Add(_dateTime); // дата время
   ListItem.SubItems.Add(_phone);    // номер телефона
   ListItem.SubItems.Add(_code);     // код статуса
@@ -99,6 +111,25 @@ begin
   end;
 
   Result:=True;
+end;
+
+procedure TFormManualPodborStatus.chkbox_ShowErrorSendindSMSClick(
+  Sender: TObject);
+begin
+  ShowErrorSending;
+end;
+
+// показ только смс с ошибками
+procedure TFormManualPodborStatus.ShowErrorSending;
+var
+ showError:Boolean;
+begin
+  SharedCheckBox.ChangeStatusCheckBox('ShowErrorSendindSMS');
+  showError:=SharedCheckBox.Checked['ShowErrorSendindSMS'];
+
+  showWait(show_open);
+  ShowLoading(showError);
+  showWait(show_close);
 end;
 
 
@@ -153,6 +184,13 @@ begin
  end;
 end;
 
+procedure TFormManualPodborStatus.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  // выключаем параметр
+  SharedCheckBox.ChangeStatusCheckBox('ShowErrorSendindSMS',paramStatus_DISABLED);
+end;
+
 procedure TFormManualPodborStatus.FormDefault;
 var
  errorDescription:string;
@@ -167,7 +205,8 @@ end;
 // прогрузка данных
 procedure TFormManualPodborStatus.LoadData(_startDate:TDate;
                                           _stopDate:TDate;
-                                          _table:enumReportTableSMSStatus);
+                                          _table:enumReportTableSMSStatus;
+                                          _onlyError:Boolean);
 begin
   Screen.Cursor:=crHourGlass;
 
@@ -175,11 +214,34 @@ begin
   ClearListView(list_History);
 
   // прогружаем номера
-  ShowSMS(list_History,_startDate,_stopDate, _table);
+  ShowSMS(list_History,_startDate,_stopDate, _table, _onlyError);
 
   Screen.Cursor:=crDefault;
 end;
 
+
+procedure TFormManualPodborStatus.menu_FIOClick(Sender: TObject);
+var
+ people:TAutoPodborPeople;
+ phonePodbor:string;
+begin
+  // Проверяем, был ли выбран элемент
+  if not Assigned(SelectedItemPopMenu) then begin
+    MessageBox(Handle,PChar('Не выбран номер'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+    Exit;
+  end;
+
+  phonePodbor:= SelectedItemPopMenu.SubItems[1];
+  phonePodbor:=StringReplace(phonePodbor,'+7','8',[rfReplaceAll]);
+
+  ShowWait(show_open);
+  people:=TAutoPodborPeople.Create(phonePodbor, False);
+
+  FormPropushennieShowPeople.SetListPacients(people);
+  ShowWait(show_close);
+
+  FormPropushennieShowPeople.ShowModal;
+end;
 
 procedure TFormManualPodborStatus.popmenu_ActionShowStatusClick(
   Sender: TObject);
@@ -211,7 +273,8 @@ end;
 procedure TFormManualPodborStatus.ShowSMS(var p_ListView:TListView;
                                           _startDate:TDate;
                                           _stopDate:TDate;
-                                          _table:enumReportTableSMSStatus);
+                                          _table:enumReportTableSMSStatus;
+                                          _onlyError:Boolean);
 var
   ado: TADOQuery;
   serverConnect: TADOConnection;
@@ -242,6 +305,9 @@ begin
         Append(' where date_time >='+#39+GetDateToDateBD(DateToStr(_startDate))+' 00:00:00'+#39);
         Append(' and date_time <='+#39+GetDateToDateBD(DateToStr(_stopDate))+' 23:59:59'+#39);
         Append(' and user_id not IN (''-1'',''0'') ');
+        if _onlyError then begin
+          Append(' and status not IN (''3'') ');
+        end;
       end;
 
       SQL.Add(response.ToString);
@@ -267,6 +333,9 @@ begin
         Append(' where date_time >='+#39+GetDateToDateBD(DateToStr(_startDate))+' 00:00:00'+#39);
         Append(' and date_time <='+#39+GetDateToDateBD(DateToStr(_stopDate))+' 23:59:59'+#39);
         Append(' and user_id not IN (''-1'',''0'')');
+        if _onlyError then begin
+          Append(' and status not IN (''3'') ');
+        end;
         Append(' order by date_time DESC');
       end;
 
@@ -289,6 +358,9 @@ begin
         ado.Next;
       end;
 
+      if countSMS = 0 then Caption:='Подбор номера телефона'
+      else Caption:='Подбор номера телефона ['+IntToStr(countSMS)+']';
+
     end;
   finally
     FreeAndNil(ado);
@@ -304,23 +376,35 @@ end;
 procedure TFormManualPodborStatus.btnStatus_availableClick(Sender: TObject);
 var
  errorDescription:string;
+ onlyError:Boolean;
 begin
   if not Check(errorDescription)  then begin
     MessageBox(Handle,PChar(errorDescription),PChar('Ошибка'),MB_OK+MB_ICONERROR);
    Exit;
   end;
 
+  onlyError:=SharedCheckBox.Checked['ShowErrorSendindSMS'];
+
   showWait(show_open);
-  LoadData(dateStart.Date, dateStop.Date, eTableHistorySMS);
+  LoadData(dateStart.Date, dateStop.Date, eTableHistorySMS, onlyError);
   showWait(show_close);
 end;
 
 
 procedure TFormManualPodborStatus.FormShow(Sender: TObject);
+var
+ onlyError:Boolean;
 begin
+  onlyError:=SharedCheckBox.Checked['ShowErrorSendindSMS'];
+
   showWait(show_open);
-  ShowLoading;
+  ShowLoading(onlyError);
   showWait(show_close);
+end;
+
+procedure TFormManualPodborStatus.img_ShowErrorSendindSMSClick(Sender: TObject);
+begin
+  ShowErrorSending;
 end;
 
 procedure TFormManualPodborStatus.list_HistoryCustomDrawItem(

@@ -128,8 +128,8 @@
         <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <Icon_MainIcon>ico\icons8-report-64.ico</Icon_MainIcon>
-        <VerInfo_Build>14</VerInfo_Build>
-        <VerInfo_Keys>CompanyName=Petrov Yuri;FileDescription=Отчеты коллцентра;FileVersion=1.4.0.14;InternalName=;LegalCopyright=Petrov Yuri;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Отчеты коллцентра;ProductVersion=0.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Build>15</VerInfo_Build>
+        <VerInfo_Keys>CompanyName=Petrov Yuri;FileDescription=Отчеты коллцентра;FileVersion=1.4.0.15;InternalName=;LegalCopyright=Petrov Yuri;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Отчеты коллцентра;ProductVersion=0.0.0.0;Comments=</VerInfo_Keys>
         <UWP_DelphiLogo44>C:\Users\home0\Desktop\DASHBOARD\develop\report\ico\icons8-report-64.png</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>C:\Users\home0\Desktop\DASHBOARD\develop\report\ico\icons8-report-64.png</UWP_DelphiLogo150>
         <VerInfo_MinorVer>4</VerInfo_MinorVer>

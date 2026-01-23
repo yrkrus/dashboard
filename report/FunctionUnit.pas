@@ -42,6 +42,8 @@ uses
   procedure CreateImageReport(_countRepot:Word);                                   // создание иконки рядом с отчетами
   procedure FindSipCallOperators(var _listUsers:TStringList; _dateStart, _dateStop:Tdate);  //поиск sip номеров которые разговаривали в период заданного времени
 
+  function GetDateBaseFirstData:string; // дата первых данных в базе
+
 implementation
 
 uses
@@ -690,5 +692,38 @@ begin
   end;
 end;
 
+
+function GetDateBaseFirstData:string; // дата первых данных в базе
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+begin
+  Result:='null';
+
+  ado:=TADOQuery.Create(nil);
+  serverConnect:=createServerConnect;
+  if not Assigned(serverConnect) then begin
+     FreeAndNil(ado);
+     Exit;
+  end;
+
+  try
+     with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+      SQL.Add('select date_time from history_queue order by date_time ASC limit 1');
+      Active:=True;
+
+      if Fields[0].Value <> null then Result:=VarToStr(Fields[0].Value);
+    end;
+
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+    end;
+  end;
+end;
 
 end.

@@ -1906,7 +1906,7 @@ begin
       end;
 
       if listOperators[id].m_queuePaused then begin
-        Result:='~('+Result+')';
+        Result:='!('+Result+')';
       end;
     finally
       m_mutex.Release;

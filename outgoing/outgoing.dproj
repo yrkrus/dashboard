@@ -144,6 +144,8 @@
         <DCCReference Include="..\custom_class\TLogFileUnit.pas"/>
         <DCCReference Include="FunctionUnit.pas"/>
         <DCCReference Include="..\custom_global\GlobalVariablesLinkDLL.pas"/>
+        <DCCReference Include="..\custom_class\TCallbackCallUnit.pas"/>
+        <DCCReference Include="..\custom_class\TThreadDispatcherUnit.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -192,15 +194,15 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="Win64\Debug\outgoing.rsm" Configuration="Debug" Class="DebugSymbols">
-                    <Platform Name="Win64">
-                        <RemoteName>outgoing.rsm</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
                 <DeployFile LocalName="Win64\Debug\outgoing.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win64">
                         <RemoteName>outgoing.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Win64\Debug\outgoing.rsm" Configuration="Debug" Class="DebugSymbols">
+                    <Platform Name="Win64">
+                        <RemoteName>outgoing.rsm</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>

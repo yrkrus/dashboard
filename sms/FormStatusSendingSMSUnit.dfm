@@ -173,6 +173,8 @@ object FormStatusSendingSMS: TFormStatusSendingSMS
       Top = 113
       Width = 48
       Height = 16
+      Cursor = crHandPoint
+      Hint = #1057#1082#1086#1087#1080#1088#1086#1074#1072#1090#1100' '#1085#1086#1084#1077#1088' '#1090#1077#1083#1077#1092#1086#1085#1072
       Caption = #1040#1076#1088#1077#1089#1072#1090
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -180,6 +182,9 @@ object FormStatusSendingSMS: TFormStatusSendingSMS
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
+      OnClick = lblPhoneClick
     end
     object lblCode: TLabel
       Left = 16

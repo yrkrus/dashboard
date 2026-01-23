@@ -5453,6 +5453,23 @@ object FormHome: TFormHome
     Font.Style = [fsBold]
     ParentFont = False
   end
+  object lblDataBaseInfo: TLabel
+    Left = 10
+    Top = 107
+    Width = 125
+    Height = 30
+    Alignment = taCenter
+    AutoSize = False
+    Caption = #1076#1072#1085#1085#1099#1077' '#1074' '#1041#1044' '#1089
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clGreen
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+    Visible = False
+    WordWrap = True
+  end
   object StatusBar: TStatusBar
     Left = 0
     Top = 142

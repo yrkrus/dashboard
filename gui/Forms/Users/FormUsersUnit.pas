@@ -54,7 +54,6 @@ type
   procedure LoadData;
   procedure ClearListView(var p_ListView:TListView);
   procedure AddListItem(const _user:TUser; var p_ListView: TListView);
-  function ShowLastActiveTime(_datetime:TDateTime):string;
   procedure ShowHideUsersNotEntered; // ïîêàçàòü\ñêğûòü ïîëüçîâàòåëåé íå âõîäèâøèõ íè ğàçó
 
 
@@ -72,31 +71,6 @@ uses
   FunctionUnit, FormAddNewUsersUnit, GlobalVariables, GlobalVariablesLinkDLL, TCustomTypeUnit;
 
 {$R *.dfm}
-
-// === NO CLASS ===
-// START
-
-
-function PluralDays(Days: Int64): string;
-var
-  d100, d10: Integer;
-begin
-  // ïğîâåğÿåì èñêëş÷åíèÿ äëÿ 11…14
-  d100 := Days mod 100;
-  if (d100 >= 11) and (d100 <= 14) then
-    Exit(Format('%d äíåé', [Days]));
-
-  // ñìîòğèì ïîñëåäíşş öèôğó
-  d10 := Days mod 10;
-  case d10 of
-    1: Result := Format('%d äåíü', [Days]);
-    2, 3, 4: Result := Format('%d äíÿ', [Days]);
-  else
-    Result := Format('%d äíåé', [Days]);
-  end;
-end;
-// END
-// === NO CLASS ===
 
 
 // ïîêàçàòü\ñêğûòü ïîëüçîâàòåëåé íå âõîäèâøèõ íè ğàçó
@@ -126,34 +100,6 @@ begin
   Caption:='Ïîëüçîâàòåëè ['+IntToStr(countUsers)+']';
 
   Screen.Cursor:=crDefault;
-end;
-
-
-
-// âğåìÿ àêòèâíîñòè
-function TFormUsers.ShowLastActiveTime(_datetime:TDateTime):string;
-const
- cDayTime:Cardinal = 86400;
-var
- diff:Int64;
- unixTime,unixCurrentTime:Int64;
- days: Int64;
-begin
-  unixCurrentTime:=DateTimeToUnix(_datetime);
-  unixTime:=DateTimeToUnix(Now);
-
-  diff := unixTime - unixCurrentTime;
-  if diff <= cDayTime then begin
-    Result:=' (ñåãîäíÿ)';
-    Exit;
-  end
-  else begin
-    days := diff div cDayTime;
-    if days = 1 then begin
-     Result:=' (â÷åğà)';
-    end
-    else Result := Format(' (%s íàçàä)', [PluralDays(days)]);
-  end;
 end;
 
 
@@ -503,10 +449,7 @@ begin
   // òåêóùèé âûáğàííûé ïîëüçàê
  // currentEditUserId:='';
 
-
   LoadData;
-
-
 
   Screen.Cursor:=crDefault;
 end;

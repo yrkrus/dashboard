@@ -24,17 +24,17 @@ TCustomTypeUnit;
          // размер шрифта по умолчанию
        DEFAULT_FONT_SIZE  :Word = 10;
 
-      public
-
-      constructor Create;                   overload;
-      procedure SetSize(InType:enumFontSize; NewSize:word);   // установка нового размера шрифта
-      function GetSize(InType:enumFontSize):Word;             
-
       private
       m_ActiveSip                :Word;
       m_Ivr                      :Word;
       m_Queue                    :Word;
       m_Lisa                     :Word;
+
+      public
+      constructor Create;                   overload;
+      procedure SetSize(InType:enumFontSize; NewSize:word);   // установка нового размера шрифта
+      function GetSize(InType:enumFontSize):Word;             
+
 
       end;
  // class TFontSize END

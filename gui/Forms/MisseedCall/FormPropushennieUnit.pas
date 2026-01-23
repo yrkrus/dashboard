@@ -632,7 +632,7 @@ begin
    Caption:='Не перезвонившие';
   end
   else begin
-   Caption:='Не перезвонившие ('+IntToStr(_countMissed)+')';
+   Caption:='Не перезвонившие ['+IntToStr(_countMissed)+']';
    ST_no_missed.Visible:=False;
   end;
 

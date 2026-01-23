@@ -23,10 +23,11 @@ uses
       TSipList = class
 
       public
-      m_id      :Integer;  // id по БД
-      m_sip     :Integer;  // sip
-      m_userId  :Integer;  // за кем закреплен   default = -1 ни за кем
-      m_fio     :string;  // ФИО
+      m_id          :Integer;  // id по БД
+      m_sip         :Integer;  // sip
+      m_userId      :Integer;  // за кем закреплен   default = -1 ни за кем
+      m_fio         :string;  // ФИО
+      m_lastActive  :TDateTime; // время последнего входа
 
       constructor Create;               overload;
       procedure Clear;
@@ -50,6 +51,8 @@ uses
       function IsActiveSip(_sip:string; var _fioOperator:string):Boolean; // проверка что sip не используется у оператора никакого
       function GetFree:Boolean;   // есть ли свободные номера
       function GerUsed(_sip:string):Boolean; // используется ли sip сейчас
+      function GetLastActive(_userId:Integer):TDateTime; // время когда последний раз входил пользователь в систему
+
 
       public
       constructor Create;                   overload;
@@ -81,10 +84,11 @@ end;
 
 procedure TSipList.Clear;
 begin
- m_id     :=0;
- m_sip    :=-1;
- m_userId :=-1;
- m_fio    :='';
+ m_id         :=0;
+ m_sip        :=-1;
+ m_userId     :=-1;
+ m_fio        :='';
+ m_lastActive :=0;
 end;
 
 
@@ -166,9 +170,10 @@ begin
     for i:=0 to dataCount-1 do m_list[i]:=TSipList.Create;
 
     for i:=0 to dataCount-1 do begin
-      m_list[i].m_id      :=StrToInt(VarToStr(Fields[0].Value));
-      m_list[i].m_sip     :=StrToInt(VarToStr(Fields[1].Value));
-      m_list[i].m_userId  :=StrToInt(VarToStr(Fields[2].Value));
+      m_list[i].m_id          :=StrToInt(VarToStr(Fields[0].Value));
+      m_list[i].m_sip         :=StrToInt(VarToStr(Fields[1].Value));
+      m_list[i].m_userId      :=StrToInt(VarToStr(Fields[2].Value));
+      m_list[i].m_lastActive  :=GetLastActive(m_list[i].m_userId);
 
       // ФИО
       if m_list[i].m_userId <> -1 then m_list[i].m_fio:=GetUserNameFIO(m_list[i].m_userId);
@@ -325,6 +330,76 @@ begin
         Result:=True;
         Break;
       end;
+    end;
+  end;
+end;
+
+
+// время когда последний раз входил пользователь в систему
+function TSipPhoneList.GetLastActive(_userId:Integer):TDateTime;
+var
+ ado:TADOQuery;
+ serverConnect:TADOConnection;
+ request:TStringBuilder;
+begin
+  Result:=0;
+
+  ado:=TADOQuery.Create(nil);
+  try
+      serverConnect:=createServerConnect;
+    except
+      on E:Exception do begin
+        if not Assigned(serverConnect) then begin
+           FreeAndNil(ado);
+           Exit;
+        end;
+      end;
+    end;
+
+  try
+    with ado do begin
+      ado.Connection:=serverConnect;
+      SQL.Clear;
+
+      request:=TStringBuilder.Create;
+      with request do begin
+       Clear;
+       Append('select date_time from logging');
+       Append(' where user_id = '+#39+IntToStr(_userId)+#39);
+       Append(' and action = ''0'' order by date_time DESC');
+      end;
+
+      SQL.Add(request.ToString);
+      Active:=True;
+
+      if Fields[0].Value <> null then begin
+        Result:=StrToDateTime(VarToStr(Fields[0].Value));
+        Exit;
+      end;
+
+      // нет в текущем днем смотрим истоию
+      with request do begin
+       Clear;
+       Append('select date_time from history_logging');
+       Append(' where user_id = '+#39+IntToStr(_userId)+#39);
+       Append(' and action = ''0'' order by date_time DESC');
+      end;
+
+      SQL.Clear;
+      SQL.Add(request.ToString);
+      Active:=True;
+
+      if Fields[0].Value <> null then begin
+        Result:=StrToDateTime(VarToStr(Fields[0].Value));
+      end;
+
+    end;
+  finally
+    FreeAndNil(ado);
+    if Assigned(serverConnect) then begin
+      serverConnect.Close;
+      FreeAndNil(serverConnect);
+      FreeAndNil(request);
     end;
   end;
 end;

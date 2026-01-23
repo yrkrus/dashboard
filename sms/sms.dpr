@@ -42,7 +42,8 @@ uses
   FormWaitUnit in '..\gui\FormSystem\FormWaitUnit.pas' {FormWait},
   TCheckBoxUIUnit in '..\custom_class\TCheckBoxUIUnit.pas',
   TUserCommonQueueUnit in '..\custom_class\TUserCommonQueueUnit.pas',
-  TThreadDispatcherUnit in '..\custom_class\TThreadDispatcherUnit.pas';
+  TThreadDispatcherUnit in '..\custom_class\TThreadDispatcherUnit.pas',
+  FormPropushennieShowPeopleUnit in '..\gui\Forms\MisseedCall\FormPropushennieShowPeopleUnit.pas' {FormPropushennieShowPeople};
 
 {$R *.res}
 
@@ -70,5 +71,6 @@ begin
   Application.CreateForm(TFormStatusSendingSMS, FormStatusSendingSMS);
   Application.CreateForm(TFormServerIKCheck, FormServerIKCheck);
   Application.CreateForm(TFormWait, FormWait);
+  Application.CreateForm(TFormPropushennieShowPeople, FormPropushennieShowPeople);
   Application.Run;
 end.

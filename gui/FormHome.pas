@@ -548,6 +548,7 @@ procedure THomeForm.btnStatus_breakClick(Sender: TObject);
 var
  delay:enumStatus;
  error:string;
+ paused:Boolean;
 begin
    // нужно чтобы оператор обязательно находился в очереди
   if not IsOpearorExistAnyQueue(SharedCurrentUserLogon.ID,error) then begin
@@ -562,9 +563,10 @@ begin
   end;
 
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
+  paused:=True;
 
   // перерыв
-  SendCommand(eLog_break,delay, True, False);
+  SendCommand(eLog_break,delay, paused, False);
 end;
 
 procedure THomeForm.btnStatus_callbackClick(Sender: TObject);
@@ -605,6 +607,7 @@ procedure THomeForm.btnStatus_dinnerClick(Sender: TObject);
 var
  delay:enumStatus;
  error:string;
+ paused:Boolean;
 begin
   // нужно чтобы оператор обязательно находился в очереди
   if not IsOpearorExistAnyQueue(SharedCurrentUserLogon.ID,error) then begin
@@ -619,15 +622,17 @@ begin
   end;
 
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
+  paused:=True;
 
    // обед
-  SendCommand(eLog_dinner, delay, True, False);
+  SendCommand(eLog_dinner, delay, paused, False);
 end;
 
 procedure THomeForm.btnStatus_exodusClick(Sender: TObject);
 var
  delay:enumStatus;
  error:string;
+ paused:Boolean;
 begin
   // нужно чтобы оператор обязательно находился в очереди
   if not IsOpearorExistAnyQueue(SharedCurrentUserLogon.ID,error) then begin
@@ -641,10 +646,12 @@ begin
     Exit;
   end;
 
-  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
+  //delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
+  delay:=eYES;
+  paused:=True;
 
  // исход
-  SendCommand(eLog_exodus, delay, True, False);
+  SendCommand(eLog_exodus, delay, paused, False);
 end;
 
 
@@ -652,6 +659,7 @@ procedure THomeForm.btnStatus_homeClick(Sender: TObject);
 var
  delay:enumStatus;
  error:string;
+ paused:Boolean;
 begin
   // проверка есть ли сейчас отложенный статус
   if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.ID,error) then begin
@@ -660,15 +668,17 @@ begin
   end;
 
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
+  paused:=True;
 
  // домой
-  SendCommand(eLog_home, delay, True, False);
+  SendCommand(eLog_home, delay, paused, False);
 end;
 
 procedure THomeForm.btnStatus_ITClick(Sender: TObject);
 var
  delay:enumStatus;
  error:string;
+ paused:Boolean;
 begin
   // нужно чтобы оператор обязательно находился в очереди
   if not IsOpearorExistAnyQueue(SharedCurrentUserLogon.ID,error) then begin
@@ -683,15 +693,17 @@ begin
   end;
 
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
+  paused:=True;
 
   // ИТ
-   SendCommand(eLog_IT,delay, True, False);
+   SendCommand(eLog_IT,delay, paused, False);
 end;
 
 procedure THomeForm.btnStatus_postvyzovClick(Sender: TObject);
 var
  delay:enumStatus;
  error:string;
+ paused:Boolean;
 begin
    // нужно чтобы оператор обязательно находился в очереди
   if not IsOpearorExistAnyQueue(SharedCurrentUserLogon.ID,error) then begin
@@ -706,15 +718,17 @@ begin
   end;
 
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
+  paused:=True;
 
  // поствызов
-  SendCommand(eLog_postvyzov, delay, True, False);
+  SendCommand(eLog_postvyzov, delay, paused, False);
 end;
 
 procedure THomeForm.btnStatus_reserveClick(Sender: TObject);
 var
  delay:enumStatus;
  error:string;
+ paused:Boolean;
 begin
    // нужно чтобы оператор обязательно находился в очереди
   if not IsOpearorExistAnyQueue(SharedCurrentUserLogon.ID,error) then begin
@@ -729,15 +743,17 @@ begin
   end;
 
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
+  paused:=True;
 
  // переносы
-  SendCommand(eLog_reserve,delay, True, False);
+  SendCommand(eLog_reserve,delay, paused, False);
 end;
 
 procedure THomeForm.btnStatus_studiesClick(Sender: TObject);
 var
  delay:enumStatus;
  error:string;
+ paused:Boolean;
 begin
   // нужно чтобы оператор обязательно находился в очереди
   if not IsOpearorExistAnyQueue(SharedCurrentUserLogon.ID,error) then begin
@@ -752,15 +768,17 @@ begin
   end;
 
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
+  paused:=True;
 
  // учеба
-   SendCommand(eLog_studies,delay, True, False);
+   SendCommand(eLog_studies,delay, paused, False);
 end;
 
 procedure THomeForm.btnStatus_transferClick(Sender: TObject);
 var
  delay:enumStatus;
  error:string;
+ paused:Boolean;
 begin
    // нужно чтобы оператор обязательно находился в очереди
   if not IsOpearorExistAnyQueue(SharedCurrentUserLogon.ID,error) then begin
@@ -775,9 +793,10 @@ begin
   end;
 
   delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
+  paused:=True;
 
 // переносы
- SendCommand(eLog_transfer,delay, True, False);
+ SendCommand(eLog_transfer,delay, paused, False);
 end;
 
 

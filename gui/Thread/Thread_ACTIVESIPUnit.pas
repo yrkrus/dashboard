@@ -367,50 +367,51 @@ begin
            end;
          end
          else begin
+            // проверим вдруг переключение статуса
+            if p_ActiveSipOperators.GetListOperators_StatusDelay(i) <> eUnknown then begin
+               ListItem.SubItems[1]:='разговор → '+ getStatus(p_ActiveSipOperators.GetListOperators_StatusDelay(i));
+            end
+            else begin
+              // изменяем статус на "разговор", если доступен и разговаривают
+              if (p_ActiveSipOperators.GetListOperators_Status(i) = eAvailable) and
+                 (p_ActiveSipOperators.QueueList[i].Count > 0) and
+                 (p_ActiveSipOperators.GetListOperators_Phone(i) <> '') then begin
 
-            // изменяем статус на "разговор", если доступен и разговаривают
-            if (p_ActiveSipOperators.GetListOperators_Status(i) = eAvailable) and
-               (p_ActiveSipOperators.QueueList[i].Count > 0) and
-               ((p_ActiveSipOperators.GetListOperators_Phone(i) <> ''){ and (listOperators[i].talk_time<>'')} ) then begin
-
-              // проверим вдруг оператор в состоянии onHold
-              if p_ActiveSipOperators.GetListOperators_IsOnHold(i) then begin
-                ListItem.SubItems[1]:='OnHold ('+GetLastStatusTimeOnHold(p_ActiveSipOperators.GetListOperators_OnHoldStartTime(i))+')';
-
-              end else begin
-                // отложенная команда на смену статуса
-                 if p_ActiveSipOperators.GetListOperators_StatusDelay(i) <> eUnknown then begin
-                    ListItem.SubItems[1]:='разговор → '+ getStatus(p_ActiveSipOperators.GetListOperators_StatusDelay(i));
-                 end
-                 else begin
-                    ListItem.SubItems[1]:='разговор';
-                 end;
-              end;
-
-            end else begin
-              // добавляем время сколько сейчас находится оператор в статусе
-              if p_ActiveSipOperators.GetListOperators_Status(i) > eHome then begin
-
-                ListItem.SubItems[1]:=getStatus(p_ActiveSipOperators.GetListOperators_Status(i))
-                                      +' ('+getLastStatusTime(getUserID(p_ActiveSipOperators.GetListOperators_SipNumber(i)), p_ActiveSipOperators.GetListOperators_Status(i))
-                                      +')';
-
-              end
-              else begin
-                // проверим вдруг оператор в состоянии onHold (ну типа забыли из него выйти или нечаянно в него вошли)
+                // проверим вдруг оператор в состоянии onHold
                 if p_ActiveSipOperators.GetListOperators_IsOnHold(i) then begin
                   ListItem.SubItems[1]:='OnHold ('+GetLastStatusTimeOnHold(p_ActiveSipOperators.GetListOperators_OnHoldStartTime(i))+')';
-                end
-                else begin
-                 ListItem.SubItems[1]:=getStatus(p_ActiveSipOperators.GetListOperators_Status(i));
 
-                  if p_ActiveSipOperators.GetListOperators_Status(i) = eAvailable then begin // кол-во свободных операторов
-                     Inc(p_ActiveSipOperators.countFreeOperators);
-                  end;
+                end else begin
+                  // идет разговор
+                   ListItem.SubItems[1]:='разговор';
                 end;
 
+              end else begin
+                // добавляем время сколько сейчас находится оператор в статусе
+                if p_ActiveSipOperators.GetListOperators_Status(i) > eHome then begin
+
+                  ListItem.SubItems[1]:=getStatus(p_ActiveSipOperators.GetListOperators_Status(i))
+                                        +' ('+getLastStatusTime(getUserID(p_ActiveSipOperators.GetListOperators_SipNumber(i)), p_ActiveSipOperators.GetListOperators_Status(i))
+                                        +')';
+
+                end
+                else begin
+                  // проверим вдруг оператор в состоянии onHold (ну типа забыли из него выйти или нечаянно в него вошли)
+                  if p_ActiveSipOperators.GetListOperators_IsOnHold(i) then begin
+                    ListItem.SubItems[1]:='OnHold ('+GetLastStatusTimeOnHold(p_ActiveSipOperators.GetListOperators_OnHoldStartTime(i))+')';
+                  end
+                  else begin
+                   ListItem.SubItems[1]:=getStatus(p_ActiveSipOperators.GetListOperators_Status(i));
+
+                    if p_ActiveSipOperators.GetListOperators_Status(i) = eAvailable then begin // кол-во свободных операторов
+                       Inc(p_ActiveSipOperators.countFreeOperators);
+                    end;
+                  end;
+
+                end;
               end;
             end;
+
 
             if p_ActiveSipOperators.GetListOperators_OperatorName(i) = SharedCurrentUserLogon.Familiya+' '+SharedCurrentUserLogon.Name then begin
              // для привязвнной форме

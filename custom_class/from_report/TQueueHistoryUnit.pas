@@ -38,7 +38,7 @@ uses
       onHold            :Integer;            // OnHold(сек)
 
       constructor Create(_createPeople:Boolean = False);                   overload;
-      procedure SetPhonePeople(_phone:string);
+      procedure SetPhonePeople(_phone:string; _internalCall:boolean);
       function GetFIOPeople:string; // отображдение фио звонящего
 
 
@@ -75,9 +75,16 @@ begin
 end;
 
 
-procedure TQueueHistory.SetPhonePeople(_phone:string);
+procedure TQueueHistory.SetPhonePeople(_phone:string; _internalCall:boolean);
 begin
-  m_people.SetPhone(_phone);
+  if not m_people.IsInit then begin
+    FreeAndNil(m_people);
+    m_people:=TAutoPodborPeople.Create(_phone, _internalCall);
+  end
+  else begin
+   m_people.Clear;
+   m_people.SetPhone(_phone,_internalCall);
+  end;
 end;
 
 function TQueueHistory.GetFIOPeople:string; // отображдение фио звонящего

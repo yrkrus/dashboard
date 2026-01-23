@@ -26,6 +26,7 @@ type
     Label8: TLabel;
     Label6: TLabel;
     Label3: TLabel;
+    lblDataBaseInfo: TLabel;
     procedure ProcessCommandLineParams(DEBUG:Boolean = False);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -101,7 +102,12 @@ var
  error:string;
 begin
   // debug node
-  if DEBUG then Caption:='    ===== DEBUG | (base:'+_dll_GetDefaultDataBase+') =====    '+Caption;
+  if DEBUG then begin
+   Caption:='    ===== DEBUG | (base:'+_dll_GetDefaultDataBase+') =====    '+Caption;
+
+   lblDataBaseInfo.Caption:=lblDataBaseInfo.Caption+' '+GetDateBaseFirstData;
+   lblDataBaseInfo.Visible:=True;
+  end;
 
   // создатим copyright
   createCopyright;

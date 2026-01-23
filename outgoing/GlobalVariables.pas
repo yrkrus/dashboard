@@ -20,7 +20,7 @@ var
                       DEBUG:Boolean = TRUE;
   // ****************** режим разработки ******************
 
-  OUTGOING_EXE           :string = 'outgoing.exe';
+  OUTGOING_EXE      :string = 'outgoing.exe';
 
   // файл с настройками
   SETTINGS_XML      :string = 'settings.xml';
@@ -34,8 +34,11 @@ var
   // Залогиненый польщователь который открыл ougoing.exe
   USER_STARTED_OUTGOING_ID    :Integer;
 
-  // есть ли доступ к звонкам
-  USER_ACCESS_SENDING_LIST  :Boolean;
+  // номер звонка при атвоматическом вызове
+  USER_PHONE_CALL  :string;
+
+  // автоматический запуск (при этом параметре звоним сразу на номер)
+  AUTO_RUN                :Boolean = False;
 
   // глобальная ошибка при подкобчении к БД
   CONNECT_BD_ERROR        :Boolean = False;

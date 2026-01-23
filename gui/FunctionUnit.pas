@@ -168,6 +168,7 @@ procedure ShowUsersCommonQueuePopMenu(const _queuelist:TList<enumQueue>);       
 procedure ShowUsersCommonQueueStatisticsDay(const _queuelist:TList<enumQueue>);     // отображение статистики по чоеред€м
 function EqualCurrentQueue(_queueA, _queueB:TList<enumQueue>):Boolean;              // сравнение двух пар очередей
 procedure ShowStatusOperatorRegisterPhone(_showRegisteredSip:Boolean);              // отображение формы с регистрацией на телефоне
+function ShowLastActiveTime(_datetime:TDateTime):string;                            // врем€ активности
 
 
 implementation
@@ -179,7 +180,7 @@ uses
   FormUsersUnit, TTranslirtUnit, Thread_ACTIVESIP_updatetalkUnit, Thread_ACTIVESIP_updatePhoneTalkUnit,
   Thread_ACTIVESIP_countTalkUnit, Thread_ACTIVESIP_QueueUnit, FormActiveSessionUnit, TIVRUnit,
   TXmlUnit, TOnlineChat, Thread_ChatUnit, Thread_ForecastUnit,
-  Thread_InternalProcessUnit, TActiveSessionUnit, FormTrunkSipUnit, Thread_CheckTrunkUnit, TStatusUnit, GlobalImageDestination, DMUnit, FormSettingsGlobalUnit, FormHistoryStatusOperatorUnit, FormSettingsGlobal_addIVRUnit, TPhoneListUnit, TIndividualSettingUserUnit, Thread_LISAUnit;
+  Thread_InternalProcessUnit, TActiveSessionUnit, FormTrunkSipUnit, Thread_CheckTrunkUnit, TStatusUnit, GlobalImageDestination, DMUnit, FormSettingsGlobalUnit, FormHistoryStatusOperatorUnit, FormSettingsGlobal_addIVRUnit, TPhoneListUnit, TIndividualSettingUserUnit, Thread_LISAUnit, FormStatisticsLisaShowUnit;
 
  // логирование действий
 procedure LoggingRemote(InLoggingID:enumLogging; _userID:Integer);
@@ -5891,6 +5892,10 @@ begin
     SharedCheckBoxUI.Add('OperatorRegisterAllQueue', chkbox_users_OperatorRegisterAllQueue, img_users_OperatorRegisterAllQueue, paramStatus_DISABLED);
   end;
 
+  with FormStatisticsLisaShow do begin
+    // отобразить только неотвеченные вызовы(ShowErrorNoAnsweredCallsLisa)
+    SharedCheckBoxUI.Add('ShowErrorNoAnsweredCallsLisa', chkbox_ShowErrorNoAnsweredCallsLisa, img_ShowErrorNoAnsweredCallsLisa, paramStatus_DISABLED);
+  end;
 end;
 
 
@@ -6116,6 +6121,53 @@ begin
   else
   begin
     RaiseLastOSError; // ќбработка ошибок
+  end;
+end;
+
+// === INTERNAL FUNC ===
+function PluralDays(Days: Int64): string;
+var
+  d100, d10: Integer;
+begin
+  // провер€ем исключени€ дл€ 11Е14
+  d100 := Days mod 100;
+  if (d100 >= 11) and (d100 <= 14) then
+    Exit(Format('%d дней', [Days]));
+
+  // смотрим последнюю цифру
+  d10 := Days mod 10;
+  case d10 of
+    1: Result := Format('%d день', [Days]);
+    2, 3, 4: Result := Format('%d дн€', [Days]);
+  else
+    Result := Format('%d дней', [Days]);
+  end;
+end;
+// === INTERNAL FUNC ===
+
+// врем€ активности
+function ShowLastActiveTime(_datetime:TDateTime):string;
+const
+ cDayTime:Cardinal = 86400;
+var
+ diff:Int64;
+ unixTime,unixCurrentTime:Int64;
+ days: Int64;
+begin
+  unixCurrentTime:=DateTimeToUnix(_datetime);
+  unixTime:=DateTimeToUnix(Now);
+
+  diff := unixTime - unixCurrentTime;
+  if diff <= cDayTime then begin
+    Result:=' (сегодн€)';
+    Exit;
+  end
+  else begin
+    days := diff div cDayTime;
+    if days = 1 then begin
+     Result:=' (вчера)';
+    end
+    else Result := Format(' (%s назад)', [PluralDays(days)]);
   end;
 end;
 

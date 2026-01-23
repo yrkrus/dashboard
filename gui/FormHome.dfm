@@ -7918,12 +7918,14 @@ object HomeForm: THomeForm
     AutoSize = False
     Caption = 'SL: -%'
     Color = clWindow
+    DoubleBuffered = True
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
     Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     ParentColor = False
+    ParentDoubleBuffered = False
     ParentFont = False
     ParentShowHint = False
     ShowHint = True
@@ -7943,12 +7945,14 @@ object HomeForm: THomeForm
     AutoSize = False
     Caption = 'AR: -%'
     Color = clWindow
+    DoubleBuffered = True
     Font.Charset = RUSSIAN_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
     Font.Name = 'Tahoma'
     Font.Style = [fsBold]
     ParentColor = False
+    ParentDoubleBuffered = False
     ParentFont = False
     ParentShowHint = False
     ShowHint = True
@@ -9578,8 +9582,7 @@ object HomeForm: THomeForm
         000052FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
         FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
         FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-      Caption = #1053#1072#1073#1088#1072#1090#1100' '#1085#1086#1084#1077#1088' ('#1074' '#1088#1072#1079#1088#1072#1073#1086#1090#1082#1077')'
-      Enabled = False
+      Caption = #1053#1072#1073#1088#1072#1090#1100' '#1085#1086#1084#1077#1088
       OnClick = menu_OutgoingClick
     end
     object menu_Reports: TMenuItem

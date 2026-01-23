@@ -48,6 +48,7 @@ uses
   type
       TAutoPodborPeople = class
       private
+      m_init                 :Boolean;    // init true
       m_log                  :TLoggingFile;
       m_phone                :string;
       m_count                :Integer;
@@ -89,7 +90,9 @@ uses
 
       destructor Destroy;                                  override; // Объявление деструктора
 
-      procedure SetPhone(_phone:string);    // установка номера тлф
+      procedure SetPhone(_phone:string);    overload; // установка номера тлф
+      procedure SetPhone(_phone:string; _internalCall:Boolean); overload;   // установка номера тлф
+
       procedure Add(const _people:TAutoPodborPeople);
 
       function GetFIO(_id:Integer):string; overload;
@@ -103,6 +106,7 @@ uses
 
       property Count:Integer read m_count;
       property InretnalName[_id:Integer]:string read GetInretnalName;
+      property IsInit:Boolean read m_init;
 
       end;
  // class TAutoPodborPeople END
@@ -177,6 +181,8 @@ begin
 
  SetLength(m_list,0);
 
+ m_init:=True;
+
  // находим логин\пароль от БД
  CreateAuthFirebird;
 
@@ -220,6 +226,18 @@ end;
 procedure TAutoPodborPeople.SetPhone(_phone:string);
 begin
   m_phone:=_phone;
+
+  // делаем формат тлф под базу
+  SetPhoneVariants;
+
+  // поиск ФИО
+  Find;
+end;
+
+procedure TAutoPodborPeople.SetPhone(_phone:string; _internalCall:Boolean);
+begin
+  m_phone:=_phone;
+  m_internal:=_internalCall;
 
   // делаем формат тлф под базу
   SetPhoneVariants;
