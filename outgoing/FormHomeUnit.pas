@@ -26,13 +26,14 @@ type
     img0_draw: TImage;
     group: TGroupBox;
     imgStartCall: TImage;
-    Image12: TImage;
+    imgStopCall: TImage;
     imgClosed: TImage;
     GroupBox1: TGroupBox;
     edtPhone: TEdit;
     ST_Time: TStaticText;
     st_PhoneInfo: TStaticText;
     ST_State: TStaticText;
+    lblDebug: TLabel;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure ProcessCommandLineParams(DEBUG:Boolean);
@@ -45,11 +46,19 @@ type
       Shift: TShiftState);
     procedure imgStartCallClick(Sender: TObject);
   private
-    m_dispatcherCreateCall     :TThreadDispatcher;     // планировщик
+    m_dispatcherCall        :TThreadDispatcher;     // планировщик
+    m_activeCall            :Boolean;               // совершается активный звонок
+
 
     procedure  _INIT;
-    function CreateCall(var _callback:TCallbackCall;
+    function CreateCall(var p_callback:TCallbackCall;
                         var _errorDescription:string):Boolean;   // основная процедура для создания звонка
+
+    procedure ParsingCall;  // процедура запускаемая через планировщик
+    procedure ShowTalkTimeCall;  // отсчет времени звонка
+    procedure CallEnding;   // звонок завершился
+    procedure CallStarting; // звонок начинается
+
 
     { Private declarations }
 
@@ -60,6 +69,11 @@ type
 var
   FormHome: TFormHome;
 
+const
+ // расположение иконки звонка
+ IMG_LEFT:Word = 293;
+ IMG_TOP:Word = 19;
+
 implementation
 
 uses
@@ -67,32 +81,102 @@ uses
 
 {$R *.dfm}
 
+
+procedure TFormHome.ParsingCall;
+begin
+  // статус
+  ST_State.Caption:='Статус: '+SharedCallbackCall.StatusString;
+
+  case SharedCallbackCall.Status of
+   call_result_not_init: begin
+
+   end;
+   call_result_unknown:begin
+
+   end;
+   call_result_wait_server:begin
+
+   end;
+   call_result_wait_responce:begin
+    // отсчитваем время звонка
+    ShowTalkTimeCall;
+   end;
+   call_result_fail:begin
+    CallEnding;
+   end;
+   call_result_ok:begin
+    // отсчитваем время звонка
+    ShowTalkTimeCall;
+   end;
+   call_result_end:begin  // звонок завершился
+    CallEnding;
+   end;
+  end;
+end;
+
+// отсчет времени звонка
+procedure TFormHome.ShowTalkTimeCall;
+begin
+  ST_Time.Caption:=SharedCallbackCall.TalkTime;
+
+end;
+
+
+ // звонок завершился
+procedure TFormHome.CallEnding;
+begin
+ ST_Time.Caption:='--:--:--';
+ m_activeCall:=False;
+ imgStopCall.Visible:=False;
+
+ // показ иконки начала звонка
+ imgStartCall.Left:=IMG_LEFT;
+ imgStartCall.Top:=IMG_TOP;
+ imgStartCall.Visible:=True;
+end;
+
+// звонок начинается
+procedure TFormHome.CallStarting;
+begin
+  m_activeCall:=True;
+  imgStartCall.Visible:=False;
+
+  // показ иконки завершения звонка
+  imgStopCall.Left:=IMG_LEFT;
+  imgStopCall.Top:=IMG_TOP;
+  imgStopCall.Visible:=True;
+end;
+
+
 // основная процедура для создания звонка
-function TFormHome.CreateCall(var _callback:TCallbackCall;
+function TFormHome.CreateCall(var p_callback:TCallbackCall;
                               var _errorDescription:string):Boolean;
 begin
-  if not Assigned(_callback) then begin
-    _errorDescription:='Не удается инициализировать класс TCallbackCall';
+  if Assigned(m_dispatcherCall) then m_dispatcherCall.StopThread;
+
+  USER_PHONE_CALL:=edtPhone.Text;
+
+  // проверяем номер тлф
+  if not CheckPhone(USER_PHONE_CALL,_errorDescription) then begin
     Result:=False;
     Exit;
-
   end;
 
-//  Result:=False;
-//  phone:=edtPhone.Text;
-//
-//  if not CheckPhone(_errorDescription, edtPhone) then begin
-//    Exit;
-//  end;
-//
-//  callbackCall:=TCallbackCall.Create(USER_STARTED_OUTGOING_ID, phone, False);
-//
-//  while callbackCall.CommandResult(_errorDescription) <> call_result_ok  do begin
-//
-//  end;
+  // ставим номер телефона
+  p_callback.SetPhone(USER_PHONE_CALL);
+  p_callback.CreateCall();  // создаем внутренний поток и ждем отработки
 
+  // создаем звонок
+ if not Assigned(m_dispatcherCall) then begin
+  m_dispatcherCall:=TThreadDispatcher.Create('CallbackCall', 1, False, ParsingCall);
+ end;
 
+ m_dispatcherCall.StartThread;
 
+ CallStarting; // совершается активный звонок
+
+ // выходим из функции и отдаем работу в поток
+ Result:=True;
 end;
 
 procedure  TFormHome._INIT;
@@ -112,7 +196,8 @@ var
   i: Integer;
 begin
   if DEBUG then begin
-   USER_STARTED_OUTGOING_ID:=1;
+   USER_STARTED_OUTGOING_ID:=38;
+   USER_STARTED_OUTGOING_SIP:=64197;
    USER_PHONE_CALL:='89275052333';
    AUTO_RUN:=False;
    Exit;
@@ -130,7 +215,17 @@ begin
       if (i + 1 <= ParamCount) then
       begin
         USER_STARTED_OUTGOING_ID:= StrToInt(ParamStr(i + 1));
+
+        // найдем сразу userSip
+        USER_STARTED_OUTGOING_SIP:=_dll_GetOperatorSIP(USER_STARTED_OUTGOING_ID);
+        if USER_STARTED_OUTGOING_SIP = -1 then begin
+         MessageBox(Handle,PChar('Ошибка определения Sip номера'),PChar('Ошибка запуска'),MB_OK+MB_ICONERROR);
+         KillProcessNow;
+        end;
+
        // if DEBUG then ShowMessage('Value for --USER_ID: ' + ParamStr(i + 1));
+        ShowMessage('Value for --USER_ID: ' + ParamStr(i + 1) + #13#13+
+                    'Value for USER_STARTED_OUTGOING_ID: '+ IntToStr(USER_STARTED_OUTGOING_SIP));
 
       end
       else
@@ -146,6 +241,7 @@ begin
       begin
         USER_PHONE_CALL:= ParamStr(i + 1);
        // if DEBUG then ShowMessage('Value for --ACCESS: ' + ParamStr(i + 1));
+        ShowMessage('Value for --PHONE_CALL: ' + ParamStr(i + 1));
 
       end
       else
@@ -198,7 +294,12 @@ procedure TFormHome.edtPhoneKeyPress(Sender: TObject; var Key: Char);
 begin
   if Key = #27 then
   begin
-    KillProcessNow;  // TODO перед выполнением проверить не в активном ли разговре находится сейчас программа
+    if m_activeCall then begin
+     MessageBox(Handle,PChar('Во время звонка закрыть не получится'),PChar(''),MB_OK+MB_ICONINFORMATION);
+     Exit;
+    end;
+
+    KillProcessNow;
   end;
 
   if Key = #13 then
@@ -251,12 +352,12 @@ begin
   // подгузим все данные
   _INIT;
 
-
  Screen.Cursor:=crHourGlass;
 
   // debug node
   if DEBUG then begin
-    Caption:='DEBUG | (base:'+_dll_GetDefaultDataBase+') '+Caption;
+    lblDebug.Caption:='DEBUG | (base:'+_dll_GetDefaultDataBase+')';
+    lblDebug.Visible:=True;
   end;
 
  // создатим copyright
@@ -267,21 +368,33 @@ end;
 
 procedure TFormHome.imgStartCallClick(Sender: TObject);
 var
- callbackCall:TCallbackCall;
  errorDescription:string;
 begin
- callbackCall:=TCallbackCall.Create(USER_STARTED_OUTGOING_ID);
-
- if not CreateCall(callbackCall, errorDescription) then begin
-   MessageBox(Handle,PChar(errorDescription),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+ if not Assigned(SharedCallbackCall) then begin
+   MessageBox(Handle,PChar('Не удается создать экземпляр класса TCallbackCall'),PChar('Ошибка'),MB_OK+MB_ICONERROR);
    Exit;
  end;
 
- // тут дальше создаем диспетчер который состояние отслеживает
+ if Assigned(SharedCallbackCall) then begin
+   // на всякий случай обнулим данные
+   SharedCallbackCall.Clear;
+ end;
+
+ SharedCallbackCall.SetId(USER_STARTED_OUTGOING_ID, USER_STARTED_OUTGOING_SIP);
+
+ if not CreateCall(SharedCallbackCall, errorDescription) then begin
+   MessageBox(Handle,PChar(errorDescription),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+   Exit;
+ end;
 end;
 
 procedure TFormHome.imgClosedClick(Sender: TObject);
 begin
+  if m_activeCall then begin
+   MessageBox(Handle,PChar('Во время звонка закрыть не получится'),PChar(''),MB_OK+MB_ICONINFORMATION);
+   Exit;
+  end;
+
   KillProcessNow;
 end;
 

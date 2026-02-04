@@ -1216,7 +1216,7 @@ end;
 
 procedure TActiveSIP.UpdateStatus;
 var
-  i:Integer;
+ i:Integer;
  ado:TADOQuery;
  serverConnect:TADOConnection;
  begin

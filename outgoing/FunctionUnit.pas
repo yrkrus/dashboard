@@ -18,7 +18,7 @@ FormHomeUnit,
   procedure InitManual;                                                       // русной запуск формы
   procedure InitAutoRun;                                                      // автоматический запуск
   function ParsePhoneNumber(const PhoneNumber: string): string;               // пасинг номера тлф при вствке в поле номер телефона
-  function CheckPhone(var _errorDescription:string; const p_phone:TEdit):Boolean;                  // проверка номера телефона
+  function CheckPhone(const p_phone:string; var _errorDescription:string):Boolean;   // проверка номера телефона
   function IsOnlyNumber(ch: Char): Boolean;                                   // проверка только на цифру цифру
 
 
@@ -38,8 +38,9 @@ end;
 procedure InitManual;
 begin
   with FormHome do begin
-    ST_Time.Visible:=False;
+    ST_Time.Caption:='--:--:--';
     st_PhoneInfo.Visible:=True;
+    ST_State.Caption:='Статус: ---';
 
     edtPhone.Text:='';
     edtPhone.SetFocus;
@@ -93,15 +94,15 @@ begin
 end;
 
  // проверка номера телефона
-function CheckPhone(var _errorDescription:string;
-                    const p_phone:TEdit):Boolean;
+function CheckPhone(const p_phone:string;
+                    var _errorDescription:string):Boolean;
 var
  phone:string;
  i:Integer;
 begin
   Result:=False;
   _errorDescription:='';
-  phone:=p_phone.Text;
+  phone:=p_phone;
 
   if Length(phone) = 0 then begin
    _errorDescription:='Пустой номер телефона';
@@ -131,6 +132,8 @@ begin
 
   Result:=True;
 end;
+
+
 
 
 end.

@@ -94,7 +94,7 @@ type
   public
     { Public declarations }
   procedure SetQueue(_queue:enumQueue; _missed:enumMissed);  // установка с какой очереди будем открывать окно
-  procedure SetCallbak; // открытые окна из под оператора + статус callback
+  procedure SetCallback; // открытые окна из под оператора + статус callback
 
   procedure SetManualShow(_value:Boolean); // ручное открытие окна
 
@@ -149,7 +149,7 @@ begin
 end;
 
 // открытые окна из под оператора + статус callback
-procedure TFormPropushennie.SetCallbak;
+procedure TFormPropushennie.SetCallback;
 begin
   m_callbakRun:=True;
 end;
@@ -484,14 +484,14 @@ begin
      except
       on E:EIdException do begin
        MessageBox(Handle,PChar('Возникла ошибка при парсинге id номера'+#13#13+e.Message),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-        Exit;
+       Exit;
       end;
      end;
 
-    if not CreateRemoteCommandCallback(remoteCommandAction_missedCalls,id,error) then begin
-       MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
-       Exit;
-    end;
+//    if not CreateRemoteCommandCallback(remoteCommandAction_missedCalls,id,error) then begin
+//       MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONERROR);
+//       Exit;
+//    end;
      // TODO сюда какое то окошко типа звоним ждите....
   end;
 end;

@@ -11,13 +11,13 @@ unit GlobalVariables;
 interface
 
 uses
-  SysUtils, Windows, Classes, TCustomTypeUnit, TLogFileUnit;
+  SysUtils, Windows, Classes, TCustomTypeUnit, TLogFileUnit, TCallbackCallUnit;
 
 
 
 var
   // ****************** режим разработки ******************
-                      DEBUG:Boolean = TRUE;
+                      DEBUG:Boolean = FALSE;
   // ****************** режим разработки ******************
 
   OUTGOING_EXE      :string = 'outgoing.exe';
@@ -28,11 +28,15 @@ var
   // лог главной формы
   SharedMainLog     :TLoggingFile;
 
+  // обратный звонок
+  SharedCallbackCall :TCallbackCall;
+
   // текуща€ директори€ откуда запускаем ougoing.exe
   FOLDERPATH:string;
 
   // «алогиненый польщователь который открыл ougoing.exe
   USER_STARTED_OUTGOING_ID    :Integer;
+  USER_STARTED_OUTGOING_SIP   :Integer;
 
   // номер звонка при атвоматическом вызове
   USER_PHONE_CALL  :string;
@@ -54,7 +58,7 @@ initialization  // »нициализаци€
  FOLDERPATH:=ExtractFilePath(ParamStr(0));
 
  SharedMainLog                :=TLoggingFile.Create('outgoing');   // лог работы формы
-
+ SharedCallbackCall           :=TCallbackCall.Create();            //
 
  finalization
 

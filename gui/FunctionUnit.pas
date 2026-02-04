@@ -5084,7 +5084,6 @@ begin
   end;
 
   ShellExecute(HomeForm.Handle, 'Open', PChar(OUTGOING_EXE),PChar(USER_ID_PARAM+' '+IntToStr(SharedCurrentUserLogon.ID)),nil,SW_SHOW);
-
 end;
 
 

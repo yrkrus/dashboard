@@ -570,20 +570,41 @@ begin
 end;
 
 procedure THomeForm.btnStatus_callbackClick(Sender: TObject);
-//var
-// error:string;
-// delay:Boolean;
+var
+ delay:enumStatus;
+ error:string;
+ paused:Boolean;
 begin
-  // callback
-// if SendCommand(eLog_callback,error) then begin
-//   with FormPropushennie do begin
-//     SetQueue(queue_5000,eMissed_no_return);
-//     SetCallbak;
-//
-//     ShowModal;
-//   end;
-// end;
+  if not SharedCurrentUserLogon.IsAccessCalls then begin
+    MessageBox(HomeForm.Handle,PChar('Отсутствует доступ к звонкам'),PChar('Отсутствует доступ'),MB_OK+MB_ICONINFORMATION);
+    Exit;
+  end;
+
+  // нужно чтобы оператор обязательно находился в очереди
+  if not IsOpearorExistAnyQueue(SharedCurrentUserLogon.ID,error) then begin
+   MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
+   Exit;
+  end;
+
+  // проверка есть ли сейчас отложенный статус
+  if not IsAllowChangeStatusOperators(SharedCurrentUserLogon.ID,error) then begin
+    MessageBox(Handle,PChar(error),PChar('Ошибка'),MB_OK+MB_ICONINFORMATION);
+    Exit;
+  end;
+
+  delay:=SendCommandStatusDelay(SharedCurrentUserLogon.ID);
+  paused:=True;
+
+  SendCommand(eLog_callback, delay, paused, False);
+
+  with FormPropushennie do begin
+    SetQueue(queue_5000,eMissed_no_return);
+    SetCallback;
+
+    ShowModal;
+  end;
 end;
+
 
 procedure THomeForm.btnStatus_del_queue_allClick(Sender: TObject);
 var
